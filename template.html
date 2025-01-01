@@ -378,7 +378,7 @@
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
       
-      const worker = new Worker(URL.createObjectURL(new Blob(['{{ js }}'], { type: 'application/javascript' })))
+      const worker = new Worker("{% url 'betzi_test_js' %}")
       
       const handlePrompt = async (msg) => {
         return new Promise((resolve) => {
