@@ -1,7 +1,7 @@
 let currentPrompt;
 
 class myPrompt {
-    constructor(msg="") {
+    constructor(msg='') {
         this.msg = msg;
         this.response = null;
         this.waiting = false;
