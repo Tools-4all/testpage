@@ -1,14 +1,14 @@
 let currentPrompt;
 
 class myPrompt {
-    constructor(msg='') {
+    constructor(msg="") {
         this.msg = msg;
         this.response = null;
         this.waiting = false;
     }
 
     prompt(msg, sharedBuffer) {
-        self.postMessage({ type: 'prompt', message: msg });
+        self.postMessage({ type: "prompt", message: msg });
         this.waiting = true;
 
         // Wait for the main thread to write the response to the shared buffer
@@ -27,14 +27,14 @@ class myPrompt {
     }
 }
 
-self.addEventListener('message', (event) => {
+self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
-    if (type === 'execute') {
+    if (type === "execute") {
         const customConsole = {
-            log: (...args) => self.postMessage({ type: 'log', message: args.join(' ') }),
-            error: (...args) => self.postMessage({ type: 'error', message: args.join(' ') }),
-            warn: (...args) => self.postMessage({ type: 'warn', message: args.join(' ') }),
-            info: (...args) => self.postMessage({ type: 'info', message: args.join(' ') }),
+            log: (...args) => self.postMessage({ type: "log", message: args.join(" ") }),
+            error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
+            warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
+            info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
         };
 
         const customPrompt = (msg) => {
@@ -51,7 +51,7 @@ self.addEventListener('message', (event) => {
                         ${userCode}
                     })();
                 `;
-                const userFunc = new Function('console', 'prompt', wrappedCode);
+                const userFunc = new Function("console", "prompt", wrappedCode);
                 userFunc(customConsole, customPrompt);
             } catch (e) {
                 customConsole.error(e.message);
