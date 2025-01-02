@@ -335,6 +335,9 @@
         object-fit: contain; /* Ensure the image fits within the container without cropping */
         border-radius: 4px; /* Optional: Add rounded corners */
         margin-bottom: 11px;
+        user-drag: none; /* Prevent dragging in modern browsers */
+        user-select: none; /* Prevent text/image selection */
+        -webkit-user-drag: none;
       }
       
       @media (max-width: 768px) {
