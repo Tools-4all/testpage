@@ -431,6 +431,7 @@
       };
   
       document.getElementById('runButton').addEventListener('click', () => {
+        console.log("clicked")
           const userCode = window.editor.getValue();
           worker.postMessage({ type: 'execute', code: userCode, sharedBuffer });
       });
