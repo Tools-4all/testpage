@@ -25,11 +25,6 @@ class myPrompt {
     }
 }
 
-self.fetch = undefined;
-self.XMLHttpRequest = undefined;
-self.WebSocket = undefined;
-self.importScripts = undefined
-
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
