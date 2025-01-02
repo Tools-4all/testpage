@@ -378,60 +378,62 @@
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
       
-      const worker = new Worker("{% url 'betzi_test_js' %}")
+      const worker = new Worker(URL.createObjectURL(new Blob(["{{ js }}"], { type: 'application/javascript' })))
       
+      const sharedBuffer = new SharedArrayBuffer(1024);
+      const view = new Int32Array(sharedBuffer);
+  
       const handlePrompt = async (msg) => {
-        return new Promise((resolve) => {
-            const promptLine = document.createElement('div');
-            promptLine.className = 'prompt-line';
-            const promptMsg = document.createElement('span');
-            promptMsg.textContent = `[PROMPT] ${msg}`;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.autocomplete = 'off';
-
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    const value = input.value.trim();
-                    promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
-                    input.remove();
-
-                    const textEncoder = new TextEncoder();
-                    const encodedResponse = textEncoder.encode(value);
-                    new Uint8Array(sharedBuffer, 4).set(encodedResponse);
-
-                    Atomics.store(view, 0, 1); 
-                    Atomics.notify(view, 0);
-
-                    resolve();
-                }
-            });
-
-            promptLine.appendChild(promptMsg);
-            promptLine.appendChild(input);
-            document.getElementById('output').appendChild(promptLine);
-            input.focus();
-        });
-    };
-    
-    worker.addEventListener('message', async (event) => {
-        const { type, message } = event.data;
-    
-        if (['log', 'error', 'warn', 'info'].includes(type)) {
-            appendToOutput(type, message);
-        } else if (type === 'prompt') {
-            const response = await handlePrompt(message);
-            worker.postMessage({ type: 'promptResponse', message: response });
-            console.log('Prompt response:', response);
-        }
-    });
-    
-          
-      runButton.addEventListener('click', () => {
-        const userCode = window.editor.getValue()
-        outputDiv.innerHTML = ''
-        worker.postMessage({ type: 'execute', code: userCode })
-      })
+          return new Promise((resolve) => {
+              const promptLine = document.createElement('div');
+              promptLine.className = 'prompt-line';
+              const promptMsg = document.createElement('span');
+              promptMsg.textContent = `[PROMPT] ${msg}`;
+              const input = document.createElement('input');
+              input.type = 'text';
+              input.autocomplete = 'off';
+  
+              input.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter') {
+                      const value = input.value.trim();
+                      promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
+                      input.remove();
+  
+                      const textEncoder = new TextEncoder();
+                      const encodedResponse = textEncoder.encode(value);
+                      new Uint8Array(sharedBuffer, 4).set(encodedResponse);
+  
+                      Atomics.store(view, 0, 1); // Signal the worker
+                      Atomics.notify(view, 0);
+  
+                      resolve();
+                  }
+              });
+  
+              promptLine.appendChild(promptMsg);
+              promptLine.appendChild(input);
+              document.getElementById('output').appendChild(promptLine);
+              input.focus();
+          });
+      };
+  
+      worker.onmessage = async (event) => {
+          const { type, message } = event.data;
+  
+          if (type === 'prompt') {
+              await handlePrompt(message);
+          } else if (['log', 'error', 'warn', 'info'].includes(type)) {
+              const line = document.createElement('div');
+              line.className = type;
+              line.textContent = `[${type.toUpperCase()}] ${message}`;
+              document.getElementById('output').appendChild(line);
+          }
+      };
+  
+      document.getElementById('runButton').addEventListener('click', () => {
+          const userCode = window.editor.getValue();
+          worker.postMessage({ type: 'execute', code: userCode, sharedBuffer });
+      });
     </script>
   </body>
 </html>
