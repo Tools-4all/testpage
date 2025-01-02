@@ -45,18 +45,23 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                const isolatedFunction = new Function(`
+                // Wrap the user code in an IIFE for isolation
+                const wrappedCode = `
                     "use strict";
-                    const self = undefined;
-                    const postMessage = undefined;
-                    ${userCode}
-                `);
-                isolatedFunction()
+                    const console = customConsole;
+                    const prompt = customPrompt;
+                    const self = undefined; // Prevent access to worker's global scope
+                    const postMessage = undefined; // Block postMessage from user code
+                    (() => {
+                        ${userCode}
+                    })();
+                `;
+                const userFunc = new Function("console", "prompt", wrappedCode);
+                userFunc(customConsole, customPrompt);
             } catch (e) {
-                self.postMessage({ type: "error", message: e.message });
+                customConsole.error(e.message);
             }
         };
-
 
         executeCode(code);
     }
