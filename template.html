@@ -378,7 +378,7 @@
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
       
-      const worker = new Worker(URL.createObjectURL(new Blob(["{{ js }}"], { type: 'application/javascript' })))
+      const worker = new Worker("{% url 'betzi_test_js' %}")
       
       const sharedBuffer = new SharedArrayBuffer(1024); // Ensure size can hold the signal and response
 const view = new Int32Array(sharedBuffer);
