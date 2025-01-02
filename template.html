@@ -71,7 +71,7 @@
         padding: 10px;
         display: none;
         flex-shrink: 0;
-        transition: all 0.3s ease
+        transition: all 0.3s ease;
       }
       .sidebar-panel.active {
         display: block;
@@ -224,8 +224,7 @@
         width: 100%;
         height: 100%;
       }
-
-
+      
       #gitUrl {
         width: 100%;
         padding: 8px 10px;
@@ -261,6 +260,55 @@
         background-color: #005f99;
       }
       
+      .vs-navbar {
+        background-color: #252526;
+        color: #ffffff;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        display: flex;
+        padding: 5px 10px;
+        border-bottom: 1px solid #333;
+      }
+      
+      .vs-navbar-item {
+        margin-right: 20px;
+        position: relative;
+        cursor: pointer;
+      }
+      
+      .vs-navbar-item:hover {
+        color: #d4d4d4;
+      }
+      
+      .vs-navbar-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: #333;
+        border: 1px solid #252526;
+        border-radius: 4px;
+        overflow: hidden;
+        z-index: 1000;
+        min-width: 120px;
+      }
+      
+      .vs-navbar-dropdown.active {
+        display: block;
+      }
+      
+      .vs-navbar-dropdown-item {
+        padding: 8px 12px;
+        color: #d4d4d4;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      
+      .vs-navbar-dropdown-item:hover {
+        background-color: #444;
+        color: #ffffff;
+      }
+      
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -283,6 +331,26 @@
     </style>
   </head>
   <body>
+
+    <div class="vs-navbar">
+      <div class="vs-navbar-item" data-dropdown="fileDropdown">
+        File
+        <div class="vs-navbar-dropdown" id="fileDropdown">
+          <div class="vs-navbar-dropdown-item">New File</div>
+          <div class="vs-navbar-dropdown-item">Open File</div>
+          <div class="vs-navbar-dropdown-item">Save File</div>
+        </div>
+      </div>
+      <div class="vs-navbar-item" data-dropdown="editDropdown">
+        Edit
+        <div class="vs-navbar-dropdown" id="editDropdown">
+          <div class="vs-navbar-dropdown-item">Undo</div>
+          <div class="vs-navbar-dropdown-item">Redo</div>
+          <div class="vs-navbar-dropdown-item">Find</div>
+        </div>
+      </div>
+    </div>
+    
     <div id="activityBar">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -435,11 +503,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                              self.MonacoEnvironment = {
-                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                              };
-                              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                            `
+                                    self.MonacoEnvironment = {
+                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                    };
+                                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                                  `
         }
       }
       
@@ -506,9 +574,9 @@
             window.editor.getAction('actions.find').run()
           }
         })
-
-        const gitInp = document.getElementById("gitUrl")
-
+      
+        const gitInp = document.getElementById('gitUrl')
+      
         function gitUrlErr() {
           gitInp.style.borderColor = 'red'
           setTimeout(() => {
@@ -524,9 +592,9 @@
             gitUrlErr()
             return
           }
-
+      
           try {
-            new URL(gitUrl);
+            new URL(gitUrl)
           } catch (error) {
             appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
             gitUrlErr()
@@ -631,38 +699,63 @@
           return await response.text()
         }
       
-        const btnsArray = ['gitIcon', 'settingsIcon'];
+        const btnsArray = ['gitIcon', 'settingsIcon']
         btnsArray.forEach((iconId) => {
-          const icon = document.getElementById(iconId);
+          const icon = document.getElementById(iconId)
           icon.addEventListener('click', (e) => {
-            const isActive = e.currentTarget.classList.contains('active');
-            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'));
-            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'));
-        
+            const isActive = e.currentTarget.classList.contains('active')
+            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
+            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
+      
             if (!isActive) {
-              e.currentTarget.classList.add('active');
-              const targetPanel = e.currentTarget.getAttribute('data-target');
-              document.getElementById(targetPanel).classList.add('active');
+              e.currentTarget.classList.add('active')
+              const targetPanel = e.currentTarget.getAttribute('data-target')
+              document.getElementById(targetPanel).classList.add('active')
+            }
+          })
+        })
+      
+        const loadGitButton = document.getElementById('loadGitButton')
+      
+        gitInp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            loadGitButton.click()
+          }
+        })
+      
+        gitInp.addEventListener('input', () => {
+          if (!gitInp.value.trim()) {
+            loadGitButton.disabled = true
+          } else {
+            loadGitButton.disabled = false
+          }
+        })
+
+        document.querySelectorAll('.vs-navbar-item').forEach((item) => {
+          item.addEventListener('click', (event) => {
+            const dropdownId = event.currentTarget.getAttribute('data-dropdown');
+            const dropdown = document.getElementById(dropdownId);
+        
+            // Close all dropdowns
+            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+              dropdown.classList.remove('active');
+            });
+        
+            // Toggle the current dropdown
+            if (dropdown) {
+              dropdown.classList.toggle('active');
             }
           });
         });
-
-        const loadGitButton  = document.getElementById("loadGitButton");
-
-        gitInp.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            loadGitButton.click();
+        
+        // Close dropdowns if clicking outside
+        document.addEventListener('click', (event) => {
+          if (!event.target.closest('.vs-navbar-item')) {
+            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+              dropdown.classList.remove('active');
+            });
           }
         });
-
-
-        gitInp.addEventListener("input", () => {
-          if (!gitInp.value.trim()) {
-            loadGitButton.disabled = true;
-          } else {
-            loadGitButton.disabled = false;
-          }
-        })
         
       })
     </script>
