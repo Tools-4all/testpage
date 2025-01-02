@@ -282,10 +282,10 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                self.MonacoEnvironment = {
-                                    baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                };
-                                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}`
+                                            self.MonacoEnvironment = {
+                                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                            };
+                                            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}`
         }
       }
       
@@ -307,17 +307,17 @@
       
         window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
           value: `console.log('Hello, World!');
-            
-            function greet(name) {
-                console.log('Hello, ' + name + '!');
-            }
-            greet('ChatGPT');
-            
-            const answer = prompt("Who are you?");
-            console.log('Answer:', answer);
-            
-            const age = prompt("How old are you?");
-            console.log("Age:", age);`,
+                        
+                        function greet(name) {
+                            console.log('Hello, ' + name + '!');
+                        }
+                        greet('ChatGPT');
+                        
+                        const answer = prompt("Who are you?");
+                        console.log('Answer:', answer);
+                        
+                        const age = prompt("How old are you?");
+                        console.log("Age:", age);`,
           language: 'javascript',
           theme: 'custom-dark',
           automaticLayout: true,
@@ -380,62 +380,62 @@
       
       const worker = new Worker("{% url 'betzi_test_js' %}")
       
-      const sharedBuffer = new SharedArrayBuffer(1024); // Ensure size can hold the signal and response
-const view = new Int32Array(sharedBuffer);
-
-const handlePrompt = (msg) => {
-    return new Promise((resolve) => {
-        const promptLine = document.createElement("div");
-        promptLine.className = "prompt-line";
-        const promptMsg = document.createElement("span");
-        promptMsg.textContent = `[PROMPT] ${msg}`;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.autocomplete = "off";
-
-        input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                const value = input.value.trim();
-                promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
-                input.remove();
-
-                // Encode response into the shared buffer
-                const textEncoder = new TextEncoder();
-                const encodedResponse = textEncoder.encode(value);
-                const responseBuffer = new Uint8Array(sharedBuffer, 4);
-                responseBuffer.set(encodedResponse);
-
-                Atomics.store(view, 0, 1); // Signal worker
-                Atomics.notify(view, 0);
-
-                resolve();
+      const sharedBuffer = new SharedArrayBuffer(1024) // Ensure size can hold the signal and response
+      const view = new Int32Array(sharedBuffer)
+      
+      const handlePrompt = (msg) => {
+        return new Promise((resolve) => {
+          const promptLine = document.createElement('div')
+          promptLine.className = 'prompt-line'
+          const promptMsg = document.createElement('span')
+          promptMsg.textContent = `[PROMPT] ${msg}`
+          const input = document.createElement('input')
+          input.type = 'text'
+          input.autocomplete = 'off'
+      
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const value = input.value.trim()
+              promptMsg.textContent = `[PROMPT] ${msg} ${value}`
+              input.remove()
+      
+              // Encode response into the shared buffer
+              const textEncoder = new TextEncoder()
+              const encodedResponse = textEncoder.encode(value + '\0') // Null-terminate the string
+              const responseBuffer = new Uint8Array(sharedBuffer, 4)
+              responseBuffer.set(encodedResponse)
+      
+              Atomics.store(view, 0, 1) // Signal worker
+              Atomics.notify(view, 0)
+      
+              resolve()
             }
-        });
-
-        promptLine.appendChild(promptMsg);
-        promptLine.appendChild(input);
-        document.getElementById("output").appendChild(promptLine);
-        input.focus();
-    });
-};
-
-worker.onmessage = async (event) => {
-    const { type, message } = event.data;
-    console.log("recived messege", type, message)
-    if (type === "prompt") {
-        await handlePrompt(message);
-    } else if (["log", "error", "warn", "info"].includes(type)) {
-        const line = document.createElement("div");
-        line.className = type;
-        line.textContent = `[${type.toUpperCase()}] ${message}`;
-        document.getElementById("output").appendChild(line);
-    }
-};
-
-document.getElementById("runButton").addEventListener("click", () => {
-    const userCode = window.editor.getValue();
-    worker.postMessage({ type: "execute", code: userCode, sharedBuffer });
-});
+          })
+      
+          promptLine.appendChild(promptMsg)
+          promptLine.appendChild(input)
+          document.getElementById('output').appendChild(promptLine)
+          input.focus()
+        })
+      }
+      
+      worker.onmessage = async (event) => {
+        const { type, message } = event.data
+        console.log('recived messege', type, message)
+        if (type === 'prompt') {
+          await handlePrompt(message)
+        } else if (['log', 'error', 'warn', 'info'].includes(type)) {
+          const line = document.createElement('div')
+          line.className = type
+          line.textContent = `[${type.toUpperCase()}] ${message}`
+          document.getElementById('output').appendChild(line)
+        }
+      }
+      
+      document.getElementById('runButton').addEventListener('click', () => {
+        const userCode = window.editor.getValue()
+        worker.postMessage({ type: 'execute', code: userCode, sharedBuffer })
+      })
     </script>
   </body>
 </html>
