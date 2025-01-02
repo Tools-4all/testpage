@@ -200,9 +200,6 @@
       </div>
     </div>
     
-    <div id="searchPanel" class="sidebar-panel">
-      <input type="text" placeholder="Search...">
-    </div>
     <div id="gitPanel" class="sidebar-panel">
       <p>No repository found.</p>
     </div>
@@ -518,8 +515,9 @@
           outputDiv.appendChild(line);
           outputDiv.scrollTop = outputDiv.scrollHeight;
         }
-        
-        document.querySelectorAll('#activityBar .icon').forEach((icon) => {
+
+        ["gitIcon"].forEach((icon) => {
+          icon = document.getElementById(icon);
           icon.addEventListener('click', (e) => {
             document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'));
             e.currentTarget.classList.add('active');
