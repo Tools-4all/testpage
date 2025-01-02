@@ -765,21 +765,30 @@
         })
       
         // Toggle dropdown visibility
-        document.querySelectorAll('#vscodeNavBar .vscode-menu-item').forEach((item) => {
-          item.addEventListener('click', (e) => {
-            const menuKey = e.target.getAttribute('data-menu')
-            const dropdown = document.querySelector(`.vscode-dropdown-menu[data-menu="${menuKey}"]`)
-      
-            document.querySelectorAll('.vscode-dropdown-menu').forEach((d) => d.classList.remove('active'))
-      
+        document.querySelectorAll('#vscodeNavBar .vscode-menu-item').forEach(item => {
+          item.addEventListener('click', e => {
+            const menuKey = e.target.getAttribute('data-menu');
+            const dropdown = document.querySelector(`.vscode-dropdown-menu[data-menu="${menuKey}"]`);
+        
+            // Close all other dropdowns
+            document.querySelectorAll('.vscode-dropdown-menu').forEach(d => d.classList.remove('active'));
+        
             if (dropdown) {
-              const rect = e.target.getBoundingClientRect()
-              dropdown.style.top = `${rect.bottom}px`
-              dropdown.style.left = `${rect.left}px`
-              dropdown.classList.add('active')
+              const rect = e.target.getBoundingClientRect();
+              dropdown.style.top = `${rect.bottom}px`; // Position below the menu item
+              dropdown.style.left = `${rect.left}px`; // Align with the menu item
+              dropdown.classList.add('active');
             }
-          })
-        })
+          });
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', e => {
+          if (!e.target.closest('#vscodeNavBar') && !e.target.closest('.vscode-dropdown-menu')) {
+            document.querySelectorAll('.vscode-dropdown-menu').forEach(d => d.classList.remove('active'));
+          }
+        });
+        
       
         // Close dropdown on outside click
         document.addEventListener('click', (e) => {
