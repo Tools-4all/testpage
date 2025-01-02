@@ -12,15 +12,19 @@ class myPrompt {
         const view = new Int32Array(sharedBuffer);
         const responseBuffer = new Uint8Array(sharedBuffer, 4);
 
-        // Reset signal
+        // Reset signal before waiting
         Atomics.store(view, 0, 0);
 
-        // Wait for the main thread to signal the response
-        while (Atomics.wait(view, 0, 0));
+        // Wait for the main thread to signal
+        while (Atomics.wait(view, 0, 0) === "ok");
 
         // Decode the response
         const textDecoder = new TextDecoder();
         this.response = textDecoder.decode(responseBuffer).replace(/\0/g, ""); // Remove null terminators
+
+        // Reset signal after processing response
+        Atomics.store(view, 0, 0);
+
         this.waiting = false;
     }
 
@@ -41,7 +45,6 @@ self.addEventListener("message", (event) => {
 
         const customPrompt = (msg) => {
             const promptInstance = new myPrompt(msg);
-            currentPrompt = promptInstance;
             promptInstance.prompt(msg, sharedBuffer);
             return promptInstance.getResponse();
         };
