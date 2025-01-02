@@ -1,3 +1,6 @@
+importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js")
+
+
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
