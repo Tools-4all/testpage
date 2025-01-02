@@ -282,10 +282,10 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                                  self.MonacoEnvironment = {
-                                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                                  };
-                                                  importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}`
+                                                        self.MonacoEnvironment = {
+                                                            baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                                        };
+                                                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}`
         }
       }
       
@@ -306,18 +306,7 @@
         })
       
         window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
-          value: `console.log('Hello, World!');
-                              
-                              function greet(name) {
-                                  console.log('Hello, ' + name + '!');
-                              }
-                              greet('ChatGPT');
-                              
-                              const answer = prompt("Who are you?");
-                              console.log('Answer:', answer);
-                              
-                              const age = prompt("How old are you?");
-                              console.log("Age:", age);`,
+          value: `console.log('Hello, World!');`,
           language: 'javascript',
           theme: 'custom-dark',
           automaticLayout: true,
@@ -380,7 +369,7 @@
       
       const worker = new Worker("{% url 'betzi_test_js' %}")
       
-      const sharedBuffer = new SharedArrayBuffer(1024) // Ensure size can hold the signal and response
+      const sharedBuffer = new SharedArrayBuffer(1024)
       const view = new Int32Array(sharedBuffer)
       
       const handlePrompt = (msg) => {
@@ -398,15 +387,13 @@
               const value = input.value.trim()
               promptMsg.textContent = `[PROMPT] ${msg} ${value}`
               input.remove()
-      
-              // Encode response into the shared buffer
               const textEncoder = new TextEncoder()
-              const encodedResponse = textEncoder.encode(value + '\0') // Null-terminate
+              const encodedResponse = textEncoder.encode(value + '\0')
               const responseBuffer = new Uint8Array(sharedBuffer, 4)
-              responseBuffer.fill(0) // Clear previous content
+              responseBuffer.fill(0)
               responseBuffer.set(encodedResponse)
       
-              Atomics.store(view, 0, 1) // Signal worker
+              Atomics.store(view, 0, 1)
               Atomics.notify(view, 0)
       
               resolve()
