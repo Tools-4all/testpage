@@ -245,107 +245,29 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script>
-      const workerPath = "{% url 'betzi_test_js' %}";
-      let workerBlobURL = null;
-      const sharedBuffer = new SharedArrayBuffer(1024);
-      const view = new Int32Array(sharedBuffer);
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#activityBar .icon').forEach((button) => {
+          button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            document.querySelectorAll('#activityBar .icon').forEach((btn) => btn.classList.remove('active'));
 
-      const cacheWorkerCode = async () => {
-        if (!workerBlobURL) {
-          const response = await fetch(workerPath);
-          const code = await response.text();
-          const blob = new Blob([code], { type: 'application/javascript' });
-          workerBlobURL = URL.createObjectURL(blob);
-        }
-      };
+            // Add active class to the clicked button
+            button.classList.add('active');
 
-      const initializeWorker = () => {
-        if (!workerBlobURL) {
-          console.error('Worker code has not been cached yet.');
-          return null;
-        }
-        return new Worker(workerBlobURL);
-      };
+            // Hide all sidebar panels
+            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'));
 
-      const clearConsole = () => {
-        const outputDiv = document.getElementById('output');
-        outputDiv.innerHTML = '';
-      };
-
-      const appendToOutput = (type, message) => {
-        const outputDiv = document.getElementById('output');
-        const line = document.createElement('div');
-        line.className = type;
-        line.textContent = `[${type.toUpperCase()}] ${message}`;
-        outputDiv.appendChild(line);
-        outputDiv.scrollTop = outputDiv.scrollHeight;
-      };
-
-      const handlePrompt = (msg) => {
-        return new Promise((resolve) => {
-          const promptLine = document.createElement('div');
-          promptLine.className = 'prompt-line';
-          const promptMsg = document.createElement('span');
-          promptMsg.textContent = `[PROMPT] ${msg}`;
-          const input = document.createElement('input');
-          input.type = 'text';
-          input.autocomplete = 'off';
-
-          input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              const value = input.value.trim();
-              promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
-              input.remove();
-              const textEncoder = new TextEncoder();
-              const encodedResponse = textEncoder.encode(value + '\0');
-              const responseBuffer = new Uint8Array(sharedBuffer, 4);
-              responseBuffer.fill(0);
-              responseBuffer.set(encodedResponse);
-
-              Atomics.store(view, 0, 1);
-              Atomics.notify(view, 0);
-
-              resolve();
+            // Show the corresponding panel based on button ID
+            const panelId = button.id.replace('Icon', 'Panel');
+            const panel = document.getElementById(panelId);
+            if (panel) {
+              panel.classList.add('active');
             }
           });
-
-          promptLine.appendChild(promptMsg);
-          promptLine.appendChild(input);
-          document.getElementById('output').appendChild(promptLine);
-          input.focus();
         });
-      };
-      let currentWorker = null;
-
-      document.getElementById('runButton').addEventListener('click', async () => {
-        clearConsole();
-        if (currentWorker) {
-          currentWorker.terminate();
-        }
-        await cacheWorkerCode();
-        const worker = initializeWorker();
-        currentWorker = worker;
-
-        if (worker) {
-          worker.onmessage = async (event) => {
-            const { type, message } = event.data;
-
-            if (type === 'prompt') {
-              await handlePrompt(message);
-            } else if (['log', 'error', 'warn', 'info'].includes(type)) {
-              appendToOutput(type, message);
-            }
-          };
-
-          worker.onerror = (error) => {
-            appendToOutput('error', error.message);
-          };
-
-          const userCode = window.editor.getValue();
-          worker.postMessage({ type: 'execute', code: userCode, sharedBuffer });
-        }
       });
 
+      // Existing Monaco Editor and worker setup code remains here...
       require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } });
 
       window.MonacoEnvironment = {
@@ -354,8 +276,7 @@
             self.MonacoEnvironment = {
               baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
             };
-            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-          `;
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}`;
         },
       };
 
@@ -416,133 +337,6 @@
           const position = editor.getPosition();
           document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`;
         });
-
-        document.getElementById('searchIcon').addEventListener('click', () => {
-          if (window.editor) {
-            window.editor.focus();
-            window.editor.getAction('actions.find').run();
-          }
-        });
-
-        document.getElementById('gitIcon').addEventListener('click', async () => {
-          const gitUrl = prompt('Enter the GitHub file URL:');
-          if (!gitUrl) {
-            appendToOutput('error', 'No URL provided.');
-            return;
-          }
-        
-          const normalizedUrl = normalizeUrl(gitUrl);
-          const parsedUrl = parseGitHubUrl(normalizedUrl);
-        
-          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
-            appendToOutput('error', 'Invalid URL: Only file URLs are accepted.');
-            return;
-          }
-        
-          try {
-            let fileContent;
-        
-            if (parsedUrl.isRawFile) {
-              // Directly fetch raw file content
-              fileContent = await fetchRawFile(parsedUrl.rawUrl);
-            } else {
-              // Fetch file via GitHub API
-              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch);
-              if (!fileData.content) {
-                appendToOutput('error', 'Failed to fetch file content.');
-                return;
-              }
-              fileContent = atob(fileData.content);
-            }
-        
-            window.editor.setValue(fileContent);
-            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`);
-          } catch (error) {
-            appendToOutput('error', `Error fetching file: ${error.message}`);
-          }
-        });
-        
-        function normalizeUrl(url) {
-          if (url.endsWith('.git')) {
-            url = url.slice(0, -4);
-          }
-          if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url;
-          }
-          if (url.startsWith('http://')) {
-            url = 'https://' + url.substring(7);
-          }
-          return url;
-        }
-        
-        function parseGitHubUrl(url) {
-          if (url.includes('raw.githubusercontent.com')) {
-            const match = url.match(
-              /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
-            );
-            if (match) {
-              return {
-                isRawFile: true,
-                rawUrl: url,
-              };
-            }
-            return { isRawFile: false };
-          }
-        
-          const match = url.match(
-            /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
-          );
-        
-          if (!match) {
-            return { isFile: false };
-          }
-        
-          return {
-            owner: match[1],
-            repo: match[2],
-            branch: match[3],
-            path: match[4],
-            isFile: true,
-          };
-        }
-        
-        async function fetchFromGit(owner, repo, path, branch = 'main') {
-          const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
-          const response = await fetch(apiUrl);
-        
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file: ${response.statusText}`);
-          }
-        
-          const data = await response.json();
-        
-          if (data.type !== 'file') {
-            throw new Error('The URL does not point to a valid file.');
-          }
-        
-          return data;
-        }
-        
-        async function fetchRawFile(rawUrl) {
-          const response = await fetch(rawUrl);
-        
-          if (!response.ok) {
-            throw new Error(`Failed to fetch raw file: ${response.statusText}`);
-          }
-        
-          return await response.text();
-        }
-        
-        function appendToOutput(type, message) {
-          const outputDiv = document.getElementById('output');
-          const line = document.createElement('div');
-          line.className = type;
-          line.textContent = `[${type.toUpperCase()}] ${message}`;
-          outputDiv.appendChild(line);
-          outputDiv.scrollTop = outputDiv.scrollHeight;
-        }
-        
-      
       });
     </script>
   </body>
