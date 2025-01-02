@@ -10,7 +10,6 @@ class myPrompt {
         this.waiting = true;
 
         const view = new Int32Array(sharedBuffer);
-        const responseBuffer = new Uint8Array(sharedBuffer, 4);
 
         // Reset signal before waiting
         Atomics.store(view, 0, 0);
@@ -19,8 +18,10 @@ class myPrompt {
         while (Atomics.wait(view, 0, 0) === "ok");
 
         // Decode the response
+        const responseBuffer = new Uint8Array(sharedBuffer, 4); // Shared buffer view
+        const regularBuffer = new Uint8Array(responseBuffer); // Copy to regular buffer
         const textDecoder = new TextDecoder();
-        this.response = textDecoder.decode(responseBuffer).replace(/\0/g, ""); // Remove null terminators
+        this.response = textDecoder.decode(regularBuffer).replace(/\0/g, ""); // Remove null terminators
 
         // Reset signal after processing response
         Atomics.store(view, 0, 0);
@@ -32,6 +33,7 @@ class myPrompt {
         return this.response;
     }
 }
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
