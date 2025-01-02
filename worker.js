@@ -45,24 +45,33 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                // Wrap the user code in an IIFE for isolation
+                // Wrap user code with strict mode and restrict global access
                 const wrappedCode = `
                     "use strict";
                     const console = customConsole;
                     const prompt = customPrompt;
                     const self = undefined; // Prevent access to worker's global scope
-                    const postMessage = undefined; // Block postMessage from user code
+                    const postMessage = undefined; // Block access to postMessage
                     (() => {
                         ${userCode}
                     })();
                 `;
-                const userFunc = new Function("console", "prompt", wrappedCode);
+
+                // Create a function in an isolated context
+                const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
+
+                // Execute the function with restricted global access
                 userFunc(customConsole, customPrompt);
             } catch (e) {
+                // Send execution errors back to the main thread
                 customConsole.error(e.message);
             }
         };
 
-        executeCode(code);
+        try {
+            executeCode(code);
+        } catch (e) {
+            self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
+        }
     }
 });
