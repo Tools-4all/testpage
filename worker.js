@@ -30,6 +30,7 @@ class myPrompt {
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
+    console.log("recived messege", type, code, sharedBuffer)
     if (type === "execute") {
         const customConsole = {
             log: (...args) => self.postMessage({ type: "log", message: args.join(" ") }),
