@@ -1,7 +1,7 @@
 let currentPrompt;
 
 class myPrompt {
-    constructor(msg="") {
+    constructor(msg = "") {
         this.msg = msg;
         this.response = null;
         this.waiting = false;
@@ -12,12 +12,14 @@ class myPrompt {
         this.waiting = true;
 
         const view = new Int32Array(sharedBuffer);
-        Atomics.store(view, 0, 0);
+        Atomics.store(view, 0, 0); // Reset signal
 
+        // Wait for main thread to signal with the response
         while (Atomics.wait(view, 0, 0));
 
+        const responseBuffer = new Uint8Array(sharedBuffer, 4);
         const textDecoder = new TextDecoder();
-        this.response = textDecoder.decode(sharedBuffer.slice(4));
+        this.response = textDecoder.decode(responseBuffer);
         this.waiting = false;
     }
 
