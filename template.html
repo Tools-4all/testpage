@@ -423,6 +423,125 @@
             window.editor.getAction('actions.find').run();
           }
         });
+
+        document.getElementById('gitIcon').addEventListener('click', async () => {
+          const gitUrl = prompt('Enter the GitHub file URL:');
+          if (!gitUrl) {
+            appendToOutput('error', 'No URL provided.');
+            return;
+          }
+        
+          const normalizedUrl = normalizeUrl(gitUrl);
+          const parsedUrl = parseGitHubUrl(normalizedUrl);
+        
+          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
+            appendToOutput('error', 'Invalid URL: Only file URLs are accepted.');
+            return;
+          }
+        
+          try {
+            let fileContent;
+        
+            if (parsedUrl.isRawFile) {
+              // Directly fetch raw file content
+              fileContent = await fetchRawFile(parsedUrl.rawUrl);
+            } else {
+              // Fetch file via GitHub API
+              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch);
+              if (!fileData.content) {
+                appendToOutput('error', 'Failed to fetch file content.');
+                return;
+              }
+              fileContent = atob(fileData.content);
+            }
+        
+            window.editor.setValue(fileContent);
+            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`);
+          } catch (error) {
+            appendToOutput('error', `Error fetching file: ${error.message}`);
+          }
+        });
+        
+        function normalizeUrl(url) {
+          if (url.endsWith('.git')) {
+            url = url.slice(0, -4);
+          }
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+          if (url.startsWith('http://')) {
+            url = 'https://' + url.substring(7);
+          }
+          return url;
+        }
+        
+        function parseGitHubUrl(url) {
+          if (url.includes('raw.githubusercontent.com')) {
+            const match = url.match(
+              /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
+            );
+            if (match) {
+              return {
+                isRawFile: true,
+                rawUrl: url,
+              };
+            }
+            return { isRawFile: false };
+          }
+        
+          const match = url.match(
+            /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
+          );
+        
+          if (!match) {
+            return { isFile: false };
+          }
+        
+          return {
+            owner: match[1],
+            repo: match[2],
+            branch: match[3],
+            path: match[4],
+            isFile: true,
+          };
+        }
+        
+        async function fetchFromGit(owner, repo, path, branch = 'main') {
+          const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+          const response = await fetch(apiUrl);
+        
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file: ${response.statusText}`);
+          }
+        
+          const data = await response.json();
+        
+          if (data.type !== 'file') {
+            throw new Error('The URL does not point to a valid file.');
+          }
+        
+          return data;
+        }
+        
+        async function fetchRawFile(rawUrl) {
+          const response = await fetch(rawUrl);
+        
+          if (!response.ok) {
+            throw new Error(`Failed to fetch raw file: ${response.statusText}`);
+          }
+        
+          return await response.text();
+        }
+        
+        function appendToOutput(type, message) {
+          const outputDiv = document.getElementById('output');
+          const line = document.createElement('div');
+          line.className = type;
+          line.textContent = `[${type.toUpperCase()}] ${message}`;
+          outputDiv.appendChild(line);
+          outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+        
       
       });
     </script>
