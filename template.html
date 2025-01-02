@@ -192,43 +192,20 @@
   </head>
   <body>
     <div id="activityBar">
-      <div class="icon active" id="explorerIcon" data-target="explorerPanel">
-        <i class="fas fa-folder"></i>
-      </div>
       <div class="icon" id="searchIcon" data-target="searchPanel">
         <i class="fas fa-search"></i>
       </div>
       <div class="icon" id="gitIcon" data-target="gitPanel">
         <i class="fas fa-code-branch"></i>
       </div>
-      <div class="icon" id="extensionsIcon" data-target="extensionsPanel">
-        <i class="fas fa-puzzle-piece"></i>
-      </div>
     </div>
-
-    <div id="explorerPanel" class="sidebar-panel active">
-      <ul>
-        <li>
-          <i class="fas fa-file"></i> index.js
-        </li>
-        <li>
-          <i class="fas fa-file"></i> script.js
-        </li>
-        <li>
-          <i class="fas fa-file"></i> style.css
-        </li>
-      </ul>
-    </div>
+    
     <div id="searchPanel" class="sidebar-panel">
       <input type="text" placeholder="Search...">
     </div>
     <div id="gitPanel" class="sidebar-panel">
       <p>No repository found.</p>
     </div>
-    <div id="extensionsPanel" class="sidebar-panel">
-      <p>No extensions installed.</p>
-    </div>
-
     <div id="mainContainer">
       <div id="editorAndOutput">
         <div id="editorContainer"></div>
