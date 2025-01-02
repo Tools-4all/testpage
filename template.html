@@ -272,8 +272,8 @@
         color: #d4d4d4;
         user-select: none;
         z-index: 1000;
-        position: fixed;
-        top: 0;
+        position: fixed; /* Keep it fixed at the top */
+        top: 0; /* Stick to the top */
         left: 0;
         right: 0;
       }
@@ -291,7 +291,7 @@
       }
       
       #vscodeNavBar .vscode-dropdown-menu {
-        position: absolute; /* Ensure it overlays */
+        position: absolute;
         background-color: #1e1e1e;
         border: 1px solid #333;
         border-radius: 4px;
