@@ -338,26 +338,23 @@
     </style>
   </head>
   <body>
-
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
-        File
-        <div class="vs-navbar-dropdown" id="fileDropdown">
+        File<div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item">New File</div>
           <div class="vs-navbar-dropdown-item">Open File</div>
           <div class="vs-navbar-dropdown-item">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
-        Edit
-        <div class="vs-navbar-dropdown" id="editDropdown">
+        Edit<div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item">Undo</div>
           <div class="vs-navbar-dropdown-item">Redo</div>
           <div class="vs-navbar-dropdown-item">Find</div>
         </div>
       </div>
     </div>
-    
+
     <div id="activityBar">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -408,6 +405,7 @@
       let workerBlobURL = null
       const sharedBuffer = new SharedArrayBuffer(1024)
       const view = new Int32Array(sharedBuffer)
+      let activeDropdown = null
       
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
@@ -510,11 +508,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                    self.MonacoEnvironment = {
-                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                    };
-                                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                                  `
+                                          self.MonacoEnvironment = {
+                                            baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                          };
+                                          importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                                        `
         }
       }
       
@@ -737,33 +735,49 @@
             loadGitButton.disabled = false
           }
         })
-
+      
         document.querySelectorAll('.vs-navbar-item').forEach((item) => {
           item.addEventListener('click', (event) => {
-            const dropdownId = event.currentTarget.getAttribute('data-dropdown');
-            const dropdown = document.getElementById(dropdownId);
-        
+            const dropdownId = event.currentTarget.getAttribute('data-dropdown')
+            const dropdown = document.getElementById(dropdownId)
+      
             // Close all dropdowns
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active');
-            });
-        
+              dropdown.classList.remove('active')
+            })
+      
             // Toggle the current dropdown
             if (dropdown) {
-              dropdown.classList.toggle('active');
+              dropdown.classList.toggle('active')
+              activeDropdown = dropdown.classList.contains('active') ? dropdown : null
             }
-          });
-        });
-        
+          })
+      
+          item.addEventListener('mouseover', (event) => {
+            if (activeDropdown) {
+              // Switch to the hovered dropdown if one is active
+              const dropdownId = event.currentTarget.getAttribute('data-dropdown')
+              const dropdown = document.getElementById(dropdownId)
+      
+              // Close the currently active dropdown
+              if (activeDropdown !== dropdown) {
+                activeDropdown.classList.remove('active')
+                dropdown.classList.add('active')
+                activeDropdown = dropdown
+              }
+            }
+          })
+        })
+      
         // Close dropdowns if clicking outside
         document.addEventListener('click', (event) => {
           if (!event.target.closest('.vs-navbar-item')) {
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active');
-            });
+              dropdown.classList.remove('active')
+            })
+            activeDropdown = null // Reset active dropdown
           }
-        });
-        
+        })
       })
     </script>
   </body>
