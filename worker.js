@@ -1,18 +1,18 @@
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js")
 
 
-require.config({
-    paths: {
-        lodash: "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min"
-    }
-});
+// require.config({
+//     paths: {
+//         lodash: "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min"
+//     }
+// });
 
-console.log("loaded")
-require(['lodash'], (lodash) => {
-    console.log("lodash loaded")
-    const result = lodash.chunk([1, 2, 3, 4, 5, 6], 2);
-    console.log("results", result);
-});
+// console.log("loaded")
+// require(['lodash'], (lodash) => {
+//     console.log("lodash loaded")
+//     const result = lodash.chunk([1, 2, 3, 4, 5, 6], 2);
+//     console.log("results", result);
+// });
 
 class myPrompt {
     constructor(msg = "") {
