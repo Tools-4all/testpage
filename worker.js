@@ -49,18 +49,17 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                const isolatedFunction = new Function(`
-                    "use strict";
-                    const self = undefined;
-                    const postMessage = undefined;
-                    ${userCode}
-                `);
-                isolatedFunction();
+                const wrappedCode = `
+                    (() => {
+                        ${userCode}
+                    })();
+                `;
+                const userFunc = new Function("console", "prompt", wrappedCode);
+                userFunc(customConsole, customPrompt);
             } catch (e) {
-                self.postMessage({ type: "error", message: e.message });
+                customConsole.error(e.message);
             }
         };
-        
 
         executeCode(code);
     }
