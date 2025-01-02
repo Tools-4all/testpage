@@ -1,4 +1,5 @@
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -244,8 +245,10 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script>
-      const workerPath = "{% url 'betzi_test_js' %}"
+      const workerPath = "{% url 'betzi_test_js' %}";
       let workerBlobURL = null;
+      const sharedBuffer = new SharedArrayBuffer(1024);
+      const view = new Int32Array(sharedBuffer);
 
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
@@ -278,15 +281,53 @@
         outputDiv.scrollTop = outputDiv.scrollHeight;
       };
 
+      const handlePrompt = (msg) => {
+        return new Promise((resolve) => {
+          const promptLine = document.createElement('div');
+          promptLine.className = 'prompt-line';
+          const promptMsg = document.createElement('span');
+          promptMsg.textContent = `[PROMPT] ${msg}`;
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.autocomplete = 'off';
+
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              const value = input.value.trim();
+              promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
+              input.remove();
+              const textEncoder = new TextEncoder();
+              const encodedResponse = textEncoder.encode(value + '\0');
+              const responseBuffer = new Uint8Array(sharedBuffer, 4);
+              responseBuffer.fill(0);
+              responseBuffer.set(encodedResponse);
+
+              Atomics.store(view, 0, 1);
+              Atomics.notify(view, 0);
+
+              resolve();
+            }
+          });
+
+          promptLine.appendChild(promptMsg);
+          promptLine.appendChild(input);
+          document.getElementById('output').appendChild(promptLine);
+          input.focus();
+        });
+      };
+
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole();
         await cacheWorkerCode();
         const worker = initializeWorker();
 
         if (worker) {
-          worker.onmessage = (event) => {
+          worker.onmessage = async (event) => {
             const { type, message } = event.data;
-            if (['log', 'error', 'warn', 'info'].includes(type)) {
+
+            if (type === 'prompt') {
+              await handlePrompt(message);
+            } else if (['log', 'error', 'warn', 'info'].includes(type)) {
               appendToOutput(type, message);
             }
           };
@@ -296,7 +337,7 @@
           };
 
           const userCode = window.editor.getValue();
-          worker.postMessage({ type: 'execute', code: userCode });
+          worker.postMessage({ type: 'execute', code: userCode, sharedBuffer });
         }
       });
 
