@@ -244,7 +244,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
     <script>
-      const workerPath = "{% static 'js/jsCompilerWorker.js' %}";
+      const workerPath = "{% url 'betzi_test_js' %}"
       let workerBlobURL = null;
 
       const cacheWorkerCode = async () => {
