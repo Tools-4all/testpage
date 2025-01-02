@@ -11,14 +11,13 @@ class myPrompt {
         self.postMessage({ type: "prompt", message: msg });
         this.waiting = true;
 
-        // Wait for the main thread to write the response to the shared buffer
         const view = new Int32Array(sharedBuffer);
-        Atomics.store(view, 0, 0); // Reset the shared buffer
+        Atomics.store(view, 0, 0);
 
-        while (Atomics.wait(view, 0, 0)); // Wait until the main thread signals
+        while (Atomics.wait(view, 0, 0));
 
         const textDecoder = new TextDecoder();
-        this.response = textDecoder.decode(sharedBuffer.slice(4)); // Read response
+        this.response = textDecoder.decode(sharedBuffer.slice(4));
         this.waiting = false;
     }
 
