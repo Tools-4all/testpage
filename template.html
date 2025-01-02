@@ -220,7 +220,8 @@
       </ul>
     </div>
     <div id="searchPanel" class="sidebar-panel">
-      <input type="text" placeholder="Search..." />
+      {% comment %} dispatch cctrl + f event {% endcomment %}
+      <input type="text" placeholder="Search..." / onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: 'f', ctrlKey: true}))">
     </div>
     <div id="gitPanel" class="sidebar-panel">
       <p>No repository found.</p>
