@@ -275,6 +275,7 @@
         left: 0;
         width: 100%; /* Stretch across the width of the screen */
         z-index: 1000; /* Place it above all other content */
+        padding-left: 50px; /* Add space to the left for the logo */
       }
       
       .vs-navbar-item {
@@ -315,6 +316,23 @@
         background-color: #444;
         color: #ffffff;
       }
+
+      .vs-logo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 30px; /* Adjust to match the VS Code icon size */
+        width: 30px; /* Ensure it's square like VS Code */
+        margin: 5px; /* Optional: Add spacing around the icon */
+        z-index: 1010; /* Ensure it stays on top of other elements */
+      }
+      
+      .vs-logo img {
+        height: 100%;
+        width: 100%;
+        object-fit: cover; /* Maintain aspect ratio and cover the area */
+        border-radius: 4px; /* Optional: Add rounded corners */
+      }
       
       @media (max-width: 768px) {
         #activityBar {
@@ -338,8 +356,10 @@
     </style>
   </head>
   <body>
+    <div class="vs-logo">
+      <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
+    </div>
     <div class="vs-navbar">
-      <img src="{% static 'site_images/jseditor.webp' %}" alt="JS Editor" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: -1; opacity: 0.1;" />
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File<div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item">New File</div>
