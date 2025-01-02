@@ -196,7 +196,7 @@
         <i class="fas fa-folder"></i>
       </div>
       <div class="icon" id="searchIcon">
-        <i class="fas fa-search"></i>
+        <i class="fas fa-search" onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: 'f', ctrlKey: true}))"></i>
       </div>
       <div class="icon" id="gitIcon">
         <i class="fas fa-code-branch"></i>
@@ -220,7 +220,7 @@
       </ul>
     </div>
     <div id="searchPanel" class="sidebar-panel">
-      <input type="text" placeholder="Search..." onclick="document.dispatchEvent(new KeyboardEvent('keydown', {key: 'f', ctrlKey: true}))">
+      <input type="text" placeholder="Search...">
     </div>
     <div id="gitPanel" class="sidebar-panel">
       <p>No repository found.</p>
