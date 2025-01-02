@@ -506,12 +506,22 @@
             window.editor.getAction('actions.find').run()
           }
         })
+
+        const gitInp = document.getElementById("gitUrl")
+
+        function gitUrlErr() {
+          gitInp.style.borderColor = 'red'
+          setTimeout(() => {
+            gitInp.style.borderColor = ''
+          }, 2000)
+        }
       
         document.getElementById('loadGitButton').addEventListener('click', async () => {
-          const gitUrl = document.getElementById('gitUrl').value.trim()
+          const gitUrl = gitInp.value.trim()
       
           if (!gitUrl) {
             appendToOutput('error', 'No URL provided.')
+            gitUrlErr()
             return
           }
 
@@ -519,6 +529,7 @@
             new URL(gitUrl);
           } catch (error) {
             appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
+            gitUrlErr()
             return
           }
       
@@ -527,6 +538,7 @@
       
           if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
             appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
+            gitUrlErr()
             return
           }
       
@@ -539,6 +551,7 @@
               const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
               if (!fileData.content) {
                 appendToOutput('error', 'Failed to fetch file content.')
+                gitUrlErr()
                 return
               }
               fileContent = atob(fileData.content)
@@ -634,7 +647,7 @@
           });
         });
 
-        document.getElementById("gitUrl").addEventListener("keydown", (e) => {
+        gitInp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             document.getElementById("loadGitButton").click();
           }
