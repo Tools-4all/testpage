@@ -82,6 +82,7 @@
         flex-direction: column;
         flex: 1;
         overflow: hidden;
+        margin-top: 30px;
       }
       
       #tabBar {
@@ -271,6 +272,10 @@
         color: #d4d4d4;
         user-select: none;
         z-index: 1000;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
       }
       
       #vscodeNavBar .vscode-menu-item {
@@ -286,7 +291,7 @@
       }
       
       #vscodeNavBar .vscode-dropdown-menu {
-        position: absolute;
+        position: absolute; /* Ensure it overlays */
         background-color: #1e1e1e;
         border: 1px solid #333;
         border-radius: 4px;
@@ -335,7 +340,6 @@
     </style>
   </head>
   <body>
-
     <div id="vscodeNavBar">
       <div class="vscode-menu-item" data-menu="file">File</div>
       <div class="vscode-menu-item" data-menu="edit">Edit</div>
@@ -493,11 +497,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                          self.MonacoEnvironment = {
-                                            baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                          };
-                                          importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                                        `
+                                                self.MonacoEnvironment = {
+                                                  baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                                };
+                                                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                                              `
         }
       }
       
