@@ -204,7 +204,8 @@
     </div>
     
     <div id="gitPanel" class="sidebar-panel">
-      <p>No repository found.</p>
+      <input type="text" id="gitUrl" placeholder="Enter GitHub file URL" />
+      <button id="loadGitButton">Load</button>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
       <p>No settings found.</p>
@@ -404,8 +405,9 @@
           }
         });
 
-        document.getElementById('gitIcon').addEventListener('click', async () => {
-          const gitUrl = prompt('Enter the GitHub file URL:');
+        document.getElementById('loadGitButton').addEventListener('click', async () => {
+          const gitUrl = document.getElementById('gitUrl').value.trim();
+
           if (!gitUrl) {
             appendToOutput('error', 'No URL provided.');
             return;
@@ -423,10 +425,8 @@
             let fileContent;
         
             if (parsedUrl.isRawFile) {
-              // Directly fetch raw file content
               fileContent = await fetchRawFile(parsedUrl.rawUrl);
             } else {
-              // Fetch file via GitHub API
               const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch);
               if (!fileData.content) {
                 appendToOutput('error', 'Failed to fetch file content.');
