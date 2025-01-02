@@ -71,7 +71,7 @@
         padding: 10px;
         display: none;
         flex-shrink: 0;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease
       }
       .sidebar-panel.active {
         display: block;
@@ -224,7 +224,8 @@
         width: 100%;
         height: 100%;
       }
-      
+
+
       #gitUrl {
         width: 100%;
         padding: 8px 10px;
@@ -260,7 +261,6 @@
         background-color: #005f99;
       }
       
-      
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -283,11 +283,6 @@
     </style>
   </head>
   <body>
-    <div id="vscodeNavBar">
-      <div class="vscode-menu-item" data-menu="file">File</div>
-      <div class="vscode-menu-item" data-menu="edit">Edit</div>
-    </div>
-
     <div id="activityBar">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -440,11 +435,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                    self.MonacoEnvironment = {
-                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                    };
-                                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                                  `
+                              self.MonacoEnvironment = {
+                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                              };
+                              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                            `
         }
       }
       
@@ -511,9 +506,9 @@
             window.editor.getAction('actions.find').run()
           }
         })
-      
-        const gitInp = document.getElementById('gitUrl')
-      
+
+        const gitInp = document.getElementById("gitUrl")
+
         function gitUrlErr() {
           gitInp.style.borderColor = 'red'
           setTimeout(() => {
@@ -529,9 +524,9 @@
             gitUrlErr()
             return
           }
-      
+
           try {
-            new URL(gitUrl)
+            new URL(gitUrl);
           } catch (error) {
             appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
             gitUrlErr()
@@ -636,37 +631,39 @@
           return await response.text()
         }
       
-        const btnsArray = ['gitIcon', 'settingsIcon']
+        const btnsArray = ['gitIcon', 'settingsIcon'];
         btnsArray.forEach((iconId) => {
-          const icon = document.getElementById(iconId)
+          const icon = document.getElementById(iconId);
           icon.addEventListener('click', (e) => {
-            const isActive = e.currentTarget.classList.contains('active')
-            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
-            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-      
+            const isActive = e.currentTarget.classList.contains('active');
+            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'));
+            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'));
+        
             if (!isActive) {
-              e.currentTarget.classList.add('active')
-              const targetPanel = e.currentTarget.getAttribute('data-target')
-              document.getElementById(targetPanel).classList.add('active')
+              e.currentTarget.classList.add('active');
+              const targetPanel = e.currentTarget.getAttribute('data-target');
+              document.getElementById(targetPanel).classList.add('active');
             }
-          })
-        })
-      
-        const loadGitButton = document.getElementById('loadGitButton')
-      
-        gitInp.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            loadGitButton.click()
+          });
+        });
+
+        const loadGitButton  = document.getElementById("loadGitButton");
+
+        gitInp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            loadGitButton.click();
           }
-        })
-      
-        gitInp.addEventListener('input', () => {
+        });
+
+
+        gitInp.addEventListener("input", () => {
           if (!gitInp.value.trim()) {
-            loadGitButton.disabled = true
+            loadGitButton.disabled = true;
           } else {
-            loadGitButton.disabled = false
+            loadGitButton.disabled = false;
           }
         })
+        
       })
     </script>
   </body>
