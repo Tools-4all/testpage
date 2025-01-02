@@ -77,14 +77,6 @@
         display: block;
       }
       
-      #mainContainer {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        overflow: hidden;
-        margin-top: 30px;
-      }
-      
       #tabBar {
         background-color: #252526;
         border-bottom: 1px solid #333;
@@ -273,9 +265,17 @@
         user-select: none;
         z-index: 1000;
         position: fixed; /* Keep it fixed at the top */
-        top: 0; /* Stick to the top */
+        top: 0;
         left: 0;
         right: 0;
+      }
+      
+      #mainContainer {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        overflow: hidden;
+        margin-top: 30px; /* Offset for the navbar height */
       }
       
       #vscodeNavBar .vscode-menu-item {
@@ -283,6 +283,7 @@
         cursor: pointer;
         padding: 0 10px;
         transition: background-color 0.2s;
+        position: relative;
       }
       
       #vscodeNavBar .vscode-menu-item:hover {
@@ -497,11 +498,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                                                self.MonacoEnvironment = {
-                                                  baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                                                };
-                                                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                                              `
+                                                            self.MonacoEnvironment = {
+                                                              baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                                                            };
+                                                            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                                                          `
         }
       }
       
@@ -765,32 +766,24 @@
         })
       
         // Toggle dropdown visibility
-        document.querySelectorAll('#vscodeNavBar .vscode-menu-item').forEach(item => {
-          item.addEventListener('click', e => {
-            const menuKey = e.target.getAttribute('data-menu');
-            const dropdown = document.querySelector(`.vscode-dropdown-menu[data-menu="${menuKey}"]`);
-        
-            // Close all other dropdowns
-            document.querySelectorAll('.vscode-dropdown-menu').forEach(d => d.classList.remove('active'));
-        
-            if (dropdown) {
-              const rect = e.target.getBoundingClientRect();
-              dropdown.style.top = `${rect.bottom}px`; // Position below the menu item
-              dropdown.style.left = `${rect.left}px`; // Align with the menu item
-              dropdown.classList.add('active');
-            }
-          });
-        });
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', e => {
-          if (!e.target.closest('#vscodeNavBar') && !e.target.closest('.vscode-dropdown-menu')) {
-            document.querySelectorAll('.vscode-dropdown-menu').forEach(d => d.classList.remove('active'));
-          }
-        });
-        
+        document.querySelectorAll('#vscodeNavBar .vscode-menu-item').forEach((item) => {
+          item.addEventListener('click', (e) => {
+            const menuKey = e.target.getAttribute('data-menu')
+            const dropdown = document.querySelector(`.vscode-dropdown-menu[data-menu="${menuKey}"]`)
       
-        // Close dropdown on outside click
+            // Close all other dropdowns
+            document.querySelectorAll('.vscode-dropdown-menu').forEach((d) => d.classList.remove('active'))
+      
+            if (dropdown) {
+              const rect = e.target.getBoundingClientRect()
+              dropdown.style.top = `${rect.bottom}px` // Position below the menu item
+              dropdown.style.left = `${rect.left}px` // Align with the menu item
+              dropdown.classList.add('active')
+            }
+          })
+        })
+      
+        // Close dropdowns when clicking outside
         document.addEventListener('click', (e) => {
           if (!e.target.closest('#vscodeNavBar') && !e.target.closest('.vscode-dropdown-menu')) {
             document.querySelectorAll('.vscode-dropdown-menu').forEach((d) => d.classList.remove('active'))
