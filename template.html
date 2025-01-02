@@ -434,22 +434,29 @@
           const normalizedUrl = normalizeUrl(gitUrl);
           const parsedUrl = parseGitHubUrl(normalizedUrl);
         
-          if (!parsedUrl.isFile) {
+          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
             appendToOutput('error', 'Invalid URL: Only file URLs are accepted.');
             return;
           }
         
           try {
-            const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch);
-            if (!fileData.content) {
-              appendToOutput('error', 'Failed to fetch file content.');
-              return;
+            let fileContent;
+        
+            if (parsedUrl.isRawFile) {
+              // Directly fetch raw file content
+              fileContent = await fetchRawFile(parsedUrl.rawUrl);
+            } else {
+              // Fetch file via GitHub API
+              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch);
+              if (!fileData.content) {
+                appendToOutput('error', 'Failed to fetch file content.');
+                return;
+              }
+              fileContent = atob(fileData.content);
             }
         
-            // Decode Base64 content
-            const fileContent = atob(fileData.content);
             window.editor.setValue(fileContent);
-            appendToOutput('info', `File loaded successfully: ${parsedUrl.path}`);
+            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`);
           } catch (error) {
             appendToOutput('error', `Error fetching file: ${error.message}`);
           }
@@ -469,6 +476,19 @@
         }
         
         function parseGitHubUrl(url) {
+          if (url.includes('raw.githubusercontent.com')) {
+            const match = url.match(
+              /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
+            );
+            if (match) {
+              return {
+                isRawFile: true,
+                rawUrl: url,
+              };
+            }
+            return { isRawFile: false };
+          }
+        
           const match = url.match(
             /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
           );
@@ -501,6 +521,16 @@
           }
         
           return data;
+        }
+        
+        async function fetchRawFile(rawUrl) {
+          const response = await fetch(rawUrl);
+        
+          if (!response.ok) {
+            throw new Error(`Failed to fetch raw file: ${response.statusText}`);
+          }
+        
+          return await response.text();
         }
         
         function appendToOutput(type, message) {
