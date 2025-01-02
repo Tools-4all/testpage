@@ -421,7 +421,7 @@ const handlePrompt = (msg) => {
 
 worker.onmessage = async (event) => {
     const { type, message } = event.data;
-
+    console.log("recived messege", type, message)
     if (type === "prompt") {
         await handlePrompt(message);
     } else if (["log", "error", "warn", "info"].includes(type)) {
