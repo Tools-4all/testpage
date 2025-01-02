@@ -47,7 +47,6 @@ self.addEventListener("message", (event) => {
             try {
                 const isolatedFunction = new Function(`
                     "use strict";
-                    const console = undefined;
                     const self = undefined;
                     const postMessage = undefined;
                     ${userCode}
