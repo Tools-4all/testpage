@@ -71,6 +71,7 @@
         padding: 10px;
         display: none;
         flex-shrink: 0;
+        transition: all 0.3s ease
       }
       .sidebar-panel.active {
         display: block;
@@ -398,11 +399,11 @@
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                  self.MonacoEnvironment = {
-                    baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
-                  };
-                  importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
-                `
+                              self.MonacoEnvironment = {
+                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/'
+                              };
+                              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/base/worker/workerMain.min.js');`)}
+                            `
         }
       }
       
@@ -574,26 +575,22 @@
           return await response.text()
         }
       
-        function appendToOutput(type, message) {
-          const outputDiv = document.getElementById('output')
-          const line = document.createElement('div')
-          line.className = type
-          line.textContent = `[${type.toUpperCase()}] ${message}`
-          outputDiv.appendChild(line)
-          outputDiv.scrollTop = outputDiv.scrollHeight
-        }
-      
-        ;['gitIcon', 'settingsIcon'].forEach((icon) => {
-          icon = document.getElementById(icon)
+        const btnsArray = ['gitIcon', 'settingsIcon'];
+        btnsArray.forEach((iconId) => {
+          const icon = document.getElementById(iconId);
           icon.addEventListener('click', (e) => {
-            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
-            e.currentTarget.classList.add('active')
-      
-            const targetPanel = e.currentTarget.getAttribute('data-target')
-            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-            document.getElementById(targetPanel).classList.add('active')
-          })
-        })
+            const isActive = e.currentTarget.classList.contains('active');
+            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'));
+            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'));
+        
+            if (!isActive) {
+              e.currentTarget.classList.add('active');
+              const targetPanel = e.currentTarget.getAttribute('data-target');
+              document.getElementById(targetPanel).classList.add('active');
+            }
+          });
+        });
+        
       })
     </script>
   </body>
