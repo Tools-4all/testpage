@@ -62,6 +62,24 @@
         border-radius: 3px;
         white-space: nowrap;
       }
+
+      #activityBar.collapsed {
+        width: 20px;
+      }
+      
+      #activityBar.collapsed .icon {
+        font-size: 16px;
+        padding: 8px 0;
+      }
+      
+      #activityBar.collapsed .icon:hover:after {
+        display: none;
+      }
+      
+      #activityBar.collapsed #toggleSidebar i {
+        transform: rotate(180deg);
+      }
+      
       
       .sidebar-panel {
         width: 250px;
@@ -81,6 +99,11 @@
         flex-direction: column;
         flex: 1;
         overflow: hidden;
+        transition: margin-left 0.3s ease;
+      }
+
+      #mainContainer.collapsed {
+        margin-left: 20px;
       }
       
       #tabBar {
@@ -247,6 +270,9 @@
   </head>
   <body>
     <div id="activityBar">
+      <div id="toggleSidebar" class="icon" data-label="Collapse">
+        <i class="fas fa-angle-left"></i>
+      </div>
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
       </div>
@@ -257,6 +283,7 @@
         <i class="fas fa-cog"></i>
       </div>
     </div>
+    
 
     <div id="gitPanel" class="sidebar-panel">
       <input type="text" id="gitUrl" placeholder="Enter GitHub file URL" />
@@ -595,6 +622,24 @@
           })
         })
       })
+
+      document.getElementById('toggleSidebar').addEventListener('click', () => {
+        const activityBar = document.getElementById('activityBar');
+        const mainContainer = document.getElementById('mainContainer');
+        const toggleIcon = document.querySelector('#toggleSidebar i');
+      
+        activityBar.classList.toggle('collapsed');
+        mainContainer.classList.toggle('collapsed');
+      
+        if (activityBar.classList.contains('collapsed')) {
+          toggleIcon.classList.remove('fa-angle-left');
+          toggleIcon.classList.add('fa-angle-right');
+        } else {
+          toggleIcon.classList.remove('fa-angle-right');
+          toggleIcon.classList.add('fa-angle-left');
+        }
+      });
+      
     </script>
   </body>
 </html>
