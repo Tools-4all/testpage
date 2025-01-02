@@ -224,6 +224,42 @@
         width: 100%;
         height: 100%;
       }
+
+
+      #gitUrl {
+        width: 100%;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        background-color: #2d2d2d;
+        border: 1px solid #3c3c3c;
+        border-radius: 4px;
+        color: #d4d4d4;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      
+      #gitUrl:focus {
+        border-color: #007acc;
+      }
+      
+      #loadGitButton {
+        width: 100%;
+        padding: 8px 10px;
+        background-color: #007acc;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      
+      #loadGitButton:hover {
+        background-color: #005f99;
+      }
       
       @media (max-width: 768px) {
         #activityBar {
@@ -260,7 +296,7 @@
     </div>
 
     <div id="gitPanel" class="sidebar-panel">
-      <input type="text" id="gitUrl" placeholder="Enter GitHub file URL" />
+      <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton">Load</button>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
@@ -589,6 +625,12 @@
               document.getElementById(targetPanel).classList.add('active');
             }
           });
+        });
+
+        document.getElementById("gitUrl").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            document.getElementById("loadGitButton").click();
+          }
         });
         
       })
