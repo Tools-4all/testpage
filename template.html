@@ -647,11 +647,22 @@
           });
         });
 
+        const loadGitButton  = document.getElementById("loadGitButton");
+
         gitInp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
-            document.getElementById("loadGitButton").click();
+            loadGitButton.click();
           }
         });
+
+
+        gitInp.addEventListener("input", () => {
+          if (!gitInp.value.trim()) {
+            loadGitButton.disabled = true;
+          } else {
+            loadGitButton.disabled = false;
+          }
+        })
         
       })
     </script>
