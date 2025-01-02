@@ -26,6 +26,7 @@ class myPrompt {
 }
 
 
+
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
@@ -44,17 +45,20 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                const wrappedCode = `
-                    (() => {
-                        ${userCode}
-                    })();
-                `;
-                const userFunc = new Function("console", "prompt", wrappedCode);
-                userFunc(customConsole, customPrompt);
+                // Create a separate execution context with no access to worker globals
+                const isolatedFunction = new Function(`
+                    "use strict";
+                    const console = undefined;
+                    const self = undefined;
+                    const postMessage = undefined;
+                    ${userCode}
+                `);
+                isolatedFunction(); // Execute isolated code
             } catch (e) {
-                customConsole.error(e.message);
+                self.postMessage({ type: "error", message: e.message });
             }
         };
+
 
         executeCode(code);
     }
