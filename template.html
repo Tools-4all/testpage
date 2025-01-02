@@ -315,16 +315,16 @@
           input.focus();
         });
       };
+      let currentWorker = null;
 
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole();
+        if (currentWorker) {
+          currentWorker.terminate();
+        }
         await cacheWorkerCode();
-        window.dispatchEvent(new Event('killWorker'));
         const worker = initializeWorker();
-        window.addEventListener("killWorker", () => {
-          worker.terminate();
-          window.removeEventListener("killWorker");
-        });
+        currentWorker = worker;
 
         if (worker) {
           worker.onmessage = async (event) => {
