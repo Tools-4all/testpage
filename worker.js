@@ -1,19 +1,17 @@
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js")
 
-// Load require.js
 
-// Configure require.js
 require.config({
     paths: {
         lodash: "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min"
     }
 });
 
-// Define and require a module
+console.log("loaded")
 require(['lodash'], (lodash) => {
-    // Use lodash inside the worker
+    console.log("lodash loaded")
     const result = lodash.chunk([1, 2, 3, 4, 5, 6], 2);
-    console.log(result);
+    console.log("results", result);
 });
 
 class myPrompt {
