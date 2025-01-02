@@ -417,9 +417,12 @@
           document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`;
         });
 
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, () => {
+        document.getElementById('searchIcon').addEventListener('click', () => {
+          if (window.editor) {
+            window.editor.focus();
+            window.editor.getAction('actions.find').run();
+          }
         });
-
       
       });
     </script>
