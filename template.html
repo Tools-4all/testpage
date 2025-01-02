@@ -514,6 +514,13 @@
             appendToOutput('error', 'No URL provided.')
             return
           }
+
+          try {
+            new URL(gitUrl);
+          } catch (error) {
+            appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
+            return
+          }
       
           const normalizedUrl = normalizeUrl(gitUrl)
           const parsedUrl = parseGitHubUrl(normalizedUrl)
