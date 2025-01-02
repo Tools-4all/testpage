@@ -319,7 +319,12 @@
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole();
         await cacheWorkerCode();
+        window.dispatchEvent(new Event('killWorker'));
         const worker = initializeWorker();
+        window.addEventListener("killWorker", () => {
+          worker.terminate();
+          window.removeEventListener("killWorker");
+        });
 
         if (worker) {
           worker.onmessage = async (event) => {
