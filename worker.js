@@ -25,6 +25,11 @@ class myPrompt {
     }
 }
 
+self.fetch = undefined;
+self.XMLHttpRequest = undefined;
+self.WebSocket = undefined;
+self.importScripts = undefined
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
@@ -44,17 +49,18 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                const wrappedCode = `
-                    (() => {
-                        ${userCode}
-                    })();
-                `;
-                const userFunc = new Function("console", "prompt", wrappedCode);
-                userFunc(customConsole, customPrompt);
+                const isolatedFunction = new Function(`
+                    "use strict";
+                    const self = undefined;
+                    const postMessage = undefined;
+                    ${userCode}
+                `);
+                isolatedFunction();
             } catch (e) {
-                customConsole.error(e.message);
+                self.postMessage({ type: "error", message: e.message });
             }
         };
+        
 
         executeCode(code);
     }
