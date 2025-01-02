@@ -198,10 +198,15 @@
       <div class="icon" id="gitIcon" data-target="gitPanel">
         <i class="fas fa-code-branch"></i>
       </div>
+      <div class="icon" id="settingsIcon" data-target="settingsPanel">
+      </div>
     </div>
     
     <div id="gitPanel" class="sidebar-panel">
       <p>No repository found.</p>
+    </div>
+    <div id="settingsPanel" class="sidebar-panel">
+      <p>No settings found.</p>
     </div>
     <div id="mainContainer">
       <div id="editorAndOutput">
@@ -516,7 +521,7 @@
           outputDiv.scrollTop = outputDiv.scrollHeight;
         }
 
-        ["gitIcon"].forEach((icon) => {
+        ["gitIcon", "settingsIcon"].forEach((icon) => {
           icon = document.getElementById(icon);
           icon.addEventListener('click', (e) => {
             document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'));
