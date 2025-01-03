@@ -532,11 +532,11 @@
           return (
             'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
-                              self.MonacoEnvironment = {
-                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-                              };
-                              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-                            `)
+                                    self.MonacoEnvironment = {
+                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+                                    };
+                                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+                                  `)
           )
         }
       }
@@ -892,9 +892,11 @@
           toggleDisabled(undoBtn, !editor.getModel().canUndo())
           toggleDisabled(redoBtn, !editor.getModel().canRedo())
         }
-
-        document.getElementById('tabSizeInput').addEventListener("keydown", (e) => {
-          !["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].includes(e.key) && e.preventDefault()
+      
+        document.getElementById('tabSizeInput').addEventListener('keydown', (evt) => {
+          if ((evt.which != 8 && evt.which != 0 && evt.which < 48) || evt.which > 57) {
+            evt.preventDefault()
+          }
         })
       
         document.getElementById('tabSizeInput').addEventListener('change', () => {
