@@ -3,11 +3,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>VSCode-like Sandboxed JS Compiler</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- Updated Monaco CSS link to 0.52.2 -->
+    <link
+      rel="stylesheet"
+      data-name="vs/editor/editor.main"
+      href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       * {
         box-sizing: border-box;
@@ -63,7 +76,6 @@
         border-radius: 3px;
         white-space: nowrap;
       }
-      
       .sidebar-panel {
         width: 250px;
         background-color: #1e1e1e;
@@ -78,7 +90,6 @@
       .sidebar-panel.active {
         display: block;
       }
-      
       #mainContainer {
         display: flex;
         flex-direction: column;
@@ -86,7 +97,6 @@
         overflow: hidden;
         margin-top: 30px; /* Ensure content starts below the navbar */
       }
-      
       #tabBar {
         background-color: #252526;
         border-bottom: 1px solid #333;
@@ -94,7 +104,6 @@
         align-items: center;
         padding: 0 10px;
       }
-      
       .tab {
         background-color: #333;
         padding: 8px 12px;
@@ -106,18 +115,15 @@
         display: flex;
         align-items: center;
       }
-      
       .tab.active {
         background-color: #1e1e1e;
         color: #d4d4d4;
       }
-      
       .tab .close {
         margin-left: 8px;
         font-size: 12px;
         cursor: pointer;
       }
-      
       #editorAndOutput {
         display: flex;
         flex: 1;
@@ -218,16 +224,13 @@
         color: #cccccc;
         flex-shrink: 0;
       }
-      
       .status-item {
         margin-right: 10px;
       }
-      
       .monaco-editor {
         width: 100%;
         height: 100%;
       }
-      
       #gitUrl {
         width: 100%;
         padding: 8px 10px;
@@ -241,11 +244,9 @@
         outline: none;
         transition: border-color 0.2s;
       }
-      
       #gitUrl:focus {
         border-color: #007acc;
       }
-      
       #loadGitButton {
         width: 100%;
         padding: 8px 10px;
@@ -258,11 +259,9 @@
         cursor: pointer;
         transition: background-color 0.2s;
       }
-      
       #loadGitButton:hover {
         background-color: #005f99;
       }
-      
       .vs-navbar {
         background-color: #252526;
         color: #ffffff;
@@ -278,17 +277,14 @@
         z-index: 1000; /* Place it above all other content */
         padding-left: 40px; /* Add space to the left for the logo */
       }
-      
       .vs-navbar-item {
         margin-right: 20px;
         position: relative;
         cursor: pointer;
       }
-      
       .vs-navbar-item:hover {
         color: #d4d4d4;
       }
-      
       .vs-navbar-dropdown {
         display: none;
         position: absolute;
@@ -301,23 +297,19 @@
         z-index: 1000;
         min-width: 120px;
       }
-      
       .vs-navbar-dropdown.active {
         display: block;
       }
-      
       .vs-navbar-dropdown-item {
         padding: 8px 12px;
         color: #d4d4d4;
         cursor: pointer;
         white-space: nowrap;
       }
-      
       .vs-navbar-dropdown-item:hover {
         background-color: #444;
         color: #ffffff;
       }
-      
       .vs-logo {
         position: absolute;
         top: 0;
@@ -329,7 +321,6 @@
         justify-content: center; /* Center horizontally */
         align-items: center; /* Center vertically */
       }
-      
       .vs-logo img {
         height: 27px; /* Adjust image size relative to the container */
         width: 27px; /* Maintain aspect ratio */
@@ -340,7 +331,6 @@
         user-select: none; /* Prevent text/image selection */
         -webkit-user-drag: none;
       }
-      
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -362,20 +352,23 @@
       }
     </style>
   </head>
+
   <body>
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
     </div>
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
-        File<div class="vs-navbar-dropdown" id="fileDropdown">
+        File
+        <div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item">New File</div>
           <div class="vs-navbar-dropdown-item">Open File</div>
           <div class="vs-navbar-dropdown-item">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
-        Edit<div class="vs-navbar-dropdown" id="editDropdown">
+        Edit
+        <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item">Undo</div>
           <div class="vs-navbar-dropdown-item">Redo</div>
           <div class="vs-navbar-dropdown-item">Find</div>
@@ -427,18 +420,16 @@
       </div>
     </div>
 
+    <!-- Keep the same RequireJS version -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
-    <script type="module">
-      import * as monaco from 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js'
-      
+    <script>
       const workerPath = "{% url 'betzi_test_js' %}"
       let workerBlobURL = null
       const sharedBuffer = new SharedArrayBuffer(1024)
       const view = new Int32Array(sharedBuffer)
       let activeDropdown = null
-      
-      // Cache the Web Worker code
+
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
           const response = await fetch(workerPath)
@@ -447,8 +438,7 @@
           workerBlobURL = URL.createObjectURL(blob)
         }
       }
-      
-      // Initialize the Web Worker
+
       const initializeWorker = () => {
         if (!workerBlobURL) {
           console.error('Worker code has not been cached yet.')
@@ -456,14 +446,12 @@
         }
         return new Worker(workerBlobURL)
       }
-      
-      // Clear the console output
+
       const clearConsole = () => {
         const outputDiv = document.getElementById('output')
         outputDiv.innerHTML = ''
       }
-      
-      // Append messages to the console output
+
       const appendToOutput = (type, message) => {
         const outputDiv = document.getElementById('output')
         const line = document.createElement('div')
@@ -472,8 +460,7 @@
         outputDiv.appendChild(line)
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
-      
-      // Handle prompts from the worker
+
       const handlePrompt = (msg) => {
         return new Promise((resolve) => {
           const promptLine = document.createElement('div')
@@ -483,7 +470,7 @@
           const input = document.createElement('input')
           input.type = 'text'
           input.autocomplete = 'off'
-      
+
           input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
               const value = input.value.trim()
@@ -494,24 +481,23 @@
               const responseBuffer = new Uint8Array(sharedBuffer, 4)
               responseBuffer.fill(0)
               responseBuffer.set(encodedResponse)
-      
+
               Atomics.store(view, 0, 1)
               Atomics.notify(view, 0)
-      
+
               resolve()
             }
           })
-      
+
           promptLine.appendChild(promptMsg)
           promptLine.appendChild(input)
           document.getElementById('output').appendChild(promptLine)
           input.focus()
         })
       }
-      
+
       let currentWorker = null
-      
-      // Run button click handler
+
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole()
         if (currentWorker) {
@@ -520,47 +506,67 @@
         await cacheWorkerCode()
         const worker = initializeWorker()
         currentWorker = worker
-      
+
         if (worker) {
           worker.onmessage = async (event) => {
             const { type, message } = event.data
-      
+
             if (type === 'prompt') {
               await handlePrompt(message)
             } else if (['log', 'error', 'warn', 'info'].includes(type)) {
               appendToOutput(type, message)
             }
           }
-      
+
           worker.onerror = (error) => {
             appendToOutput('error', error.message)
           }
-      
+
           const userCode = window.editor.getValue()
           worker.postMessage({ type: 'execute', code: userCode, sharedBuffer })
         }
       })
-      
-      // Define Monaco Editor theme and initialize editor
-      monaco.editor.defineTheme('custom-dark', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'keyword', foreground: 'C586C0' },
-          { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'string', foreground: 'CE9178' },
-          { token: 'comment', foreground: '6A9955' },
-          { token: 'number', foreground: 'B5CEA8' }
-        ],
-        colors: {
-          'editor.background': '#1E1E1E'
+
+      /*
+        Update the Monaco Editor path references to 0.52.2
+      */
+      require.config({
+        paths: {
+          vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
         }
       })
-      
-      // Initialize the editor after DOMContentLoaded
-      document.addEventListener('DOMContentLoaded', () => {
-        const editorContainer = document.getElementById('editorContainer')
-        window.editor = monaco.editor.create(editorContainer, {
+
+      window.MonacoEnvironment = {
+        getWorkerUrl: function (moduleId, label) {
+          return (
+            'data:text/javascript;charset=utf-8,' +
+            encodeURIComponent(`
+            self.MonacoEnvironment = {
+              baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+            };
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.min.js');
+          `)
+          )
+        }
+      }
+
+      require(['vs/editor/editor.main'], function () {
+        monaco.editor.defineTheme('custom-dark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [
+            { token: 'keyword', foreground: 'C586C0' },
+            { token: 'identifier', foreground: '9CDCFE' },
+            { token: 'string', foreground: 'CE9178' },
+            { token: 'comment', foreground: '6A9955' },
+            { token: 'number', foreground: 'B5CEA8' }
+          ],
+          colors: {
+            'editor.background': '#1E1E1E'
+          }
+        })
+
+        window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
           value: `console.log('Hello, World!');`,
           language: 'javascript',
           theme: 'custom-dark',
@@ -591,218 +597,221 @@
           formatOnType: true,
           formatOnPaste: true,
           suggestOnTriggerCharacters: true,
-          smoothScrolling: true
-        })
-      })
-      
-      editor.onDidChangeCursorPosition((e) => {
-        const position = editor.getPosition()
-        document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
-      })
-      
-      document.getElementById('searchIcon').addEventListener('click', () => {
-        if (window.editor) {
-          window.editor.getAction('actions.find').run()
-        }
-      })
-      
-      const gitInp = document.getElementById('gitUrl')
-      
-      function gitUrlErr() {
-        gitInp.style.borderColor = 'red'
-        setTimeout(() => {
-          gitInp.style.borderColor = ''
-        }, 2000)
-      }
-      
-      document.getElementById('loadGitButton').addEventListener('click', async () => {
-        const gitUrl = gitInp.value.trim()
-      
-        if (!gitUrl) {
-          appendToOutput('error', 'No URL provided.')
-          gitUrlErr()
-          return
-        }
-      
-        try {
-          new URL(gitUrl)
-        } catch (error) {
-          appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
-          gitUrlErr()
-          return
-        }
-      
-        const normalizedUrl = normalizeUrl(gitUrl)
-        const parsedUrl = parseGitHubUrl(normalizedUrl)
-      
-        if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
-          appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
-          gitUrlErr()
-          return
-        }
-      
-        try {
-          let fileContent
-      
-          if (parsedUrl.isRawFile) {
-            fileContent = await fetchRawFile(parsedUrl.rawUrl)
-          } else {
-            const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
-            if (!fileData.content) {
-              appendToOutput('error', 'Failed to fetch file content.')
-              gitUrlErr()
-              return
-            }
-            fileContent = atob(fileData.content)
-          }
-      
-          window.editor.setValue(fileContent)
-          appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
-        } catch (error) {
-          appendToOutput('error', `Error fetching file: ${error.message}`)
-        }
-      })
-      
-      function normalizeUrl(url) {
-        if (url.endsWith('.git')) {
-          url = url.slice(0, -4)
-        }
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          url = 'https://' + url
-        }
-        if (url.startsWith('http://')) {
-          url = 'https://' + url.substring(7)
-        }
-        return url
-      }
-      
-      function parseGitHubUrl(url) {
-        if (url.includes('raw.githubusercontent.com')) {
-          const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
-          if (match) {
-            return {
-              isRawFile: true,
-              rawUrl: url
-            }
-          }
-          return { isRawFile: false }
-        }
-      
-        const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
-      
-        if (!match) {
-          return { isFile: false }
-        }
-      
-        return {
-          owner: match[1],
-          repo: match[2],
-          branch: match[3],
-          path: match[4],
-          isFile: true
-        }
-      }
-      
-      async function fetchFromGit(owner, repo, path, branch = 'main') {
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
-        const response = await fetch(apiUrl)
-      
-        if (!response.ok) {
-          throw new Error(`Failed to fetch file: ${response.statusText}`)
-        }
-      
-        const data = await response.json()
-      
-        if (data.type !== 'file') {
-          throw new Error('The URL does not point to a valid file.')
-        }
-      
-        return data
-      }
-      
-      async function fetchRawFile(rawUrl) {
-        const response = await fetch(rawUrl)
-      
-        if (!response.ok) {
-          throw new Error(`Failed to fetch raw file: ${response.statusText}`)
-        }
-      
-        return await response.text()
-      }
-      
-      const btnsArray = ['gitIcon', 'settingsIcon']
-      btnsArray.forEach((iconId) => {
-        const icon = document.getElementById(iconId)
-        icon.addEventListener('click', (e) => {
-          const isActive = e.currentTarget.classList.contains('active')
-          document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
-          document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-      
-          if (!isActive) {
-            e.currentTarget.classList.add('active')
-            const targetPanel = e.currentTarget.getAttribute('data-target')
-            document.getElementById(targetPanel).classList.add('active')
+          smoothScrolling: true,
+          breadcrumbs: {
+            enabled: true
           }
         })
-      })
-      
-      const loadGitButton = document.getElementById('loadGitButton')
-      
-      gitInp.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          loadGitButton.click()
+
+        editor.onDidChangeCursorPosition((e) => {
+          const position = editor.getPosition()
+          document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
+        })
+
+        document.getElementById('searchIcon').addEventListener('click', () => {
+          if (window.editor) {
+            window.editor.getAction('actions.find').run()
+          }
+        })
+
+        const gitInp = document.getElementById('gitUrl')
+
+        function gitUrlErr() {
+          gitInp.style.borderColor = 'red'
+          setTimeout(() => {
+            gitInp.style.borderColor = ''
+          }, 2000)
         }
-      })
-      
-      gitInp.addEventListener('input', () => {
-        if (!gitInp.value.trim()) {
-          loadGitButton.disabled = true
-        } else {
-          loadGitButton.disabled = false
+
+        document.getElementById('loadGitButton').addEventListener('click', async () => {
+          const gitUrl = gitInp.value.trim()
+
+          if (!gitUrl) {
+            appendToOutput('error', 'No URL provided.')
+            gitUrlErr()
+            return
+          }
+
+          try {
+            new URL(gitUrl)
+          } catch (error) {
+            appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
+            gitUrlErr()
+            return
+          }
+
+          const normalizedUrl = normalizeUrl(gitUrl)
+          const parsedUrl = parseGitHubUrl(normalizedUrl)
+
+          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
+            appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
+            gitUrlErr()
+            return
+          }
+
+          try {
+            let fileContent
+
+            if (parsedUrl.isRawFile) {
+              fileContent = await fetchRawFile(parsedUrl.rawUrl)
+            } else {
+              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
+              if (!fileData.content) {
+                appendToOutput('error', 'Failed to fetch file content.')
+                gitUrlErr()
+                return
+              }
+              fileContent = atob(fileData.content)
+            }
+
+            window.editor.setValue(fileContent)
+            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
+          } catch (error) {
+            appendToOutput('error', `Error fetching file: ${error.message}`)
+          }
+        })
+
+        function normalizeUrl(url) {
+          if (url.endsWith('.git')) {
+            url = url.slice(0, -4)
+          }
+          if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url
+          }
+          if (url.startsWith('http://')) {
+            url = 'https://' + url.substring(7)
+          }
+          return url
         }
-      })
-      
-      document.querySelectorAll('.vs-navbar-item').forEach((item) => {
-        item.addEventListener('click', (event) => {
-          const dropdownId = event.currentTarget.getAttribute('data-dropdown')
-          const dropdown = document.getElementById(dropdownId)
-      
-          // Close all dropdowns
-          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-            dropdown.classList.remove('active')
+
+        function parseGitHubUrl(url) {
+          if (url.includes('raw.githubusercontent.com')) {
+            const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
+            if (match) {
+              return {
+                isRawFile: true,
+                rawUrl: url
+              }
+            }
+            return { isRawFile: false }
+          }
+
+          const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
+
+          if (!match) {
+            return { isFile: false }
+          }
+
+          return {
+            owner: match[1],
+            repo: match[2],
+            branch: match[3],
+            path: match[4],
+            isFile: true
+          }
+        }
+
+        async function fetchFromGit(owner, repo, path, branch = 'main') {
+          const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
+          const response = await fetch(apiUrl)
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch file: ${response.statusText}`)
+          }
+
+          const data = await response.json()
+
+          if (data.type !== 'file') {
+            throw new Error('The URL does not point to a valid file.')
+          }
+
+          return data
+        }
+
+        async function fetchRawFile(rawUrl) {
+          const response = await fetch(rawUrl)
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch raw file: ${response.statusText}`)
+          }
+
+          return await response.text()
+        }
+
+        const btnsArray = ['gitIcon', 'settingsIcon']
+        btnsArray.forEach((iconId) => {
+          const icon = document.getElementById(iconId)
+          icon.addEventListener('click', (e) => {
+            const isActive = e.currentTarget.classList.contains('active')
+            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
+            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
+
+            if (!isActive) {
+              e.currentTarget.classList.add('active')
+              const targetPanel = e.currentTarget.getAttribute('data-target')
+              document.getElementById(targetPanel).classList.add('active')
+            }
           })
-      
-          // Toggle the current dropdown
-          if (dropdown) {
-            dropdown.classList.toggle('active')
-            activeDropdown = dropdown.classList.contains('active') ? dropdown : null
+        })
+
+        const loadGitButton = document.getElementById('loadGitButton')
+
+        gitInp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            loadGitButton.click()
           }
         })
-      
-        item.addEventListener('mouseover', (event) => {
-          if (activeDropdown) {
-            // Switch to the hovered dropdown if one is active
+
+        gitInp.addEventListener('input', () => {
+          if (!gitInp.value.trim()) {
+            loadGitButton.disabled = true
+          } else {
+            loadGitButton.disabled = false
+          }
+        })
+
+        document.querySelectorAll('.vs-navbar-item').forEach((item) => {
+          item.addEventListener('click', (event) => {
             const dropdownId = event.currentTarget.getAttribute('data-dropdown')
             const dropdown = document.getElementById(dropdownId)
-      
-            // Close the currently active dropdown
-            if (activeDropdown !== dropdown) {
-              activeDropdown.classList.remove('active')
-              dropdown.classList.add('active')
-              activeDropdown = dropdown
+
+            // Close all dropdowns
+            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+              dropdown.classList.remove('active')
+            })
+
+            // Toggle the current dropdown
+            if (dropdown) {
+              dropdown.classList.toggle('active')
+              activeDropdown = dropdown.classList.contains('active') ? dropdown : null
             }
+          })
+
+          item.addEventListener('mouseover', (event) => {
+            if (activeDropdown) {
+              // Switch to the hovered dropdown if one is active
+              const dropdownId = event.currentTarget.getAttribute('data-dropdown')
+              const dropdown = document.getElementById(dropdownId)
+
+              // Close the currently active dropdown
+              if (activeDropdown !== dropdown) {
+                activeDropdown.classList.remove('active')
+                dropdown.classList.add('active')
+                activeDropdown = dropdown
+              }
+            }
+          })
+        })
+
+        // Close dropdowns if clicking outside
+        document.addEventListener('click', (event) => {
+          if (!event.target.closest('.vs-navbar-item')) {
+            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+              dropdown.classList.remove('active')
+            })
+            activeDropdown = null // Reset active dropdown
           }
         })
-      })
-      
-      // Close dropdowns if clicking outside
-      document.addEventListener('click', (event) => {
-        if (!event.target.closest('.vs-navbar-item')) {
-          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-            dropdown.classList.remove('active')
-          })
-          activeDropdown = null // Reset active dropdown
-        }
       })
     </script>
   </body>
