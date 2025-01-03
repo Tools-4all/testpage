@@ -422,6 +422,8 @@
       const view = new Int32Array(sharedBuffer)
       let activeDropdown = null
       
+      var spaces = 3
+      
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
           const response = await fetch(workerPath)
@@ -530,11 +532,11 @@
           return (
             'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
-                        self.MonacoEnvironment = {
-                          baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-                        };
-                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-                      `)
+                              self.MonacoEnvironment = {
+                                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+                              };
+                              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+                            `)
           )
         }
       }
@@ -591,9 +593,11 @@
           }
         })
       
+        const statusBar = document.getElementById('statusBar')
+      
         editor.onDidChangeCursorPosition((e) => {
           const position = editor.getPosition()
-          document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
+          statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: ${spaces} | JavaScript`
         })
       
         document.getElementById('searchIcon').addEventListener('click', () => {
@@ -873,7 +877,6 @@
           }
         })
       
-      
         const redoBtn = document.getElementById('redoBtn')
         const undoBtn = document.getElementById('undoBtn')
       
@@ -889,12 +892,15 @@
           toggleDisabled(undoBtn, !editor.getModel().canUndo())
           toggleDisabled(redoBtn, !editor.getModel().canRedo())
         }
-
+      
         document.getElementById('tabSizeInput').addEventListener('change', () => {
           if (window.editor) {
-            window.editor.updateOptions({ tabSize: parseInt(tabSizeInput.value, 10) });
+            spaces = parseInt(tabSizeInput.value, 10)
+            window.editor.updateOptions({ tabSize: spaces })
+            const position = editor.getPosition()
+            statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: ${spaces} | JavaScript`
           }
-        });
+        })
       
         editor.onDidChangeModelContent(() => {
           updateUndoRedoButtons()
