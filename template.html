@@ -892,14 +892,22 @@
           toggleDisabled(undoBtn, !editor.getModel().canUndo())
           toggleDisabled(redoBtn, !editor.getModel().canRedo())
         }
+
+        const tabSizeInput = document.getElementById('tabSizeInput')
       
-        document.getElementById('tabSizeInput').addEventListener('keydown', (evt) => {
+        tabSizeInput.addEventListener('keydown', (evt) => {
           if ((evt.which != 8 && evt.which != 0 && evt.which < 48) || evt.which > 57) {
             evt.preventDefault()
           }
         })
+
+        tabSizeInput.addEventListener('input', () => {
+          if (parseInt(tabSizeInput.value.length) > 8) {
+            tabSizeInput.value = 8
+          }
+        })
       
-        document.getElementById('tabSizeInput').addEventListener('change', () => {
+        tabSizeInput.addEventListener('change', () => {
           if (window.editor) {
             spaces = parseInt(tabSizeInput.value, 10)
             window.editor.updateOptions({ tabSize: spaces })
