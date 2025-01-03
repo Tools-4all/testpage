@@ -608,6 +608,23 @@
           }
         })
 
+        function replaceAllText(newText) {
+          const model = editor.getModel();
+          const fullRange = model.getFullModelRange();
+        
+          editor.pushUndoStop();
+        
+          editor.executeEdits('', [
+            {
+              range: fullRange,
+              text: newText
+            }
+          ]);
+        
+          editor.pushUndoStop();
+        }
+        
+
         const gitInp = document.getElementById('gitUrl')
 
         function gitUrlErr() {
@@ -658,7 +675,7 @@
               fileContent = atob(fileData.content)
             }
 
-            window.editor.setValue(fileContent)
+            replaceAllText(fileContent)
             appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
           } catch (error) {
             appendToOutput('error', `Error fetching file: ${error.message}`)
