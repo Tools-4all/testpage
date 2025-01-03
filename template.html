@@ -3,22 +3,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VSCode-like Sandboxed JS Compiler</title>
 
-    <link
-      rel="stylesheet"
-      data-name="vs/editor/editor.main"
-      href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
 
     <style>
       * {
@@ -94,7 +84,7 @@
         flex-direction: column;
         flex: 1;
         overflow: hidden;
-        margin-top: 30px; 
+        margin-top: 30px;
       }
       #tabBar {
         background-color: #252526;
@@ -271,9 +261,9 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%; 
-        z-index: 1000; 
-        padding-left: 40px; 
+        width: 100%;
+        z-index: 1000;
+        padding-left: 40px;
       }
       .vs-navbar-item {
         margin-right: 20px;
@@ -312,20 +302,20 @@
         position: absolute;
         top: 0;
         left: 0;
-        height: 40px; 
-        width: 40px; 
+        height: 40px;
+        width: 40px;
         z-index: 1010;
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .vs-logo img {
-        height: 27px; 
-        width: 27px; 
-        object-fit: contain; 
-        border-radius: 4px; 
+        height: 27px;
+        width: 27px;
+        object-fit: contain;
+        border-radius: 4px;
         margin-bottom: 11px;
-        user-drag: none; 
+        user-drag: none;
         user-select: none;
         -webkit-user-drag: none;
       }
@@ -357,15 +347,13 @@
     </div>
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
-        File
-        <div class="vs-navbar-dropdown" id="fileDropdown">
+        File<div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
-          <div class="vs-navbar-dropdown-item" id="saveScriptBtn" >Save File</div>
+          <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
-        Edit
-        <div class="vs-navbar-dropdown" id="editDropdown">
+        Edit<div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
           <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
         </div>
@@ -424,7 +412,7 @@
       const sharedBuffer = new SharedArrayBuffer(1024)
       const view = new Int32Array(sharedBuffer)
       let activeDropdown = null
-
+      
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
           const response = await fetch(workerPath)
@@ -433,7 +421,7 @@
           workerBlobURL = URL.createObjectURL(blob)
         }
       }
-
+      
       const initializeWorker = () => {
         if (!workerBlobURL) {
           console.error('Worker code has not been cached yet.')
@@ -441,12 +429,12 @@
         }
         return new Worker(workerBlobURL)
       }
-
+      
       const clearConsole = () => {
         const outputDiv = document.getElementById('output')
         outputDiv.innerHTML = ''
       }
-
+      
       const appendToOutput = (type, message) => {
         const outputDiv = document.getElementById('output')
         const line = document.createElement('div')
@@ -455,7 +443,7 @@
         outputDiv.appendChild(line)
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
-
+      
       const handlePrompt = (msg) => {
         return new Promise((resolve) => {
           const promptLine = document.createElement('div')
@@ -465,7 +453,7 @@
           const input = document.createElement('input')
           input.type = 'text'
           input.autocomplete = 'off'
-
+      
           input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
               const value = input.value.trim()
@@ -476,23 +464,23 @@
               const responseBuffer = new Uint8Array(sharedBuffer, 4)
               responseBuffer.fill(0)
               responseBuffer.set(encodedResponse)
-
+      
               Atomics.store(view, 0, 1)
               Atomics.notify(view, 0)
-
+      
               resolve()
             }
           })
-
+      
           promptLine.appendChild(promptMsg)
           promptLine.appendChild(input)
           document.getElementById('output').appendChild(promptLine)
           input.focus()
         })
       }
-
+      
       let currentWorker = null
-
+      
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole()
         if (currentWorker) {
@@ -501,47 +489,47 @@
         await cacheWorkerCode()
         const worker = initializeWorker()
         currentWorker = worker
-
+      
         if (worker) {
           worker.onmessage = async (event) => {
             const { type, message } = event.data
-
+      
             if (type === 'prompt') {
               await handlePrompt(message)
             } else if (['log', 'error', 'warn', 'info'].includes(type)) {
               appendToOutput(type, message)
             }
           }
-
+      
           worker.onerror = (error) => {
             appendToOutput('error', error.message)
           }
-
+      
           const userCode = window.editor.getValue()
           worker.postMessage({ type: 'execute', code: userCode, sharedBuffer })
         }
       })
-
+      
       require.config({
         paths: {
           vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
         }
       })
-
+      
       window.MonacoEnvironment = {
         getWorkerUrl: function (moduleId, label) {
           return (
             'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
-            self.MonacoEnvironment = {
-              baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-            };
-            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-          `)
+                  self.MonacoEnvironment = {
+                    baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+                  };
+                  importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+                `)
           )
         }
       }
-
+      
       require(['vs/editor/editor.main'], function () {
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
@@ -557,7 +545,7 @@
             'editor.background': '#1E1E1E'
           }
         })
-
+      
         window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
           language: 'javascript',
           theme: 'custom-dark',
@@ -593,53 +581,52 @@
             enabled: true
           }
         })
-
+      
         editor.onDidChangeCursorPosition((e) => {
           const position = editor.getPosition()
           document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
         })
-
+      
         document.getElementById('searchIcon').addEventListener('click', () => {
           if (window.editor) {
             window.editor.getAction('actions.find').run()
           }
         })
-
+      
         function replaceAllText(newText) {
-          const model = editor.getModel();
-          const fullRange = model.getFullModelRange();
-        
-          editor.pushUndoStop();
-        
+          const model = editor.getModel()
+          const fullRange = model.getFullModelRange()
+      
+          editor.pushUndoStop()
+      
           editor.executeEdits('', [
             {
               range: fullRange,
               text: newText
             }
-          ]);
-        
-          editor.pushUndoStop();
+          ])
+      
+          editor.pushUndoStop()
         }
-        
-
+      
         const gitInp = document.getElementById('gitUrl')
-
+      
         function gitUrlErr() {
           gitInp.style.borderColor = 'red'
           setTimeout(() => {
             gitInp.style.borderColor = ''
           }, 2000)
         }
-
+      
         document.getElementById('loadGitButton').addEventListener('click', async () => {
           const gitUrl = gitInp.value.trim()
-
+      
           if (!gitUrl) {
             appendToOutput('error', 'No URL provided.')
             gitUrlErr()
             return
           }
-
+      
           try {
             new URL(gitUrl)
           } catch (error) {
@@ -647,19 +634,19 @@
             gitUrlErr()
             return
           }
-
+      
           const normalizedUrl = normalizeUrl(gitUrl)
           const parsedUrl = parseGitHubUrl(normalizedUrl)
-
+      
           if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
             appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
             gitUrlErr()
             return
           }
-
+      
           try {
             let fileContent
-
+      
             if (parsedUrl.isRawFile) {
               fileContent = await fetchRawFile(parsedUrl.rawUrl)
             } else {
@@ -671,14 +658,14 @@
               }
               fileContent = atob(fileData.content)
             }
-
+      
             replaceAllText(fileContent)
             appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
           } catch (error) {
             appendToOutput('error', `Error fetching file: ${error.message}`)
           }
         })
-
+      
         function normalizeUrl(url) {
           if (url.endsWith('.git')) {
             url = url.slice(0, -4)
@@ -691,7 +678,7 @@
           }
           return url
         }
-
+      
         function parseGitHubUrl(url) {
           if (url.includes('raw.githubusercontent.com')) {
             const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
@@ -703,13 +690,13 @@
             }
             return { isRawFile: false }
           }
-
+      
           const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
-
+      
           if (!match) {
             return { isFile: false }
           }
-
+      
           return {
             owner: match[1],
             repo: match[2],
@@ -718,34 +705,34 @@
             isFile: true
           }
         }
-
+      
         async function fetchFromGit(owner, repo, path, branch = 'main') {
           const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
           const response = await fetch(apiUrl)
-
+      
           if (!response.ok) {
             throw new Error(`Failed to fetch file: ${response.statusText}`)
           }
-
+      
           const data = await response.json()
-
+      
           if (data.type !== 'file') {
             throw new Error('The URL does not point to a valid file.')
           }
-
+      
           return data
         }
-
+      
         async function fetchRawFile(rawUrl) {
           const response = await fetch(rawUrl)
-
+      
           if (!response.ok) {
             throw new Error(`Failed to fetch raw file: ${response.statusText}`)
           }
-
+      
           return await response.text()
         }
-
+      
         const btnsArray = ['gitIcon', 'settingsIcon']
         btnsArray.forEach((iconId) => {
           const icon = document.getElementById(iconId)
@@ -753,7 +740,7 @@
             const isActive = e.currentTarget.classList.contains('active')
             document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
             document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-
+      
             if (!isActive) {
               e.currentTarget.classList.add('active')
               const targetPanel = e.currentTarget.getAttribute('data-target')
@@ -761,15 +748,15 @@
             }
           })
         })
-
+      
         const loadGitButton = document.getElementById('loadGitButton')
-
+      
         gitInp.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             loadGitButton.click()
           }
         })
-
+      
         gitInp.addEventListener('input', () => {
           if (!gitInp.value.trim()) {
             loadGitButton.disabled = true
@@ -777,27 +764,27 @@
             loadGitButton.disabled = false
           }
         })
-
+      
         document.querySelectorAll('.vs-navbar-item').forEach((item) => {
           item.addEventListener('click', (event) => {
             const dropdownId = event.currentTarget.getAttribute('data-dropdown')
             const dropdown = document.getElementById(dropdownId)
-
+      
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
               dropdown.classList.remove('active')
             })
-
+      
             if (dropdown) {
               dropdown.classList.toggle('active')
               activeDropdown = dropdown.classList.contains('active') ? dropdown : null
             }
           })
-
+      
           item.addEventListener('mouseover', (event) => {
             if (activeDropdown) {
               const dropdownId = event.currentTarget.getAttribute('data-dropdown')
               const dropdown = document.getElementById(dropdownId)
-
+      
               if (activeDropdown !== dropdown) {
                 activeDropdown.classList.remove('active')
                 dropdown.classList.add('active')
@@ -806,14 +793,14 @@
             }
           })
         })
-
+      
         function closeDropdowns() {
           document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
             dropdown.classList.remove('active')
           })
         }
-
-        document.getElementById("uploadFileBtn").addEventListener('click', () => {
+      
+        document.getElementById('uploadFileBtn').addEventListener('click', () => {
           const input = document.createElement('input')
           input.type = 'file'
           input.accept = '.js'
@@ -832,8 +819,8 @@
           input.click()
           input.remove()
         })
-
-        document.getElementById("saveScriptBtn").addEventListener('click', () => {
+      
+        document.getElementById('saveScriptBtn').addEventListener('click', () => {
           const content = window.editor.getValue()
           const blob = new Blob([content], { type: 'text/javascript' })
           const url = URL.createObjectURL(blob)
@@ -844,17 +831,33 @@
           URL.revokeObjectURL(url)
           closeDropdowns()
         })
-
-        document.getElementById("undoBtn").addEventListener('click', () => {
+      
+        document.getElementById('undoBtn').addEventListener('click', () => {
           window.editor.trigger('undo', 'undo', null)
           closeDropdowns()
+          updateUndoRedoButtons();
         })
-
-        document.getElementById("redoBtn").addEventListener('click', () => {
+      
+        document.getElementById('redoBtn').addEventListener('click', () => {
           window.editor.trigger('redo', 'redo', null)
           closeDropdowns()
+          updateUndoRedoButtons();
         })
 
+        
+        
+      
+        document.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.key === 's') {
+            e.preventDefault()
+            document.getElementById('saveScriptBtn').click()
+          } else if (e.ctrlKey && e.key === 'z' || e.ctrlKey && e.shiftKey && e.key === 'Z') {
+            setTimeout(() => {
+              updateUndoRedoButtons();
+            }, 100);
+          }
+        })
+      
         document.addEventListener('click', (event) => {
           if (!event.target.closest('.vs-navbar-item')) {
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
@@ -863,8 +866,31 @@
             activeDropdown = null
           }
         })
+      
+        const undoRedoService = editor._modelData?.viewModel?._undoRedoService
+      
+        const modelUri = editor.getModel().uri
+
+        function updateUndoRedoButtons() {
+          const undoRedoService = editor._modelData?.viewModel?._undoRedoService;
+          const modelUri = editor.getModel().uri;
         
+          if (!undoRedoService || !modelUri) {
+            document.getElementById('undoBtn').disabled = true;
+            document.getElementById('redoBtn').disabled = true;
+            return;
+          }
+        
+          document.getElementById('undoBtn').disabled = !undoRedoService.canUndo(modelUri);
+          document.getElementById('redoBtn').disabled = !undoRedoService.canRedo(modelUri);
+        }
+        
+        editor.onDidChangeModelContent(() => {
+          updateUndoRedoButtons();
+        });
+      
         replaceAllText(`console.log('Hello, World!');`)
+        updateUndoRedoButtons();
       })
     </script>
   </body>
