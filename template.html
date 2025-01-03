@@ -383,7 +383,10 @@
       <button id="loadGitButton" disabled="true">Load</button>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
-      <p>No settings found.</p>
+      <div>
+        <label for="tabSizeInput">Tab Size:</label>
+        <input id="tabSizeInput" type="number" min="1" max="8" value="3" />
+      </div>
     </div>
 
     <div id="mainContainer">
@@ -870,9 +873,7 @@
           }
         })
       
-        const undoRedoService = editor._modelData?.viewModel?._undoRedoService
       
-        const modelUri = editor.getModel().uri
         const redoBtn = document.getElementById('redoBtn')
         const undoBtn = document.getElementById('undoBtn')
       
@@ -885,12 +886,15 @@
         }
       
         function updateUndoRedoButtons() {
-          const undoRedoService = editor._modelData?.viewModel?._undoRedoService
-          const modelUri = editor.getModel().uri
-      
           toggleDisabled(undoBtn, !editor.getModel().canUndo())
           toggleDisabled(redoBtn, !editor.getModel().canRedo())
         }
+
+        document.getElementById('tabSizeInput').addEventListener('change', () => {
+          if (window.editor) {
+            window.editor.updateOptions({ tabSize: parseInt(tabSizeInput.value, 10) });
+          }
+        });
       
         editor.onDidChangeModelContent(() => {
           updateUndoRedoButtons()
