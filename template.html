@@ -319,6 +319,13 @@
         user-select: none;
         -webkit-user-drag: none;
       }
+
+
+      .vs-navbar-dropdown-item.disabled {
+        color: #666;
+        cursor: not-allowed;
+      }
+      
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -870,20 +877,20 @@
         const undoRedoService = editor._modelData?.viewModel?._undoRedoService
       
         const modelUri = editor.getModel().uri
+        const redoBtn = document.getElementById('redoBtn')
+        const undoBtn = document.getElementById('undoBtn')
 
         function updateUndoRedoButtons() {
           const undoRedoService = editor._modelData?.viewModel?._undoRedoService;
           const modelUri = editor.getModel().uri;
         
           if (!undoRedoService || !modelUri) {
-            document.getElementById('undoBtn').disabled = true;
-            document.getElementById('redoBtn').disabled = true;
-            console.log('Undo/Redo service not available.');
+            undoBtn.disabled = true;
+            redoBtn.disabled = true;
             return;
           }
-          console.log('Undo/Redo service available.');
-          document.getElementById('undoBtn').disabled = !undoRedoService.canUndo(modelUri);
-          document.getElementById('redoBtn').disabled = !undoRedoService.canRedo(modelUri);
+          undoBtn.disabled = !undoRedoService.canUndo(modelUri);
+          redoBtn.disabled = !undoRedoService.canRedo(modelUri);
         }
         
         editor.onDidChangeModelContent(() => {
