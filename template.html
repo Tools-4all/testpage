@@ -878,6 +878,7 @@
           if (!undoRedoService || !modelUri) {
             document.getElementById('undoBtn').disabled = true;
             document.getElementById('redoBtn').disabled = true;
+            console.log('Undo/Redo service not available.');
             return;
           }
         
