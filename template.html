@@ -885,22 +885,27 @@
         }
       
         function updateUndoRedoButtons() {
-          const undoRedoService = editor._modelData?.viewModel?._undoRedoService
-          const modelUri = editor.getModel().uri
-      
+          const undoRedoService = editor._modelData?.viewModel?._undoRedoService;
+          const modelUri = editor.getModel().uri;
+          
+          console.log('undoRedoService =', undoRedoService);
+          console.log('canUndo =', undoRedoService?.canUndo(modelUri));
+          console.log('canRedo =', undoRedoService?.canRedo(modelUri));
+          
           if (!undoRedoService || !modelUri) {
-            toggleDisabled(undoBtn, true)
-            toggleDisabled(redoBtn, true)
-            return
+            toggleDisabled(undoBtn, true);
+            toggleDisabled(redoBtn, true);
+            return;
           }
-          toggleDisabled(undoBtn, !undoRedoService.canUndo(modelUri))
-          toggleDisabled(redoBtn, !undoRedoService.canRedo(modelUri))
+          
+          toggleDisabled(undoBtn, !undoRedoService.canUndo(modelUri));
+          toggleDisabled(redoBtn, !undoRedoService.canRedo(modelUri));
         }
+        
       
         editor.onDidChangeModelContent(() => {
           updateUndoRedoButtons()
         })
-      
         replaceAllText(`console.log('Hello, World!');`)
       })
     </script>
