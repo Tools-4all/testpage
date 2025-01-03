@@ -534,7 +534,20 @@
       })
       
       require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } })
-      
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'number', foreground: 'B5CEA8' }
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
+        }
+      });
       window.MonacoEnvironment = {
         getWorkerUrl: function (workerId, label) {
           return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
@@ -546,21 +559,7 @@
         }
       };
       
-      require(['vs/editor/editor.main'], function () {
-        monaco.editor.defineTheme('custom-dark', {
-          base: 'vs-dark',
-          inherit: true,
-          rules: [
-            { token: 'keyword', foreground: 'C586C0' },
-            { token: 'identifier', foreground: '9CDCFE' },
-            { token: 'string', foreground: 'CE9178' },
-            { token: 'comment', foreground: '6A9955' },
-            { token: 'number', foreground: 'B5CEA8' }
-          ],
-          colors: {
-            'editor.background': '#1E1E1E'
-          }
-        })
+      
       
         window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
           value: `console.log('Hello, World!');`,
