@@ -325,6 +325,48 @@
         opacity: 0.5;
       }
       
+      .vs-range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        background-color: #2d2d2d;
+        outline: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      
+      .vs-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #007acc;
+        border-radius: 50%;
+        border: 2px solid #444;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+      }
+      
+      .vs-range::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #007acc;
+        border: 2px solid #444;
+        border-radius: 50%;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+      }
+      
+      .vs-range::-webkit-slider-thumb:hover,
+      .vs-range::-moz-range-thumb:hover {
+        background: #119eff;
+      }
+      .vs-range::-webkit-slider-thumb:active,
+      .vs-range::-moz-range-thumb:active {
+        background: #0067a8;
+      }
+      
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -384,8 +426,8 @@
     </div>
     <div id="settingsPanel" class="sidebar-panel">
       <div>
-        <label for="tabSizeInput">Tab Size:</label>
-        <input id="tabSizeInput" type="number" min="1" max="8" value="3" />
+        <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
+        <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
       </div>
     </div>
 
@@ -532,11 +574,11 @@
           return (
             'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
-                                    self.MonacoEnvironment = {
-                                      baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-                                    };
-                                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-                                  `)
+                                                self.MonacoEnvironment = {
+                                                  baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+                                                };
+                                                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+                                              `)
           )
         }
       }
@@ -892,18 +934,14 @@
           toggleDisabled(undoBtn, !editor.getModel().canUndo())
           toggleDisabled(redoBtn, !editor.getModel().canRedo())
         }
-
-        const tabSizeInput = document.getElementById('tabSizeInput')
       
-        tabSizeInput.addEventListener('keydown', (evt) => {
-          if ((evt.which != 8 && evt.which != 0 && evt.which < 48) || evt.which > 57 || parseInt(tabSizeInput.value + evt.key) > 8) {
-            evt.preventDefault()
-          }
-        })
+        const tabSizeInput = document.getElementById('tabSizeInput')
+        const tabSizeDisplay = document.getElementById('tabSizeDisplay')
       
         tabSizeInput.addEventListener('change', () => {
           if (window.editor) {
-            spaces = parseInt(tabSizeInput.value, 10)
+            spaces = parseInt(tabSizeInput.value, 8)
+            tabSizeDisplay.textContent = spaces;
             window.editor.updateOptions({ tabSize: spaces })
             const position = editor.getPosition()
             statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: ${spaces} | JavaScript`
