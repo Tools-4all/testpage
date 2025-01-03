@@ -881,7 +881,7 @@
             console.log('Undo/Redo service not available.');
             return;
           }
-        
+          console.log('Undo/Redo service available.');
           document.getElementById('undoBtn').disabled = !undoRedoService.canUndo(modelUri);
           document.getElementById('redoBtn').disabled = !undoRedoService.canRedo(modelUri);
         }
