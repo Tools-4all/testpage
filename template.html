@@ -559,7 +559,6 @@
         })
 
         window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
-          value: `console.log('Hello, World!');`,
           language: 'javascript',
           theme: 'custom-dark',
           automaticLayout: true,
@@ -864,6 +863,8 @@
             activeDropdown = null
           }
         })
+        
+        replaceAllText(`console.log('Hello, World!');`)
       })
     </script>
   </body>
