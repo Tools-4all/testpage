@@ -359,9 +359,8 @@
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
         <div class="vs-navbar-dropdown" id="fileDropdown">
-          <div class="vs-navbar-dropdown-item">New File</div>
-          <div class="vs-navbar-dropdown-item">Open File</div>
-          <div class="vs-navbar-dropdown-item">Save File</div>
+          <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
+          <div class="vs-navbar-dropdown-item" id="saveScriptBtn" >Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
@@ -808,6 +807,36 @@
               }
             }
           })
+        })
+
+        document.getElementById("uploadFileBtn").addEventListener('click', () => {
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = '.js'
+          input.style.display = 'none'
+          input.addEventListener('change', async (e) => {
+            const file = e.target.files[0]
+            const reader = new FileReader()
+            reader.onload = (e) => {
+              const content = e.target.result
+              replaceAllText(content)
+            }
+            reader.readAsText(file)
+          })
+          document.body.appendChild(input)
+          input.click()
+          input.remove()
+        })
+
+        document.getElementById("saveScriptBtn").addEventListener('click', () => {
+          const content = window.editor.getValue()
+          const blob = new Blob([content], { type: 'text/javascript' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = 'script.js'
+          a.click()
+          URL.revokeObjectURL(url)
         })
 
         document.addEventListener('click', (event) => {
