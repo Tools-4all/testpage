@@ -321,8 +321,8 @@
       }
       
       .vs-navbar-dropdown-item.disabled {
-        color: #666;
-        cursor: not-allowed;
+        pointer-events: none;
+        opacity: 0.5;
       }
       
       @media (max-width: 768px) {
@@ -354,14 +354,14 @@
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File<div class="vs-navbar-dropdown" id="fileDropdown">
-          <button class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</button>
-          <button class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</button>
+          <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
+          <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit<div class="vs-navbar-dropdown" id="editDropdown">
-          <button class="vs-navbar-dropdown-item" id="undoBtn">Undo</button>
-          <button class="vs-navbar-dropdown-item" id="redoBtn">Redo</button>
+          <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
+          <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
         </div>
       </div>
     </div>
@@ -876,17 +876,25 @@
         const redoBtn = document.getElementById('redoBtn')
         const undoBtn = document.getElementById('undoBtn')
       
+        function toggleDisabled(elem, isDisabled) {
+          if (isDisabled) {
+            elem.classList.add('disabled')
+          } else {
+            elem.classList.remove('disabled')
+          }
+        }
+      
         function updateUndoRedoButtons() {
           const undoRedoService = editor._modelData?.viewModel?._undoRedoService
           const modelUri = editor.getModel().uri
       
           if (!undoRedoService || !modelUri) {
-            undoBtn.disabled = true
-            redoBtn.disabled = true
+            toggleDisabled(undoBtn, true)
+            toggleDisabled(redoBtn, true)
             return
           }
-          undoBtn.disabled = !undoRedoService.canUndo(modelUri)
-          redoBtn.disabled = !undoRedoService.canRedo(modelUri)
+          toggleDisabled(undoBtn, !undoRedoService.canUndo(modelUri))
+          toggleDisabled(redoBtn, !undoRedoService.canRedo(modelUri))
         }
       
         editor.onDidChangeModelContent(() => {
