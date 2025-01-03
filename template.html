@@ -319,8 +319,7 @@
         user-select: none;
         -webkit-user-drag: none;
       }
-
-
+      
       .vs-navbar-dropdown-item.disabled {
         color: #666;
         cursor: not-allowed;
@@ -355,14 +354,14 @@
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File<div class="vs-navbar-dropdown" id="fileDropdown">
-          <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
-          <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
+          <button class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</button>
+          <button class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</button>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit<div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
-          <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
+          <button class="vs-navbar-dropdown-item" id="undoBtn">Undo</button>
+          <button class="vs-navbar-dropdown-item" id="redoBtn">Redo</button>
         </div>
       </div>
     </div>
@@ -528,11 +527,11 @@
           return (
             'data:text/javascript;charset=utf-8,' +
             encodeURIComponent(`
-                  self.MonacoEnvironment = {
-                    baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-                  };
-                  importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-                `)
+                        self.MonacoEnvironment = {
+                          baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+                        };
+                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+                      `)
           )
         }
       }
@@ -842,26 +841,23 @@
         document.getElementById('undoBtn').addEventListener('click', () => {
           window.editor.trigger('undo', 'undo', null)
           closeDropdowns()
-          updateUndoRedoButtons();
+          updateUndoRedoButtons()
         })
       
         document.getElementById('redoBtn').addEventListener('click', () => {
           window.editor.trigger('redo', 'redo', null)
           closeDropdowns()
-          updateUndoRedoButtons();
+          updateUndoRedoButtons()
         })
-
-        
-        
       
         document.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.key === 's') {
             e.preventDefault()
             document.getElementById('saveScriptBtn').click()
-          } else if (e.ctrlKey && e.key === 'z' || e.ctrlKey && e.shiftKey && e.key === 'Z') {
+          } else if ((e.ctrlKey && e.key === 'z') || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
             setTimeout(() => {
-              updateUndoRedoButtons();
-            }, 100);
+              updateUndoRedoButtons()
+            }, 100)
           }
         })
       
@@ -879,26 +875,26 @@
         const modelUri = editor.getModel().uri
         const redoBtn = document.getElementById('redoBtn')
         const undoBtn = document.getElementById('undoBtn')
-
+      
         function updateUndoRedoButtons() {
-          const undoRedoService = editor._modelData?.viewModel?._undoRedoService;
-          const modelUri = editor.getModel().uri;
-        
+          const undoRedoService = editor._modelData?.viewModel?._undoRedoService
+          const modelUri = editor.getModel().uri
+      
           if (!undoRedoService || !modelUri) {
-            undoBtn.disabled = true;
-            redoBtn.disabled = true;
-            return;
+            undoBtn.disabled = true
+            redoBtn.disabled = true
+            return
           }
-          undoBtn.disabled = !undoRedoService.canUndo(modelUri);
-          redoBtn.disabled = !undoRedoService.canRedo(modelUri);
+          undoBtn.disabled = !undoRedoService.canUndo(modelUri)
+          redoBtn.disabled = !undoRedoService.canRedo(modelUri)
         }
-        
+      
         editor.onDidChangeModelContent(() => {
-          updateUndoRedoButtons();
-        });
+          updateUndoRedoButtons()
+        })
       
         replaceAllText(`console.log('Hello, World!');`)
-        updateUndoRedoButtons();
+        updateUndoRedoButtons()
       })
     </script>
   </body>
