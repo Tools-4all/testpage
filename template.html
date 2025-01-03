@@ -317,7 +317,7 @@
         background-color: #444;
         color: #ffffff;
       }
-
+      
       .vs-logo {
         position: absolute;
         top: 0;
@@ -428,15 +428,17 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-    
+
     <script type="module">
-      import * as monaco from 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js';
+      import * as monaco from 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js'
+      
       const workerPath = "{% url 'betzi_test_js' %}"
       let workerBlobURL = null
       const sharedBuffer = new SharedArrayBuffer(1024)
       const view = new Int32Array(sharedBuffer)
       let activeDropdown = null
       
+      // Cache the Web Worker code
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
           const response = await fetch(workerPath)
@@ -446,6 +448,7 @@
         }
       }
       
+      // Initialize the Web Worker
       const initializeWorker = () => {
         if (!workerBlobURL) {
           console.error('Worker code has not been cached yet.')
@@ -454,11 +457,13 @@
         return new Worker(workerBlobURL)
       }
       
+      // Clear the console output
       const clearConsole = () => {
         const outputDiv = document.getElementById('output')
         outputDiv.innerHTML = ''
       }
       
+      // Append messages to the console output
       const appendToOutput = (type, message) => {
         const outputDiv = document.getElementById('output')
         const line = document.createElement('div')
@@ -468,6 +473,7 @@
         outputDiv.scrollTop = outputDiv.scrollHeight
       }
       
+      // Handle prompts from the worker
       const handlePrompt = (msg) => {
         return new Promise((resolve) => {
           const promptLine = document.createElement('div')
@@ -502,8 +508,10 @@
           input.focus()
         })
       }
+      
       let currentWorker = null
       
+      // Run button click handler
       document.getElementById('runButton').addEventListener('click', async () => {
         clearConsole()
         if (currentWorker) {
@@ -533,7 +541,7 @@
         }
       })
       
-      require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' } })
+      // Define Monaco Editor theme and initialize editor
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
@@ -547,21 +555,12 @@
         colors: {
           'editor.background': '#1E1E1E'
         }
-      });
-      window.MonacoEnvironment = {
-        getWorkerUrl: function (workerId, label) {
-          return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-            self.MonacoEnvironment = {
-              baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-            };
-            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-          `)}`;
-        }
-      };
+      })
       
-      
-      
-        window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
+      // Initialize the editor after DOMContentLoaded
+      document.addEventListener('DOMContentLoaded', () => {
+        const editorContainer = document.getElementById('editorContainer')
+        window.editor = monaco.editor.create(editorContainer, {
           value: `console.log('Hello, World!');`,
           language: 'javascript',
           theme: 'custom-dark',
@@ -592,221 +591,218 @@
           formatOnType: true,
           formatOnPaste: true,
           suggestOnTriggerCharacters: true,
-          smoothScrolling: true,
-          breadcrumbs: {
-            enabled: true
-          }
+          smoothScrolling: true
         })
+      })
       
-        editor.onDidChangeCursorPosition((e) => {
-          const position = editor.getPosition()
-          document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
-        })
+      editor.onDidChangeCursorPosition((e) => {
+        const position = editor.getPosition()
+        document.getElementById('statusBar').textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: 3 | JavaScript`
+      })
       
-        document.getElementById('searchIcon').addEventListener('click', () => {
-          if (window.editor) {
-            window.editor.getAction('actions.find').run()
-          }
-        })
+      document.getElementById('searchIcon').addEventListener('click', () => {
+        if (window.editor) {
+          window.editor.getAction('actions.find').run()
+        }
+      })
       
-        const gitInp = document.getElementById('gitUrl')
+      const gitInp = document.getElementById('gitUrl')
       
-        function gitUrlErr() {
-          gitInp.style.borderColor = 'red'
-          setTimeout(() => {
-            gitInp.style.borderColor = ''
-          }, 2000)
+      function gitUrlErr() {
+        gitInp.style.borderColor = 'red'
+        setTimeout(() => {
+          gitInp.style.borderColor = ''
+        }, 2000)
+      }
+      
+      document.getElementById('loadGitButton').addEventListener('click', async () => {
+        const gitUrl = gitInp.value.trim()
+      
+        if (!gitUrl) {
+          appendToOutput('error', 'No URL provided.')
+          gitUrlErr()
+          return
         }
       
-        document.getElementById('loadGitButton').addEventListener('click', async () => {
-          const gitUrl = gitInp.value.trim()
-      
-          if (!gitUrl) {
-            appendToOutput('error', 'No URL provided.')
-            gitUrlErr()
-            return
-          }
-      
-          try {
-            new URL(gitUrl)
-          } catch (error) {
-            appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
-            gitUrlErr()
-            return
-          }
-      
-          const normalizedUrl = normalizeUrl(gitUrl)
-          const parsedUrl = parseGitHubUrl(normalizedUrl)
-      
-          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
-            appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
-            gitUrlErr()
-            return
-          }
-      
-          try {
-            let fileContent
-      
-            if (parsedUrl.isRawFile) {
-              fileContent = await fetchRawFile(parsedUrl.rawUrl)
-            } else {
-              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
-              if (!fileData.content) {
-                appendToOutput('error', 'Failed to fetch file content.')
-                gitUrlErr()
-                return
-              }
-              fileContent = atob(fileData.content)
-            }
-      
-            window.editor.setValue(fileContent)
-            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
-          } catch (error) {
-            appendToOutput('error', `Error fetching file: ${error.message}`)
-          }
-        })
-      
-        function normalizeUrl(url) {
-          if (url.endsWith('.git')) {
-            url = url.slice(0, -4)
-          }
-          if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url
-          }
-          if (url.startsWith('http://')) {
-            url = 'https://' + url.substring(7)
-          }
-          return url
+        try {
+          new URL(gitUrl)
+        } catch (error) {
+          appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
+          gitUrlErr()
+          return
         }
       
-        function parseGitHubUrl(url) {
-          if (url.includes('raw.githubusercontent.com')) {
-            const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
-            if (match) {
-              return {
-                isRawFile: true,
-                rawUrl: url
-              }
-            }
-            return { isRawFile: false }
-          }
+        const normalizedUrl = normalizeUrl(gitUrl)
+        const parsedUrl = parseGitHubUrl(normalizedUrl)
       
-          const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
-      
-          if (!match) {
-            return { isFile: false }
-          }
-      
-          return {
-            owner: match[1],
-            repo: match[2],
-            branch: match[3],
-            path: match[4],
-            isFile: true
-          }
+        if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
+          appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
+          gitUrlErr()
+          return
         }
       
-        async function fetchFromGit(owner, repo, path, branch = 'main') {
-          const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
-          const response = await fetch(apiUrl)
+        try {
+          let fileContent
       
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file: ${response.statusText}`)
-          }
-      
-          const data = await response.json()
-      
-          if (data.type !== 'file') {
-            throw new Error('The URL does not point to a valid file.')
-          }
-      
-          return data
-        }
-      
-        async function fetchRawFile(rawUrl) {
-          const response = await fetch(rawUrl)
-      
-          if (!response.ok) {
-            throw new Error(`Failed to fetch raw file: ${response.statusText}`)
-          }
-      
-          return await response.text()
-        }
-      
-        const btnsArray = ['gitIcon', 'settingsIcon']
-        btnsArray.forEach((iconId) => {
-          const icon = document.getElementById(iconId)
-          icon.addEventListener('click', (e) => {
-            const isActive = e.currentTarget.classList.contains('active')
-            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
-            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-      
-            if (!isActive) {
-              e.currentTarget.classList.add('active')
-              const targetPanel = e.currentTarget.getAttribute('data-target')
-              document.getElementById(targetPanel).classList.add('active')
-            }
-          })
-        })
-      
-        const loadGitButton = document.getElementById('loadGitButton')
-      
-        gitInp.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            loadGitButton.click()
-          }
-        })
-      
-        gitInp.addEventListener('input', () => {
-          if (!gitInp.value.trim()) {
-            loadGitButton.disabled = true
+          if (parsedUrl.isRawFile) {
+            fileContent = await fetchRawFile(parsedUrl.rawUrl)
           } else {
-            loadGitButton.disabled = false
+            const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
+            if (!fileData.content) {
+              appendToOutput('error', 'Failed to fetch file content.')
+              gitUrlErr()
+              return
+            }
+            fileContent = atob(fileData.content)
+          }
+      
+          window.editor.setValue(fileContent)
+          appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
+        } catch (error) {
+          appendToOutput('error', `Error fetching file: ${error.message}`)
+        }
+      })
+      
+      function normalizeUrl(url) {
+        if (url.endsWith('.git')) {
+          url = url.slice(0, -4)
+        }
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          url = 'https://' + url
+        }
+        if (url.startsWith('http://')) {
+          url = 'https://' + url.substring(7)
+        }
+        return url
+      }
+      
+      function parseGitHubUrl(url) {
+        if (url.includes('raw.githubusercontent.com')) {
+          const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
+          if (match) {
+            return {
+              isRawFile: true,
+              rawUrl: url
+            }
+          }
+          return { isRawFile: false }
+        }
+      
+        const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
+      
+        if (!match) {
+          return { isFile: false }
+        }
+      
+        return {
+          owner: match[1],
+          repo: match[2],
+          branch: match[3],
+          path: match[4],
+          isFile: true
+        }
+      }
+      
+      async function fetchFromGit(owner, repo, path, branch = 'main') {
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
+        const response = await fetch(apiUrl)
+      
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.statusText}`)
+        }
+      
+        const data = await response.json()
+      
+        if (data.type !== 'file') {
+          throw new Error('The URL does not point to a valid file.')
+        }
+      
+        return data
+      }
+      
+      async function fetchRawFile(rawUrl) {
+        const response = await fetch(rawUrl)
+      
+        if (!response.ok) {
+          throw new Error(`Failed to fetch raw file: ${response.statusText}`)
+        }
+      
+        return await response.text()
+      }
+      
+      const btnsArray = ['gitIcon', 'settingsIcon']
+      btnsArray.forEach((iconId) => {
+        const icon = document.getElementById(iconId)
+        icon.addEventListener('click', (e) => {
+          const isActive = e.currentTarget.classList.contains('active')
+          document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
+          document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
+      
+          if (!isActive) {
+            e.currentTarget.classList.add('active')
+            const targetPanel = e.currentTarget.getAttribute('data-target')
+            document.getElementById(targetPanel).classList.add('active')
+          }
+        })
+      })
+      
+      const loadGitButton = document.getElementById('loadGitButton')
+      
+      gitInp.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          loadGitButton.click()
+        }
+      })
+      
+      gitInp.addEventListener('input', () => {
+        if (!gitInp.value.trim()) {
+          loadGitButton.disabled = true
+        } else {
+          loadGitButton.disabled = false
+        }
+      })
+      
+      document.querySelectorAll('.vs-navbar-item').forEach((item) => {
+        item.addEventListener('click', (event) => {
+          const dropdownId = event.currentTarget.getAttribute('data-dropdown')
+          const dropdown = document.getElementById(dropdownId)
+      
+          // Close all dropdowns
+          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+            dropdown.classList.remove('active')
+          })
+      
+          // Toggle the current dropdown
+          if (dropdown) {
+            dropdown.classList.toggle('active')
+            activeDropdown = dropdown.classList.contains('active') ? dropdown : null
           }
         })
       
-        document.querySelectorAll('.vs-navbar-item').forEach((item) => {
-          item.addEventListener('click', (event) => {
+        item.addEventListener('mouseover', (event) => {
+          if (activeDropdown) {
+            // Switch to the hovered dropdown if one is active
             const dropdownId = event.currentTarget.getAttribute('data-dropdown')
             const dropdown = document.getElementById(dropdownId)
       
-            // Close all dropdowns
-            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active')
-            })
-      
-            // Toggle the current dropdown
-            if (dropdown) {
-              dropdown.classList.toggle('active')
-              activeDropdown = dropdown.classList.contains('active') ? dropdown : null
+            // Close the currently active dropdown
+            if (activeDropdown !== dropdown) {
+              activeDropdown.classList.remove('active')
+              dropdown.classList.add('active')
+              activeDropdown = dropdown
             }
-          })
-      
-          item.addEventListener('mouseover', (event) => {
-            if (activeDropdown) {
-              // Switch to the hovered dropdown if one is active
-              const dropdownId = event.currentTarget.getAttribute('data-dropdown')
-              const dropdown = document.getElementById(dropdownId)
-      
-              // Close the currently active dropdown
-              if (activeDropdown !== dropdown) {
-                activeDropdown.classList.remove('active')
-                dropdown.classList.add('active')
-                activeDropdown = dropdown
-              }
-            }
-          })
-        })
-      
-        // Close dropdowns if clicking outside
-        document.addEventListener('click', (event) => {
-          if (!event.target.closest('.vs-navbar-item')) {
-            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active')
-            })
-            activeDropdown = null // Reset active dropdown
           }
         })
+      })
+      
+      // Close dropdowns if clicking outside
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('.vs-navbar-item')) {
+          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+            dropdown.classList.remove('active')
+          })
+          activeDropdown = null // Reset active dropdown
+        }
       })
     </script>
   </body>
