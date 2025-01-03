@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>VSCode-like Sandboxed JS Compiler</title>
 
-    <!-- Updated Monaco CSS link to 0.52.2 -->
     <link
       rel="stylesheet"
       data-name="vs/editor/editor.main"
@@ -46,7 +45,7 @@
         border-right: 1px solid #333;
         transition: width 0.3s ease;
         flex-shrink: 0;
-        margin-top: 30px; /* Add space below the navbar */
+        margin-top: 30px;
       }
       #activityBar .icon {
         color: #b3b3b3;
@@ -85,7 +84,7 @@
         display: none;
         flex-shrink: 0;
         transition: all 0.3s ease;
-        margin-top: 30px; /* Add space below the navbar */
+        margin-top: 30px;
       }
       .sidebar-panel.active {
         display: block;
@@ -95,7 +94,7 @@
         flex-direction: column;
         flex: 1;
         overflow: hidden;
-        margin-top: 30px; /* Ensure content starts below the navbar */
+        margin-top: 30px; 
       }
       #tabBar {
         background-color: #252526;
@@ -270,12 +269,12 @@
         display: flex;
         padding: 5px 10px;
         border-bottom: 1px solid #333;
-        position: fixed; /* Ensure it's at the top of the viewport */
+        position: fixed;
         top: 0;
         left: 0;
-        width: 100%; /* Stretch across the width of the screen */
-        z-index: 1000; /* Place it above all other content */
-        padding-left: 40px; /* Add space to the left for the logo */
+        width: 100%; 
+        z-index: 1000; 
+        padding-left: 40px; 
       }
       .vs-navbar-item {
         margin-right: 20px;
@@ -314,21 +313,21 @@
         position: absolute;
         top: 0;
         left: 0;
-        height: 40px; /* Adjust to your desired container height */
-        width: 40px; /* Adjust to your desired container width */
+        height: 40px; 
+        width: 40px; 
         z-index: 1010;
-        display: flex; /* Enable flexbox */
-        justify-content: center; /* Center horizontally */
-        align-items: center; /* Center vertically */
+        display: flex; 
+        justify-content: center; 
+        align-items: center; 
       }
       .vs-logo img {
-        height: 27px; /* Adjust image size relative to the container */
-        width: 27px; /* Maintain aspect ratio */
-        object-fit: contain; /* Ensure the image fits within the container without cropping */
-        border-radius: 4px; /* Optional: Add rounded corners */
+        height: 27px; 
+        width: 27px; 
+        object-fit: contain; 
+        border-radius: 4px; 
         margin-bottom: 11px;
-        user-drag: none; /* Prevent dragging in modern browsers */
-        user-select: none; /* Prevent text/image selection */
+        user-drag: none; 
+        user-select: none;
         -webkit-user-drag: none;
       }
       @media (max-width: 768px) {
@@ -420,7 +419,6 @@
       </div>
     </div>
 
-    <!-- Keep the same RequireJS version -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
     <script>
@@ -527,9 +525,6 @@
         }
       })
 
-      /*
-        Update the Monaco Editor path references to 0.52.2
-      */
       require.config({
         paths: {
           vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
@@ -775,12 +770,10 @@
             const dropdownId = event.currentTarget.getAttribute('data-dropdown')
             const dropdown = document.getElementById(dropdownId)
 
-            // Close all dropdowns
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
               dropdown.classList.remove('active')
             })
 
-            // Toggle the current dropdown
             if (dropdown) {
               dropdown.classList.toggle('active')
               activeDropdown = dropdown.classList.contains('active') ? dropdown : null
@@ -789,11 +782,9 @@
 
           item.addEventListener('mouseover', (event) => {
             if (activeDropdown) {
-              // Switch to the hovered dropdown if one is active
               const dropdownId = event.currentTarget.getAttribute('data-dropdown')
               const dropdown = document.getElementById(dropdownId)
 
-              // Close the currently active dropdown
               if (activeDropdown !== dropdown) {
                 activeDropdown.classList.remove('active')
                 dropdown.classList.add('active')
@@ -803,13 +794,12 @@
           })
         })
 
-        // Close dropdowns if clicking outside
         document.addEventListener('click', (event) => {
           if (!event.target.closest('.vs-navbar-item')) {
             document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
               dropdown.classList.remove('active')
             })
-            activeDropdown = null // Reset active dropdown
+            activeDropdown = null =
           }
         })
       })
