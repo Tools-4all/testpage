@@ -938,9 +938,9 @@
         const tabSizeInput = document.getElementById('tabSizeInput')
         const tabSizeDisplay = document.getElementById('tabSizeDisplay')
       
-        tabSizeInput.addEventListener('change', () => {
+        tabSizeInput.addEventListener('input', () => {
           if (window.editor) {
-            spaces = parseInt(tabSizeInput.value, 9)
+            spaces = parseInt(tabSizeInput.value, 10)
             tabSizeDisplay.textContent = spaces;
             window.editor.updateOptions({ tabSize: spaces })
             const position = editor.getPosition()
