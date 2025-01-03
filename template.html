@@ -366,9 +366,8 @@
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item">Undo</div>
-          <div class="vs-navbar-dropdown-item">Redo</div>
-          <div class="vs-navbar-dropdown-item">Find</div>
+          <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
+          <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
         </div>
       </div>
     </div>
@@ -809,6 +808,12 @@
           })
         })
 
+        function closeDropdowns() {
+          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
+            dropdown.classList.remove('active')
+          })
+        }
+
         document.getElementById("uploadFileBtn").addEventListener('click', () => {
           const input = document.createElement('input')
           input.type = 'file'
@@ -820,6 +825,7 @@
             reader.onload = (e) => {
               const content = e.target.result
               replaceAllText(content)
+              closeDropdowns()
             }
             reader.readAsText(file)
           })
@@ -837,6 +843,17 @@
           a.download = 'script.js'
           a.click()
           URL.revokeObjectURL(url)
+          closeDropdowns()
+        })
+
+        document.getElementById("undoBtn").addEventListener('click', () => {
+          window.editor.trigger('undo', 'undo', null)
+          closeDropdowns()
+        })
+
+        document.getElementById("redoBtn").addEventListener('click', () => {
+          window.editor.trigger('redo', 'redo', null)
+          closeDropdowns()
         })
 
         document.addEventListener('click', (event) => {
