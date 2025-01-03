@@ -896,14 +896,8 @@
         const tabSizeInput = document.getElementById('tabSizeInput')
       
         tabSizeInput.addEventListener('keydown', (evt) => {
-          if ((evt.which != 8 && evt.which != 0 && evt.which < 48) || evt.which > 57) {
+          if ((evt.which != 8 && evt.which != 0 && evt.which < 48) || evt.which > 57 || parseInt(tabSizeInput.value + evt.key) > 8) {
             evt.preventDefault()
-          }
-        })
-
-        tabSizeInput.addEventListener('keyup', () => {
-          if (parseInt(tabSizeInput.value) > 8) {
-            tabSizeInput.value = 8
           }
         })
       
