@@ -290,6 +290,18 @@
         cursor: pointer;
       }
 
+      /* The inline text field for editing the tab name */
+      .tab-title-edit {
+        background: #555;
+        border: 1px solid #666;
+        color: #fff;
+        width: 90px;
+        font-size: 13px;
+        margin-right: 8px;
+        font-family: inherit;
+        outline: none;
+      }
+
       #addTabButton {
         background: none;
         color: #c5c5c5;
@@ -542,65 +554,61 @@
       let activeTabId = null; // which tab is active?
 
       /**
-       * Finds the highest "TabN" number among open tabs (by parsing the tab.name),
-       * returns that highest integer. If no tabs, returns 0.
+       * Returns a unique name. If 'baseName' already exists, appends (1), (2), etc.
        */
-      function getHighestTabNumber() {
-        let highest = 0;
-        for (const t of tabs) {
-          // Tab names are "Tab1", "Tab2", etc.
-          const match = t.name.match(/^Tab(\d+)$/);
-          if (match) {
-            const num = parseInt(match[1], 10);
-            if (!isNaN(num) && num > highest) {
-              highest = num;
-            }
-          }
+      function getUniqueTabName(baseName) {
+        let candidate = baseName;
+        let suffix = 1;
+        while (tabs.some((t) => t.name === candidate)) {
+          candidate = baseName + `(${suffix++})`;
         }
-        return highest;
+        return candidate;
       }
 
       /**
-       * Creates a new tab whose name is "TabX" with X = (highest existing tab) + 1.
+       * Create a new tab. If 'desiredName' is provided, we will attempt to use it
+       * or a conflict version (ex: name(1)). If 'initialContent' is provided, we
+       * set that in the editor. Otherwise we do a default snippet.
        */
-      function createTab() {
-        // 1. determine tab name
-        const highest = getHighestTabNumber(); // e.g. 2
-        const tabNumber = highest + 1;         // e.g. 3
-        const tabName = `Tab${tabNumber}`;
+      function createTab(desiredName = null, initialContent = null) {
+        // If no desiredName, we default to "TabX" where X = highest + 1
+        let tabName;
+        if (!desiredName) {
+          tabName = getNextTabName(); // ex: Tab3
+        } else {
+          // use getUniqueTabName in case desiredName is taken
+          tabName = getUniqueTabName(desiredName);
+        }
 
-        // 2. unique ID
-        const newTabId = Date.now(); // or any unique ID
-
-        // 3. create a per-tab SharedArrayBuffer so we don't conflict prompts
+        const newTabId = Date.now(); // unique ID
         const sharedBuffer = new SharedArrayBuffer(1024);
         const view = new Int32Array(sharedBuffer);
 
-        // 4. create the tab "button"
+        // Create the tab "button"
         const tabElem = document.createElement("div");
         tabElem.classList.add("tab");
         tabElem.draggable = true;
 
-        // title for rename
+        // Title container (span or input)
         const titleSpan = document.createElement("span");
         titleSpan.classList.add("tab-title");
         titleSpan.textContent = tabName;
         tabElem.appendChild(titleSpan);
 
-        // close icon
+        // Close icon
         const closeIcon = document.createElement("i");
         closeIcon.classList.add("fas", "fa-times", "close");
         tabElem.appendChild(closeIcon);
 
-        // 5. create the editor + console container
+        // Editor + console container
         const editorAndOutput = document.createElement("div");
         editorAndOutput.classList.add("editor-and-output");
 
-        // Editor Container
+        // Editor container
         const editorContainer = document.createElement("div");
         editorContainer.classList.add("editorContainer");
 
-        // Output Container
+        // Output container
         const outputContainer = document.createElement("div");
         outputContainer.classList.add("outputContainer");
 
@@ -621,7 +629,7 @@
         editorAndOutput.appendChild(editorContainer);
         editorAndOutput.appendChild(outputContainer);
 
-        // 6. insert into DOM
+        // Insert into DOM
         const tabBar = document.getElementById("tabBar");
         const addTabButton = document.getElementById("addTabButton");
         tabBar.insertBefore(tabElem, addTabButton);
@@ -629,7 +637,7 @@
         const tabsContainer = document.getElementById("tabsContainer");
         tabsContainer.appendChild(editorAndOutput);
 
-        // 7. create Monaco editor
+        // Create the Monaco editor
         const editorInstance = monaco.editor.create(editorContainer, {
           language: "javascript",
           theme: "custom-dark",
@@ -666,7 +674,7 @@
           },
         });
 
-        // 8. create tab object
+        // Create tab object
         const tabObj = {
           id: newTabId,
           name: tabName,
@@ -701,25 +709,49 @@
         tabElem.addEventListener("dragstart", (ev) => {
           ev.dataTransfer.setData("text/plain", String(newTabId));
         });
-        tabElem.addEventListener("dragover", (ev) => ev.preventDefault());
+        tabElem.addEventListener("dragover", (ev) => {
+          ev.preventDefault(); // needed to allow dropping
+        });
         tabElem.addEventListener("drop", (ev) => {
           ev.preventDefault();
           const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
           reorderTabs(draggedTabId, newTabId);
         });
 
-        // rename on double-click
+        // Make tab name editable on double-click
         titleSpan.addEventListener("dblclick", () => {
-          renameTab(newTabId);
+          makeTabTitleEditable(tabObj);
         });
 
-        // switch to the new tab
+        // Switch to the new tab
         switchTab(newTabId);
 
-        // default snippet
-        editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
+        // If initialContent is given, use that; else default
+        if (initialContent !== null) {
+          editorInstance.setValue(initialContent);
+        } else {
+          editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
+        }
 
         return newTabId;
+      }
+
+      /**
+       * Helper: compute next default tab name "TabX" by scanning existing tabs
+       */
+      function getNextTabName() {
+        // find all tab names that match /^Tab(\d+)$/
+        let maxNum = 0;
+        for (const t of tabs) {
+          const match = t.name.match(/^Tab(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) {
+              maxNum = num;
+            }
+          }
+        }
+        return `Tab${maxNum + 1}`;
       }
 
       /**
@@ -736,6 +768,7 @@
         tabs.splice(draggedIndex, 1);
         tabs.splice(targetIndex, 0, draggedTabObj);
 
+        // Rebuild the tab bar DOM order
         const tabBar = document.getElementById("tabBar");
         tabs.forEach((t) => {
           tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
@@ -890,6 +923,59 @@
       }
 
       /***************************************************************
+       * Make the tab title editable (inline)
+       ***************************************************************/
+      function makeTabTitleEditable(tabObj) {
+        // Replace the <span.tab-title> with an <input> set to the current name
+        const span = tabObj.tabElement.querySelector(".tab-title");
+        if (!span) return;
+
+        const oldName = tabObj.name;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = oldName;
+        input.classList.add("tab-title-edit");
+
+        // remove the old span
+        tabObj.tabElement.replaceChild(input, span);
+
+        // focus, select the text
+        input.focus();
+        input.select();
+
+        // on blur or Enter, finalize
+        const finalize = () => {
+          let newVal = input.value.trim();
+          if (!newVal) {
+            newVal = oldName; // revert if empty
+          }
+          // check for conflicts
+          newVal = getUniqueTabName(newVal);
+
+          tabObj.name = newVal;
+
+          // Recreate the title span
+          const newSpan = document.createElement("span");
+          newSpan.classList.add("tab-title");
+          newSpan.textContent = newVal;
+          // attach dblclick event again
+          newSpan.addEventListener("dblclick", () => {
+            makeTabTitleEditable(tabObj);
+          });
+
+          tabObj.tabElement.replaceChild(newSpan, input);
+        };
+
+        input.addEventListener("blur", finalize);
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            finalize();
+          }
+        });
+      }
+
+      /***************************************************************
        * Monaco setup
        ***************************************************************/
       require.config({
@@ -937,7 +1023,7 @@
         });
 
         // create an initial tab
-        createTab();
+        createTab(); // no name => "Tab1"
       });
 
       /***************************************************************
@@ -976,23 +1062,6 @@
           switchTab(clickedTab.id);
         }
       });
-
-      /***************************************************************
-       * Rename a tab
-       ***************************************************************/
-      function renameTab(tabId) {
-        const tabObj = tabs.find((t) => t.id === tabId);
-        if (!tabObj) return;
-        const oldName = tabObj.name;
-        const newName = prompt("Enter new tab name:", oldName);
-        if (newName && newName.trim()) {
-          tabObj.name = newName.trim();
-          const titleSpan = tabObj.tabElement.querySelector(".tab-title");
-          if (titleSpan) {
-            titleSpan.textContent = tabObj.name;
-          }
-        }
-      }
 
       /***************************************************************
        * Sidebar + Navbar
@@ -1138,9 +1207,9 @@
           const file = e.target.files[0];
           const reader = new FileReader();
           reader.onload = (evt) => {
-            if (activeTabId === null) return;
-            const tabObj = tabs.find((t) => t.id === activeTabId);
-            tabObj.editorInstance.setValue(evt.target.result);
+            // If user picks a file, we open it in a brand new tab named after the file
+            const fileName = getUniqueTabName(file.name); // handle conflict
+            createTab(fileName, evt.target.result);
             closeDropdowns();
           };
           reader.readAsText(file);
@@ -1158,7 +1227,9 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "script.js";
+        a.download = tabObj.name.endsWith(".js")
+          ? tabObj.name
+          : `${tabObj.name}.js`;
         a.click();
         URL.revokeObjectURL(url);
         closeDropdowns();
@@ -1187,50 +1258,44 @@
       });
 
       loadGitButton.addEventListener("click", async () => {
-        if (activeTabId === null) {
-          alert("No active tab to load content into!");
-          return;
-        }
-        const tabObj = tabs.find((t) => t.id === activeTabId);
-        if (!tabObj) return;
-
+        // "Open from GitHub" -> opens a new tab named after the GH file
         const gitUrl = gitInp.value.trim();
-        if (!gitUrl) {
-          appendToOutput(tabObj.outputElement, "error", "No URL provided.");
-          gitUrlErr();
-          return;
-        }
+        if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
 
+        let tabFileName = "untitled.js"; // fallback
+        // We'll parse the path from the URL
+        // e.g. https://github.com/user/repo/blob/branch/path/to/file.js => "file.js"
+        // or raw paths => the last segment as well
         try {
-          new URL(gitUrl);
-        } catch (error) {
-          appendToOutput(
-            tabObj.outputElement,
-            "error",
-            "Invalid URL: Please enter a valid URL."
-          );
-          gitUrlErr();
+          new URL(gitUrl); // check if valid
+        } catch (err) {
+          alert("Invalid URL");
           return;
         }
 
         const normalizedUrl = normalizeUrl(gitUrl);
         const parsedUrl = parseGitHubUrl(normalizedUrl);
-
-        if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
-          appendToOutput(
-            tabObj.outputElement,
-            "error",
-            "Invalid URL: Only file URLs are accepted."
-          );
-          gitUrlErr();
-          return;
+        // We'll extract the file name from either the path or rawUrl
+        if (parsedUrl.isRawFile) {
+          // raw link
+          const lastSlash = parsedUrl.rawUrl.lastIndexOf("/");
+          if (lastSlash !== -1) {
+            tabFileName = parsedUrl.rawUrl.substring(lastSlash + 1);
+          }
+        } else if (parsedUrl.isFile) {
+          // path-based
+          const lastSlash = parsedUrl.path.lastIndexOf("/");
+          if (lastSlash !== -1) {
+            tabFileName = parsedUrl.path.substring(lastSlash + 1);
+          }
         }
+        // If for some reason we can't parse name, default to "untitled.js"
 
         try {
           let fileContent;
           if (parsedUrl.isRawFile) {
             fileContent = await fetchRawFile(parsedUrl.rawUrl);
-          } else {
+          } else if (parsedUrl.isFile) {
             const fileData = await fetchFromGit(
               parsedUrl.owner,
               parsedUrl.repo,
@@ -1238,37 +1303,21 @@
               parsedUrl.branch
             );
             if (!fileData.content) {
-              appendToOutput(
-                tabObj.outputElement,
-                "error",
-                "Failed to fetch file content."
-              );
-              gitUrlErr();
+              alert("Failed to fetch file content.");
               return;
             }
             fileContent = atob(fileData.content);
+          } else {
+            alert("Invalid GitHub file URL. Must point to a specific file.");
+            return;
           }
 
-          tabObj.editorInstance.setValue(fileContent);
-          appendToOutput(
-            tabObj.outputElement,
-            "info",
-            `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`
-          );
+          // create a new tab, name is unique
+          createTab(tabFileName, fileContent);
         } catch (error) {
-          appendToOutput(
-            tabObj.outputElement,
-            "error",
-            `Error fetching file: ${error.message}`
-          );
+          alert(`Error fetching file: ${error.message}`);
         }
       });
-      function gitUrlErr() {
-        gitInp.style.borderColor = "red";
-        setTimeout(() => {
-          gitInp.style.borderColor = "";
-        }, 2000);
-      }
       function normalizeUrl(url) {
         if (url.endsWith(".git")) {
           url = url.slice(0, -4);
@@ -1282,6 +1331,7 @@
         return url;
       }
       function parseGitHubUrl(url) {
+        // raw link
         if (url.includes("raw.githubusercontent.com")) {
           const match = url.match(
             /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
@@ -1294,7 +1344,7 @@
           }
           return { isRawFile: false };
         }
-
+        // normal link
         const match = url.match(
           /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
         );
