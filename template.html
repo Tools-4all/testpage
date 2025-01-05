@@ -3,13 +3,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VSCode-like Sandboxed JS Compiler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>VSCode-like Sandboxed JS Compiler (Multi-Tab)</title>
 
-    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
-
+    <!-- Monaco Editor CSS -->
+    <link
+      rel="stylesheet"
+      data-name="vs/editor/editor.main"
+      href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css"
+    />
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Fira Code Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
     <style>
       * {
         box-sizing: border-box;
@@ -25,6 +37,83 @@
         color: #d4d4d4;
         overflow: hidden;
       }
+      /* Navbar Logo */
+      .vs-logo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 40px;
+        width: 40px;
+        z-index: 1010;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .vs-logo img {
+        height: 27px;
+        width: 27px;
+        object-fit: contain;
+        border-radius: 4px;
+        margin-bottom: 11px;
+        user-drag: none;
+        user-select: none;
+        -webkit-user-drag: none;
+      }
+      /* Top Navbar */
+      .vs-navbar {
+        background-color: #252526;
+        color: #ffffff;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        display: flex;
+        padding: 5px 10px;
+        border-bottom: 1px solid #333;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
+        padding-left: 40px; /* space for the logo */
+      }
+      .vs-navbar-item {
+        margin-right: 20px;
+        position: relative;
+        cursor: pointer;
+      }
+      .vs-navbar-item:hover {
+        color: #d4d4d4;
+      }
+      .vs-navbar-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: #333;
+        border: 1px solid #252526;
+        border-radius: 4px;
+        overflow: hidden;
+        z-index: 1000;
+        min-width: 120px;
+      }
+      .vs-navbar-dropdown.active {
+        display: block;
+      }
+      .vs-navbar-dropdown-item {
+        padding: 8px 12px;
+        color: #d4d4d4;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .vs-navbar-dropdown-item:hover {
+        background-color: #444;
+        color: #ffffff;
+      }
+      .vs-navbar-dropdown-item.disabled {
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      /* Activity Bar (left side) */
       #activityBar {
         width: 50px;
         background-color: #252526;
@@ -65,6 +154,8 @@
         border-radius: 3px;
         white-space: nowrap;
       }
+
+      /* Sidebar panels (git, settings, etc.) */
       .sidebar-panel {
         width: 250px;
         background-color: #1e1e1e;
@@ -79,18 +170,95 @@
       .sidebar-panel.active {
         display: block;
       }
+      #gitUrl {
+        width: 100%;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        background-color: #2d2d2d;
+        border: 1px solid #3c3c3c;
+        border-radius: 4px;
+        color: #d4d4d4;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      #gitUrl:focus {
+        border-color: #007acc;
+      }
+      #loadGitButton {
+        width: 100%;
+        padding: 8px 10px;
+        background-color: #007acc;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-family: 'Fira Code', monospace;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      #loadGitButton:hover {
+        background-color: #005f99;
+      }
+      #tabSizeInput {
+        width: 100%;
+      }
+      .vs-range {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        background-color: #2d2d2d;
+        outline: none;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .vs-range::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #007acc;
+        border-radius: 50%;
+        border: 2px solid #444;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+      }
+      .vs-range::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #007acc;
+        border: 2px solid #444;
+        border-radius: 50%;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+      }
+      .vs-range::-webkit-slider-thumb:hover,
+      .vs-range::-moz-range-thumb:hover {
+        background: #119eff;
+      }
+      .vs-range::-webkit-slider-thumb:active,
+      .vs-range::-moz-range-thumb:active {
+        background: #0067a8;
+      }
+
+      /* Main container for editors + tab bar */
       #mainContainer {
         display: flex;
         flex-direction: column;
         flex: 1;
         overflow: hidden;
-        margin-top: 30px;
+        margin-top: 30px; /* for the top navbar */
       }
+
+      /* Tab bar styling */
       #tabBar {
         background-color: #252526;
         border-bottom: 1px solid #333;
         display: flex;
         align-items: center;
+        padding: 4px 8px;
       }
       .tab {
         background-color: #333;
@@ -112,33 +280,41 @@
         font-size: 12px;
         cursor: pointer;
       }
-      #editorAndOutput {
-        display: flex;
-        flex: 1;
+      /* Container that holds each tab's content (editor + console) */
+      .editor-and-output {
+        display: none; /* only the active tab's content is shown */
         flex-direction: column;
+        flex: 1;
         overflow: hidden;
-        height: calc(100% - 24px);
       }
-      #editorContainer {
+      .editor-and-output.active {
+        display: flex;
+      }
+      .editorContainer {
         flex: 1;
         position: relative;
         height: 100%;
       }
-      #outputContainer {
+      .monaco-editor {
+        width: 100%;
+        height: 100%;
+      }
+      /* Output console container */
+      .outputContainer {
         height: 200px;
         background-color: #1e1e1e;
         border-top: 1px solid #333;
         display: flex;
         flex-direction: column;
       }
-      #controls {
+      .controls {
         display: flex;
         justify-content: flex-end;
         padding: 8px 12px;
         background-color: #252526;
         border-bottom: 1px solid #333;
       }
-      #runButton {
+      .runButton {
         padding: 6px 12px;
         background-color: #0e639c;
         color: white;
@@ -149,13 +325,13 @@
         display: flex;
         align-items: center;
       }
-      #runButton:hover {
+      .runButton:hover {
         background-color: #1177bb;
       }
-      #runButton i {
+      .runButton i {
         margin-right: 5px;
       }
-      #output {
+      .output {
         flex: 1;
         padding: 10px;
         overflow-y: auto;
@@ -200,6 +376,8 @@
         font-size: 14px;
         caret-color: #d4d4d4;
       }
+
+      /* Status Bar */
       #statusBar {
         height: 24px;
         background-color: #252526;
@@ -215,158 +393,7 @@
       .status-item {
         margin-right: 10px;
       }
-      .monaco-editor {
-        width: 100%;
-        height: 100%;
-      }
-      #gitUrl {
-        width: 100%;
-        padding: 8px 10px;
-        margin-bottom: 10px;
-        background-color: #2d2d2d;
-        border: 1px solid #3c3c3c;
-        border-radius: 4px;
-        color: #d4d4d4;
-        font-family: 'Fira Code', monospace;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-      #gitUrl:focus {
-        border-color: #007acc;
-      }
-      #loadGitButton {
-        width: 100%;
-        padding: 8px 10px;
-        background-color: #007acc;
-        border: none;
-        border-radius: 4px;
-        color: white;
-        font-family: 'Fira Code', monospace;
-        font-size: 14px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-      }
-      #loadGitButton:hover {
-        background-color: #005f99;
-      }
-      .vs-navbar {
-        background-color: #252526;
-        color: #ffffff;
-        font-family: 'Fira Code', monospace;
-        font-size: 14px;
-        display: flex;
-        padding: 5px 10px;
-        border-bottom: 1px solid #333;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1000;
-        padding-left: 40px;
-      }
-      .vs-navbar-item {
-        margin-right: 20px;
-        position: relative;
-        cursor: pointer;
-      }
-      .vs-navbar-item:hover {
-        color: #d4d4d4;
-      }
-      .vs-navbar-dropdown {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background-color: #333;
-        border: 1px solid #252526;
-        border-radius: 4px;
-        overflow: hidden;
-        z-index: 1000;
-        min-width: 120px;
-      }
-      .vs-navbar-dropdown.active {
-        display: block;
-      }
-      .vs-navbar-dropdown-item {
-        padding: 8px 12px;
-        color: #d4d4d4;
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .vs-navbar-dropdown-item:hover {
-        background-color: #444;
-        color: #ffffff;
-      }
-      .vs-logo {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 40px;
-        width: 40px;
-        z-index: 1010;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .vs-logo img {
-        height: 27px;
-        width: 27px;
-        object-fit: contain;
-        border-radius: 4px;
-        margin-bottom: 11px;
-        user-drag: none;
-        user-select: none;
-        -webkit-user-drag: none;
-      }
-      
-      .vs-navbar-dropdown-item.disabled {
-        pointer-events: none;
-        opacity: 0.5;
-      }
-      
-      .vs-range {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 100%;
-        height: 6px;
-        background-color: #2d2d2d;
-        outline: none;
-        border-radius: 3px;
-        cursor: pointer;
-      }
-      
-      .vs-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 14px;
-        height: 14px;
-        background: #007acc;
-        border-radius: 50%;
-        border: 2px solid #444;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-      }
-      
-      .vs-range::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
-        background: #007acc;
-        border: 2px solid #444;
-        border-radius: 50%;
-        box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-      }
-      
-      .vs-range::-webkit-slider-thumb:hover,
-      .vs-range::-moz-range-thumb:hover {
-        background: #119eff;
-      }
-      .vs-range::-webkit-slider-thumb:active,
-      .vs-range::-moz-range-thumb:active {
-        background: #0067a8;
-      }
-      
+
       @media (max-width: 768px) {
         #activityBar {
           width: 40px;
@@ -378,7 +405,7 @@
         .sidebar-panel {
           width: 200px;
         }
-        #runButton {
+        .runButton {
           padding: 6px 10px;
           font-size: 12px;
         }
@@ -388,572 +415,853 @@
       }
     </style>
   </head>
-
   <body>
+    <!-- Logo -->
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
     </div>
+    <!-- Top Navbar -->
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
-        File<div class="vs-navbar-dropdown" id="fileDropdown">
+        File
+        <div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
           <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
-        Edit<div class="vs-navbar-dropdown" id="editDropdown">
+        Edit
+        <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
           <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
         </div>
       </div>
     </div>
 
+    <!-- Activity Bar (left side) -->
     <div id="activityBar">
-      <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
+      <div
+        class="icon"
+        id="searchIcon"
+        data-label="Search"
+        data-target="searchPanel"
+      >
         <i class="fas fa-search"></i>
       </div>
-      <div class="icon" id="gitIcon" data-label="Source Control" data-target="gitPanel">
+      <div
+        class="icon"
+        id="gitIcon"
+        data-label="Source Control"
+        data-target="gitPanel"
+      >
         <i class="fas fa-code-branch"></i>
       </div>
-      <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
+      <div
+        class="icon"
+        id="settingsIcon"
+        data-label="Settings"
+        data-target="settingsPanel"
+      >
         <i class="fas fa-cog"></i>
       </div>
     </div>
 
+    <!-- Sidebar Panels -->
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton" disabled="true">Load</button>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
       <div>
-        <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
-        <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
+        <label for="tabSizeInput"
+          >Tab Size: <span id="tabSizeDisplay">3</span></label
+        >
+        <input
+          id="tabSizeInput"
+          type="range"
+          min="1"
+          max="8"
+          value="3"
+          class="vs-range"
+        />
       </div>
     </div>
 
+    <!-- Main Container -->
     <div id="mainContainer">
+      <!-- Tab Bar -->
       <div id="tabBar">
-        <div class="tab active">
-          script.js <i class="fas fa-times close"></i>
-        </div>
-      </div>
-      <div id="editorAndOutput">
-        <div id="editorContainer"></div>
-        <div id="outputContainer">
-          <div id="controls">
-            <button id="runButton"><i class="fas fa-play"></i> Run</button>
-          </div>
-          <div id="output"></div>
+        <!-- A button to add new tabs -->
+        <div
+          style="
+            background: none;
+            color: #c5c5c5;
+            font-size: 18px;
+            margin-left: auto;
+            cursor: pointer;
+          "
+          id="addTabButton"
+        >
+          <i class="fas fa-plus"></i>
         </div>
       </div>
 
+      <!-- Container for each tab's editor + console, shown/hidden by JS -->
+      <!-- We'll dynamically create these .editor-and-output sections -->
+      <div id="tabsContainer" style="flex: 1; overflow: hidden;"></div>
+
+      <!-- Status Bar -->
       <div id="statusBar">
-        <div class="status-item">Ln 1, Col 1</div>
+        <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
         <div class="status-item">UTF-8</div>
-        <div class="status-item">Spaces: 3</div>
+        <div class="status-item" id="statusSpaces">Spaces: 3</div>
         <div class="status-item">JavaScript</div>
       </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <!-- require.js for Monaco Editor -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"
+    ></script>
 
     <script>
-      const workerPath = "{% url 'betzi_test_js' %}"
-      let workerBlobURL = null
-      const sharedBuffer = new SharedArrayBuffer(1024)
-      const view = new Int32Array(sharedBuffer)
-      let activeDropdown = null
-      
-      var spaces = 3
-      
+      /***************************************************************
+       *                Worker Path (Django URL)
+       ***************************************************************/
+      const workerPath = "{% url 'betzi_test_js' %}";
+      let workerBlobURL = null;
+      const sharedBuffer = new SharedArrayBuffer(1024);
+      const view = new Int32Array(sharedBuffer);
+
+      let activeDropdown = null;
+      let spaces = 3; // default tab size
+
+      /***************************************************************
+       *         Caching Worker Code & Worker Initialization
+       ***************************************************************/
       const cacheWorkerCode = async () => {
         if (!workerBlobURL) {
-          const response = await fetch(workerPath)
-          const code = await response.text()
-          const blob = new Blob([code], { type: 'application/javascript' })
-          workerBlobURL = URL.createObjectURL(blob)
+          const response = await fetch(workerPath);
+          const code = await response.text();
+          const blob = new Blob([code], { type: "application/javascript" });
+          workerBlobURL = URL.createObjectURL(blob);
         }
-      }
-      
+      };
+
       const initializeWorker = () => {
         if (!workerBlobURL) {
-          console.error('Worker code has not been cached yet.')
-          return null
+          console.error("Worker code has not been cached yet.");
+          return null;
         }
-        return new Worker(workerBlobURL)
-      }
-      
-      const clearConsole = () => {
-        const outputDiv = document.getElementById('output')
-        outputDiv.innerHTML = ''
-      }
-      
-      const appendToOutput = (type, message) => {
-        const outputDiv = document.getElementById('output')
-        const line = document.createElement('div')
-        line.className = type
-        line.textContent = `[${type.toUpperCase()}] ${message}`
-        outputDiv.appendChild(line)
-        outputDiv.scrollTop = outputDiv.scrollHeight
-      }
-      
-      const handlePrompt = (msg) => {
-        return new Promise((resolve) => {
-          const promptLine = document.createElement('div')
-          promptLine.className = 'prompt-line'
-          const promptMsg = document.createElement('span')
-          promptMsg.textContent = `[PROMPT] ${msg}`
-          const input = document.createElement('input')
-          input.type = 'text'
-          input.autocomplete = 'off'
-      
-          input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              const value = input.value.trim()
-              promptMsg.textContent = `[PROMPT] ${msg} ${value}`
-              input.remove()
-              const textEncoder = new TextEncoder()
-              const encodedResponse = textEncoder.encode(value + '\0')
-              const responseBuffer = new Uint8Array(sharedBuffer, 4)
-              responseBuffer.fill(0)
-              responseBuffer.set(encodedResponse)
-      
-              Atomics.store(view, 0, 1)
-              Atomics.notify(view, 0)
-      
-              resolve()
-            }
-          })
-      
-          promptLine.appendChild(promptMsg)
-          promptLine.appendChild(input)
-          document.getElementById('output').appendChild(promptLine)
-          input.focus()
-        })
-      }
-      
-      let currentWorker = null
-      
-      document.getElementById('runButton').addEventListener('click', async () => {
-        clearConsole()
-        if (currentWorker) {
-          currentWorker.terminate()
-        }
-        await cacheWorkerCode()
-        const worker = initializeWorker()
-        currentWorker = worker
-      
-        if (worker) {
-          worker.onmessage = async (event) => {
-            const { type, message } = event.data
-      
-            if (type === 'prompt') {
-              await handlePrompt(message)
-            } else if (['log', 'error', 'warn', 'info'].includes(type)) {
-              appendToOutput(type, message)
-            }
-          }
-      
-          worker.onerror = (error) => {
-            appendToOutput('error', error.message)
-          }
-      
-          const userCode = window.editor.getValue()
-          worker.postMessage({ type: 'execute', code: userCode, sharedBuffer })
-        }
-      })
-      
-      require.config({
-        paths: {
-          vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
-        }
-      })
-      
-      window.MonacoEnvironment = {
-        getWorkerUrl: function (moduleId, label) {
-          return (
-            'data:text/javascript;charset=utf-8,' +
-            encodeURIComponent(`
-                                                self.MonacoEnvironment = {
-                                                  baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-                                                };
-                                                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-                                              `)
-          )
-        }
-      }
-      
-      require(['vs/editor/editor.main'], function () {
-        monaco.editor.defineTheme('custom-dark', {
-          base: 'vs-dark',
-          inherit: true,
-          rules: [
-            { token: 'keyword', foreground: 'C586C0' },
-            { token: 'identifier', foreground: '9CDCFE' },
-            { token: 'string', foreground: 'CE9178' },
-            { token: 'comment', foreground: '6A9955' },
-            { token: 'number', foreground: 'B5CEA8' }
-          ],
-          colors: {
-            'editor.background': '#1E1E1E'
-          }
-        })
-      
-        window.editor = monaco.editor.create(document.getElementById('editorContainer'), {
-          language: 'javascript',
-          theme: 'custom-dark',
+        return new Worker(workerBlobURL);
+      };
+
+      /***************************************************************
+       *         Data Structures for Multiple Tabs
+       ***************************************************************/
+      // We'll keep track of all tabs, each tab has:
+      // {
+      //   id: number,
+      //   tabElement: HTMLDivElement,
+      //   editorContainer: HTMLDivElement,
+      //   outputElement: HTMLDivElement,
+      //   editorInstance: monaco.editor.IStandaloneCodeEditor,
+      //   worker: Worker | null
+      // }
+      let tabs = [];
+      let activeTabId = null; // which tab is active?
+
+      function createTab() {
+        // Create a unique tab ID
+        const newTabId = Date.now();
+
+        // 1. Create the tab button in the tab bar
+        const tabElem = document.createElement("div");
+        tabElem.classList.add("tab");
+        tabElem.textContent = "Untitled.js ";
+        // Close icon
+        const closeIcon = document.createElement("i");
+        closeIcon.classList.add("fas", "fa-times", "close");
+        tabElem.appendChild(closeIcon);
+
+        // 2. Create the editor + console container
+        const editorAndOutput = document.createElement("div");
+        editorAndOutput.classList.add("editor-and-output");
+
+        // Editor Container
+        const editorContainer = document.createElement("div");
+        editorContainer.classList.add("editorContainer");
+
+        // Output Container
+        const outputContainer = document.createElement("div");
+        outputContainer.classList.add("outputContainer");
+
+        // Controls container
+        const controlsDiv = document.createElement("div");
+        controlsDiv.classList.add("controls");
+
+        // Run button
+        const runBtn = document.createElement("button");
+        runBtn.classList.add("runButton");
+        runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
+
+        controlsDiv.appendChild(runBtn);
+
+        // Actual console output area
+        const outputDiv = document.createElement("div");
+        outputDiv.classList.add("output");
+
+        outputContainer.appendChild(controlsDiv);
+        outputContainer.appendChild(outputDiv);
+
+        editorAndOutput.appendChild(editorContainer);
+        editorAndOutput.appendChild(outputContainer);
+
+        // 3. Insert them into the DOM
+        const tabBar = document.getElementById("tabBar");
+        // insert the new tab before the + button (last child)
+        tabBar.insertBefore(tabElem, document.getElementById("addTabButton"));
+
+        const tabsContainer = document.getElementById("tabsContainer");
+        tabsContainer.appendChild(editorAndOutput);
+
+        // 4. Create the Monaco editor instance
+        const editorInstance = monaco.editor.create(editorContainer, {
+          language: "javascript",
+          theme: "custom-dark",
           automaticLayout: true,
-          tabSize: 3,
+          tabSize: spaces,
           insertSpaces: true,
           minimap: { enabled: true },
           fontSize: 14,
           fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
           fontLigatures: true,
           folding: true,
-          lineNumbers: 'on',
-          wordWrap: 'on',
+          lineNumbers: "on",
+          wordWrap: "on",
           scrollbar: {
             verticalScrollbarSize: 8,
-            horizontalScrollbarSize: 8
+            horizontalScrollbarSize: 8,
           },
           contextmenu: true,
           selectionHighlight: true,
           renderIndentGuides: true,
-          renderLineHighlight: 'all',
-          cursorStyle: 'line',
-          cursorBlinking: 'blink',
+          renderLineHighlight: "all",
+          cursorStyle: "line",
+          cursorBlinking: "blink",
           quickSuggestions: true,
           parameterHints: true,
-          autoClosingBrackets: 'always',
-          autoClosingQuotes: 'always',
+          autoClosingBrackets: "always",
+          autoClosingQuotes: "always",
           formatOnType: true,
           formatOnPaste: true,
           suggestOnTriggerCharacters: true,
           smoothScrolling: true,
           breadcrumbs: {
-            enabled: true
+            enabled: true,
+          },
+        });
+
+        // 5. Create our tab object
+        const tabObj = {
+          id: newTabId,
+          tabElement: tabElem,
+          editorContainer,
+          outputElement: outputDiv,
+          editorInstance,
+          worker: null,
+          editorAndOutput,
+        };
+
+        tabs.push(tabObj);
+
+        // Editor event: update status bar on cursor position
+        editorInstance.onDidChangeCursorPosition(() => {
+          updateStatusPosition();
+        });
+
+        // Attach run button event
+        runBtn.addEventListener("click", () => {
+          runTab(tabObj.id);
+        });
+
+        // Attach close tab event
+        closeIcon.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeTab(tabObj.id);
+        });
+
+        // Switch to this new tab immediately
+        switchTab(newTabId);
+
+        // Pre-fill with a default snippet
+        editorInstance.setValue("// New tab\nconsole.log('Hello from a new tab!');");
+
+        // Return the tab ID
+        return newTabId;
+      }
+
+      function switchTab(tabId) {
+        // Deactivate current tab
+        if (activeTabId !== null) {
+          const currentActiveTab = tabs.find((t) => t.id === activeTabId);
+          if (currentActiveTab) {
+            currentActiveTab.tabElement.classList.remove("active");
+            currentActiveTab.editorAndOutput.classList.remove("active");
           }
-        })
-      
-        const statusBar = document.getElementById('statusBar')
-      
-        editor.onDidChangeCursorPosition((e) => {
-          const position = editor.getPosition()
-          statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: ${spaces} | JavaScript`
-        })
-      
-        document.getElementById('searchIcon').addEventListener('click', () => {
-          if (window.editor) {
-            window.editor.getAction('actions.find').run()
-          }
-        })
-      
-        function replaceAllText(newText) {
-          const model = editor.getModel()
-          const fullRange = model.getFullModelRange()
-      
-          editor.pushUndoStop()
-      
-          editor.executeEdits('', [
-            {
-              range: fullRange,
-              text: newText
-            }
-          ])
-      
-          editor.pushUndoStop()
         }
-      
-        const gitInp = document.getElementById('gitUrl')
-      
-        function gitUrlErr() {
-          gitInp.style.borderColor = 'red'
+        // Activate the requested tab
+        const newActiveTab = tabs.find((t) => t.id === tabId);
+        if (newActiveTab) {
+          newActiveTab.tabElement.classList.add("active");
+          newActiveTab.editorAndOutput.classList.add("active");
+          activeTabId = tabId;
+          // Update the status bar
+          updateStatusPosition();
+        }
+      }
+
+      function closeTab(tabId) {
+        const index = tabs.findIndex((t) => t.id === tabId);
+        if (index === -1) return;
+        const tabObj = tabs[index];
+
+        // Remove from DOM
+        tabObj.tabElement.remove();
+        tabObj.editorAndOutput.remove();
+
+        // Terminate worker if it exists
+        if (tabObj.worker) {
+          tabObj.worker.terminate();
+          tabObj.worker = null;
+        }
+
+        // Remove from array
+        tabs.splice(index, 1);
+
+        // If we just closed the active tab, switch to another if available
+        if (activeTabId === tabId) {
+          if (tabs.length > 0) {
+            switchTab(tabs[tabs.length - 1].id);
+          } else {
+            activeTabId = null; // no tabs left
+          }
+        }
+      }
+
+      // Handle tab clicks (activate on click)
+      document.getElementById("tabBar").addEventListener("click", (e) => {
+        const clickedTab = tabs.find((t) => t.tabElement === e.target || t.tabElement.contains(e.target));
+        if (clickedTab) {
+          switchTab(clickedTab.id);
+        }
+      });
+
+      // Called when user hits "Run" for a given tab
+      async function runTab(tabId) {
+        const tabObj = tabs.find((t) => t.id === tabId);
+        if (!tabObj) return;
+
+        clearConsole(tabObj.outputElement);
+
+        // If there's an existing worker, kill it
+        if (tabObj.worker) {
+          tabObj.worker.terminate();
+          tabObj.worker = null;
+        }
+
+        // Make sure we have worker code cached
+        await cacheWorkerCode();
+        // Create a new worker for this tab
+        const w = initializeWorker();
+        tabObj.worker = w;
+
+        // Worker message handling
+        w.onmessage = async (event) => {
+          const { type, message } = event.data;
+
+          if (type === "prompt") {
+            await handlePrompt(message, tabObj.outputElement);
+          } else if (["log", "error", "warn", "info"].includes(type)) {
+            appendToOutput(tabObj.outputElement, type, message);
+          }
+        };
+
+        w.onerror = (error) => {
+          appendToOutput(tabObj.outputElement, "error", error.message);
+        };
+
+        // Send the code from this tab's editor
+        const userCode = tabObj.editorInstance.getValue();
+        w.postMessage({ type: "execute", code: userCode, sharedBuffer });
+      }
+
+      /***************************************************************
+       *                    Console-related
+       ***************************************************************/
+      function clearConsole(outputDiv) {
+        outputDiv.innerHTML = "";
+      }
+
+      function appendToOutput(outputDiv, type, message) {
+        const line = document.createElement("div");
+        line.className = type;
+        line.textContent = `[${type.toUpperCase()}] ${message}`;
+        outputDiv.appendChild(line);
+        outputDiv.scrollTop = outputDiv.scrollHeight;
+      }
+
+      function handlePrompt(msg, outputDiv) {
+        return new Promise((resolve) => {
+          const promptLine = document.createElement("div");
+          promptLine.className = "prompt-line";
+          const promptMsg = document.createElement("span");
+          promptMsg.textContent = `[PROMPT] ${msg}`;
+          const input = document.createElement("input");
+          input.type = "text";
+          input.autocomplete = "off";
+
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              const value = input.value.trim();
+              promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
+              input.remove();
+              const textEncoder = new TextEncoder();
+              const encodedResponse = textEncoder.encode(value + "\0");
+              const responseBuffer = new Uint8Array(sharedBuffer, 4);
+              responseBuffer.fill(0);
+              responseBuffer.set(encodedResponse);
+
+              Atomics.store(view, 0, 1);
+              Atomics.notify(view, 0);
+
+              resolve();
+            }
+          });
+
+          promptLine.appendChild(promptMsg);
+          promptLine.appendChild(input);
+          outputDiv.appendChild(promptLine);
+          input.focus();
+        });
+      }
+
+      /***************************************************************
+       *                    Monaco Setup
+       ***************************************************************/
+      require.config({
+        paths: {
+          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs",
+        },
+      });
+
+      window.MonacoEnvironment = {
+        getWorkerUrl: function (moduleId, label) {
+          return (
+            "data:text/javascript;charset=utf-8," +
+            encodeURIComponent(`
+              self.MonacoEnvironment = {
+                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+              };
+              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+            `)
+          );
+        },
+      };
+
+      require(["vs/editor/editor.main"], function () {
+        // Define custom dark theme
+        monaco.editor.defineTheme("custom-dark", {
+          base: "vs-dark",
+          inherit: true,
+          rules: [
+            { token: "keyword", foreground: "C586C0" },
+            { token: "identifier", foreground: "9CDCFE" },
+            { token: "string", foreground: "CE9178" },
+            { token: "comment", foreground: "6A9955" },
+            { token: "number", foreground: "B5CEA8" },
+          ],
+          colors: {
+            "editor.background": "#1E1E1E",
+          },
+        });
+
+        // Create initial tab
+        createTab();
+      });
+
+      /***************************************************************
+       *              Status Bar / Cursor Position
+       ***************************************************************/
+      function updateStatusPosition() {
+        if (activeTabId === null) {
+          document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
+          return;
+        }
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        if (!tabObj) return;
+
+        const position = tabObj.editorInstance.getPosition();
+        if (!position) return;
+        const ln = position.lineNumber;
+        const col = position.column;
+
+        document.getElementById("statusPosition").textContent = `Ln ${ln}, Col ${col}`;
+      }
+
+      /***************************************************************
+       *               Adding a new tab button
+       ***************************************************************/
+      document.getElementById("addTabButton").addEventListener("click", () => {
+        createTab();
+      });
+
+      /***************************************************************
+       *                    Sidebar + Navbar
+       ***************************************************************/
+      // Show/hide side panels (git, settings, etc.)
+      const btnsArray = ["gitIcon", "settingsIcon"];
+      btnsArray.forEach((iconId) => {
+        const icon = document.getElementById(iconId);
+        icon.addEventListener("click", (e) => {
+          const isActive = e.currentTarget.classList.contains("active");
+          document.querySelectorAll(".icon").forEach((btn) => btn.classList.remove("active"));
+          document.querySelectorAll(".sidebar-panel").forEach((panel) => panel.classList.remove("active"));
+
+          if (!isActive) {
+            e.currentTarget.classList.add("active");
+            const targetPanel = e.currentTarget.getAttribute("data-target");
+            document.getElementById(targetPanel).classList.add("active");
+          }
+        });
+      });
+
+      // The "search" icon triggers Monaco's find
+      document.getElementById("searchIcon").addEventListener("click", () => {
+        // If there's an active tab, show find widget in that editor
+        if (activeTabId === null) return;
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        if (!tabObj) return;
+        tabObj.editorInstance.getAction("actions.find").run();
+      });
+
+      // Closing dropdowns if user clicks outside
+      document.addEventListener("click", (event) => {
+        if (!event.target.closest(".vs-navbar-item")) {
+          document.querySelectorAll(".vs-navbar-dropdown").forEach((dropdown) => {
+            dropdown.classList.remove("active");
+          });
+          activeDropdown = null;
+        }
+      });
+
+      // Opening dropdowns
+      document.querySelectorAll(".vs-navbar-item").forEach((item) => {
+        item.addEventListener("click", (event) => {
+          const dropdownId = event.currentTarget.getAttribute("data-dropdown");
+          const dropdown = document.getElementById(dropdownId);
+
+          document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
+            d.classList.remove("active");
+          });
+
+          if (dropdown) {
+            dropdown.classList.toggle("active");
+            activeDropdown = dropdown.classList.contains("active") ? dropdown : null;
+          }
+        });
+
+        item.addEventListener("mouseover", (event) => {
+          if (activeDropdown) {
+            const dropdownId = event.currentTarget.getAttribute("data-dropdown");
+            const dropdown = document.getElementById(dropdownId);
+
+            if (activeDropdown !== dropdown) {
+              activeDropdown.classList.remove("active");
+              dropdown.classList.add("active");
+              activeDropdown = dropdown;
+            }
+          }
+        });
+      });
+
+      /***************************************************************
+       *               Tab Size (Spaces) Slider
+       ***************************************************************/
+      const tabSizeInput = document.getElementById("tabSizeInput");
+      const tabSizeDisplay = document.getElementById("tabSizeDisplay");
+      tabSizeInput.addEventListener("input", () => {
+        spaces = parseInt(tabSizeInput.value, 10);
+        tabSizeDisplay.textContent = spaces;
+        document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
+        // Update the Monaco editors for each tab
+        tabs.forEach((t) => {
+          t.editorInstance.updateOptions({ tabSize: spaces });
+        });
+      });
+
+      /***************************************************************
+       *                    Undo/Redo
+       ***************************************************************/
+      const redoBtn = document.getElementById("redoBtn");
+      const undoBtn = document.getElementById("undoBtn");
+
+      // Enable/disable
+      function toggleDisabled(elem, isDisabled) {
+        if (isDisabled) {
+          elem.classList.add("disabled");
+        } else {
+          elem.classList.remove("disabled");
+        }
+      }
+
+      function updateUndoRedoButtons() {
+        if (activeTabId === null) {
+          toggleDisabled(undoBtn, true);
+          toggleDisabled(redoBtn, true);
+          return;
+        }
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        if (!tabObj) return;
+        const model = tabObj.editorInstance.getModel();
+        if (!model) return;
+        toggleDisabled(undoBtn, !model.canUndo());
+        toggleDisabled(redoBtn, !model.canRedo());
+      }
+
+      // Keydown detection for ctrl+S, ctrl+Z, etc.
+      document.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key === "s") {
+          // Ctrl+S
+          e.preventDefault();
+          document.getElementById("saveScriptBtn").click();
+        } else if ((e.ctrlKey && e.key === "z") || (e.ctrlKey && e.shiftKey && e.key === "Z")) {
           setTimeout(() => {
-            gitInp.style.borderColor = ''
-          }, 2000)
+            updateUndoRedoButtons();
+          }, 100);
         }
-      
-        document.getElementById('loadGitButton').addEventListener('click', async () => {
-          const gitUrl = gitInp.value.trim()
-      
-          if (!gitUrl) {
-            appendToOutput('error', 'No URL provided.')
-            gitUrlErr()
-            return
-          }
-      
-          try {
-            new URL(gitUrl)
-          } catch (error) {
-            appendToOutput('error', 'Invalid URL: Please enter a valid URL.')
-            gitUrlErr()
-            return
-          }
-      
-          const normalizedUrl = normalizeUrl(gitUrl)
-          const parsedUrl = parseGitHubUrl(normalizedUrl)
-      
-          if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
-            appendToOutput('error', 'Invalid URL: Only file URLs are accepted.')
-            gitUrlErr()
-            return
-          }
-      
-          try {
-            let fileContent
-      
-            if (parsedUrl.isRawFile) {
-              fileContent = await fetchRawFile(parsedUrl.rawUrl)
-            } else {
-              const fileData = await fetchFromGit(parsedUrl.owner, parsedUrl.repo, parsedUrl.path, parsedUrl.branch)
-              if (!fileData.content) {
-                appendToOutput('error', 'Failed to fetch file content.')
-                gitUrlErr()
-                return
-              }
-              fileContent = atob(fileData.content)
-            }
-      
-            replaceAllText(fileContent)
-            appendToOutput('info', `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`)
-          } catch (error) {
-            appendToOutput('error', `Error fetching file: ${error.message}`)
-          }
-        })
-      
-        function normalizeUrl(url) {
-          if (url.endsWith('.git')) {
-            url = url.slice(0, -4)
-          }
-          if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            url = 'https://' + url
-          }
-          if (url.startsWith('http://')) {
-            url = 'https://' + url.substring(7)
-          }
-          return url
+      });
+
+      redoBtn.addEventListener("click", () => {
+        if (activeTabId === null) return;
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        tabObj.editorInstance.trigger("redo", "redo", null);
+        updateUndoRedoButtons();
+      });
+
+      undoBtn.addEventListener("click", () => {
+        if (activeTabId === null) return;
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        tabObj.editorInstance.trigger("undo", "undo", null);
+        updateUndoRedoButtons();
+      });
+
+      // Whenever editor changes for any tab, update undo/redo
+      setInterval(() => {
+        updateUndoRedoButtons();
+      }, 500);
+
+      /***************************************************************
+       *                  Upload File / Save File
+       ***************************************************************/
+      document.getElementById("uploadFileBtn").addEventListener("click", () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".js";
+        input.style.display = "none";
+        input.addEventListener("change", async (e) => {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const content = e.target.result;
+            if (activeTabId === null) return;
+            const tabObj = tabs.find((t) => t.id === activeTabId);
+            tabObj.editorInstance.setValue(content);
+            closeDropdowns();
+          };
+          reader.readAsText(file);
+        });
+        document.body.appendChild(input);
+        input.click();
+        input.remove();
+      });
+
+      document.getElementById("saveScriptBtn").addEventListener("click", () => {
+        if (activeTabId === null) return;
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        const content = tabObj.editorInstance.getValue();
+        const blob = new Blob([content], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "script.js";
+        a.click();
+        URL.revokeObjectURL(url);
+        closeDropdowns();
+      });
+
+      function closeDropdowns() {
+        document.querySelectorAll(".vs-navbar-dropdown").forEach((dropdown) => {
+          dropdown.classList.remove("active");
+        });
+      }
+
+      /***************************************************************
+       *         GitHub file loading logic (Git Panel)
+       ***************************************************************/
+      const gitInp = document.getElementById("gitUrl");
+      const loadGitButton = document.getElementById("loadGitButton");
+
+      gitInp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          loadGitButton.click();
         }
-      
-        function parseGitHubUrl(url) {
-          if (url.includes('raw.githubusercontent.com')) {
-            const match = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/)
-            if (match) {
-              return {
-                isRawFile: true,
-                rawUrl: url
-              }
-            }
-            return { isRawFile: false }
-          }
-      
-          const match = url.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/)
-      
-          if (!match) {
-            return { isFile: false }
-          }
-      
-          return {
-            owner: match[1],
-            repo: match[2],
-            branch: match[3],
-            path: match[4],
-            isFile: true
-          }
+      });
+
+      gitInp.addEventListener("input", () => {
+        if (!gitInp.value.trim()) {
+          loadGitButton.disabled = true;
+        } else {
+          loadGitButton.disabled = false;
         }
-      
-        async function fetchFromGit(owner, repo, path, branch = 'main') {
-          const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
-          const response = await fetch(apiUrl)
-      
-          if (!response.ok) {
-            throw new Error(`Failed to fetch file: ${response.statusText}`)
-          }
-      
-          const data = await response.json()
-      
-          if (data.type !== 'file') {
-            throw new Error('The URL does not point to a valid file.')
-          }
-      
-          return data
+      });
+
+      loadGitButton.addEventListener("click", async () => {
+        if (activeTabId === null) {
+          appendToOutput(null, "error", "No active tab to load content into!");
+          return;
         }
-      
-        async function fetchRawFile(rawUrl) {
-          const response = await fetch(rawUrl)
-      
-          if (!response.ok) {
-            throw new Error(`Failed to fetch raw file: ${response.statusText}`)
-          }
-      
-          return await response.text()
+        const tabObj = tabs.find((t) => t.id === activeTabId);
+        if (!tabObj) return;
+
+        const gitUrl = gitInp.value.trim();
+        if (!gitUrl) {
+          appendToOutput(tabObj.outputElement, "error", "No URL provided.");
+          gitUrlErr();
+          return;
         }
-      
-        const btnsArray = ['gitIcon', 'settingsIcon']
-        btnsArray.forEach((iconId) => {
-          const icon = document.getElementById(iconId)
-          icon.addEventListener('click', (e) => {
-            const isActive = e.currentTarget.classList.contains('active')
-            document.querySelectorAll('.icon').forEach((btn) => btn.classList.remove('active'))
-            document.querySelectorAll('.sidebar-panel').forEach((panel) => panel.classList.remove('active'))
-      
-            if (!isActive) {
-              e.currentTarget.classList.add('active')
-              const targetPanel = e.currentTarget.getAttribute('data-target')
-              document.getElementById(targetPanel).classList.add('active')
-            }
-          })
-        })
-      
-        const loadGitButton = document.getElementById('loadGitButton')
-      
-        gitInp.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            loadGitButton.click()
-          }
-        })
-      
-        gitInp.addEventListener('input', () => {
-          if (!gitInp.value.trim()) {
-            loadGitButton.disabled = true
+
+        try {
+          new URL(gitUrl);
+        } catch (error) {
+          appendToOutput(tabObj.outputElement, "error", "Invalid URL: Please enter a valid URL.");
+          gitUrlErr();
+          return;
+        }
+
+        const normalizedUrl = normalizeUrl(gitUrl);
+        const parsedUrl = parseGitHubUrl(normalizedUrl);
+
+        if (!parsedUrl.isFile && !parsedUrl.isRawFile) {
+          appendToOutput(tabObj.outputElement, "error", "Invalid URL: Only file URLs are accepted.");
+          gitUrlErr();
+          return;
+        }
+
+        try {
+          let fileContent;
+
+          if (parsedUrl.isRawFile) {
+            fileContent = await fetchRawFile(parsedUrl.rawUrl);
           } else {
-            loadGitButton.disabled = false
-          }
-        })
-      
-        document.querySelectorAll('.vs-navbar-item').forEach((item) => {
-          item.addEventListener('click', (event) => {
-            const dropdownId = event.currentTarget.getAttribute('data-dropdown')
-            const dropdown = document.getElementById(dropdownId)
-      
-            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active')
-            })
-      
-            if (dropdown) {
-              dropdown.classList.toggle('active')
-              activeDropdown = dropdown.classList.contains('active') ? dropdown : null
+            const fileData = await fetchFromGit(
+              parsedUrl.owner,
+              parsedUrl.repo,
+              parsedUrl.path,
+              parsedUrl.branch
+            );
+            if (!fileData.content) {
+              appendToOutput(tabObj.outputElement, "error", "Failed to fetch file content.");
+              gitUrlErr();
+              return;
             }
-          })
-      
-          item.addEventListener('mouseover', (event) => {
-            if (activeDropdown) {
-              const dropdownId = event.currentTarget.getAttribute('data-dropdown')
-              const dropdown = document.getElementById(dropdownId)
-      
-              if (activeDropdown !== dropdown) {
-                activeDropdown.classList.remove('active')
-                dropdown.classList.add('active')
-                activeDropdown = dropdown
-              }
-            }
-          })
-        })
-      
-        function closeDropdowns() {
-          document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-            dropdown.classList.remove('active')
-          })
+            fileContent = atob(fileData.content);
+          }
+
+          tabObj.editorInstance.setValue(fileContent);
+          appendToOutput(
+            tabObj.outputElement,
+            "info",
+            `File loaded successfully: ${parsedUrl.path || parsedUrl.rawUrl}`
+          );
+        } catch (error) {
+          appendToOutput(tabObj.outputElement, "error", `Error fetching file: ${error.message}`);
         }
-      
-        document.getElementById('uploadFileBtn').addEventListener('click', () => {
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = '.js'
-          input.style.display = 'none'
-          input.addEventListener('change', async (e) => {
-            const file = e.target.files[0]
-            const reader = new FileReader()
-            reader.onload = (e) => {
-              const content = e.target.result
-              replaceAllText(content)
-              closeDropdowns()
-            }
-            reader.readAsText(file)
-          })
-          document.body.appendChild(input)
-          input.click()
-          input.remove()
-        })
-      
-        document.getElementById('saveScriptBtn').addEventListener('click', () => {
-          const content = window.editor.getValue()
-          const blob = new Blob([content], { type: 'text/javascript' })
-          const url = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = 'script.js'
-          a.click()
-          URL.revokeObjectURL(url)
-          closeDropdowns()
-        })
-      
-        document.getElementById('undoBtn').addEventListener('click', () => {
-          window.editor.trigger('undo', 'undo', null)
-          closeDropdowns()
-          updateUndoRedoButtons()
-        })
-      
-        document.getElementById('redoBtn').addEventListener('click', () => {
-          window.editor.trigger('redo', 'redo', null)
-          closeDropdowns()
-          updateUndoRedoButtons()
-        })
-      
-        document.addEventListener('keydown', (e) => {
-          if (e.ctrlKey && e.key === 's') {
-            e.preventDefault()
-            document.getElementById('saveScriptBtn').click()
-          } else if ((e.ctrlKey && e.key === 'z') || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
-            setTimeout(() => {
-              updateUndoRedoButtons()
-            }, 100)
-          }
-        })
-      
-        document.addEventListener('click', (event) => {
-          if (!event.target.closest('.vs-navbar-item')) {
-            document.querySelectorAll('.vs-navbar-dropdown').forEach((dropdown) => {
-              dropdown.classList.remove('active')
-            })
-            activeDropdown = null
-          }
-        })
-      
-        const redoBtn = document.getElementById('redoBtn')
-        const undoBtn = document.getElementById('undoBtn')
-      
-        function toggleDisabled(elem, isDisabled) {
-          if (isDisabled) {
-            elem.classList.add('disabled')
-          } else {
-            elem.classList.remove('disabled')
-          }
+      });
+
+      function gitUrlErr() {
+        gitInp.style.borderColor = "red";
+        setTimeout(() => {
+          gitInp.style.borderColor = "";
+        }, 2000);
+      }
+
+      function normalizeUrl(url) {
+        if (url.endsWith(".git")) {
+          url = url.slice(0, -4);
         }
-      
-        function updateUndoRedoButtons() {
-          toggleDisabled(undoBtn, !editor.getModel().canUndo())
-          toggleDisabled(redoBtn, !editor.getModel().canRedo())
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          url = "https://" + url;
         }
-      
-        const tabSizeInput = document.getElementById('tabSizeInput')
-        const tabSizeDisplay = document.getElementById('tabSizeDisplay')
-      
-        tabSizeInput.addEventListener('input', () => {
-          if (window.editor) {
-            spaces = parseInt(tabSizeInput.value, 10)
-            tabSizeDisplay.textContent = spaces;
-            window.editor.updateOptions({ tabSize: spaces })
-            const position = editor.getPosition()
-            statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | UTF-8 | Spaces: ${spaces} | JavaScript`
+        if (url.startsWith("http://")) {
+          url = "https://" + url.substring(7);
+        }
+        return url;
+      }
+
+      function parseGitHubUrl(url) {
+        if (url.includes("raw.githubusercontent.com")) {
+          const match = url.match(
+            /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
+          );
+          if (match) {
+            return {
+              isRawFile: true,
+              rawUrl: url,
+            };
           }
-        })
-      
-        editor.onDidChangeModelContent(() => {
-          updateUndoRedoButtons()
-        })
-        replaceAllText(`console.log('Hello, World!');`)
-        editor.focus()
-      })
+          return { isRawFile: false };
+        }
+
+        const match = url.match(
+          /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
+        );
+
+        if (!match) {
+          return { isFile: false };
+        }
+
+        return {
+          owner: match[1],
+          repo: match[2],
+          branch: match[3],
+          path: match[4],
+          isFile: true,
+        };
+      }
+
+      async function fetchFromGit(owner, repo, path, branch = "main") {
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch file: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data.type !== "file") {
+          throw new Error("The URL does not point to a valid file.");
+        }
+        return data;
+      }
+
+      async function fetchRawFile(rawUrl) {
+        const response = await fetch(rawUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch raw file: ${response.statusText}`);
+        }
+        return await response.text();
+      }
     </script>
   </body>
 </html>
