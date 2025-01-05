@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VSCode-like Sandboxed JS Compiler (Multi-Tab)</title>
+    <title>VSCode-like Sandboxed JS Compiler (Multi-Tab, Separate Prompts)</title>
 
     <!-- Monaco Editor CSS -->
     <link
@@ -276,8 +276,7 @@
         align-items: center;
         padding: 0 8px;
         user-select: none;
-        /* For drag-and-drop: */
-        -webkit-user-drag: none;
+        -webkit-user-drag: none; /* for drag-and-drop in Chrome */
       }
       .tab.active {
         background-color: #1e1e1e;
@@ -291,7 +290,6 @@
         cursor: pointer;
       }
 
-      /* We place the + button at the end of the tabs */
       #addTabButton {
         background: none;
         color: #c5c5c5;
@@ -304,15 +302,14 @@
         color: #fff;
       }
 
-      /* Container that holds each tab’s (editor + console). We'll absolutely position them. */
+      /* Container for tabs (each editor + console). We'll switch via .active class. */
       #tabsContainer {
         position: relative;
         flex: 1;
         overflow: hidden;
       }
       .editor-and-output {
-        /* Hidden by default; only active tab is displayed */
-        display: none;
+        display: none; /* only active tab is displayed */
         flex-direction: column;
         position: absolute;
         top: 0;
@@ -328,7 +325,7 @@
       .editorContainer {
         flex: 1; /* Let editor take remaining space */
         position: relative;
-        min-height: 0; /* fix for flex children */
+        min-height: 0; /* fix for flex children in Chrome */
       }
       .monaco-editor {
         width: 100%;
@@ -532,12 +529,11 @@
 
     <script>
       /***************************************************************
-       *                 Worker Path (Django URL)
+       *      Worker path (Django URL) - same for all tabs,
+       *      BUT each tab will have its OWN sharedBuffer.
        ***************************************************************/
       const workerPath = "{% url 'betzi_test_js' %}";
       let workerBlobURL = null;
-      const sharedBuffer = new SharedArrayBuffer(1024);
-      const view = new Int32Array(sharedBuffer);
 
       let activeDropdown = null;
       let spaces = 3; // default tab size
@@ -554,7 +550,7 @@
         }
       };
 
-      const initializeWorker = () => {
+      const createNewWorker = () => {
         if (!workerBlobURL) {
           console.error("Worker code has not been cached yet.");
           return null;
@@ -569,6 +565,8 @@
       // {
       //   id: number,
       //   name: string,         // "Tab1", "Tab2", ...
+      //   sharedBuffer: SharedArrayBuffer, // unique for this tab
+      //   view: Int32Array,    // matches the tab's sharedBuffer
       //   tabElement: HTMLDivElement,
       //   editorContainer: HTMLDivElement,
       //   outputElement: HTMLDivElement,
@@ -581,11 +579,15 @@
 
       /**
        * Create a new tab with a default name, editor, and console.
+       * Each tab now has its own sharedBuffer + view.
        */
       function createTab() {
-        // Create a unique tab ID
         const newTabId = Date.now();
         const tabName = `Tab${tabCounter++}`;
+
+        // Create the unique SharedArrayBuffer for this tab
+        const sharedBuffer = new SharedArrayBuffer(1024);
+        const view = new Int32Array(sharedBuffer);
 
         // 1. Create the tab "button"
         const tabElem = document.createElement("div");
@@ -687,6 +689,8 @@
         const tabObj = {
           id: newTabId,
           name: tabName,
+          sharedBuffer, // unique to this tab
+          view,
           tabElement: tabElem,
           editorContainer,
           outputElement: outputDiv,
@@ -719,16 +723,13 @@
         // Pre-fill with a default snippet
         editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
 
-        // 6. DRAG & DROP events
+        // DRAG & DROP events
         tabElem.addEventListener("dragstart", (ev) => {
           ev.dataTransfer.setData("text/plain", String(newTabId));
         });
-
         tabElem.addEventListener("dragover", (ev) => {
-          // allow dropping
           ev.preventDefault();
         });
-
         tabElem.addEventListener("drop", (ev) => {
           ev.preventDefault();
           const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
@@ -736,12 +737,11 @@
           reorderTabs(draggedTabId, targetTabId);
         });
 
-        // 7. RENAME on double-click
+        // RENAME on double-click
         titleSpan.addEventListener("dblclick", () => {
           renameTab(tabObj.id);
         });
 
-        // Return the tab ID
         return newTabId;
       }
 
@@ -749,23 +749,19 @@
        * Reorder tabs in our `tabs` array when a tab is dragged and dropped over another.
        */
       function reorderTabs(draggedTabId, targetTabId) {
-        if (draggedTabId === targetTabId) return; // no-op if same
+        if (draggedTabId === targetTabId) return;
 
         const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
         const targetIndex = tabs.findIndex((t) => t.id === targetTabId);
         if (draggedIndex === -1 || targetIndex === -1) return;
 
         const draggedTabObj = tabs[draggedIndex];
-
-        // Remove from old position
         tabs.splice(draggedIndex, 1);
-        // Insert at new position
         tabs.splice(targetIndex, 0, draggedTabObj);
 
         // Rebuild the tab bar DOM order:
         const tabBar = document.getElementById("tabBar");
         tabs.forEach((t) => {
-          // Move each tabElement in order
           tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
         });
       }
@@ -774,7 +770,6 @@
        * Switch to a given tab (hide the others).
        */
       function switchTab(tabId) {
-        // Deactivate current tab
         if (activeTabId !== null) {
           const currentActiveTab = tabs.find((t) => t.id === activeTabId);
           if (currentActiveTab) {
@@ -782,13 +777,11 @@
             currentActiveTab.editorAndOutput.classList.remove("active");
           }
         }
-        // Activate the requested tab
         const newActiveTab = tabs.find((t) => t.id === tabId);
         if (newActiveTab) {
           newActiveTab.tabElement.classList.add("active");
           newActiveTab.editorAndOutput.classList.add("active");
           activeTabId = tabId;
-          // Update the status bar
           updateStatusPosition();
         }
       }
@@ -811,7 +804,6 @@
           tabObj.worker = null;
         }
 
-        // Remove from array
         tabs.splice(index, 1);
 
         // If we just closed the active tab, switch to another if available
@@ -819,13 +811,14 @@
           if (tabs.length > 0) {
             switchTab(tabs[tabs.length - 1].id);
           } else {
-            activeTabId = null; // no tabs left
+            activeTabId = null;
           }
         }
       }
 
       /**
        * Run the code in the active tab's editor, showing output in that tab's console.
+       * Each tab has its own worker and sharedBuffer, avoiding cross-tab prompt issues.
        */
       async function runTab(tabId) {
         const tabObj = tabs.find((t) => t.id === tabId);
@@ -839,18 +832,16 @@
           tabObj.worker = null;
         }
 
-        // Make sure we have worker code cached
         await cacheWorkerCode();
-        // Create a new worker for this tab
-        const w = initializeWorker();
+        const w = createNewWorker();
         tabObj.worker = w;
 
-        // Worker message handling
         w.onmessage = async (event) => {
           const { type, message } = event.data;
 
           if (type === "prompt") {
-            await handlePrompt(message, tabObj.outputElement);
+            // pass tabObj so we read/write from this tab’s sharedBuffer only
+            await handlePrompt(message, tabObj);
           } else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tabObj.outputElement, type, message);
           }
@@ -860,9 +851,14 @@
           appendToOutput(tabObj.outputElement, "error", error.message);
         };
 
-        // Send the code from this tab's editor
         const userCode = tabObj.editorInstance.getValue();
-        w.postMessage({ type: "execute", code: userCode, sharedBuffer });
+
+        // Each tab sends its own sharedBuffer to its worker
+        w.postMessage({
+          type: "execute",
+          code: userCode,
+          sharedBuffer: tabObj.sharedBuffer,
+        });
       }
 
       /***************************************************************
@@ -881,12 +877,19 @@
         outputDiv.scrollTop = outputDiv.scrollHeight;
       }
 
-      function handlePrompt(msg, outputDiv) {
+      /**
+       * Updated handlePrompt: writes user response
+       * to *this tab’s* sharedBuffer, not a global one.
+       */
+      function handlePrompt(msg, tabObj) {
         return new Promise((resolve) => {
+          const outputDiv = tabObj.outputElement;
           const promptLine = document.createElement("div");
           promptLine.className = "prompt-line";
+
           const promptMsg = document.createElement("span");
           promptMsg.textContent = `[PROMPT] ${msg}`;
+
           const input = document.createElement("input");
           input.type = "text";
           input.autocomplete = "off";
@@ -896,14 +899,18 @@
               const value = input.value.trim();
               promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
               input.remove();
+
               const textEncoder = new TextEncoder();
               const encodedResponse = textEncoder.encode(value + "\0");
-              const responseBuffer = new Uint8Array(sharedBuffer, 4);
+
+              // We write to THIS tab's shared buffer
+              const responseBuffer = new Uint8Array(tabObj.sharedBuffer, 4);
               responseBuffer.fill(0);
               responseBuffer.set(encodedResponse);
 
-              Atomics.store(view, 0, 1);
-              Atomics.notify(view, 0);
+              // Then we store/notify on THIS tab's view
+              Atomics.store(tabObj.view, 0, 1);
+              Atomics.notify(tabObj.view, 0);
 
               resolve();
             }
@@ -1041,7 +1048,6 @@
 
       // The "search" icon triggers Monaco's find
       document.getElementById("searchIcon").addEventListener("click", () => {
-        // If there's an active tab, show find widget in that editor
         if (activeTabId === null) return;
         const tabObj = tabs.find((t) => t.id === activeTabId);
         if (!tabObj) return;
@@ -1113,7 +1119,6 @@
       const redoBtn = document.getElementById("redoBtn");
       const undoBtn = document.getElementById("undoBtn");
 
-      // Simplistic enabling/disabling of dropdown items
       function toggleDisabled(elem, isDisabled) {
         if (isDisabled) {
           elem.classList.add("disabled");
@@ -1139,7 +1144,6 @@
       // Keydown detection for ctrl+S, ctrl+Z, etc.
       document.addEventListener("keydown", (e) => {
         if (e.ctrlKey && e.key === "s") {
-          // Ctrl+S
           e.preventDefault();
           document.getElementById("saveScriptBtn").click();
         } else if (
@@ -1166,7 +1170,6 @@
         updateUndoRedoButtons();
       });
 
-      // Polling approach to keep undo/redo updated
       setInterval(() => {
         updateUndoRedoButtons();
       }, 500);
@@ -1280,7 +1283,6 @@
 
         try {
           let fileContent;
-
           if (parsedUrl.isRawFile) {
             fileContent = await fetchRawFile(parsedUrl.rawUrl);
           } else {
