@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Multi-Tab Sandboxed JS Compiler</title>
   <link
     rel="stylesheet"
@@ -269,7 +269,6 @@
     .tab.active {
       background-color: #1e1e1e;
       color: #d4d4d4;
-      border-top: 2px solid #007acc;
     }
     .tab .tab-title {
       margin-right: 8px;
@@ -592,7 +591,7 @@
         name: tabName,
         sharedBuffer,
         view,
-        tabElement: tabElem,
+        tabElement,
         editorContainer,
         outputElement: outputDiv,
         editorInstance,
@@ -613,6 +612,8 @@
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.setData("text/plain", String(newTabId));
         ev.dataTransfer.effectAllowed = "move";
+        const img = new Image();
+        ev.dataTransfer.setDragImage(img, 0, 0);
       });
       tabElem.addEventListener("dragenter", (ev) => {
         ev.preventDefault();
