@@ -1,27 +1,20 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Tab Sandboxed JS Compiler</title>
-
-  <!-- Monaco Editor CSS -->
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fira Code Font -->
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
-
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
       font-family: 'Fira Code', monospace;
       display: flex;
@@ -31,8 +24,6 @@
       color: #d4d4d4;
       overflow: hidden;
     }
-
-    /* Navbar Logo */
     .vs-logo {
       position: absolute;
       top: 0;
@@ -44,7 +35,6 @@
       justify-content: center;
       align-items: center;
     }
-
     .vs-logo img {
       height: 27px;
       width: 27px;
@@ -55,8 +45,6 @@
       user-select: none;
       -webkit-user-drag: none;
     }
-
-    /* Top Navbar */
     .vs-navbar {
       background-color: #252526;
       color: #ffffff;
@@ -71,21 +59,17 @@
       width: 100%;
       z-index: 1000;
       padding-left: 40px;
-      /* space for the logo */
       height: 30px;
     }
-
     .vs-navbar-item {
       margin-right: 20px;
       position: relative;
       cursor: pointer;
       line-height: 30px;
     }
-
     .vs-navbar-item:hover {
       color: #d4d4d4;
     }
-
     .vs-navbar-dropdown {
       display: none;
       position: absolute;
@@ -98,29 +82,23 @@
       z-index: 1000;
       min-width: 120px;
     }
-
     .vs-navbar-dropdown.active {
       display: block;
     }
-
     .vs-navbar-dropdown-item {
       padding: 8px 12px;
       color: #d4d4d4;
       cursor: pointer;
       white-space: nowrap;
     }
-
     .vs-navbar-dropdown-item:hover {
       background-color: #444;
       color: #ffffff;
     }
-
     .vs-navbar-dropdown-item.disabled {
       pointer-events: none;
       opacity: 0.5;
     }
-
-    /* Activity Bar (left side) */
     #activityBar {
       width: 50px;
       background-color: #252526;
@@ -132,9 +110,7 @@
       transition: width 0.3s ease;
       flex-shrink: 0;
       margin-top: 30px;
-      /* space for top navbar */
     }
-
     #activityBar .icon {
       color: #b3b3b3;
       padding: 12px 0;
@@ -145,13 +121,11 @@
       font-size: 20px;
       position: relative;
     }
-
     #activityBar .icon:hover,
     #activityBar .icon.active {
       background-color: #3c3c3c;
       color: #fff;
     }
-
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
@@ -165,8 +139,6 @@
       border-radius: 3px;
       white-space: nowrap;
     }
-
-    /* Sidebar panels (git, settings, etc.) */
     .sidebar-panel {
       width: 250px;
       background-color: #1e1e1e;
@@ -177,13 +149,10 @@
       flex-shrink: 0;
       transition: all 0.3s ease;
       margin-top: 30px;
-      /* for top navbar */
     }
-
     .sidebar-panel.active {
       display: block;
     }
-
     #gitUrl {
       width: 100%;
       padding: 8px 10px;
@@ -197,11 +166,9 @@
       outline: none;
       transition: border-color 0.2s;
     }
-
     #gitUrl:focus {
       border-color: #007acc;
     }
-
     #loadGitButton {
       width: 100%;
       padding: 8px 10px;
@@ -214,15 +181,12 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-
     #loadGitButton:hover {
       background-color: #005f99;
     }
-
     #tabSizeInput {
       width: 100%;
     }
-
     .vs-range {
       -webkit-appearance: none;
       appearance: none;
@@ -233,7 +197,6 @@
       border-radius: 3px;
       cursor: pointer;
     }
-
     .vs-range::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -245,7 +208,6 @@
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
-
     .vs-range::-moz-range-thumb {
       width: 14px;
       height: 14px;
@@ -255,28 +217,21 @@
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
-
     .vs-range::-webkit-slider-thumb:hover,
     .vs-range::-moz-range-thumb:hover {
       background: #119eff;
     }
-
     .vs-range::-webkit-slider-thumb:active,
     .vs-range::-moz-range-thumb:active {
       background: #0067a8;
     }
-
-    /* Main container for the tab bar and the tab content */
     #mainContainer {
       display: flex;
       flex-direction: column;
       flex: 1;
       margin-top: 30px;
-      /* for top navbar */
       overflow: hidden;
     }
-
-    /* Tab Bar styling */
     #tabBar {
       background-color: #252526;
       border-bottom: 1px solid #333;
@@ -286,7 +241,6 @@
       flex-shrink: 0;
       padding: 0 5px;
     }
-
     .tab {
       background-color: #333;
       margin-right: 3px;
@@ -299,25 +253,19 @@
       padding: 0 8px;
       user-select: none;
       -webkit-user-drag: none;
-      /* for drag-and-drop */
     }
-
     .tab.active {
       background-color: #1e1e1e;
       color: #d4d4d4;
       border-top: 1px solid #007acc;
     }
-
     .tab .tab-title {
       margin-right: 8px;
     }
-
     .tab .close {
       font-size: 12px;
       cursor: pointer;
     }
-
-    /* The inline text field for editing the tab name */
     .tab-title-edit {
       background: #555;
       border: 1px solid #666;
@@ -328,7 +276,6 @@
       font-family: inherit;
       outline: none;
     }
-
     #addTabButton {
       background: none;
       color: #c5c5c5;
@@ -337,21 +284,16 @@
       margin-left: auto;
       margin-right: 5px;
     }
-
     #addTabButton:hover {
       color: #fff;
     }
-
-    /* Container for tabs (each editor + console). We'll switch via .active class. */
     #tabsContainer {
       position: relative;
       flex: 1;
       overflow: hidden;
     }
-
     .editor-and-output {
       display: none;
-      /* only active tab is displayed */
       flex-direction: column;
       position: absolute;
       top: 0;
@@ -359,34 +301,25 @@
       left: 0;
       right: 0;
     }
-
     .editor-and-output.active {
       display: flex;
     }
-
-    /* Editor + Output styling */
     .editorContainer {
       flex: 1;
-      /* Let editor take remaining space */
       position: relative;
       min-height: 0;
-      /* fix for flex children */
     }
-
     .monaco-editor {
       width: 100%;
       height: 100%;
     }
-
     .outputContainer {
       height: 200px;
-      /* fixed console height */
       background-color: #1e1e1e;
       border-top: 1px solid #333;
       display: flex;
       flex-direction: column;
     }
-
     .controls {
       display: flex;
       justify-content: flex-end;
@@ -394,7 +327,6 @@
       background-color: #252526;
       border-bottom: 1px solid #333;
     }
-
     .runButton {
       padding: 6px 12px;
       background-color: #0e639c;
@@ -406,15 +338,12 @@
       display: flex;
       align-items: center;
     }
-
     .runButton:hover {
       background-color: #1177bb;
     }
-
     .runButton i {
       margin-right: 5px;
     }
-
     .output {
       flex: 1;
       padding: 10px;
@@ -424,23 +353,18 @@
       white-space: pre-wrap;
       background-color: #1e1e1e;
     }
-
     .log {
       color: #d4d4d4;
     }
-
     .error {
       color: #f44747;
     }
-
     .warn {
       color: #cca700;
     }
-
     .info {
       color: #3794ff;
     }
-
     .prompt-line {
       display: flex;
       align-items: center;
@@ -448,12 +372,10 @@
       color: #d4d4d4;
       font-size: 14px;
     }
-
     .prompt-line span {
       margin-right: 5px;
       white-space: pre;
     }
-
     .prompt-line input {
       flex: 1;
       padding: 0;
@@ -466,8 +388,6 @@
       font-size: 14px;
       caret-color: #d4d4d4;
     }
-
-    /* Status Bar */
     #statusBar {
       height: 24px;
       background-color: #252526;
@@ -480,44 +400,34 @@
       color: #cccccc;
       flex-shrink: 0;
     }
-
     .status-item {
       margin-right: 10px;
     }
-
     @media (max-width: 768px) {
       #activityBar {
         width: 40px;
       }
-
       #activityBar .icon {
         font-size: 18px;
         padding: 10px 0;
       }
-
       .sidebar-panel {
         width: 200px;
       }
-
       .runButton {
         padding: 6px 10px;
         font-size: 12px;
       }
-
       #statusBar {
         left: 50px;
       }
     }
   </style>
 </head>
-
 <body>
-  <!-- Logo -->
   <div class="vs-logo">
     <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
   </div>
-
-  <!-- Top Navbar -->
   <div class="vs-navbar">
     <div class="vs-navbar-item" data-dropdown="fileDropdown">
       File
@@ -534,8 +444,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Activity Bar (left side) -->
   <div id="activityBar">
     <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
       <i class="fas fa-search"></i>
@@ -547,8 +455,6 @@
       <i class="fas fa-cog"></i>
     </div>
   </div>
-
-  <!-- Sidebar Panels -->
   <div id="gitPanel" class="sidebar-panel">
     <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
     <button id="loadGitButton" disabled="true">Load</button>
@@ -559,19 +465,11 @@
       <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
     </div>
   </div>
-
-  <!-- Main Container (Tab bar + Editor/Console + Status bar) -->
   <div id="mainContainer">
-    <!-- Tab Bar -->
     <div id="tabBar">
-      <!-- Tabs will be appended here dynamically -->
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
     </div>
-
-    <!-- Container for tabs (each editor + console). We'll switch via .active class. -->
     <div id="tabsContainer"></div>
-
-    <!-- Status Bar -->
     <div id="statusBar">
       <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
       <div class="status-item">UTF-8</div>
@@ -579,33 +477,17 @@
       <div class="status-item">JavaScript</div>
     </div>
   </div>
-
-  <!-- require.js for Monaco Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-
   <script>
-    /***************************************************************
-     * Worker path (Django URL).
-     ***************************************************************/
     const workerPath = "{% url 'betzi_test_js' %}";
     let workerBlobURL = null;
-
     let activeDropdown = null;
-    let spaces = 3; // default tab size
-
-    // We'll keep track of all tabs in an array
+    let spaces = 3;
     let tabs = [];
-    let activeTabId = null; // which tab is active?
-
-    /**
-     * Returns a unique name. If 'baseName' already exists, appends (1), (2), etc.
-     */
+    let activeTabId = null;
     function getUniqueTabName(baseName, ignoreTabId = null) {
       let candidate = baseName;
       let suffix = 1;
-
-      // We'll look for *other* tabs with this name
-      // If it's the same tab, we skip it.
       while (
         tabs.some(
           (t) => t.id !== ignoreTabId && t.name.toLowerCase() === candidate.toLowerCase()
@@ -615,80 +497,49 @@
       }
       return candidate;
     }
-
-    /**
-     * Create a new tab. If 'desiredName' is provided, we will attempt to use it
-     * or a conflict version (ex: name(1)). If 'initialContent' is provided, we
-     * set that in the editor. Otherwise we do a default snippet.
-     */
     function createTab(desiredName = null, initialContent = null) {
-      // If no desiredName, we default to "TabX" where X = highest + 1
       let tabName;
       if (!desiredName) {
-        tabName = getNextTabName(); // ex: Tab3
+        tabName = getNextTabName();
       } else {
-        // use getUniqueTabName in case desiredName is taken
         tabName = getUniqueTabName(desiredName);
       }
-
-      const newTabId = Date.now(); // unique ID
+      const newTabId = Date.now();
       const sharedBuffer = new SharedArrayBuffer(1024);
       const view = new Int32Array(sharedBuffer);
-
-      // Create the tab "button"
       const tabElem = document.createElement("div");
       tabElem.classList.add("tab");
       tabElem.draggable = true;
-
-      // Title container (span or input)
       const titleSpan = document.createElement("span");
       titleSpan.classList.add("tab-title");
       titleSpan.textContent = tabName;
       tabElem.appendChild(titleSpan);
-
-      // Close icon
       const closeIcon = document.createElement("i");
       closeIcon.classList.add("fas", "fa-times", "close");
       tabElem.appendChild(closeIcon);
-
-      // Editor + console container
       const editorAndOutput = document.createElement("div");
       editorAndOutput.classList.add("editor-and-output");
-
-      // Editor container
       const editorContainer = document.createElement("div");
       editorContainer.classList.add("editorContainer");
-
-      // Output container
       const outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
-
-      // Controls
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
       const runBtn = document.createElement("button");
       runBtn.classList.add("runButton");
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
       controlsDiv.appendChild(runBtn);
-
       const outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
-
       outputContainer.appendChild(controlsDiv);
       outputContainer.appendChild(outputDiv);
-
       editorAndOutput.appendChild(editorContainer);
       editorAndOutput.appendChild(outputContainer);
-
-      // Insert into DOM
       const tabBar = document.getElementById("tabBar");
       const addTabButton = document.getElementById("addTabButton");
       tabBar.insertBefore(tabElem, addTabButton);
-
       const tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorAndOutput);
-
-      // Create the Monaco editor
       const editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
         theme: "custom-dark",
@@ -724,8 +575,6 @@
           enabled: true,
         },
       });
-
-      // Create tab object
       const tabObj = {
         id: newTabId,
         name: tabName,
@@ -739,59 +588,42 @@
         editorAndOutput,
       };
       tabs.push(tabObj);
-
-      // event: update status bar on cursor pos
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
       });
-
-      // run button
       runBtn.addEventListener("click", () => {
         runTab(newTabId);
       });
-
-      // close tab
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
         closeTab(newTabId);
       });
-
-      // DRAG & DROP
       tabElem.addEventListener("dragstart", (ev) => {
+        ev.dataTransfer.effectAllowed = "move";
         ev.dataTransfer.setData("text/plain", String(newTabId));
       });
       tabElem.addEventListener("dragover", (ev) => {
-        ev.preventDefault(); // needed to allow dropping
+        ev.dataTransfer.dropEffect = "move";
+        ev.preventDefault();
       });
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
+        ev.stopPropagation();
         const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
         reorderTabs(draggedTabId, newTabId);
       });
-
-      // Make tab name editable on double-click
       titleSpan.addEventListener("dblclick", () => {
         makeTabTitleEditable(tabObj);
       });
-
-      // Switch to the new tab
       switchTab(newTabId);
-
-      // If initialContent is given, use that; else default
       if (initialContent !== null) {
         editorInstance.setValue(initialContent);
       } else {
         editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
       }
-
       return newTabId;
     }
-
-    /**
-     * Helper: compute next default tab name "TabX" by scanning existing tabs
-     */
     function getNextTabName() {
-      // find all tab names that match /^Tab(\d+)$/
       let maxNum = 0;
       for (const t of tabs) {
         const match = t.name.match(/^Tab(\d+)$/);
@@ -804,31 +636,19 @@
       }
       return `Tab${maxNum + 1}`;
     }
-
-    /**
-     * Reorder tabs in the array/DOM on drag-and-drop
-     */
     function reorderTabs(draggedTabId, targetTabId) {
       if (draggedTabId === targetTabId) return;
-
       const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
       const targetIndex = tabs.findIndex((t) => t.id === targetTabId);
       if (draggedIndex === -1 || targetIndex === -1) return;
-
       const draggedTabObj = tabs[draggedIndex];
       tabs.splice(draggedIndex, 1);
       tabs.splice(targetIndex, 0, draggedTabObj);
-
-      // Rebuild the tab bar DOM order
       const tabBar = document.getElementById("tabBar");
       tabs.forEach((t) => {
         tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
       });
     }
-
-    /**
-     * Switch to a given tab
-     */
     function switchTab(tabId) {
       if (activeTabId !== null) {
         const currentTab = tabs.find((t) => t.id === activeTabId);
@@ -845,29 +665,17 @@
         updateStatusPosition();
       }
     }
-
-    /**
-     * Close a tab (kills its worker, removes from array, reassigns active if needed)
-     */
     function closeTab(tabId) {
       const idx = tabs.findIndex((t) => t.id === tabId);
       if (idx === -1) return;
       const tabObj = tabs[idx];
-
-      // kill worker
       if (tabObj.worker) {
         tabObj.worker.terminate();
         tabObj.worker = null;
       }
-
-      // remove from DOM
       tabObj.tabElement.remove();
       tabObj.editorAndOutput.remove();
-
-      // remove from array
       tabs.splice(idx, 1);
-
-      // if was active, pick another
       if (activeTabId === tabId) {
         if (tabs.length > 0) {
           switchTab(tabs[tabs.length - 1].id);
@@ -876,27 +684,17 @@
         }
       }
     }
-
-    /**
-     * Worker code for a given tab
-     */
     async function runTab(tabId) {
       const tabObj = tabs.find((t) => t.id === tabId);
       if (!tabObj) return;
-
       clearConsole(tabObj.outputElement);
-
-      // kill old worker if any
       if (tabObj.worker) {
         tabObj.worker.terminate();
         tabObj.worker = null;
       }
-
-      // ensure worker code is cached
       await cacheWorkerCode();
       const w = new Worker(workerBlobURL);
       tabObj.worker = w;
-
       w.onmessage = async (evt) => {
         const { type, message } = evt.data;
         if (type === "prompt") {
@@ -908,7 +706,6 @@
       w.onerror = (error) => {
         appendToOutput(tabObj.outputElement, "error", error.message);
       };
-
       const code = tabObj.editorInstance.getValue();
       w.postMessage({
         type: "execute",
@@ -916,9 +713,10 @@
         sharedBuffer: tabObj.sharedBuffer,
       });
     }
-
     function clearConsole(outputDiv) {
-      outputDiv.innerHTML = "";
+      if (outputDiv) {
+        outputDiv.innerHTML = "";
+      }
     }
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
@@ -928,99 +726,64 @@
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
-
-    /**
-     * handlePrompt uses tabObj's shared buffer to ensure no cross-tab interference
-     */
     function handlePrompt(msg, tabObj) {
       return new Promise((resolve) => {
         const outputDiv = tabObj.outputElement;
         const promptLine = document.createElement("div");
         promptLine.className = "prompt-line";
-
         const promptMsg = document.createElement("span");
         promptMsg.textContent = `[PROMPT] ${msg}`;
-
         const input = document.createElement("input");
         input.type = "text";
         input.autocomplete = "off";
-
         input.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             const value = input.value.trim();
             promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
             input.remove();
-
             const textEncoder = new TextEncoder();
             const encodedResponse = textEncoder.encode(value + "\0");
-
-            // write to this tab's buffer
             const responseBuffer = new Uint8Array(tabObj.sharedBuffer, 4);
             responseBuffer.fill(0);
             responseBuffer.set(encodedResponse);
-
             Atomics.store(tabObj.view, 0, 1);
             Atomics.notify(tabObj.view, 0);
-
             resolve();
           }
         });
-
         promptLine.appendChild(promptMsg);
         promptLine.appendChild(input);
         outputDiv.appendChild(promptLine);
         input.focus();
       });
     }
-
-    /***************************************************************
-     * Make the tab title editable (inline)
-     ***************************************************************/
     function makeTabTitleEditable(tabObj) {
-      // Replace the <span.tab-title> with an <input> set to the current name
       const span = tabObj.tabElement.querySelector(".tab-title");
       if (!span) return;
-
       const oldName = tabObj.name;
       const input = document.createElement("input");
       input.type = "text";
       input.value = oldName;
       input.classList.add("tab-title-edit");
-
-      // remove the old span
       tabObj.tabElement.replaceChild(input, span);
-
-      // focus, select the text
       input.focus();
       input.select();
-
-      // finalize function is called on blur or Enter
       const finalize = () => {
         let newVal = input.value.trim();
-
-        // If the user typed exactly the same name, do no conflict check
-        // or if the name is empty, revert to oldName:
         if (!newVal || newVal === oldName) {
           newVal = oldName;
         } else {
-          // Otherwise, get a conflict-free name, ignoring the current tab ID:
           newVal = getUniqueTabName(newVal, tabObj.id);
         }
-
         tabObj.name = newVal;
-
-        // Recreate the title span
         const newSpan = document.createElement("span");
         newSpan.classList.add("tab-title");
         newSpan.textContent = newVal;
-        // attach dblclick event again
         newSpan.addEventListener("dblclick", () => {
           makeTabTitleEditable(tabObj);
         });
-
         tabObj.tabElement.replaceChild(newSpan, input);
       };
-
       input.addEventListener("blur", finalize);
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -1029,10 +792,6 @@
         }
       });
     }
-
-    /***************************************************************
-     * Monaco setup
-     ***************************************************************/
     require.config({
       paths: {
         vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs",
@@ -1043,15 +802,14 @@
         return (
           "data:text/javascript;charset=utf-8," +
           encodeURIComponent(`
-              self.MonacoEnvironment = {
-                baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
-              };
-              importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-            `)
+            self.MonacoEnvironment = {
+              baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'
+            };
+            importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+          `)
         );
       },
     };
-
     async function cacheWorkerCode() {
       if (!workerBlobURL) {
         const resp = await fetch(workerPath);
@@ -1060,7 +818,6 @@
         workerBlobURL = URL.createObjectURL(blob);
       }
     }
-
     require(["vs/editor/editor.main"], function () {
       monaco.editor.defineTheme("custom-dark", {
         base: "vs-dark",
@@ -1076,14 +833,8 @@
           "editor.background": "#1E1E1E",
         },
       });
-
-      // create an initial tab
-      createTab(); // no name => "Tab1"
+      createTab();
     });
-
-    /***************************************************************
-     * Status bar / cursor position
-     ***************************************************************/
     function updateStatusPosition() {
       if (activeTabId === null) {
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
@@ -1091,24 +842,15 @@
       }
       const tabObj = tabs.find((t) => t.id === activeTabId);
       if (!tabObj) return;
-
       const pos = tabObj.editorInstance.getPosition();
       if (pos) {
         document.getElementById("statusPosition").textContent =
           `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
-
-    /***************************************************************
-     * + button: create new tab
-     ***************************************************************/
     document.getElementById("addTabButton").addEventListener("click", () => {
       createTab();
     });
-
-    /***************************************************************
-     * Clicking on a tab to switch
-     ***************************************************************/
     document.getElementById("tabBar").addEventListener("click", (e) => {
       const clickedTab = tabs.find(
         (t) => t.tabElement === e.target || t.tabElement.contains(e.target)
@@ -1117,10 +859,6 @@
         switchTab(clickedTab.id);
       }
     });
-
-    /***************************************************************
-     * Sidebar + Navbar
-     ***************************************************************/
     ["gitIcon", "settingsIcon"].forEach((iconId) => {
       const icon = document.getElementById(iconId);
       icon.addEventListener("click", (e) => {
@@ -1129,7 +867,6 @@
         document
           .querySelectorAll(".sidebar-panel")
           .forEach((panel) => panel.classList.remove("active"));
-
         if (!isActive) {
           e.currentTarget.classList.add("active");
           const targetPanel = e.currentTarget.getAttribute("data-target");
@@ -1137,33 +874,25 @@
         }
       });
     });
-
-    // The "search" icon triggers Monaco's find
     document.getElementById("searchIcon").addEventListener("click", () => {
       if (activeTabId === null) return;
       const tabObj = tabs.find((t) => t.id === activeTabId);
       if (!tabObj) return;
       tabObj.editorInstance.getAction("actions.find").run();
     });
-
-    // close dropdowns if user clicks outside
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
         document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => d.classList.remove("active"));
         activeDropdown = null;
       }
     });
-
-    // opening dropdowns
     document.querySelectorAll(".vs-navbar-item").forEach((item) => {
       item.addEventListener("click", (evt) => {
         const dropdownId = evt.currentTarget.getAttribute("data-dropdown");
         const dropdown = document.getElementById(dropdownId);
-
         document
           .querySelectorAll(".vs-navbar-dropdown")
           .forEach((d) => d.classList.remove("active"));
-
         if (dropdown) {
           dropdown.classList.toggle("active");
           activeDropdown = dropdown.classList.contains("active") ? dropdown : null;
@@ -1181,28 +910,18 @@
         }
       });
     });
-
-    /***************************************************************
-     * Tab size slider
-     ***************************************************************/
     const tabSizeInput = document.getElementById("tabSizeInput");
     const tabSizeDisplay = document.getElementById("tabSizeDisplay");
     tabSizeInput.addEventListener("input", () => {
       spaces = parseInt(tabSizeInput.value, 10);
       tabSizeDisplay.textContent = spaces;
       document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
-
       tabs.forEach((t) => {
         t.editorInstance.updateOptions({ tabSize: spaces });
       });
     });
-
-    /***************************************************************
-     * Undo/Redo
-     ***************************************************************/
     const redoBtn = document.getElementById("redoBtn");
     const undoBtn = document.getElementById("undoBtn");
-
     function toggleDisabled(elem, isDisabled) {
       if (isDisabled) {
         elem.classList.add("disabled");
@@ -1223,8 +942,6 @@
       toggleDisabled(undoBtn, !model.canUndo());
       toggleDisabled(redoBtn, !model.canRedo());
     }
-
-    // listen to key combos
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
@@ -1249,10 +966,6 @@
       updateUndoRedoButtons();
     });
     setInterval(() => updateUndoRedoButtons(), 500);
-
-    /***************************************************************
-     * Upload/Save
-     ***************************************************************/
     document.getElementById("uploadFileBtn").addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "file";
@@ -1262,8 +975,7 @@
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
-          // If user picks a file, we open it in a brand new tab named after the file
-          const fileName = getUniqueTabName(file.name); // handle conflict
+          const fileName = getUniqueTabName(file.name);
           createTab(fileName, evt.target.result);
           closeDropdowns();
         };
@@ -1273,7 +985,6 @@
       input.click();
       input.remove();
     });
-
     document.getElementById("saveScriptBtn").addEventListener("click", () => {
       if (activeTabId === null) return;
       const tabObj = tabs.find((t) => t.id === activeTabId);
@@ -1294,13 +1005,8 @@
         .querySelectorAll(".vs-navbar-dropdown")
         .forEach((d) => d.classList.remove("active"));
     }
-
-    /***************************************************************
-     * Git panel
-     ***************************************************************/
     const gitInp = document.getElementById("gitUrl");
     const loadGitButton = document.getElementById("loadGitButton");
-
     gitInp.addEventListener("keydown", (e) => {
       if (e.key === "Enter") loadGitButton.click();
     });
@@ -1311,41 +1017,29 @@
         loadGitButton.disabled = false;
       }
     });
-
     loadGitButton.addEventListener("click", async () => {
-      // "Open from GitHub" -> opens a new tab named after the GH file
       const gitUrl = gitInp.value.trim();
       if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
-
-      let tabFileName = "untitled.js"; // fallback
-      // We'll parse the path from the URL
-      // e.g. https://github.com/user/repo/blob/branch/path/to/file.js => "file.js"
-      // or raw paths => the last segment as well
+      let tabFileName = "untitled.js";
       try {
-        new URL(gitUrl); // check if valid
+        new URL(gitUrl);
       } catch (err) {
         alert("Invalid URL");
         return;
       }
-
       const normalizedUrl = normalizeUrl(gitUrl);
       const parsedUrl = parseGitHubUrl(normalizedUrl);
-      // We'll extract the file name from either the path or rawUrl
       if (parsedUrl.isRawFile) {
-        // raw link
         const lastSlash = parsedUrl.rawUrl.lastIndexOf("/");
         if (lastSlash !== -1) {
           tabFileName = parsedUrl.rawUrl.substring(lastSlash + 1);
         }
       } else if (parsedUrl.isFile) {
-        // path-based
         const lastSlash = parsedUrl.path.lastIndexOf("/");
         if (lastSlash !== -1) {
           tabFileName = parsedUrl.path.substring(lastSlash + 1);
         }
       }
-      // If for some reason we can't parse name, default to "untitled.js"
-
       try {
         let fileContent;
         if (parsedUrl.isRawFile) {
@@ -1366,8 +1060,6 @@
           alert("Invalid GitHub file URL. Must point to a specific file.");
           return;
         }
-
-        // create a new tab, name is unique
         createTab(tabFileName, fileContent);
       } catch (error) {
         alert(`Error fetching file: ${error.message}`);
@@ -1386,7 +1078,6 @@
       return url;
     }
     function parseGitHubUrl(url) {
-      // raw link
       if (url.includes("raw.githubusercontent.com")) {
         const match = url.match(
           /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
@@ -1399,7 +1090,6 @@
         }
         return { isRawFile: false };
       }
-      // normal link
       const match = url.match(
         /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
       );
@@ -1435,5 +1125,4 @@
     }
   </script>
 </body>
-
 </html>
