@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VSCode-like Sandboxed JS Compiler (Multi-Tab, Separate Prompts)</title>
+    <title>Multi-Tab Sandboxed JS Compiler</title>
 
     <!-- Monaco Editor CSS -->
     <link
@@ -276,7 +276,7 @@
         align-items: center;
         padding: 0 8px;
         user-select: none;
-        -webkit-user-drag: none; /* for drag-and-drop in Chrome */
+        -webkit-user-drag: none; /* for drag-and-drop */
       }
       .tab.active {
         background-color: #1e1e1e;
@@ -325,7 +325,7 @@
       .editorContainer {
         flex: 1; /* Let editor take remaining space */
         position: relative;
-        min-height: 0; /* fix for flex children in Chrome */
+        min-height: 0; /* fix for flex children */
       }
       .monaco-editor {
         width: 100%;
@@ -529,8 +529,7 @@
 
     <script>
       /***************************************************************
-       *      Worker path (Django URL) - same for all tabs,
-       *      BUT each tab will have its OWN sharedBuffer.
+       * Worker path (Django URL).
        ***************************************************************/
       const workerPath = "{% url 'betzi_test_js' %}";
       let workerBlobURL = null;
@@ -538,74 +537,62 @@
       let activeDropdown = null;
       let spaces = 3; // default tab size
 
-      /***************************************************************
-       *         Caching Worker Code & Worker Initialization
-       ***************************************************************/
-      const cacheWorkerCode = async () => {
-        if (!workerBlobURL) {
-          const response = await fetch(workerPath);
-          const code = await response.text();
-          const blob = new Blob([code], { type: "application/javascript" });
-          workerBlobURL = URL.createObjectURL(blob);
-        }
-      };
-
-      const createNewWorker = () => {
-        if (!workerBlobURL) {
-          console.error("Worker code has not been cached yet.");
-          return null;
-        }
-        return new Worker(workerBlobURL);
-      };
-
-      /***************************************************************
-       *         Data Structures for Multiple Tabs
-       ***************************************************************/
-      // We'll keep track of all tabs, each tab has:
-      // {
-      //   id: number,
-      //   name: string,         // "Tab1", "Tab2", ...
-      //   sharedBuffer: SharedArrayBuffer, // unique for this tab
-      //   view: Int32Array,    // matches the tab's sharedBuffer
-      //   tabElement: HTMLDivElement,
-      //   editorContainer: HTMLDivElement,
-      //   outputElement: HTMLDivElement,
-      //   editorInstance: monaco.editor.IStandaloneCodeEditor,
-      //   worker: Worker | null
-      // }
+      // We'll keep track of all tabs in an array
       let tabs = [];
       let activeTabId = null; // which tab is active?
-      let tabCounter = 1; // used for default names (Tab1, Tab2, ...)
 
       /**
-       * Create a new tab with a default name, editor, and console.
-       * Each tab now has its own sharedBuffer + view.
+       * Finds the highest "TabN" number among open tabs (by parsing the tab.name),
+       * returns that highest integer. If no tabs, returns 0.
+       */
+      function getHighestTabNumber() {
+        let highest = 0;
+        for (const t of tabs) {
+          // Tab names are "Tab1", "Tab2", etc.
+          const match = t.name.match(/^Tab(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (!isNaN(num) && num > highest) {
+              highest = num;
+            }
+          }
+        }
+        return highest;
+      }
+
+      /**
+       * Creates a new tab whose name is "TabX" with X = (highest existing tab) + 1.
        */
       function createTab() {
-        const newTabId = Date.now();
-        const tabName = `Tab${tabCounter++}`;
+        // 1. determine tab name
+        const highest = getHighestTabNumber(); // e.g. 2
+        const tabNumber = highest + 1;         // e.g. 3
+        const tabName = `Tab${tabNumber}`;
 
-        // Create the unique SharedArrayBuffer for this tab
+        // 2. unique ID
+        const newTabId = Date.now(); // or any unique ID
+
+        // 3. create a per-tab SharedArrayBuffer so we don't conflict prompts
         const sharedBuffer = new SharedArrayBuffer(1024);
         const view = new Int32Array(sharedBuffer);
 
-        // 1. Create the tab "button"
+        // 4. create the tab "button"
         const tabElem = document.createElement("div");
         tabElem.classList.add("tab");
-        tabElem.draggable = true; // enable drag-and-drop
+        tabElem.draggable = true;
 
-        // Title element (for rename)
+        // title for rename
         const titleSpan = document.createElement("span");
         titleSpan.classList.add("tab-title");
         titleSpan.textContent = tabName;
         tabElem.appendChild(titleSpan);
 
-        // Close icon
+        // close icon
         const closeIcon = document.createElement("i");
         closeIcon.classList.add("fas", "fa-times", "close");
         tabElem.appendChild(closeIcon);
 
-        // 2. Create the editor + console container
+        // 5. create the editor + console container
         const editorAndOutput = document.createElement("div");
         editorAndOutput.classList.add("editor-and-output");
 
@@ -617,17 +604,14 @@
         const outputContainer = document.createElement("div");
         outputContainer.classList.add("outputContainer");
 
-        // Controls container
+        // Controls
         const controlsDiv = document.createElement("div");
         controlsDiv.classList.add("controls");
-
-        // Run button
         const runBtn = document.createElement("button");
         runBtn.classList.add("runButton");
         runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
         controlsDiv.appendChild(runBtn);
 
-        // Actual console output area
         const outputDiv = document.createElement("div");
         outputDiv.classList.add("output");
 
@@ -637,18 +621,15 @@
         editorAndOutput.appendChild(editorContainer);
         editorAndOutput.appendChild(outputContainer);
 
-        // 3. Insert them into the DOM
-        // The tab itself
+        // 6. insert into DOM
         const tabBar = document.getElementById("tabBar");
-        // Insert the new tab BEFORE the + button
         const addTabButton = document.getElementById("addTabButton");
         tabBar.insertBefore(tabElem, addTabButton);
 
-        // The editor/console
         const tabsContainer = document.getElementById("tabsContainer");
         tabsContainer.appendChild(editorAndOutput);
 
-        // 4. Create the Monaco editor instance
+        // 7. create Monaco editor
         const editorInstance = monaco.editor.create(editorContainer, {
           language: "javascript",
           theme: "custom-dark",
@@ -685,11 +666,11 @@
           },
         });
 
-        // 5. Create our tab object
+        // 8. create tab object
         const tabObj = {
           id: newTabId,
           name: tabName,
-          sharedBuffer, // unique to this tab
+          sharedBuffer,
           view,
           tabElement: tabElem,
           editorContainer,
@@ -698,55 +679,51 @@
           worker: null,
           editorAndOutput,
         };
-
         tabs.push(tabObj);
 
-        // Editor event: update status bar on cursor position
+        // event: update status bar on cursor pos
         editorInstance.onDidChangeCursorPosition(() => {
           updateStatusPosition();
         });
 
-        // Attach run button event
+        // run button
         runBtn.addEventListener("click", () => {
-          runTab(tabObj.id);
+          runTab(newTabId);
         });
 
-        // Attach close tab event
+        // close tab
         closeIcon.addEventListener("click", (e) => {
           e.stopPropagation();
-          closeTab(tabObj.id);
+          closeTab(newTabId);
         });
 
-        // Switch to this new tab immediately
-        switchTab(newTabId);
-
-        // Pre-fill with a default snippet
-        editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
-
-        // DRAG & DROP events
+        // DRAG & DROP
         tabElem.addEventListener("dragstart", (ev) => {
           ev.dataTransfer.setData("text/plain", String(newTabId));
         });
-        tabElem.addEventListener("dragover", (ev) => {
-          ev.preventDefault();
-        });
+        tabElem.addEventListener("dragover", (ev) => ev.preventDefault());
         tabElem.addEventListener("drop", (ev) => {
           ev.preventDefault();
           const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
-          const targetTabId = newTabId;
-          reorderTabs(draggedTabId, targetTabId);
+          reorderTabs(draggedTabId, newTabId);
         });
 
-        // RENAME on double-click
+        // rename on double-click
         titleSpan.addEventListener("dblclick", () => {
-          renameTab(tabObj.id);
+          renameTab(newTabId);
         });
+
+        // switch to the new tab
+        switchTab(newTabId);
+
+        // default snippet
+        editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
 
         return newTabId;
       }
 
       /**
-       * Reorder tabs in our `tabs` array when a tab is dragged and dropped over another.
+       * Reorder tabs in the array/DOM on drag-and-drop
        */
       function reorderTabs(draggedTabId, targetTabId) {
         if (draggedTabId === targetTabId) return;
@@ -759,7 +736,6 @@
         tabs.splice(draggedIndex, 1);
         tabs.splice(targetIndex, 0, draggedTabObj);
 
-        // Rebuild the tab bar DOM order:
         const tabBar = document.getElementById("tabBar");
         tabs.forEach((t) => {
           tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
@@ -767,46 +743,47 @@
       }
 
       /**
-       * Switch to a given tab (hide the others).
+       * Switch to a given tab
        */
       function switchTab(tabId) {
         if (activeTabId !== null) {
-          const currentActiveTab = tabs.find((t) => t.id === activeTabId);
-          if (currentActiveTab) {
-            currentActiveTab.tabElement.classList.remove("active");
-            currentActiveTab.editorAndOutput.classList.remove("active");
+          const currentTab = tabs.find((t) => t.id === activeTabId);
+          if (currentTab) {
+            currentTab.tabElement.classList.remove("active");
+            currentTab.editorAndOutput.classList.remove("active");
           }
         }
-        const newActiveTab = tabs.find((t) => t.id === tabId);
-        if (newActiveTab) {
-          newActiveTab.tabElement.classList.add("active");
-          newActiveTab.editorAndOutput.classList.add("active");
+        const newTab = tabs.find((t) => t.id === tabId);
+        if (newTab) {
+          newTab.tabElement.classList.add("active");
+          newTab.editorAndOutput.classList.add("active");
           activeTabId = tabId;
           updateStatusPosition();
         }
       }
 
       /**
-       * Close a given tab
+       * Close a tab (kills its worker, removes from array, reassigns active if needed)
        */
       function closeTab(tabId) {
-        const index = tabs.findIndex((t) => t.id === tabId);
-        if (index === -1) return;
-        const tabObj = tabs[index];
+        const idx = tabs.findIndex((t) => t.id === tabId);
+        if (idx === -1) return;
+        const tabObj = tabs[idx];
 
-        // Remove from DOM
-        tabObj.tabElement.remove();
-        tabObj.editorAndOutput.remove();
-
-        // Terminate worker if it exists
+        // kill worker
         if (tabObj.worker) {
           tabObj.worker.terminate();
           tabObj.worker = null;
         }
 
-        tabs.splice(index, 1);
+        // remove from DOM
+        tabObj.tabElement.remove();
+        tabObj.editorAndOutput.remove();
 
-        // If we just closed the active tab, switch to another if available
+        // remove from array
+        tabs.splice(idx, 1);
+
+        // if was active, pick another
         if (activeTabId === tabId) {
           if (tabs.length > 0) {
             switchTab(tabs[tabs.length - 1].id);
@@ -817,8 +794,7 @@
       }
 
       /**
-       * Run the code in the active tab's editor, showing output in that tab's console.
-       * Each tab has its own worker and sharedBuffer, avoiding cross-tab prompt issues.
+       * Worker code for a given tab
        */
       async function runTab(tabId) {
         const tabObj = tabs.find((t) => t.id === tabId);
@@ -826,48 +802,40 @@
 
         clearConsole(tabObj.outputElement);
 
-        // If there's an existing worker, kill it
+        // kill old worker if any
         if (tabObj.worker) {
           tabObj.worker.terminate();
           tabObj.worker = null;
         }
 
+        // ensure worker code is cached
         await cacheWorkerCode();
-        const w = createNewWorker();
+        const w = new Worker(workerBlobURL);
         tabObj.worker = w;
 
-        w.onmessage = async (event) => {
-          const { type, message } = event.data;
-
+        w.onmessage = async (evt) => {
+          const { type, message } = evt.data;
           if (type === "prompt") {
-            // pass tabObj so we read/write from this tab’s sharedBuffer only
             await handlePrompt(message, tabObj);
           } else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tabObj.outputElement, type, message);
           }
         };
-
         w.onerror = (error) => {
           appendToOutput(tabObj.outputElement, "error", error.message);
         };
 
-        const userCode = tabObj.editorInstance.getValue();
-
-        // Each tab sends its own sharedBuffer to its worker
+        const code = tabObj.editorInstance.getValue();
         w.postMessage({
           type: "execute",
-          code: userCode,
+          code,
           sharedBuffer: tabObj.sharedBuffer,
         });
       }
 
-      /***************************************************************
-       *                    Console-related
-       ***************************************************************/
       function clearConsole(outputDiv) {
         outputDiv.innerHTML = "";
       }
-
       function appendToOutput(outputDiv, type, message) {
         if (!outputDiv) return;
         const line = document.createElement("div");
@@ -878,8 +846,7 @@
       }
 
       /**
-       * Updated handlePrompt: writes user response
-       * to *this tab’s* sharedBuffer, not a global one.
+       * handlePrompt uses tabObj's shared buffer to ensure no cross-tab interference
        */
       function handlePrompt(msg, tabObj) {
         return new Promise((resolve) => {
@@ -903,12 +870,11 @@
               const textEncoder = new TextEncoder();
               const encodedResponse = textEncoder.encode(value + "\0");
 
-              // We write to THIS tab's shared buffer
+              // write to this tab's buffer
               const responseBuffer = new Uint8Array(tabObj.sharedBuffer, 4);
               responseBuffer.fill(0);
               responseBuffer.set(encodedResponse);
 
-              // Then we store/notify on THIS tab's view
               Atomics.store(tabObj.view, 0, 1);
               Atomics.notify(tabObj.view, 0);
 
@@ -924,14 +890,13 @@
       }
 
       /***************************************************************
-       *                    Monaco Setup
+       * Monaco setup
        ***************************************************************/
       require.config({
         paths: {
           vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs",
         },
       });
-
       window.MonacoEnvironment = {
         getWorkerUrl: function (moduleId, label) {
           return (
@@ -946,8 +911,16 @@
         },
       };
 
+      async function cacheWorkerCode() {
+        if (!workerBlobURL) {
+          const resp = await fetch(workerPath);
+          const code = await resp.text();
+          const blob = new Blob([code], { type: "application/javascript" });
+          workerBlobURL = URL.createObjectURL(blob);
+        }
+      }
+
       require(["vs/editor/editor.main"], function () {
-        // Define custom dark theme
         monaco.editor.defineTheme("custom-dark", {
           base: "vs-dark",
           inherit: true,
@@ -963,12 +936,12 @@
           },
         });
 
-        // Create initial tab on load
+        // create an initial tab
         createTab();
       });
 
       /***************************************************************
-       *               Status Bar / Cursor Position
+       * Status bar / cursor position
        ***************************************************************/
       function updateStatusPosition() {
         if (activeTabId === null) {
@@ -978,25 +951,22 @@
         const tabObj = tabs.find((t) => t.id === activeTabId);
         if (!tabObj) return;
 
-        const position = tabObj.editorInstance.getPosition();
-        if (!position) return;
-        const ln = position.lineNumber;
-        const col = position.column;
-
-        document.getElementById(
-          "statusPosition"
-        ).textContent = `Ln ${ln}, Col ${col}`;
+        const pos = tabObj.editorInstance.getPosition();
+        if (pos) {
+          document.getElementById("statusPosition").textContent =
+            `Ln ${pos.lineNumber}, Col ${pos.column}`;
+        }
       }
 
       /***************************************************************
-       *            "New Tab" button
+       * + button: create new tab
        ***************************************************************/
       document.getElementById("addTabButton").addEventListener("click", () => {
         createTab();
       });
 
       /***************************************************************
-       *         Click on tab to switch
+       * Clicking on a tab to switch
        ***************************************************************/
       document.getElementById("tabBar").addEventListener("click", (e) => {
         const clickedTab = tabs.find(
@@ -1008,7 +978,7 @@
       });
 
       /***************************************************************
-       *          RENAME Tab (double-click on title)
+       * Rename a tab
        ***************************************************************/
       function renameTab(tabId) {
         const tabObj = tabs.find((t) => t.id === tabId);
@@ -1018,22 +988,20 @@
         if (newName && newName.trim()) {
           tabObj.name = newName.trim();
           const titleSpan = tabObj.tabElement.querySelector(".tab-title");
-          if (titleSpan) titleSpan.textContent = tabObj.name;
+          if (titleSpan) {
+            titleSpan.textContent = tabObj.name;
+          }
         }
       }
 
       /***************************************************************
-       *            Sidebar + Navbar logic
+       * Sidebar + Navbar
        ***************************************************************/
-      // Show/hide side panels (git, settings, etc.)
-      const btnsArray = ["gitIcon", "settingsIcon"];
-      btnsArray.forEach((iconId) => {
+      ["gitIcon", "settingsIcon"].forEach((iconId) => {
         const icon = document.getElementById(iconId);
         icon.addEventListener("click", (e) => {
           const isActive = e.currentTarget.classList.contains("active");
-          document
-            .querySelectorAll(".icon")
-            .forEach((btn) => btn.classList.remove("active"));
+          document.querySelectorAll(".icon").forEach((btn) => btn.classList.remove("active"));
           document
             .querySelectorAll(".sidebar-panel")
             .forEach((panel) => panel.classList.remove("active"));
@@ -1054,22 +1022,18 @@
         tabObj.editorInstance.getAction("actions.find").run();
       });
 
-      // Closing dropdowns if user clicks outside
+      // close dropdowns if user clicks outside
       document.addEventListener("click", (event) => {
         if (!event.target.closest(".vs-navbar-item")) {
-          document
-            .querySelectorAll(".vs-navbar-dropdown")
-            .forEach((dropdown) => {
-              dropdown.classList.remove("active");
-            });
+          document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => d.classList.remove("active"));
           activeDropdown = null;
         }
       });
 
-      // Opening dropdowns
+      // opening dropdowns
       document.querySelectorAll(".vs-navbar-item").forEach((item) => {
-        item.addEventListener("click", (event) => {
-          const dropdownId = event.currentTarget.getAttribute("data-dropdown");
+        item.addEventListener("click", (evt) => {
+          const dropdownId = evt.currentTarget.getAttribute("data-dropdown");
           const dropdown = document.getElementById(dropdownId);
 
           document
@@ -1078,17 +1042,13 @@
 
           if (dropdown) {
             dropdown.classList.toggle("active");
-            activeDropdown = dropdown.classList.contains("active")
-              ? dropdown
-              : null;
+            activeDropdown = dropdown.classList.contains("active") ? dropdown : null;
           }
         });
-
-        item.addEventListener("mouseover", (event) => {
+        item.addEventListener("mouseover", (evt) => {
           if (activeDropdown) {
-            const dropdownId = event.currentTarget.getAttribute("data-dropdown");
+            const dropdownId = evt.currentTarget.getAttribute("data-dropdown");
             const dropdown = document.getElementById(dropdownId);
-
             if (activeDropdown !== dropdown) {
               activeDropdown.classList.remove("active");
               dropdown.classList.add("active");
@@ -1099,7 +1059,7 @@
       });
 
       /***************************************************************
-       *               Tab Size (Spaces) Slider
+       * Tab size slider
        ***************************************************************/
       const tabSizeInput = document.getElementById("tabSizeInput");
       const tabSizeDisplay = document.getElementById("tabSizeDisplay");
@@ -1107,14 +1067,14 @@
         spaces = parseInt(tabSizeInput.value, 10);
         tabSizeDisplay.textContent = spaces;
         document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
-        // Update the Monaco editors for each tab
+
         tabs.forEach((t) => {
           t.editorInstance.updateOptions({ tabSize: spaces });
         });
       });
 
       /***************************************************************
-       *                    Undo/Redo
+       * Undo/Redo
        ***************************************************************/
       const redoBtn = document.getElementById("redoBtn");
       const undoBtn = document.getElementById("undoBtn");
@@ -1126,7 +1086,6 @@
           elem.classList.remove("disabled");
         }
       }
-
       function updateUndoRedoButtons() {
         if (activeTabId === null) {
           toggleDisabled(undoBtn, true);
@@ -1141,7 +1100,7 @@
         toggleDisabled(redoBtn, !model.canRedo());
       }
 
-      // Keydown detection for ctrl+S, ctrl+Z, etc.
+      // listen to key combos
       document.addEventListener("keydown", (e) => {
         if (e.ctrlKey && e.key === "s") {
           e.preventDefault();
@@ -1150,32 +1109,25 @@
           (e.ctrlKey && e.key === "z") ||
           (e.ctrlKey && e.shiftKey && e.key === "Z")
         ) {
-          setTimeout(() => {
-            updateUndoRedoButtons();
-          }, 100);
+          setTimeout(() => updateUndoRedoButtons(), 100);
         }
       });
-
       redoBtn.addEventListener("click", () => {
         if (activeTabId === null) return;
         const tabObj = tabs.find((t) => t.id === activeTabId);
         tabObj.editorInstance.trigger("redo", "redo", null);
         updateUndoRedoButtons();
       });
-
       undoBtn.addEventListener("click", () => {
         if (activeTabId === null) return;
         const tabObj = tabs.find((t) => t.id === activeTabId);
         tabObj.editorInstance.trigger("undo", "undo", null);
         updateUndoRedoButtons();
       });
-
-      setInterval(() => {
-        updateUndoRedoButtons();
-      }, 500);
+      setInterval(() => updateUndoRedoButtons(), 500);
 
       /***************************************************************
-       *                  Upload File / Save File
+       * Upload/Save
        ***************************************************************/
       document.getElementById("uploadFileBtn").addEventListener("click", () => {
         const input = document.createElement("input");
@@ -1185,11 +1137,10 @@
         input.addEventListener("change", async (e) => {
           const file = e.target.files[0];
           const reader = new FileReader();
-          reader.onload = (e) => {
-            const content = e.target.result;
+          reader.onload = (evt) => {
             if (activeTabId === null) return;
             const tabObj = tabs.find((t) => t.id === activeTabId);
-            tabObj.editorInstance.setValue(content);
+            tabObj.editorInstance.setValue(evt.target.result);
             closeDropdowns();
           };
           reader.readAsText(file);
@@ -1212,27 +1163,21 @@
         URL.revokeObjectURL(url);
         closeDropdowns();
       });
-
       function closeDropdowns() {
         document
           .querySelectorAll(".vs-navbar-dropdown")
-          .forEach((dropdown) => {
-            dropdown.classList.remove("active");
-          });
+          .forEach((d) => d.classList.remove("active"));
       }
 
       /***************************************************************
-       *         GitHub file loading logic (Git Panel)
+       * Git panel
        ***************************************************************/
       const gitInp = document.getElementById("gitUrl");
       const loadGitButton = document.getElementById("loadGitButton");
 
       gitInp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          loadGitButton.click();
-        }
+        if (e.key === "Enter") loadGitButton.click();
       });
-
       gitInp.addEventListener("input", () => {
         if (!gitInp.value.trim()) {
           loadGitButton.disabled = true;
@@ -1318,14 +1263,12 @@
           );
         }
       });
-
       function gitUrlErr() {
         gitInp.style.borderColor = "red";
         setTimeout(() => {
           gitInp.style.borderColor = "";
         }, 2000);
       }
-
       function normalizeUrl(url) {
         if (url.endsWith(".git")) {
           url = url.slice(0, -4);
@@ -1338,7 +1281,6 @@
         }
         return url;
       }
-
       function parseGitHubUrl(url) {
         if (url.includes("raw.githubusercontent.com")) {
           const match = url.match(
@@ -1356,11 +1298,9 @@
         const match = url.match(
           /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
         );
-
         if (!match) {
           return { isFile: false };
         }
-
         return {
           owner: match[1],
           repo: match[2],
@@ -1369,22 +1309,18 @@
           isFile: true,
         };
       }
-
       async function fetchFromGit(owner, repo, path, branch = "main") {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
         const response = await fetch(apiUrl);
-
         if (!response.ok) {
           throw new Error(`Failed to fetch file: ${response.statusText}`);
         }
-
         const data = await response.json();
         if (data.type !== "file") {
           throw new Error("The URL does not point to a valid file.");
         }
         return data;
       }
-
       async function fetchRawFile(rawUrl) {
         const response = await fetch(rawUrl);
         if (!response.ok) {
