@@ -944,8 +944,9 @@
 
     function makeTabTitleEditable(tabObj) {
       const span = tabObj.tabElement.querySelector(".tab-title");
+      const xBtn = tabObj.tabElement.querySelector(".close");
       if (!span) return;
-
+      xBtn.style.display = "none";
       const oldName = tabObj.name;
       const input = document.createElement("input");
       input.type = "text";
@@ -987,6 +988,10 @@
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
+          finalize();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          input.value = oldName;
           finalize();
         }
       });
