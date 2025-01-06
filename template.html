@@ -841,11 +841,19 @@
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
+
+    const symbolsMap = {
+      log: "📝",
+      error: "❌",
+      warn: "⚠️",
+      info: "ℹ️",
+    };
+
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       const line = document.createElement("div");
       line.className = type;
-      line.textContent = `[${type.toUpperCase()}] ${message}`;
+      line.textContent = `[${symbolsMap[type]}}] ${message}`;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
