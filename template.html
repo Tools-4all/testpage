@@ -843,17 +843,17 @@
     }
 
     const symbolsMap = {
-      log: "📝",
+      log: "-",
       error: "❌",
-      warn: "⚠️",
-      info: "ℹ️",
+      warn: "⚠",
+      info: "ℹ",
     };
 
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       const line = document.createElement("div");
       line.className = type;
-      line.textContent = `[${symbolsMap[type]}}] ${message}`;
+      line.textContent = `[${symbolsMap[type]}] ${message}`;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
@@ -865,7 +865,7 @@
         promptLine.className = "prompt-line";
 
         const promptMsg = document.createElement("span");
-        promptMsg.textContent = `[PROMPT] ${msg}`;
+        promptMsg.textContent = `[?] ${msg}`;
 
         const input = document.createElement("input");
         input.type = "text";
