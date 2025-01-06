@@ -84,6 +84,7 @@ self.addEventListener("message", (event) => {
                 const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
 
                 userFunc(customConsole, customPrompt);
+                self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
                 customConsole.error(e.message);
                 self.postMessage({ type: "log", message: "Script finished with exit code 1." });
@@ -92,7 +93,6 @@ self.addEventListener("message", (event) => {
 
         try {
             executeCode(code);
-            self.postMessage({ type: "log", message: "Script finished with exit code 0." });
         } catch (e) {
             self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
             self.postMessage({ type: "log", message: "Script finished with exit code 1." });
