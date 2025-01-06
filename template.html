@@ -960,7 +960,7 @@
 
       let finalizeCalled = false;
 
-      const finalize = () => {
+      const finalize = (closeBtn) => {
         if (finalizeCalled) return;
         finalizeCalled = true;
 
@@ -981,6 +981,7 @@
         });
 
         tabObj.tabElement.replaceChild(newSpan, input);
+        closeBtn.style.display = "block";
       };
 
       input.addEventListener("blur", finalize);
@@ -988,11 +989,11 @@
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          finalize();
+          finalize(xBtn);
         } else if (e.key === "Escape") {
           e.preventDefault();
           input.value = oldName;
-          finalize();
+          finalize(xBtn);
         }
       });
     }
