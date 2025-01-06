@@ -855,10 +855,10 @@
 
     const colorMap = {
       log: "#CCCCCC",
-      error: "#FF5555", 
+      error: "#FF5555",
       warn: "#FFFF55",
-      info: "#55FFFF", 
-      prompt: "#55FF55", 
+      info: "#55FFFF",
+      prompt: "#55FF55",
     };
 
 
@@ -930,9 +930,13 @@
       input.focus();
       input.select();
 
-      const finalize = () => {
-        let newVal = input.value.trim();
+      let finalizeCalled = false;
 
+      const finalize = () => {
+        if (finalizeCalled) return;
+        finalizeCalled = true;
+
+        let newVal = input.value.trim();
         if (!newVal || newVal === oldName) {
           newVal = oldName;
         } else {
@@ -952,6 +956,7 @@
       };
 
       input.addEventListener("blur", finalize);
+
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -959,6 +964,7 @@
         }
       });
     }
+
 
     require.config({
       paths: {
