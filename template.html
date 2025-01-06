@@ -854,10 +854,13 @@
           await handlePrompt(message, tabObj);
         } else if (["log", "error", "warn", "info"].includes(type)) {
           appendToOutput(tabObj.outputElement, type, message);
-        }
+        } else if (type === "clear") {
+          clearConsole(tabObj.outputElement);
+        } 
       };
       w.onerror = (error) => {
         appendToOutput(tabObj.outputElement, "error", error.message);
+        appendToOutput(tabObj.outputElement, "log", "The script has finished running with exit code 1.");
       };
 
       const code = tabObj.editorInstance.getValue();

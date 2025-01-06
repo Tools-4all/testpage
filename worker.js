@@ -91,8 +91,10 @@ self.addEventListener("message", (event) => {
 
         try {
             executeCode(code);
+            self.postMessage({ type: "log", message: "The script has finished running with exit code 0." });
         } catch (e) {
             self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
+            self.postMessage({ type: "log", message: "The script has finished running with exit code 0." });
         }
     }
 });
