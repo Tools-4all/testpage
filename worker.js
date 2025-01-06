@@ -86,15 +86,16 @@ self.addEventListener("message", (event) => {
                 userFunc(customConsole, customPrompt);
             } catch (e) {
                 customConsole.error(e.message);
+                self.postMessage({ type: "log", message: "Script finished with exit code 1." });
             }
         };
 
         try {
             executeCode(code);
-            self.postMessage({ type: "log", message: "The script has finished running with exit code 0." });
+            self.postMessage({ type: "log", message: "Script finished with exit code 0." });
         } catch (e) {
             self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
-            self.postMessage({ type: "log", message: "The script has finished running with exit code 0." });
+            self.postMessage({ type: "log", message: "Script finished with exit code 1." });
         }
     }
 });
