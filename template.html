@@ -737,7 +737,7 @@
         ev.dataTransfer.setData("text/plain", "");
         ev.dataTransfer.setData("text/uri-list", "");
         ev.dataTransfer.setData("application/tab-id", String(newTabId));
-        ev.dataTransfer.effectAllowed = "linkMove";
+        ev.dataTransfer.effectAllowed = "move";
       });
 
       tabElem.addEventListener("drop", (ev) => {
