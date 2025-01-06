@@ -707,15 +707,18 @@
       });
 
       tabElem.addEventListener("dragstart", (ev) => {
-        console.log("dragstart", newTabId);
-        ev.dataTransfer.setData("text/plain", String(newTabId));
+        ev.dataTransfer.clearData();
+        ev.dataTransfer.setData("text/plain", "");
+        ev.dataTransfer.setData("text/uri-list", "");
+        ev.dataTransfer.setData("application/tab-id", String(newTabId));
+        ev.dataTransfer.effectAllowed = "move";
       });
       tabElem.addEventListener("dragover", (ev) => {
         ev.preventDefault();
       });
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
-        const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
+        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
         reorderTabs(draggedTabId, newTabId);
       });
 
