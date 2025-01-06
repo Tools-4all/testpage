@@ -467,7 +467,7 @@
     .status-item {
       margin-right: 10px;
     }
-    
+
 
     @media (max-width: 768px) {
       #activityBar {
@@ -562,10 +562,10 @@
     let workerBlobURL = null;
 
     let activeDropdown = null;
-    let spaces = 3; 
+    let spaces = 3;
 
     let tabs = [];
-    let activeTabId = null; 
+    let activeTabId = null;
 
 
     function getUniqueTabName(baseName, ignoreTabId = null) {
@@ -586,12 +586,12 @@
     function createTab(desiredName = null, initialContent = null) {
       let tabName;
       if (!desiredName) {
-        tabName = getNextTabName(); 
+        tabName = getNextTabName();
       } else {
         tabName = getUniqueTabName(desiredName);
       }
 
-      const newTabId = Date.now(); 
+      const newTabId = Date.now();
       const sharedBuffer = new SharedArrayBuffer(1024);
       const view = new Int32Array(sharedBuffer);
 
@@ -708,7 +708,7 @@
         ev.dataTransfer.setData("text/plain", String(newTabId));
       });
       tabElem.addEventListener("dragover", (ev) => {
-        ev.preventDefault(); 
+        ev.preventDefault();
       });
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
@@ -843,12 +843,13 @@
     }
 
     const symbolsMap = {
-      log: "-",
-      error: "❌",
-      warn: "⚠",
-      info: "ℹ",
+      log: ">",
+      error: "x",
+      warn: "!",
+      info: "i",
+      prompt: "?"
     };
-
+    
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       const line = document.createElement("div");
@@ -1196,7 +1197,7 @@
       const gitUrl = gitInp.value.trim();
       if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
 
-      let tabFileName = "untitled.js"; 
+      let tabFileName = "untitled.js";
       try {
         new URL(gitUrl);
       } catch (err) {
