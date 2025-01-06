@@ -7,12 +7,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Tab Sandboxed JS Compiler</title>
 
-  <!-- Monaco Editor CSS -->
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fira Code Font -->
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
@@ -32,7 +29,6 @@
       overflow: hidden;
     }
 
-    /* Navbar Logo */
     .vs-logo {
       position: absolute;
       top: 0;
@@ -56,7 +52,6 @@
       -webkit-user-drag: none;
     }
 
-    /* Top Navbar */
     .vs-navbar {
       background-color: #252526;
       color: #ffffff;
@@ -71,7 +66,6 @@
       width: 100%;
       z-index: 1000;
       padding-left: 40px;
-      /* space for the logo */
       height: 30px;
     }
 
@@ -120,7 +114,6 @@
       opacity: 0.5;
     }
 
-    /* Activity Bar (left side) */
     #activityBar {
       width: 50px;
       background-color: #252526;
@@ -132,7 +125,6 @@
       transition: width 0.3s ease;
       flex-shrink: 0;
       margin-top: 30px;
-      /* space for top navbar */
     }
 
     #activityBar .icon {
@@ -166,7 +158,6 @@
       white-space: nowrap;
     }
 
-    /* Sidebar panels (git, settings, etc.) */
     .sidebar-panel {
       width: 250px;
       background-color: #1e1e1e;
@@ -177,7 +168,6 @@
       flex-shrink: 0;
       transition: all 0.3s ease;
       margin-top: 30px;
-      /* for top navbar */
     }
 
     .sidebar-panel.active {
@@ -266,17 +256,14 @@
       background: #0067a8;
     }
 
-    /* Main container for the tab bar and the tab content */
     #mainContainer {
       display: flex;
       flex-direction: column;
       flex: 1;
       margin-top: 30px;
-      /* for top navbar */
       overflow: hidden;
     }
 
-    /* Tab Bar styling */
     #tabBar {
       background-color: #252526;
       border-bottom: 1px solid #333;
@@ -299,7 +286,6 @@
       padding: 0 8px;
       user-select: none;
       -webkit-user-drag: none;
-      /* for drag-and-drop */
     }
 
     .tab.active {
@@ -317,7 +303,6 @@
       cursor: pointer;
     }
 
-    /* The inline text field for editing the tab name */
     .tab-title-edit {
       background: #555;
       border: 1px solid #666;
@@ -342,7 +327,6 @@
       color: #fff;
     }
 
-    /* Container for tabs (each editor + console). We'll switch via .active class. */
     #tabsContainer {
       position: relative;
       flex: 1;
@@ -351,7 +335,6 @@
 
     .editor-and-output {
       display: none;
-      /* only active tab is displayed */
       flex-direction: column;
       position: absolute;
       top: 0;
@@ -364,13 +347,10 @@
       display: flex;
     }
 
-    /* Editor + Output styling */
     .editorContainer {
       flex: 1;
-      /* Let editor take remaining space */
       position: relative;
       min-height: 0;
-      /* fix for flex children */
     }
 
     .monaco-editor {
@@ -380,7 +360,6 @@
 
     .outputContainer {
       height: 200px;
-      /* fixed console height */
       background-color: #1e1e1e;
       border-top: 1px solid #333;
       display: flex;
@@ -512,12 +491,10 @@
 </head>
 
 <body>
-  <!-- Logo -->
   <div class="vs-logo">
     <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
   </div>
 
-  <!-- Top Navbar -->
   <div class="vs-navbar">
     <div class="vs-navbar-item" data-dropdown="fileDropdown">
       File
@@ -535,7 +512,6 @@
     </div>
   </div>
 
-  <!-- Activity Bar (left side) -->
   <div id="activityBar">
     <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
       <i class="fas fa-search"></i>
@@ -548,7 +524,6 @@
     </div>
   </div>
 
-  <!-- Sidebar Panels -->
   <div id="gitPanel" class="sidebar-panel">
     <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
     <button id="loadGitButton" disabled="true">Load</button>
@@ -560,18 +535,13 @@
     </div>
   </div>
 
-  <!-- Main Container (Tab bar + Editor/Console + Status bar) -->
   <div id="mainContainer">
-    <!-- Tab Bar -->
     <div id="tabBar">
-      <!-- Tabs will be appended here dynamically -->
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
     </div>
 
-    <!-- Container for tabs (each editor + console). We'll switch via .active class. -->
     <div id="tabsContainer"></div>
 
-    <!-- Status Bar -->
     <div id="statusBar">
       <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
       <div class="status-item">UTF-8</div>
@@ -580,32 +550,23 @@
     </div>
   </div>
 
-  <!-- require.js for Monaco Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
   <script>
-    /***************************************************************
-     * Worker path (Django URL).
-     ***************************************************************/
     const workerPath = "{% url 'betzi_test_js' %}";
     let workerBlobURL = null;
 
     let activeDropdown = null;
-    let spaces = 3; // default tab size
+    let spaces = 3; 
 
-    // We'll keep track of all tabs in an array
     let tabs = [];
-    let activeTabId = null; // which tab is active?
+    let activeTabId = null; 
 
-    /**
-     * Returns a unique name. If 'baseName' already exists, appends (1), (2), etc.
-     */
+
     function getUniqueTabName(baseName, ignoreTabId = null) {
       let candidate = baseName;
       let suffix = 1;
 
-      // We'll look for *other* tabs with this name
-      // If it's the same tab, we skip it.
       while (
         tabs.some(
           (t) => t.id !== ignoreTabId && t.name.toLowerCase() === candidate.toLowerCase()
@@ -616,54 +577,41 @@
       return candidate;
     }
 
-    /**
-     * Create a new tab. If 'desiredName' is provided, we will attempt to use it
-     * or a conflict version (ex: name(1)). If 'initialContent' is provided, we
-     * set that in the editor. Otherwise we do a default snippet.
-     */
+
     function createTab(desiredName = null, initialContent = null) {
-      // If no desiredName, we default to "TabX" where X = highest + 1
       let tabName;
       if (!desiredName) {
-        tabName = getNextTabName(); // ex: Tab3
+        tabName = getNextTabName(); 
       } else {
-        // use getUniqueTabName in case desiredName is taken
         tabName = getUniqueTabName(desiredName);
       }
 
-      const newTabId = Date.now(); // unique ID
+      const newTabId = Date.now(); 
       const sharedBuffer = new SharedArrayBuffer(1024);
       const view = new Int32Array(sharedBuffer);
 
-      // Create the tab "button"
       const tabElem = document.createElement("div");
       tabElem.classList.add("tab");
       tabElem.draggable = true;
 
-      // Title container (span or input)
       const titleSpan = document.createElement("span");
       titleSpan.classList.add("tab-title");
       titleSpan.textContent = tabName;
       tabElem.appendChild(titleSpan);
 
-      // Close icon
       const closeIcon = document.createElement("i");
       closeIcon.classList.add("fas", "fa-times", "close");
       tabElem.appendChild(closeIcon);
 
-      // Editor + console container
       const editorAndOutput = document.createElement("div");
       editorAndOutput.classList.add("editor-and-output");
 
-      // Editor container
       const editorContainer = document.createElement("div");
       editorContainer.classList.add("editorContainer");
 
-      // Output container
       const outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
 
-      // Controls
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
       const runBtn = document.createElement("button");
@@ -680,7 +628,6 @@
       editorAndOutput.appendChild(editorContainer);
       editorAndOutput.appendChild(outputContainer);
 
-      // Insert into DOM
       const tabBar = document.getElementById("tabBar");
       const addTabButton = document.getElementById("addTabButton");
       tabBar.insertBefore(tabElem, addTabButton);
@@ -688,7 +635,6 @@
       const tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorAndOutput);
 
-      // Create the Monaco editor
       const editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
         theme: "custom-dark",
@@ -750,18 +696,16 @@
         runTab(newTabId);
       });
 
-      // close tab
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
         closeTab(newTabId);
       });
 
-      // DRAG & DROP
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.setData("text/plain", String(newTabId));
       });
       tabElem.addEventListener("dragover", (ev) => {
-        ev.preventDefault(); // needed to allow dropping
+        ev.preventDefault(); 
       });
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
@@ -769,15 +713,12 @@
         reorderTabs(draggedTabId, newTabId);
       });
 
-      // Make tab name editable on double-click
       titleSpan.addEventListener("dblclick", () => {
         makeTabTitleEditable(tabObj);
       });
 
-      // Switch to the new tab
       switchTab(newTabId);
 
-      // If initialContent is given, use that; else default
       if (initialContent !== null) {
         editorInstance.setValue(initialContent);
       } else {
@@ -787,11 +728,7 @@
       return newTabId;
     }
 
-    /**
-     * Helper: compute next default tab name "TabX" by scanning existing tabs
-     */
     function getNextTabName() {
-      // find all tab names that match /^Tab(\d+)$/
       let maxNum = 0;
       for (const t of tabs) {
         const match = t.name.match(/^Tab(\d+)$/);
@@ -805,9 +742,7 @@
       return `Tab${maxNum + 1}`;
     }
 
-    /**
-     * Reorder tabs in the array/DOM on drag-and-drop
-     */
+
     function reorderTabs(draggedTabId, targetTabId) {
       if (draggedTabId === targetTabId) return;
 
@@ -819,16 +754,11 @@
       tabs.splice(draggedIndex, 1);
       tabs.splice(targetIndex, 0, draggedTabObj);
 
-      // Rebuild the tab bar DOM order
       const tabBar = document.getElementById("tabBar");
       tabs.forEach((t) => {
         tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
       });
     }
-
-    /**
-     * Switch to a given tab
-     */
     function switchTab(tabId) {
       if (activeTabId !== null) {
         const currentTab = tabs.find((t) => t.id === activeTabId);
@@ -846,28 +776,21 @@
       }
     }
 
-    /**
-     * Close a tab (kills its worker, removes from array, reassigns active if needed)
-     */
     function closeTab(tabId) {
       const idx = tabs.findIndex((t) => t.id === tabId);
       if (idx === -1) return;
       const tabObj = tabs[idx];
 
-      // kill worker
       if (tabObj.worker) {
         tabObj.worker.terminate();
         tabObj.worker = null;
       }
 
-      // remove from DOM
       tabObj.tabElement.remove();
       tabObj.editorAndOutput.remove();
 
-      // remove from array
       tabs.splice(idx, 1);
 
-      // if was active, pick another
       if (activeTabId === tabId) {
         if (tabs.length > 0) {
           switchTab(tabs[tabs.length - 1].id);
@@ -877,22 +800,17 @@
       }
     }
 
-    /**
-     * Worker code for a given tab
-     */
     async function runTab(tabId) {
       const tabObj = tabs.find((t) => t.id === tabId);
       if (!tabObj) return;
 
       clearConsole(tabObj.outputElement);
 
-      // kill old worker if any
       if (tabObj.worker) {
         tabObj.worker.terminate();
         tabObj.worker = null;
       }
 
-      // ensure worker code is cached
       await cacheWorkerCode();
       const w = new Worker(workerBlobURL);
       tabObj.worker = w;
@@ -929,9 +847,6 @@
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
-    /**
-     * handlePrompt uses tabObj's shared buffer to ensure no cross-tab interference
-     */
     function handlePrompt(msg, tabObj) {
       return new Promise((resolve) => {
         const outputDiv = tabObj.outputElement;
@@ -954,7 +869,6 @@
             const textEncoder = new TextEncoder();
             const encodedResponse = textEncoder.encode(value + "\0");
 
-            // write to this tab's buffer
             const responseBuffer = new Uint8Array(tabObj.sharedBuffer, 4);
             responseBuffer.fill(0);
             responseBuffer.set(encodedResponse);
@@ -973,11 +887,7 @@
       });
     }
 
-    /***************************************************************
-     * Make the tab title editable (inline)
-     ***************************************************************/
     function makeTabTitleEditable(tabObj) {
-      // Replace the <span.tab-title> with an <input> set to the current name
       const span = tabObj.tabElement.querySelector(".tab-title");
       if (!span) return;
 
@@ -987,33 +897,25 @@
       input.value = oldName;
       input.classList.add("tab-title-edit");
 
-      // remove the old span
       tabObj.tabElement.replaceChild(input, span);
 
-      // focus, select the text
       input.focus();
       input.select();
 
-      // finalize function is called on blur or Enter
       const finalize = () => {
         let newVal = input.value.trim();
 
-        // If the user typed exactly the same name, do no conflict check
-        // or if the name is empty, revert to oldName:
         if (!newVal || newVal === oldName) {
           newVal = oldName;
         } else {
-          // Otherwise, get a conflict-free name, ignoring the current tab ID:
           newVal = getUniqueTabName(newVal, tabObj.id);
         }
 
         tabObj.name = newVal;
 
-        // Recreate the title span
         const newSpan = document.createElement("span");
         newSpan.classList.add("tab-title");
         newSpan.textContent = newVal;
-        // attach dblclick event again
         newSpan.addEventListener("dblclick", () => {
           makeTabTitleEditable(tabObj);
         });
@@ -1030,9 +932,6 @@
       });
     }
 
-    /***************************************************************
-     * Monaco setup
-     ***************************************************************/
     require.config({
       paths: {
         vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs",
@@ -1077,13 +976,9 @@
         },
       });
 
-      // create an initial tab
-      createTab(); // no name => "Tab1"
+      createTab();
     });
-
-    /***************************************************************
-     * Status bar / cursor position
-     ***************************************************************/
+i
     function updateStatusPosition() {
       if (activeTabId === null) {
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
@@ -1099,16 +994,10 @@
       }
     }
 
-    /***************************************************************
-     * + button: create new tab
-     ***************************************************************/
     document.getElementById("addTabButton").addEventListener("click", () => {
       createTab();
     });
 
-    /***************************************************************
-     * Clicking on a tab to switch
-     ***************************************************************/
     document.getElementById("tabBar").addEventListener("click", (e) => {
       const clickedTab = tabs.find(
         (t) => t.tabElement === e.target || t.tabElement.contains(e.target)
@@ -1118,9 +1007,6 @@
       }
     });
 
-    /***************************************************************
-     * Sidebar + Navbar
-     ***************************************************************/
     ["gitIcon", "settingsIcon"].forEach((iconId) => {
       const icon = document.getElementById(iconId);
       icon.addEventListener("click", (e) => {
@@ -1138,7 +1024,6 @@
       });
     });
 
-    // The "search" icon triggers Monaco's find
     document.getElementById("searchIcon").addEventListener("click", () => {
       if (activeTabId === null) return;
       const tabObj = tabs.find((t) => t.id === activeTabId);
@@ -1146,7 +1031,6 @@
       tabObj.editorInstance.getAction("actions.find").run();
     });
 
-    // close dropdowns if user clicks outside
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
         document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => d.classList.remove("active"));
@@ -1154,7 +1038,6 @@
       }
     });
 
-    // opening dropdowns
     document.querySelectorAll(".vs-navbar-item").forEach((item) => {
       item.addEventListener("click", (evt) => {
         const dropdownId = evt.currentTarget.getAttribute("data-dropdown");
@@ -1182,9 +1065,6 @@
       });
     });
 
-    /***************************************************************
-     * Tab size slider
-     ***************************************************************/
     const tabSizeInput = document.getElementById("tabSizeInput");
     const tabSizeDisplay = document.getElementById("tabSizeDisplay");
     tabSizeInput.addEventListener("input", () => {
@@ -1197,9 +1077,6 @@
       });
     });
 
-    /***************************************************************
-     * Undo/Redo
-     ***************************************************************/
     const redoBtn = document.getElementById("redoBtn");
     const undoBtn = document.getElementById("undoBtn");
 
@@ -1224,7 +1101,6 @@
       toggleDisabled(redoBtn, !model.canRedo());
     }
 
-    // listen to key combos
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
@@ -1250,9 +1126,6 @@
     });
     setInterval(() => updateUndoRedoButtons(), 500);
 
-    /***************************************************************
-     * Upload/Save
-     ***************************************************************/
     document.getElementById("uploadFileBtn").addEventListener("click", () => {
       const input = document.createElement("input");
       input.type = "file";
@@ -1262,8 +1135,7 @@
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = (evt) => {
-          // If user picks a file, we open it in a brand new tab named after the file
-          const fileName = getUniqueTabName(file.name); // handle conflict
+          const fileName = getUniqueTabName(file.name);
           createTab(fileName, evt.target.result);
           closeDropdowns();
         };
@@ -1295,9 +1167,6 @@
         .forEach((d) => d.classList.remove("active"));
     }
 
-    /***************************************************************
-     * Git panel
-     ***************************************************************/
     const gitInp = document.getElementById("gitUrl");
     const loadGitButton = document.getElementById("loadGitButton");
 
@@ -1313,16 +1182,12 @@
     });
 
     loadGitButton.addEventListener("click", async () => {
-      // "Open from GitHub" -> opens a new tab named after the GH file
       const gitUrl = gitInp.value.trim();
       if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
 
-      let tabFileName = "untitled.js"; // fallback
-      // We'll parse the path from the URL
-      // e.g. https://github.com/user/repo/blob/branch/path/to/file.js => "file.js"
-      // or raw paths => the last segment as well
+      let tabFileName = "untitled.js"; 
       try {
-        new URL(gitUrl); // check if valid
+        new URL(gitUrl);
       } catch (err) {
         alert("Invalid URL");
         return;
@@ -1330,21 +1195,17 @@
 
       const normalizedUrl = normalizeUrl(gitUrl);
       const parsedUrl = parseGitHubUrl(normalizedUrl);
-      // We'll extract the file name from either the path or rawUrl
       if (parsedUrl.isRawFile) {
-        // raw link
         const lastSlash = parsedUrl.rawUrl.lastIndexOf("/");
         if (lastSlash !== -1) {
           tabFileName = parsedUrl.rawUrl.substring(lastSlash + 1);
         }
       } else if (parsedUrl.isFile) {
-        // path-based
         const lastSlash = parsedUrl.path.lastIndexOf("/");
         if (lastSlash !== -1) {
           tabFileName = parsedUrl.path.substring(lastSlash + 1);
         }
       }
-      // If for some reason we can't parse name, default to "untitled.js"
 
       try {
         let fileContent;
@@ -1367,7 +1228,6 @@
           return;
         }
 
-        // create a new tab, name is unique
         createTab(tabFileName, fileContent);
       } catch (error) {
         alert(`Error fetching file: ${error.message}`);
@@ -1386,7 +1246,6 @@
       return url;
     }
     function parseGitHubUrl(url) {
-      // raw link
       if (url.includes("raw.githubusercontent.com")) {
         const match = url.match(
           /^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/
@@ -1399,7 +1258,6 @@
         }
         return { isRawFile: false };
       }
-      // normal link
       const match = url.match(
         /^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/
       );
