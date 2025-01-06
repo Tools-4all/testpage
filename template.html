@@ -424,6 +424,10 @@
       color: #3794ff;
     }
 
+    .outputContent {
+      margin-top: 2px;
+    }
+
     .prompt-line {
       display: flex;
       align-items: center;
@@ -862,6 +866,7 @@
       if (!outputDiv) return;
       const line = document.createElement("div");
       line.className = type;
+      line.classList.add("outputContent");
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       line.style.color = colorMap[type];
       outputDiv.appendChild(line);
@@ -873,6 +878,7 @@
         const outputDiv = tabObj.outputElement;
         const promptLine = document.createElement("div");
         promptLine.className = "prompt-line";
+        promptLine.classList.add("outputContent");
 
         const promptMsg = document.createElement("span");
         promptMsg.textContent = `[?] ${msg}`;
