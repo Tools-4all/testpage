@@ -464,9 +464,15 @@
       margin-right: 10px;
     }
 
-    .find-widget {
-      display: flex;
-      flex-direction: column;
+    .editorContainer {
+      position: relative;
+      overflow: visible !important;
+      z-index: 10;
+      /* or higher than any other overlayed elements */
+    }
+
+    .monaco-editor .monaco-find-widget {
+      z-index: 9999 !important;
     }
 
     @media (max-width: 768px) {
@@ -562,10 +568,10 @@
     let workerBlobURL = null;
 
     let activeDropdown = null;
-    let spaces = 3; 
+    let spaces = 3;
 
     let tabs = [];
-    let activeTabId = null; 
+    let activeTabId = null;
 
 
     function getUniqueTabName(baseName, ignoreTabId = null) {
@@ -586,12 +592,12 @@
     function createTab(desiredName = null, initialContent = null) {
       let tabName;
       if (!desiredName) {
-        tabName = getNextTabName(); 
+        tabName = getNextTabName();
       } else {
         tabName = getUniqueTabName(desiredName);
       }
 
-      const newTabId = Date.now(); 
+      const newTabId = Date.now();
       const sharedBuffer = new SharedArrayBuffer(1024);
       const view = new Int32Array(sharedBuffer);
 
@@ -708,7 +714,7 @@
         ev.dataTransfer.setData("text/plain", String(newTabId));
       });
       tabElem.addEventListener("dragover", (ev) => {
-        ev.preventDefault(); 
+        ev.preventDefault();
       });
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
@@ -1188,7 +1194,7 @@
       const gitUrl = gitInp.value.trim();
       if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
 
-      let tabFileName = "untitled.js"; 
+      let tabFileName = "untitled.js";
       try {
         new URL(gitUrl);
       } catch (err) {
