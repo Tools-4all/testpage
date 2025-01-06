@@ -849,12 +849,21 @@
       info: "i",
       prompt: "?"
     };
-    
+
+    const colorMap = {
+      log: "#d4d4d4",
+      error: "#f44747",
+      warn: "#cca700",
+      info: "#3794ff",
+      prompt: "#d4d4d4"
+    }
+
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       const line = document.createElement("div");
       line.className = type;
       line.textContent = `[${symbolsMap[type]}] ${message}`;
+      line.style.color = colorMap[type];
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
