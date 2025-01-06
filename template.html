@@ -671,7 +671,6 @@
         },
       });
 
-      // Create tab object
       const tabObj = {
         id: newTabId,
         name: tabName,
@@ -686,12 +685,10 @@
       };
       tabs.push(tabObj);
 
-      // event: update status bar on cursor pos
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
       });
 
-      // run button
       runBtn.addEventListener("click", () => {
         runTab(newTabId);
       });
@@ -702,6 +699,7 @@
       });
 
       tabElem.addEventListener("dragstart", (ev) => {
+        console.log("dragstart", newTabId);
         ev.dataTransfer.setData("text/plain", String(newTabId));
       });
       tabElem.addEventListener("dragover", (ev) => {
