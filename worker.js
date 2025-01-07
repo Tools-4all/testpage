@@ -42,7 +42,7 @@ class myPrompt {
 }
 
 
-function myDir(obj, indent = "") {
+function myDir(obj, indent = "", first=false) {
     if (typeof obj !== "object" || obj === null) {
         return indent + String(obj);
     }
