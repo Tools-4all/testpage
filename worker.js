@@ -42,7 +42,7 @@ class myPrompt {
 }
 
 
-function myDir(obj, indent = "", first=false) {
+function myDir(obj, indent = "", first = false) {
     if (typeof obj !== "object" || obj === null) {
         return indent + String(obj);
     }
@@ -72,16 +72,16 @@ function myDir(obj, indent = "", first=false) {
 }
 
 
-function getStackStartingFromUserFunction() {
-    const stack = new Error().stack.split("\n");
-    let userFunctionIndex = 0;
-    for (let i = 0; i < stack.length; i++) {
-        if (stack[i].includes("executeCode")) {
-            userFunctionIndex = i + 1;
+function getStack() {
+    const lines = new Error().stack.split('\n');
+    let startIndex = lines.length; 
+    for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes('1919191.js')) {
+            startIndex = i;
             break;
         }
     }
-    return stack.slice(userFunctionIndex).join("\n");
+    return lines.slice(startIndex).join('\n');
 }
 
 
@@ -94,7 +94,7 @@ self.addEventListener("message", (event) => {
             warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
             info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
             debug: (...args) => {
-                const stack = getStackStartingFromUserFunction();
+                const stack = getStack();
                 self.postMessage({ type: "log", message: args.join(" ") + "\n" + stack });
             },
             clear: () => self.postMessage({ type: "clear" }),
@@ -151,6 +151,8 @@ self.addEventListener("message", (event) => {
                     const executeCode = undefined;
                     const userFunc = undefined;
                     const myDir = undefined;
+                    const getStack = undefined;
+                    //# sourceURL=1919191.js
                     (() => {
                         ${userCode}
                     })();
