@@ -32,45 +32,44 @@ const wrapperPrefixLines = [
     'const userFunc = undefined;',
     'const myDir = undefined;',
     'const getStack = undefined;',
-    '//# sourceURL=1919191.js',
+    '//# sourceURL=js', // Updated to match the stack trace identifier
     '(() => {'
 ];
-console.log("loaded d");
+console.log("loaded fr");
 
 
 const wrapperSuffix = `})();`;
 
-// Calculate the WRAPPER_LINE_COUNT based on the number of lines in wrapperPrefixLines
-// plus the lines added by the wrapping process.
-// In this case, wrapperPrefixLines.length = 18
-// createWrappedCode adds 1 line before userCode and 1 line after userCode.
-// Additionally, 'new Function' might introduce its own lines, but for simplicity,
-// we'll set WRAPPER_LINE_COUNT to wrapperPrefixLines.length + 2 = 20
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
+// Adjusted WRAPPER_LINE_COUNT to wrapperPrefixLines.length + 1 = 18 + 1 = 19
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 1;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + '\n' + wrapperSuffix;
 }
 
-
 function getStack() {
     const stack = new Error().stack.split('\n');
-    const userScriptIdentifier = 'js'; // Updated to match 'js:4' in the stack trace
+    const userScriptIdentifier = 'js'; // Matches '//# sourceURL=js'
     let processedStack = [];
-    for (const line of stack) {
+    stack.forEach(line => {
         if (line.includes(userScriptIdentifier)) {
             const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
             const match = line.match(regex);
             if (match) {
-                const functionName = match[1];
+                let functionName = match[1];
                 const lineNumber = parseInt(match[3], 10);
+                
+                // Optional: Rename 'executeCode' to 'js' in the stack trace
+                if (functionName === 'executeCode') {
+                    functionName = 'js';
+                }
+
                 const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                 if (adjustedLine > 0) {
                     processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
                 } else {
                     processedStack.push(`    at ${functionName} (js:${lineNumber})`);
                 }
-                break; // Process only the first relevant line
             } else {
                 const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
                 const matchNoFunc = line.match(regexNoFunc);
@@ -83,11 +82,10 @@ function getStack() {
                     } else {
                         processedStack.push(`    at js (js:${lineNumber})`);
                     }
-                    break; // Process only the first relevant line
                 }
             }
         }
-    }
+    });
     return processedStack.join('\n');
 }
 
