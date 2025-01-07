@@ -36,10 +36,9 @@ const wrapperPrefixLines = [
     '(() => {'
 ];
 
-const wrapperSuffix = `
-})();`;
+const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length;
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 1;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
@@ -139,6 +138,7 @@ function getStack() {
     });
     return processedStack.join('\n');
 }
+
 
 
 self.addEventListener("message", (event) => {
