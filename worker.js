@@ -72,6 +72,19 @@ function myDir(obj, indent = "", first=false) {
 }
 
 
+function getStackStartingFromUserFunction() {
+    const stack = new Error().stack.split("\n");
+    let userFunctionIndex = 0;
+    for (let i = 0; i < stack.length; i++) {
+        if (stack[i].includes("executeCode")) {
+            userFunctionIndex = i + 1;
+            break;
+        }
+    }
+    return stack.slice(userFunctionIndex).join("\n");
+}
+
+
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
@@ -80,23 +93,24 @@ self.addEventListener("message", (event) => {
             error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
             warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
             info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
-            //debug: (...args) => self.postMessage({ type: "debug", message: args.join(" ") }),
+            debug: (...args) => {
+                const stack = getStackStartingFromUserFunction();
+                self.postMessage({ type: "log", message: args.join(" ") + "\n" + stack });
+            },
             clear: () => self.postMessage({ type: "clear" }),
 
-            //table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
+            // table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
             // count: (label = "default") => self.postMessage({ type: "count", message: label }),
             // countReset: (label = "default") => self.postMessage({ type: "countReset", message: label }),
-            // assert: (condition, ...args) => {
-            //     if (!condition) {
-            //         self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
-            //     }
-            // },
+            assert: (condition, ...args) => {
+                if (!condition) {
+                    self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
+                }
+            },
             dir: (obj) => {
                 const dirString = myDir(obj, "", true);
                 self.postMessage({ type: "log", message: dirString });
             },
-
-            // Add dirxml
             dirxml: (obj) => {
                 throw new Error("DOM simulation is not implemented, please use console.dir for non DOM objects.");
             },
