@@ -35,12 +35,18 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded 5");
+console.log("loaded d");
 
 
 const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length;
+// Calculate the WRAPPER_LINE_COUNT based on the number of lines in wrapperPrefixLines
+// plus the lines added by the wrapping process.
+// In this case, wrapperPrefixLines.length = 18
+// createWrappedCode adds 1 line before userCode and 1 line after userCode.
+// Additionally, 'new Function' might introduce its own lines, but for simplicity,
+// we'll set WRAPPER_LINE_COUNT to wrapperPrefixLines.length + 2 = 20
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + '\n' + wrapperSuffix;
@@ -49,9 +55,9 @@ function createWrappedCode(userCode) {
 
 function getStack() {
     const stack = new Error().stack.split('\n');
-    const userScriptIdentifier = '1919191.js';
+    const userScriptIdentifier = 'js'; // Updated to match 'js:4' in the stack trace
     let processedStack = [];
-    stack.forEach(line => {
+    for (const line of stack) {
         if (line.includes(userScriptIdentifier)) {
             const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
             const match = line.match(regex);
@@ -64,6 +70,7 @@ function getStack() {
                 } else {
                     processedStack.push(`    at ${functionName} (js:${lineNumber})`);
                 }
+                break; // Process only the first relevant line
             } else {
                 const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
                 const matchNoFunc = line.match(regexNoFunc);
@@ -76,10 +83,11 @@ function getStack() {
                     } else {
                         processedStack.push(`    at js (js:${lineNumber})`);
                     }
+                    break; // Process only the first relevant line
                 }
             }
         }
-    });
+    }
     return processedStack.join('\n');
 }
 
@@ -179,7 +187,7 @@ self.addEventListener("message", (event) => {
             // profile: (label) => self.postMessage({ type: "profile", message: label || "default" }),
             // profileEnd: (label) => self.postMessage({ type: "profileEnd", message: label || "default" }),
             // time: (label = "default") => self.postMessage({ type: "time", message: label }),
-            // timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label }),
+            // timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label || "default" }),
             // timeLog: (label = "default", ...args) =>
             //     self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
             // timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
