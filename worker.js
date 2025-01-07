@@ -1,4 +1,4 @@
-importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js")
+importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js");
 
 
 // require.config({
@@ -35,15 +35,15 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded 4")
+console.log("loaded 5");
 
 
 const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length;
 
 function createWrappedCode(userCode) {
-    return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
+    return wrapperPrefixLines.join('\n') + '\n' + userCode + '\n' + wrapperSuffix;
 }
 
 
