@@ -42,7 +42,7 @@ class myPrompt {
 }
 
 
-function myDir(obj, indent = "\n") {
+function myDir(obj, indent = "") {
     if (typeof obj !== "object" || obj === null) {
         return indent + String(obj);
     }
@@ -63,7 +63,7 @@ function myDir(obj, indent = "\n") {
     }
 }
 
-function myDirxml(obj, indent = "\n") {
+function myDirxml(obj, indent = "") {
     if (!obj || !obj.tagName || !obj.children) {
         return "Not a valid DOM-like object";
     }
