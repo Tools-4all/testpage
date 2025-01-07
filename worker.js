@@ -35,17 +35,18 @@ const wrapperPrefixLines = [
     '//# sourceURL=js', // Updated to match the stack trace identifier
     '(() => {'
 ];
-console.log("loaded fr");
+console.log("loaded 4");
 
 
 const wrapperSuffix = `})();`;
 
-// Adjusted WRAPPER_LINE_COUNT to wrapperPrefixLines.length + 1 = 18 + 1 = 19
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 1;
+// Adjusted WRAPPER_LINE_COUNT to wrapperPrefixLines.length - 1 = 18 - 1 = 17
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length - 1;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + '\n' + wrapperSuffix;
 }
+
 
 function getStack() {
     const stack = new Error().stack.split('\n');
