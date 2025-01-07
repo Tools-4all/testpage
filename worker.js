@@ -42,6 +42,51 @@ class myPrompt {
 }
 
 
+function myDir(obj, indent = "") {
+    if (typeof obj !== "object" || obj === null) {
+        return indent + String(obj);
+    }
+    if (Array.isArray(obj)) {
+        let output = indent + "[Array]\n";
+        for (let i = 0; i < obj.length; i++) {
+            output += indent + "  [" + i + "]:\n" + myDir(obj[i], indent + "    ") + "\n";
+        }
+        return output;
+    } else {
+        let output = indent + "{Object}\n";
+        for (let key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                output += indent + "  " + key + ":\n" + myDir(obj[key], indent + "    ") + "\n";
+            }
+        }
+        return output;
+    }
+}
+
+function myDirxml(obj, indent = "") {
+    if (!obj || !obj.tagName || !obj.children) {
+        return indent + "[dirxml] Not a valid DOM-like object\n";
+    }
+    let attrs = "";
+    if (obj.attributes) {
+        for (const [key, value] of Object.entries(obj.attributes)) {
+            attrs += ` ${key}="${value}"`;
+        }
+    }
+    let output = `${indent}<${obj.tagName.toLowerCase()}${attrs}>\n`;
+    if (obj.textContent) {
+        output += indent + "  " + obj.textContent.trim() + "\n";
+    }
+    if (Array.isArray(obj.children)) {
+        for (const child of obj.children) {
+            output += myDirxml(child, indent + "  ");
+        }
+    }
+    output += `${indent}</${obj.tagName.toLowerCase()}>\n`;
+    return output;
+}
+
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
@@ -51,33 +96,41 @@ self.addEventListener("message", (event) => {
             error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
             warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
             info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
-
+            //debug: (...args) => self.postMessage({ type: "debug", message: args.join(" ") }),
             clear: () => self.postMessage({ type: "clear" }),
-            debug: (...args) => self.postMessage({ type: "debug", message: args.join(" ") }),
-            table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
-            count: (label = "default") => self.postMessage({ type: "count", message: label }),
-            countReset: (label = "default") => self.postMessage({ type: "countReset", message: label }),
-            assert: (condition, ...args) => {
-                if (!condition) {
-                    self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
-                }
+
+            //table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
+            // count: (label = "default") => self.postMessage({ type: "count", message: label }),
+            // countReset: (label = "default") => self.postMessage({ type: "countReset", message: label }),
+            // assert: (condition, ...args) => {
+            //     if (!condition) {
+            //         self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
+            //     }
+            // },
+            dir: (obj) => {
+                const dirString = myDir(obj);
+                self.postMessage({ type: "log", message: dirString });
             },
-            dir: (obj) => self.postMessage({ type: "log", message: console.dir(obj) }),
-            dirxml: (obj) => self.postMessage({ type: "log", message: console.dirxml(obj) }),
-            group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
-            groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
-            groupEnd: () => self.postMessage({ type: "groupEnd" }),
-            profile: (label) => self.postMessage({ type: "profile", message: label || "default" }),
-            profileEnd: (label) => self.postMessage({ type: "profileEnd", message: label || "default" }),
-            time: (label = "default") => self.postMessage({ type: "time", message: label }),
-            timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label }),
-            timeLog: (label = "default", ...args) =>
-                self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
-            timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
-            trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
+
+            // Add dirxml
+            dirxml: (obj) => {
+                const xmlString = myDirxml(obj);
+                self.postMessage({ type: "log", message: xmlString });
+            },
+            // group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
+            // groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
+            // groupEnd: () => self.postMessage({ type: "groupEnd" }),
+            // profile: (label) => self.postMessage({ type: "profile", message: label || "default" }),
+            // profileEnd: (label) => self.postMessage({ type: "profileEnd", message: label || "default" }),
+            // time: (label = "default") => self.postMessage({ type: "time", message: label }),
+            // timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label }),
+            // timeLog: (label = "default", ...args) =>
+            //     self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
+            // timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
+            // trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
         };
 
-        const customPrompt = (msg="") => {
+        const customPrompt = (msg = "") => {
             const promptInstance = new myPrompt(msg);
             promptInstance.prompt(msg, sharedBuffer);
             return promptInstance.getResponse();
