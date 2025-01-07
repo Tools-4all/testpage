@@ -53,11 +53,38 @@ self.addEventListener("message", (event) => {
             info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
         };
 
-        const customPrompt = (msg) => {
-            const promptInstance = new myPrompt(msg);
-            promptInstance.prompt(msg, sharedBuffer);
-            return promptInstance.getResponse();
+        const customConsole = {
+            log: (...args) => self.postMessage({ type: "log", message: args.join(" ") }),
+            error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
+            warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
+            info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
+
+            clear: () => self.postMessage({ type: "clear" }),
+            debug: (...args) => self.postMessage({ type: "debug", message: args.join(" ") }),
+            table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
+            count: (label = "default") => self.postMessage({ type: "count", message: label }),
+            countReset: (label = "default") => self.postMessage({ type: "countReset", message: label }),
+            assert: (condition, ...args) => {
+                if (!condition) {
+                    self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
+                }
+            },
+            dir: (obj) => self.postMessage({ type: "dir", message: JSON.stringify(obj) }),
+            dirxml: (obj) => self.postMessage({ type: "dirxml", message: JSON.stringify(obj) }),
+            group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
+            groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
+            groupEnd: () => self.postMessage({ type: "groupEnd" }),
+            profile: (label) => self.postMessage({ type: "profile", message: label || "default" }),
+            profileEnd: (label) => self.postMessage({ type: "profileEnd", message: label || "default" }),
+            time: (label = "default") => self.postMessage({ type: "time", message: label }),
+            timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label }),
+            timeLog: (label = "default", ...args) =>
+                self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
+            timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
+            trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
+            exception: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
         };
+
 
         const executeCode = (userCode) => {
             try {
