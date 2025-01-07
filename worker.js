@@ -65,7 +65,7 @@ function myDir(obj, indent = "\n") {
 
 function myDirxml(obj, indent = "\n") {
     if (!obj || !obj.tagName || !obj.children) {
-        return indent + "[dirxml] Not a valid DOM-like object\n";
+        return "Not a valid DOM-like object";
     }
     let attrs = "";
     if (obj.attributes) {
