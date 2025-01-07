@@ -98,7 +98,7 @@ self.addEventListener("message", (event) => {
 
             // Add dirxml
             dirxml: (obj) => {
-                self.postMessage({ type: "error", message: "DOM simulation is not implemented, please use console.dir for non DOM objects." });
+                throw new Error("DOM simulation is not implemented, please use console.dir for non DOM objects.");
             },
             // group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
             // groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
