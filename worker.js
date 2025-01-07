@@ -73,28 +73,30 @@ function myDir(obj, indent = "", first = false) {
 
 
 function getStack() {
-    let lines = new Error().stack.split('\n');
-  
-    // 1) Slice away frames you don't want (eval, executeCode, etc.).
-    lines = lines.filter((line) => {
-      if (line.includes("executeCode") || line.includes("blob:") || line.includes("eval")) {
-        return false;
-      }
-      return true;
+    const stack = new Error().stack.split('\n');
+    const userScriptIdentifier = '1919191.js';
+    let processedStack = [];
+
+    stack.forEach(line => {
+        if (line.includes(userScriptIdentifier)) {
+            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
+            const match = line.match(regex);
+            if (match) {
+                const functionName = match[1];
+                const lineNumber = parseInt(match[3], 10);
+                const adjustedLine = lineNumber - 2; 
+                if (adjustedLine > 0) { 
+                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
+                } else {
+                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
+                }
+            }
+        }
     });
-  
-    // 2) Replace "1919191.js:XX:YY" with "js: (XX - OFFSET):(YY)" or something else.
-    let offset = 21; // or 22, or however many lines you know you're offset
-    lines = lines.map((line) => {
-      return line.replace(/(1919191\.js:(\d+):(\d+))/, (match, full, lineNo, colNo) => {
-        const newLine = Math.max(parseInt(lineNo, 10) - offset, 1);
-        return `js:${newLine}:${colNo}`;
-      });
-    });
-  
-    return lines.join('\n');
-  }
-  
+    return processedStack.join('\n');
+}
+
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
