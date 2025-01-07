@@ -51,13 +51,6 @@ self.addEventListener("message", (event) => {
             error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
             warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
             info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
-        };
-
-        const customConsole = {
-            log: (...args) => self.postMessage({ type: "log", message: args.join(" ") }),
-            error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
-            warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
-            info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
 
             clear: () => self.postMessage({ type: "clear" }),
             debug: (...args) => self.postMessage({ type: "debug", message: args.join(" ") }),
@@ -85,6 +78,11 @@ self.addEventListener("message", (event) => {
             exception: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
         };
 
+        const customPrompt = (msg) => {
+            const promptInstance = new myPrompt(msg);
+            promptInstance.prompt(msg, sharedBuffer);
+            return promptInstance.getResponse();
+        };
 
         const executeCode = (userCode) => {
             try {
