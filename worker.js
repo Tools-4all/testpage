@@ -62,8 +62,8 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
                 }
             },
-            dir: (obj) => self.postMessage({ type: "dir", message: JSON.stringify(obj) }),
-            dirxml: (obj) => self.postMessage({ type: "dirxml", message: JSON.stringify(obj) }),
+            dir: (obj) => self.postMessage({ type: "log", message: console.dir(obj) }),
+            dirxml: (obj) => self.postMessage({ type: "log", message: console.dirxml(obj) }),
             group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
             groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
             groupEnd: () => self.postMessage({ type: "groupEnd" }),
@@ -75,7 +75,6 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
             timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
             trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
-            exception: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
         };
 
         const customPrompt = (msg="") => {
