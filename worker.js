@@ -73,17 +73,28 @@ function myDir(obj, indent = "", first = false) {
 
 
 function getStack() {
-    const lines = new Error().stack.split('\n');
-    let startIndex = lines.length; 
-    for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes('1919191.js')) {
-            startIndex = i;
-            break;
-        }
-    }
-    return lines.slice(startIndex).join('\n');
-}
-
+    let lines = new Error().stack.split('\n');
+  
+    // 1) Slice away frames you don't want (eval, executeCode, etc.).
+    lines = lines.filter((line) => {
+      if (line.includes("executeCode") || line.includes("blob:") || line.includes("eval")) {
+        return false;
+      }
+      return true;
+    });
+  
+    // 2) Replace "1919191.js:XX:YY" with "js: (XX - OFFSET):(YY)" or something else.
+    let offset = 21; // or 22, or however many lines you know you're offset
+    lines = lines.map((line) => {
+      return line.replace(/(1919191\.js:(\d+):(\d+))/, (match, full, lineNo, colNo) => {
+        const newLine = Math.max(parseInt(lineNo, 10) - offset, 1);
+        return `js:${newLine}:${colNo}`;
+      });
+    });
+  
+    return lines.join('\n');
+  }
+  
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
