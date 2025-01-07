@@ -63,7 +63,7 @@ function myDir(obj, indent = "") {
     }
 }
 
-function myDirxml(obj, indent = "") {
+function myDirxml(obj, indent = "\n") {
     if (!obj || !obj.tagName || !obj.children) {
         return indent + "[dirxml] Not a valid DOM-like object\n";
     }
