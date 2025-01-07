@@ -78,7 +78,7 @@ self.addEventListener("message", (event) => {
             exception: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
         };
 
-        const customPrompt = (msg) => {
+        const customPrompt = (msg="") => {
             const promptInstance = new myPrompt(msg);
             promptInstance.prompt(msg, sharedBuffer);
             return promptInstance.getResponse();
