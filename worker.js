@@ -71,11 +71,12 @@ function myDir(obj, indent = "", first=false) {
     }
 }
 
-function myDirxml(obj, indent = "") {
+function myDirxml(obj, indent = "", first=false) {
     if (!obj || !obj.tagName || !obj.children) {
         return "Not a valid DOM-like object";
     }
     let attrs = "";
+    
     if (obj.attributes) {
         for (const [key, value] of Object.entries(obj.attributes)) {
             attrs += ` ${key}="${value}"`;
