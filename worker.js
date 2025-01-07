@@ -194,6 +194,7 @@ self.addEventListener("message", (event) => {
             // trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
         };
 
+        
         const customPrompt = (msg = "") => {
             const promptInstance = new myPrompt(msg);
             promptInstance.prompt(msg, sharedBuffer);
