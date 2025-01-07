@@ -46,6 +46,43 @@ function createWrappedCode(userCode) {
 }
 
 
+function getStack() {
+    const stack = new Error().stack.split('\n');
+    const userScriptIdentifier = '1919191.js';
+    let processedStack = [];
+    stack.forEach(line => {
+        if (line.includes(userScriptIdentifier)) {
+            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
+            const match = line.match(regex);
+            if (match) {
+                const functionName = match[1];
+                const lineNumber = parseInt(match[3], 10);
+                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                if (adjustedLine > 0) {
+                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
+                } else {
+                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
+                }
+            } else {
+                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
+                const matchNoFunc = line.match(regexNoFunc);
+                if (matchNoFunc) {
+                    const fileName = matchNoFunc[1];
+                    const lineNumber = parseInt(matchNoFunc[2], 10);
+                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                    if (adjustedLine > 0) {
+                        processedStack.push(`    at js (js:${adjustedLine})`);
+                    } else {
+                        processedStack.push(`    at js (js:${lineNumber})`);
+                    }
+                }
+            }
+        }
+    });
+    return processedStack.join('\n');
+}
+
+
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
@@ -103,42 +140,6 @@ function myDir(obj, indent = "", first = false) {
     }
 }
 
-
-function getStack() {
-    const stack = new Error().stack.split('\n');
-    const userScriptIdentifier = '1919191.js';
-    let processedStack = [];
-    stack.forEach(line => {
-        if (line.includes(userScriptIdentifier)) {
-            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
-            const match = line.match(regex);
-            if (match) {
-                const functionName = match[1];
-                const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                if (adjustedLine > 0) {
-                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
-                } else {
-                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
-                }
-            } else {
-                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
-                const matchNoFunc = line.match(regexNoFunc);
-                if (matchNoFunc) {
-                    const fileName = matchNoFunc[1];
-                    const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                    if (adjustedLine > 0) {
-                        processedStack.push(`    at js (js:${adjustedLine})`);
-                    } else {
-                        processedStack.push(`    at js (js:${lineNumber})`);
-                    }
-                }
-            }
-        }
-    });
-    return processedStack.join('\n');
-}
 
 
 
