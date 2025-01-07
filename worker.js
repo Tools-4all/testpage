@@ -14,6 +14,33 @@ importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.m
 //     console.log("results", result);
 // });
 
+
+const wrapperPrefixLines = [
+    '"use strict";',
+    'const console = customConsole;',
+    'const prompt = customPrompt;',
+    'const self = undefined;',
+    'const postMessage = undefined;',
+    'const fetch = undefined;',
+    'const XMLHttpRequest = undefined;',
+    'const WebSocket = undefined;',
+    'const importScripts = undefined;',
+    'const sharedBuffer = undefined;',
+    'const myPrompt = undefined;',
+    'const myPromptInstance = undefined;',
+    'const executeCode = undefined;',
+    'const userFunc = undefined;',
+    'const myDir = undefined;',
+    'const getStack = undefined;',
+    '//# sourceURL=1919191.js',
+    '(() => {'
+];
+
+const wrapperSuffix = `
+})();`;
+
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length;
+
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
@@ -76,7 +103,6 @@ function getStack() {
     const stack = new Error().stack.split('\n');
     const userScriptIdentifier = '1919191.js';
     let processedStack = [];
-
     stack.forEach(line => {
         if (line.includes(userScriptIdentifier)) {
             const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
@@ -84,18 +110,30 @@ function getStack() {
             if (match) {
                 const functionName = match[1];
                 const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - 2; 
-                if (adjustedLine > 0) { 
+                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                if (adjustedLine > 0) {
                     processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
                 } else {
                     processedStack.push(`    at ${functionName} (js:${lineNumber})`);
+                }
+            } else {
+                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
+                const matchNoFunc = line.match(regexNoFunc);
+                if (matchNoFunc) {
+                    const fileName = matchNoFunc[1];
+                    const lineNumber = parseInt(matchNoFunc[2], 10);
+                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                    if (adjustedLine > 0) {
+                        processedStack.push(`    at js (js:${adjustedLine})`);
+                    } else {
+                        processedStack.push(`    at js (js:${lineNumber})`);
+                    }
                 }
             }
         }
     });
     return processedStack.join('\n');
 }
-
 
 
 self.addEventListener("message", (event) => {
@@ -148,31 +186,8 @@ self.addEventListener("message", (event) => {
 
         const executeCode = (userCode) => {
             try {
-                const wrappedCode = `
-                    "use strict";
-                    const console = customConsole;
-                    const prompt = customPrompt;
-                    const self = undefined;
-                    const postMessage = undefined;
-                    const fetch = undefined;
-                    const XMLHttpRequest = undefined;
-                    const WebSocket = undefined;
-                    const importScripts = undefined;
-                    const sharedBuffer = undefined;
-                    const myPrompt = undefined;
-                    const myPromptInstance = undefined;
-                    const executeCode = undefined;
-                    const userFunc = undefined;
-                    const myDir = undefined;
-                    const getStack = undefined;
-                    //# sourceURL=1919191.js
-                    (() => {
-                        ${userCode}
-                    })();
-                `;
-
+                const wrappedCode = createWrappedCode(userCode);
                 const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
-
                 userFunc(customConsole, customPrompt);
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
