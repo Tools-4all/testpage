@@ -48,12 +48,20 @@ function myDir(obj, indent = "") {
     }
     if (Array.isArray(obj)) {
         let output = indent + "[Array]\n";
+        if (first) {
+            output = "\n" + output;
+            first = false;
+        }
         for (let i = 0; i < obj.length; i++) {
             output += indent + "  [" + i + "]:\n" + myDir(obj[i], indent + "    ") + "\n";
         }
         return output;
     } else {
         let output = indent + "{Object}\n";
+        if (first) {
+            output = "\n" + output;
+            first = false;
+        }
         for (let key in obj) {
             if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 output += indent + "  " + key + ":\n" + myDir(obj[key], indent + "    ") + "\n";
@@ -108,13 +116,13 @@ self.addEventListener("message", (event) => {
             //     }
             // },
             dir: (obj) => {
-                const dirString = myDir(obj);
+                const dirString = myDir(obj, "", true);
                 self.postMessage({ type: "log", message: dirString });
             },
 
             // Add dirxml
             dirxml: (obj) => {
-                const xmlString = myDirxml(obj);
+                const xmlString = myDirxml(obj, "", true);
                 self.postMessage({ type: "log", message: xmlString });
             },
             // group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
