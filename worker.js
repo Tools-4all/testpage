@@ -71,31 +71,6 @@ function myDir(obj, indent = "", first=false) {
     }
 }
 
-function myDirxml(obj, indent = "", first=false) {
-    if (!obj || !obj.tagName || !obj.children) {
-        return "Not a valid DOM-like object";
-    }
-    let attrs = "";
-    
-    if (obj.attributes) {
-        for (const [key, value] of Object.entries(obj.attributes)) {
-            attrs += ` ${key}="${value}"`;
-        }
-    }
-    let output = `${indent}<${obj.tagName.toLowerCase()}${attrs}>\n`;
-    if (obj.textContent) {
-        output += indent + "  " + obj.textContent.trim() + "\n";
-    }
-    if (Array.isArray(obj.children)) {
-        for (const child of obj.children) {
-            output += myDirxml(child, indent + "  ");
-        }
-    }
-    output += `${indent}</${obj.tagName.toLowerCase()}>\n`;
-    return output;
-}
-
-
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
@@ -123,8 +98,7 @@ self.addEventListener("message", (event) => {
 
             // Add dirxml
             dirxml: (obj) => {
-                const xmlString = myDirxml(obj, "", true);
-                self.postMessage({ type: "log", message: xmlString });
+                self.postMessage({ type: "error", message: "DOM simulation is not implemented, please use console.dir for non DOM objects." });
             },
             // group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
             // groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
@@ -162,6 +136,7 @@ self.addEventListener("message", (event) => {
                     const myPromptInstance = undefined;
                     const executeCode = undefined;
                     const userFunc = undefined;
+                    const myDir = undefined;
                     (() => {
                         ${userCode}
                     })();
