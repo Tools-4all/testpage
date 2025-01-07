@@ -41,6 +41,11 @@ const wrapperSuffix = `
 
 const WRAPPER_LINE_COUNT = wrapperPrefixLines.length;
 
+function createWrappedCode(userCode) {
+    return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
+}
+
+
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
