@@ -37,7 +37,6 @@ const wrapperPrefixLines = [
     'const wrapperSuffix = undefined;',
     'const WRAPPER_LINE_COUNT = undefined;',
     'const createWrappedCode = undefined;',
-    'const customConsole = undefined;',
     'const customPrompt = undefined;',
     'const code = undefined;',
     '//# sourceURL=1919191.js',
