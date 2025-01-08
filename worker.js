@@ -32,6 +32,14 @@ const wrapperPrefixLines = [
     'const userFunc = undefined;',
     'const myDir = undefined;',
     'const getStack = undefined;',
+    'const objectToString = undefined;',
+    'const wrapperPrefixLines = undefined;',
+    'const wrapperSuffix = undefined;',
+    'const WRAPPER_LINE_COUNT = undefined;',
+    'const createWrappedCode = undefined;',
+    'const customConsole = undefined;',
+    'const customPrompt = undefined;',
+    'const code = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -216,7 +224,11 @@ self.addEventListener("message", (event) => {
             // timeLog: (label = "default", ...args) =>
             //     self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
             // timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
-            // trace: (...args) => self.postMessage({ type: "trace", message: args.join(" ") }),
+            trace: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                const stack = getStack();
+                self.postMessage({ type: "log", message: `${serializedArgs}\n${stack}` });
+            }
         };
 
         const customPrompt = (msg = "") => {
