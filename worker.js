@@ -173,7 +173,6 @@ function objectToString(obj, indentLevel = 0) {
 }
 
 
-
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
