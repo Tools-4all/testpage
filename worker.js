@@ -145,26 +145,59 @@ function myDir(obj, indent = "", first = false) {
 }
 
 
-function objectToString(obj) {
-    if (typeof obj === "object") {
-        return JSON.stringify(obj, null, 2);
-    } else {
-        return obj;
+function objectToString(obj, indentLevel = 0) {
+    const indent = '  '.repeat(indentLevel);
+    if (typeof obj !== "object" || obj === null) {
+        return String(obj);
     }
+    if (Array.isArray(obj)) {
+        if (obj.length === 0) return '[]';
+        let arrayStr = '[\n';
+        obj.forEach((item, index) => {
+            arrayStr += `${indent}  ${objectToString(item, indentLevel + 1)},\n`;
+        });
+        arrayStr += `${indent}]`;
+        return arrayStr;
+    }
+    const keys = Object.keys(obj);
+    if (keys.length === 0) return '{}';
+    let objStr = '{\n';
+    keys.forEach((key) => {
+        const isNumeric = /^\d+$/.test(key);
+        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
+        const formattedKey = isNumeric || isValidIdentifier ? key : `"${key}"`;
+        objStr += `${indent}  ${formattedKey}: ${objectToString(obj[key], indentLevel + 1)},\n`;
+    });
+    objStr += `${indent}}`;
+    return objStr;
 }
+
 
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
         const customConsole = {
-            log: (...args) => self.postMessage({ type: "log", message: args.map(objectToString).join(" ") }),
-            error: (...args) => self.postMessage({ type: "error", message: args.map(objectToString).join(" ") }),
-            warn: (...args) => self.postMessage({ type: "warn", message: args.map(objectToString).join(" ") }),
-            info: (...args) => self.postMessage({ type: "info", message: args.map(objectToString).join(" ") }),
+            log: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                self.postMessage({ type: "log", message: serializedArgs });
+            },
+            error: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                self.postMessage({ type: "error", message: serializedArgs });
+            },
+            warn: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                self.postMessage({ type: "warn", message: serializedArgs });
+            },
+            info: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                self.postMessage({ type: "info", message: serializedArgs });
+            },
             debug: (...args) => {
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: args.map(objectToString).join(" ") + "\n" + stack });
+                self.postMessage({ type: "log", message: `${serializedArgs}\n${stack}` });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
