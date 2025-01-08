@@ -80,8 +80,9 @@ function getStack() {
             }
         }
     });
-    // return without the last 2 lines
-    return processedStack.slice(0, -2).join('\n');
+    var lastLine = processedStack[processedStack.length - 1];
+
+    return processedStack.slice(0, -1).join('\n') + '\n' + lastLine;
 }
 
 
