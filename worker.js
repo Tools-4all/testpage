@@ -80,9 +80,9 @@ function getStack() {
             }
         }
     });
-    var lastLine = processedStack[processedStack.length - 1];
+    var lastLine = "at userCode " + processedStack[processedStack.length - 1].split(" ")[-1];
 
-    return processedStack.slice(0, -1).join('\n') + '\n' + lastLine;
+    return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
 }
 
 
