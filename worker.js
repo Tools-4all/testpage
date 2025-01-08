@@ -40,7 +40,7 @@ console.log("loaded 2")
 
 const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length +2;
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
@@ -145,19 +145,26 @@ function myDir(obj, indent = "", first = false) {
 }
 
 
+function objectToString(obj) {
+    if (typeof obj === "object") {
+        return JSON.stringify(obj, null, 2);
+    } else {
+        return obj;
+    }
+}
 
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
         const customConsole = {
-            log: (...args) => self.postMessage({ type: "log", message: args.join(" ") }),
-            error: (...args) => self.postMessage({ type: "error", message: args.join(" ") }),
-            warn: (...args) => self.postMessage({ type: "warn", message: args.join(" ") }),
-            info: (...args) => self.postMessage({ type: "info", message: args.join(" ") }),
+            log: (...args) => self.postMessage({ type: "log", message: args.map(objectToString).join(" ") }),
+            error: (...args) => self.postMessage({ type: "error", message: args.map(objectToString).join(" ") }),
+            warn: (...args) => self.postMessage({ type: "warn", message: args.map(objectToString).join(" ") }),
+            info: (...args) => self.postMessage({ type: "info", message: args.map(objectToString).join(" ") }),
             debug: (...args) => {
                 const stack = getStack();
-                self.postMessage({ type: "log", message: args.join(" ") + "\n" + stack });
+                self.postMessage({ type: "log", message: args.map(objectToString).join(" ") + "\n" + stack });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
