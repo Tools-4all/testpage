@@ -35,7 +35,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded 3")
+console.log("loaded 4")
 
 
 const wrapperSuffix = `})();`;
@@ -145,32 +145,23 @@ function myDir(obj, indent = "", first = false) {
 }
 
 
-function objectToString(obj, indentLevel = 0) {
-    const indent = '  '.repeat(indentLevel);
+function objectToString(obj) {
     if (typeof obj !== "object" || obj === null) {
         return String(obj);
     }
     if (Array.isArray(obj)) {
-        if (obj.length === 0) return '[]';
-        let arrayStr = '[\n';
-        obj.forEach((item, index) => {
-            arrayStr += `${indent}  ${objectToString(item, indentLevel + 1)},\n`;
-        });
-        arrayStr += `${indent}]`;
-        return arrayStr;
+        return `[${obj.map(item => objectToString(item)).join(", ")}]`;
     }
     const keys = Object.keys(obj);
-    if (keys.length === 0) return '{}';
-    let objStr = '{\n';
-    keys.forEach((key) => {
+    const keyValuePairs = keys.map((key, index) => {
         const isNumeric = /^\d+$/.test(key);
         const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
         const formattedKey = isNumeric || isValidIdentifier ? key : `"${key}"`;
-        objStr += `${indent}  ${formattedKey}: ${objectToString(obj[key], indentLevel + 1)},\n`;
+        return `${formattedKey}: ${objectToString(obj[key])}`;
     });
-    objStr += `${indent}}`;
-    return objStr;
+    return `{${keyValuePairs.join(", ")}}`;
 }
+
 
 
 self.addEventListener("message", (event) => {
