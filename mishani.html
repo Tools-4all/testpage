@@ -47,7 +47,6 @@
       object-fit: contain;
       border-radius: 4px;
       margin-bottom: 11px;
-      user-drag: none;
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -285,7 +284,7 @@
       align-items: center;
       padding: 0 8px;
       user-select: none;
-      -webkit-user-drag: none;
+      -webkit-user-drag: element;
     }
 
     .tab.active {
@@ -425,10 +424,13 @@
       color: #3794ff;
     }
 
+    .outputContent {
+      margin-top: 2px;
+    }
+
     .prompt-line {
       display: flex;
       align-items: center;
-      margin-top: 5px;
       color: #d4d4d4;
       font-size: 14px;
     }
@@ -468,7 +470,7 @@
     .status-item {
       margin-right: 10px;
     }
-    
+
 
     @media (max-width: 768px) {
       #activityBar {
@@ -498,7 +500,7 @@
 
 <body>
   <div class="vs-logo">
-    <img src="{% static 'site_images/jseditor.webp' %}" alt="Logo" />
+    <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
   </div>
 
   <div class="vs-navbar">
@@ -563,10 +565,10 @@
     let workerBlobURL = null;
 
     let activeDropdown = null;
-    let spaces = 3; 
+    let spaces = 3;
 
     let tabs = [];
-    let activeTabId = null; 
+    let activeTabId = null;
 
 
     function getUniqueTabName(baseName, ignoreTabId = null) {
@@ -587,12 +589,12 @@
     function createTab(desiredName = null, initialContent = null) {
       let tabName;
       if (!desiredName) {
-        tabName = getNextTabName(); 
+        tabName = getNextTabName();
       } else {
         tabName = getUniqueTabName(desiredName);
       }
 
-      const newTabId = Date.now(); 
+      const newTabId = Date.now();
       const sharedBuffer = new SharedArrayBuffer(1024);
       const view = new Int32Array(sharedBuffer);
 
@@ -704,16 +706,43 @@
         closeTab(newTabId);
       });
 
+      document.addEventListener("dragover", (ev) => {
+        const isOverTabBar = ev.target.closest("#tabBar");
+
+        if (isOverTabBar) {
+          ev.preventDefault();
+          ev.dataTransfer.dropEffect = "move";
+        } else {
+          ev.dataTransfer.dropEffect = "none";
+        }
+      });
+
+      tabBar.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+
+        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
+        if (!draggedTabId) return;
+
+        const targetTabElem = ev.target.closest(".tab");
+        if (!targetTabElem) return;
+
+        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
+        if (!targetTab) return;
+
+        reorderTabs(draggedTabId, targetTab.id);
+      });
+
       tabElem.addEventListener("dragstart", (ev) => {
-        console.log("dragstart", newTabId);
-        ev.dataTransfer.setData("text/plain", String(newTabId));
+        ev.dataTransfer.clearData();
+        ev.dataTransfer.setData("text/plain", "");
+        ev.dataTransfer.setData("text/uri-list", "");
+        ev.dataTransfer.setData("application/tab-id", String(newTabId));
+        ev.dataTransfer.effectAllowed = "move";
       });
-      tabElem.addEventListener("dragover", (ev) => {
-        ev.preventDefault(); 
-      });
+
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
-        const draggedTabId = parseInt(ev.dataTransfer.getData("text/plain"), 10);
+        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
         reorderTabs(draggedTabId, newTabId);
       });
 
@@ -726,7 +755,7 @@
       if (initialContent !== null) {
         editorInstance.setValue(initialContent);
       } else {
-        editorInstance.setValue(`// ${tabName}\nconsole.log("Hello from ${tabName}!");`);
+        editorInstance.setValue(`// ${tabName}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`);
       }
 
       return newTabId;
@@ -825,10 +854,13 @@
           await handlePrompt(message, tabObj);
         } else if (["log", "error", "warn", "info"].includes(type)) {
           appendToOutput(tabObj.outputElement, type, message);
-        }
+        } else if (type === "clear") {
+          clearConsole(tabObj.outputElement);
+        } 
       };
       w.onerror = (error) => {
         appendToOutput(tabObj.outputElement, "error", error.message);
+        appendToOutput(tabObj.outputElement, "log", "The script has finished running with exit code 1.");
       };
 
       const code = tabObj.editorInstance.getValue();
@@ -842,11 +874,31 @@
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
+
+    const symbolsMap = {
+      log: ">",
+      error: "x",
+      warn: "!",
+      info: "i",
+      prompt: "?"
+    };
+
+    const colorMap = {
+      log: "#CCCCCC",
+      error: "#FF5555",
+      warn: "#FFFF55",
+      info: "#55FFFF",
+      prompt: "#55FF55",
+    };
+
+
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       const line = document.createElement("div");
       line.className = type;
-      line.textContent = `[${type.toUpperCase()}] ${message}`;
+      line.classList.add("outputContent");
+      line.textContent = `[${symbolsMap[type]}] ${message}`;
+      line.style.color = colorMap[type];
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
@@ -856,9 +908,11 @@
         const outputDiv = tabObj.outputElement;
         const promptLine = document.createElement("div");
         promptLine.className = "prompt-line";
+        promptLine.classList.add("outputContent");
 
         const promptMsg = document.createElement("span");
-        promptMsg.textContent = `[PROMPT] ${msg}`;
+        promptMsg.textContent = `[?] ${msg}`;
+        promptMsg.style.color = colorMap.prompt;
 
         const input = document.createElement("input");
         input.type = "text";
@@ -893,8 +947,9 @@
 
     function makeTabTitleEditable(tabObj) {
       const span = tabObj.tabElement.querySelector(".tab-title");
+      const xBtn = tabObj.tabElement.querySelector(".close");
       if (!span) return;
-
+      xBtn.style.display = "none";
       const oldName = tabObj.name;
       const input = document.createElement("input");
       input.type = "text";
@@ -906,9 +961,13 @@
       input.focus();
       input.select();
 
-      const finalize = () => {
-        let newVal = input.value.trim();
+      let finalizeCalled = false;
 
+      const finalize = () => {
+        if (finalizeCalled) return;
+        finalizeCalled = true;
+
+        let newVal = input.value.trim();
         if (!newVal || newVal === oldName) {
           newVal = oldName;
         } else {
@@ -925,16 +984,23 @@
         });
 
         tabObj.tabElement.replaceChild(newSpan, input);
+        xBtn.style.display = "block";
       };
 
       input.addEventListener("blur", finalize);
+
       input.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
           finalize();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          input.value = oldName;
+          finalize();
         }
       });
     }
+
 
     require.config({
       paths: {
@@ -1108,7 +1174,7 @@
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
-        document.getElementById("saveScriptBtn").click();
+        document.getElementById("saveScriptBtn").dispatchEvent(new MouseEvent("click"));
       } else if (
         (e.ctrlKey && e.key === "z") ||
         (e.ctrlKey && e.shiftKey && e.key === "Z")
@@ -1189,7 +1255,7 @@
       const gitUrl = gitInp.value.trim();
       if (!gitUrl) return appendToOutput(null, "error", "No URL provided.");
 
-      let tabFileName = "untitled.js"; 
+      let tabFileName = "untitled.js";
       try {
         new URL(gitUrl);
       } catch (err) {
