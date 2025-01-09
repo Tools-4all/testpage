@@ -200,35 +200,40 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-                let tableString = '';
                 if (Array.isArray(data)) {
-                    if (data.length > 0 && typeof data[0] === 'object') {
-                        // For arrays of objects
-                        const headers = columns || Object.keys(data[0]);
-                        const headerRow = headers.join(' | ');
-                        const separatorRow = headers.map(() => '---').join(' | ');
-                        const rows = data.map(item =>
-                            headers.map(header => String(item[header] || '')).join(' | ')
-                        );
-            
-                        tableString = `${headerRow}\n${separatorRow}\n${rows.join('\n')}`;
-                    } else {
-                        // For arrays of primitives
-                        const rows = data.map((item, index) => `${index}: ${String(item)}`);
-                        tableString = rows.join('\n');
+                    if (data.length === 0) {
+                        self.postMessage({ type: "log", message: "[] (Empty Array)" });
+                        return;
                     }
-                } else if (typeof data === 'object' && data !== null) {
-                    // For objects
+
+                    if (typeof data[0] === "object") {
+                        // Arrays of Objects
+                        const headers = columns || Object.keys(data[0]);
+                        const headerRow = headers.map(header => header.padEnd(15, ' ')).join('|');
+                        const separatorRow = headers.map(() => '---------------').join('+');
+                        const rows = data.map(item =>
+                            headers.map(header => String(item[header] || '').padEnd(15, ' ')).join('|')
+                        );
+
+                        const tableString = `${headerRow}\n${separatorRow}\n${rows.join('\n')}`;
+                        self.postMessage({ type: "log", message: tableString });
+                    } else {
+                        // Arrays of Primitives
+                        const rows = data.map((item, index) => `${String(index).padEnd(5)}: ${String(item)}`);
+                        const tableString = `Index | Value\n------+-------\n${rows.join('\n')}`;
+                        self.postMessage({ type: "log", message: tableString });
+                    }
+                } else if (typeof data === "object" && data !== null) {
+                    // Single Object
                     const keys = columns || Object.keys(data);
-                    const rows = keys.map(key => `${key}: ${String(data[key])}`);
-                    tableString = rows.join('\n');
+                    const rows = keys.map(key => `${key.padEnd(15, ' ')}: ${String(data[key])}`);
+                    const tableString = rows.join('\n');
+                    self.postMessage({ type: "log", message: tableString });
                 } else {
-                    tableString = String(data);
+                    self.postMessage({ type: "log", message: String(data) });
                 }
-            
-                self.postMessage({ type: "log", message: tableString });
             },
-            
+
             // count: (label = "default") => 
             // countReset: (label = "default") =>
             assert: (condition, ...args) => {
@@ -241,7 +246,7 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: dirString });
             },
             dirxml: (obj) => {
-                self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects."});
+                self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
             },
             // group: (...args) => 
             // groupCollapsed: (...args) => 
