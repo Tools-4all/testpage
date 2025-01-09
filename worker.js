@@ -203,25 +203,32 @@ self.addEventListener("message", (event) => {
                 let tableString = '';
                 if (Array.isArray(data)) {
                     if (data.length > 0 && typeof data[0] === 'object') {
+                        // For arrays of objects
                         const headers = columns || Object.keys(data[0]);
-                        tableString += headers.join('\t') + '\n';
-                        data.forEach(item => {
-                            const row = headers.map(header => objectToString(item[header]));
-                            tableString += row.join('\t') + '\n';
-                        });
+                        const headerRow = headers.join(' | ');
+                        const separatorRow = headers.map(() => '---').join(' | ');
+                        const rows = data.map(item =>
+                            headers.map(header => String(item[header] || '')).join(' | ')
+                        );
+            
+                        tableString = `${headerRow}\n${separatorRow}\n${rows.join('\n')}`;
                     } else {
-                        tableString = data.join('\n');
+                        // For arrays of primitives
+                        const rows = data.map((item, index) => `${index}: ${String(item)}`);
+                        tableString = rows.join('\n');
                     }
                 } else if (typeof data === 'object' && data !== null) {
-                    const headers = columns || Object.keys(data);
-                    tableString += headers.join('\t') + '\n';
-                    const row = headers.map(header => objectToString(data[header]));
-                    tableString += row.join('\t') + '\n';
+                    // For objects
+                    const keys = columns || Object.keys(data);
+                    const rows = keys.map(key => `${key}: ${String(data[key])}`);
+                    tableString = rows.join('\n');
                 } else {
-                    tableString = objectToString(data);
+                    tableString = String(data);
                 }
+            
                 self.postMessage({ type: "log", message: tableString });
             },
+            
             // count: (label = "default") => 
             // countReset: (label = "default") =>
             assert: (condition, ...args) => {
@@ -234,7 +241,7 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: dirString });
             },
             dirxml: (obj) => {
-                self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
+                self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects."});
             },
             // group: (...args) => 
             // groupCollapsed: (...args) => 
