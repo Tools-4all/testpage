@@ -199,9 +199,9 @@ self.addEventListener("message", (event) => {
             },
             clear: () => self.postMessage({ type: "clear" }),
 
-            // table: (data) => self.postMessage({ type: "table", message: JSON.stringify(data) }),
-            // count: (label = "default") => self.postMessage({ type: "count", message: label }),
-            // countReset: (label = "default") => self.postMessage({ type: "countReset", message: label }),
+            // table: (data) =>
+            // count: (label = "default") => 
+            // countReset: (label = "default") =>
             assert: (condition, ...args) => {
                 if (!condition) {
                     self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
@@ -212,18 +212,17 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: dirString });
             },
             dirxml: (obj) => {
-                throw new Error("DOM simulation is not implemented, please use console.dir for non DOM objects.");
+                self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects."});
             },
-            // group: (...args) => self.postMessage({ type: "group", message: args.join(" ") }),
-            // groupCollapsed: (...args) => self.postMessage({ type: "groupCollapsed", message: args.join(" ") }),
-            // groupEnd: () => self.postMessage({ type: "groupEnd" }),
-            // profile: (label) => self.postMessage({ type: "profile", message: label || "default" }),
-            // profileEnd: (label) => self.postMessage({ type: "profileEnd", message: label || "default" }),
-            // time: (label = "default") => self.postMessage({ type: "time", message: label }),
-            // timeEnd: (label = "default") => self.postMessage({ type: "timeEnd", message: label }),
+            // group: (...args) => 
+            // groupCollapsed: (...args) => 
+            // groupEnd: () => ,
+            // profile: (label) => 
+            // profileEnd: (label) => 
+            // time: (label = "default") => 
+            // timeEnd: (label = "default") => 
             // timeLog: (label = "default", ...args) =>
-            //     self.postMessage({ type: "timeLog", message: [label, ...args].join(" ") }),
-            // timeStamp: (label) => self.postMessage({ type: "timeStamp", message: label || "" }),
+            timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
