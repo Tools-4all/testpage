@@ -205,10 +205,9 @@ self.addEventListener("message", (event) => {
                         self.postMessage({ type: "log", message: "[] (Empty Array)" });
                         return;
                     }
-
+                    let dat;
                     if (typeof data[0] === "object") {
                         // Arrays of Objects
-                        const headers = columns || Object.keys(data[0]);
                         const headerRow = headers.map(header => header.padEnd(15, ' ')).join('|');
                         const separatorRow = headers.map(() => '---------------').join('+');
                         const rows = data.map(item =>
@@ -216,22 +215,21 @@ self.addEventListener("message", (event) => {
                         );
 
                         const tableString = `${headerRow}\n${separatorRow}\n${rows.join('\n')}`;
-                        self.postMessage({ type: "log", message: tableString });
+                        dat = tableString;
                     } else {
-                        // Arrays of Primitives
                         const rows = data.map((item, index) => `${String(index).padEnd(5)}: ${String(item)}`);
                         const tableString = `Index | Value\n------+-------\n${rows.join('\n')}`;
-                        self.postMessage({ type: "log", message: tableString });
+                        dat = tableString;
                     }
-                } else if (typeof data === "object" && data !== null) {
                     // Single Object
                     const keys = columns || Object.keys(data);
                     const rows = keys.map(key => `${key.padEnd(15, ' ')}: ${String(data[key])}`);
                     const tableString = rows.join('\n');
-                    self.postMessage({ type: "log", message: tableString });
+                    dat = tableString;
                 } else {
-                    self.postMessage({ type: "log", message: String(data) });
+                    dat = String(data)
                 }
+                self.postMessage({ type: "log", message: dat });
             },
 
             // count: (label = "default") => 
