@@ -268,12 +268,14 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: `${serializedArgs}\n${stack}` });
             },
             group: (...args) => {
-                const message = indentMessage(`\u25BE group: ${args.join(" ")}`); // \u25BE is a small downward triangle
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                const message = indentMessage(`group: ${serializedArgs}`);
                 self.postMessage({ type: "log", message });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
-                const message = indentMessage(`\u25B8 groupCollapsed: ${args.join(" ")}`);
+                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
+                const message = indentMessage(`groupCollapsed: ${serializedArgs}`);
                 self.postMessage({ type: "log", message });
                 groupLevel++;
             },
@@ -287,7 +289,7 @@ self.addEventListener("message", (event) => {
 
             profile: (label = "default") => {
                 profiles[label] = performance.now();
-                const message = indentMessage(`Profile '${label}' started`);
+                const message = indentMessage(`Profile '${objectToString(label)}' started`);
                 self.postMessage({ type: "info", message });
             },
 
@@ -295,10 +297,10 @@ self.addEventListener("message", (event) => {
                 if (profiles[label]) {
                     const duration = performance.now() - profiles[label];
                     delete profiles[label];
-                    const message = indentMessage(`Profile '${label}' finished. Duration: ${duration.toFixed(2)}ms`);
+                    const message = indentMessage(`Profile '${objectToString(label)}' finished. Duration: ${duration.toFixed(2)}ms`);
                     self.postMessage({ type: "info", message });
                 } else {
-                    const message = indentMessage(`No profile '${label}' found`);
+                    const message = indentMessage(`No profile '${objectToString(label)}' found`);
                     self.postMessage({ type: "warn", message });
                 }
             },
@@ -310,11 +312,11 @@ self.addEventListener("message", (event) => {
             timeEnd: (label = "default") => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const message = indentMessage(`${label}: ${duration.toFixed(2)}ms`);
+                    const message = indentMessage(`${objectToString(label)}: ${duration.toFixed(2)}ms`);
                     self.postMessage({ type: "log", message });
                     delete timers[label];
                 } else {
-                    const message = indentMessage(`No timer called '${label}' found`);
+                    const message = indentMessage(`No timer called '${objectToString(label)}' found`);
                     self.postMessage({ type: "error", message });
                 }
             },
@@ -323,10 +325,10 @@ self.addEventListener("message", (event) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
                     const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
-                    const message = indentMessage(`${label}: ${duration.toFixed(2)}ms${extra}`);
+                    const message = indentMessage(`${objectToString(label)}: ${duration.toFixed(2)}ms${extra}`);
                     self.postMessage({ type: "log", message });
                 } else {
-                    const message = indentMessage(`No timer called '${label}' found`);
+                    const message = indentMessage(`No timer called '${objectToString(label)}' found`);
                     self.postMessage({ type: "error", message });
                 }
             }
