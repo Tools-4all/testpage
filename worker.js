@@ -268,6 +268,11 @@ self.addEventListener("message", (event) => {
                 const stack = getStack();
                 self.postMessage({ type: "log", message: `${serializedArgs}\n${stack}` });
             },
+            group: (...args) => {
+                const message = indentMessage(`\u25BE group: ${args.join(" ")}`); // \u25BE is a small downward triangle
+                self.postMessage({ type: "log", message });
+                groupLevel++;
+            },
             groupCollapsed: (...args) => {
                 const message = indentMessage(`\u25B8 groupCollapsed: ${args.join(" ")}`);
                 self.postMessage({ type: "log", message });
