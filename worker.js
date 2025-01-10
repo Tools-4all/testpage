@@ -171,11 +171,6 @@ function objectToString(obj) {
     return `{${keyValuePairs.join(", ")}}`;
 }
 
-function indentMessage(message) {
-    if (groupLevel <= 0) return message;
-    return "  ".repeat(groupLevel) + message;
-}
-
 
 
 self.addEventListener("message", (event) => {
@@ -184,6 +179,10 @@ self.addEventListener("message", (event) => {
         const countMap = {};
         let groupLevel = 0;
         const timers = {};
+        function indentMessage(message) {
+            if (groupLevel <= 0) return message;
+            return "  ".repeat(groupLevel) + message;
+        }
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
