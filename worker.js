@@ -37,6 +37,7 @@ const wrapperPrefixLines = [
     'const wrapperPrefixLines = undefined;',
     'const wrapperSuffix = undefined;',
     'const WRAPPER_LINE_COUNT = undefined;',
+    'const indentMessage = undefined;',
     'const createWrappedCode = undefined;',
     'const code = undefined;',
 
@@ -170,6 +171,11 @@ function objectToString(obj) {
     return `{${keyValuePairs.join(", ")}}`;
 }
 
+function indentMessage(message) {
+    if (groupLevel <= 0) return message;
+    return "  ".repeat(groupLevel) + message;
+}
+
 
 
 self.addEventListener("message", (event) => {
@@ -210,7 +216,6 @@ self.addEventListener("message", (event) => {
                     }
                     let dat;
                     if (typeof data[0] === "object") {
-                        // Arrays of Objects
                         const headerRow = headers.map(header => header.padEnd(15, ' ')).join('|');
                         const separatorRow = headers.map(() => '---------------').join('+');
                         const rows = data.map(item =>
@@ -224,7 +229,6 @@ self.addEventListener("message", (event) => {
                         const tableString = `Index | Value\n------+-------\n${rows.join('\n')}`;
                         dat = tableString;
                     }
-                    // Single Object
                     const keys = columns || Object.keys(data);
                     const rows = keys.map(key => `${key.padEnd(15, ' ')}: ${String(data[key])}`);
                     const tableString = rows.join('\n');
@@ -242,7 +246,7 @@ self.addEventListener("message", (event) => {
                     countMap[label] = 1;
                 }
                 self.postMessage({ type: "log", message: `${label}: ${countMap[label]}` });
-            } ,
+            },
             countReset: (label = "default") => {
                 countMap[label] = 0;
             },
@@ -258,19 +262,70 @@ self.addEventListener("message", (event) => {
             dirxml: (obj) => {
                 self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
             },
-            // group: (...args) => 
-            // groupCollapsed: (...args) => 
-            // groupEnd: () => ,
-            // profile: (label) => 
-            // profileEnd: (label) => 
-            // time: (label = "default") => 
-            // timeEnd: (label = "default") => 
-            // timeLog: (label = "default", ...args) =>
             timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
                 self.postMessage({ type: "log", message: `${serializedArgs}\n${stack}` });
+            },
+            groupCollapsed: (...args) => {
+                const message = indentMessage(`\u25B8 groupCollapsed: ${args.join(" ")}`);
+                self.postMessage({ type: "log", message });
+                groupLevel++;
+            },
+
+            groupEnd: () => {
+                if (groupLevel > 0) {
+                    groupLevel--;
+                }
+                const message = indentMessage("groupEnd");
+                self.postMessage({ type: "log", message });
+            },
+
+            profile: (label = "default") => {
+                profiles[label] = performance.now();
+                const message = indentMessage(`Profile '${label}' started`);
+                self.postMessage({ type: "info", message });
+            },
+
+            profileEnd: (label = "default") => {
+                if (profiles[label]) {
+                    const duration = performance.now() - profiles[label];
+                    delete profiles[label];
+                    const message = indentMessage(`Profile '${label}' finished. Duration: ${duration.toFixed(2)}ms`);
+                    self.postMessage({ type: "info", message });
+                } else {
+                    const message = indentMessage(`No profile '${label}' found`);
+                    self.postMessage({ type: "warn", message });
+                }
+            },
+
+            time: (label = "default") => {
+                timers[label] = performance.now();
+            },
+
+            timeEnd: (label = "default") => {
+                if (timers[label]) {
+                    const duration = performance.now() - timers[label];
+                    const message = indentMessage(`${label}: ${duration.toFixed(2)}ms`);
+                    self.postMessage({ type: "log", message });
+                    delete timers[label];
+                } else {
+                    const message = indentMessage(`No timer called '${label}' found`);
+                    self.postMessage({ type: "error", message });
+                }
+            },
+
+            timeLog: (label = "default", ...args) => {
+                if (timers[label]) {
+                    const duration = performance.now() - timers[label];
+                    const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
+                    const message = indentMessage(`${label}: ${duration.toFixed(2)}ms${extra}`);
+                    self.postMessage({ type: "log", message });
+                } else {
+                    const message = indentMessage(`No timer called '${label}' found`);
+                    self.postMessage({ type: "error", message });
+                }
             }
         };
 

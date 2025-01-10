@@ -557,19 +557,6 @@
       <div class="status-item">JavaScript</div>
     </div>
   </div>
-  <script src="https://browser.sentry-cdn.com/8.47.0/bundle.tracing.min.js"
-    integrity="sha384-wYec/atCKBIhxMeAqO4JgQzLgv7nPphrOELh1UduVUFqt5DXn0Ey8pqiYEyYvZZ3"
-    crossorigin="anonymous"></script>
-  <script src="https://browser.sentry-cdn.com/8.47.0/captureconsole.min.js"
-    integrity="sha384-PonwDoT18zchpMUjz6eXLRVlOgAiDZ8ghYllU8E6AFgro14VBtwOg/76ik5KSqF/"
-    crossorigin="anonymous"></script>
-
-  <script>
-    Sentry.init({
-      dsn: "https://examplePublicKey@o0.ingest.sentry.io/0",
-      integrations: [Sentry.captureConsoleIntegration()],
-    });
-  </script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
@@ -597,7 +584,7 @@
       }
       return candidate;
     }
-
+    
 
 
     function createTab(desiredName = null, initialContent = null) {
@@ -870,7 +857,7 @@
           appendToOutput(tabObj.outputElement, type, message);
         } else if (type === "clear") {
           clearConsole(tabObj.outputElement);
-        }
+        } 
       };
       w.onerror = (error) => {
         appendToOutput(tabObj.outputElement, "error", error.message);
