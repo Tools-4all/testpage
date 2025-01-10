@@ -273,7 +273,6 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message });
                 groupLevel++;
             },
-
             groupEnd: () => {
                 if (groupLevel > 0) {
                     groupLevel--;
