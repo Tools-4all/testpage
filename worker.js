@@ -175,6 +175,9 @@ function objectToString(obj) {
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
+        const countMap = {};
+        let groupLevel = 0;
+        const timers = {};
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -232,8 +235,17 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: dat });
             },
 
-            // count: (label = "default") => 
-            // countReset: (label = "default") =>
+            count: (label = "default") => {
+                if (countMap[label]) {
+                    countMap[label]++;
+                } else {
+                    countMap[label] = 1;
+                }
+                self.postMessage({ type: "log", message: `${label}: ${countMap[label]}` });
+            } ,
+            countReset: (label = "default") => {
+                countMap[label] = 0;
+            },
             assert: (condition, ...args) => {
                 if (!condition) {
                     self.postMessage({ type: "error", message: `Assertion failed: ${args.join(" ")}` });
