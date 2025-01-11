@@ -646,9 +646,15 @@
 
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
+
       const clearTerminalButton = document.createElement("button");
       clearTerminalButton.classList.add("clearButton");
       clearTerminalButton.innerHTML = '<i class="fas fa-trash"></i>';
+      clearTerminalButton.addEventListener("click", () => {
+        // Clear the output for this tab
+        outputDiv.innerHTML = "";
+      });
+
       const runBtn = document.createElement("button");
       runBtn.classList.add("runButton");
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
@@ -734,50 +740,6 @@
         closeTab(newTabId);
       });
 
-      document.addEventListener("dragover", (ev) => {
-        const isOverTabBar = ev.target.closest("#tabBar");
-
-        if (isOverTabBar) {
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-        } else {
-          ev.dataTransfer.dropEffect = "none";
-        }
-      });
-
-      tabBar.addEventListener("drop", (ev) => {
-        ev.preventDefault();
-
-        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
-        if (!draggedTabId) return;
-
-        const targetTabElem = ev.target.closest(".tab");
-        if (!targetTabElem) return;
-
-        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
-        if (!targetTab) return;
-
-        reorderTabs(draggedTabId, targetTab.id);
-      });
-
-      tabElem.addEventListener("dragstart", (ev) => {
-        ev.dataTransfer.clearData();
-        ev.dataTransfer.setData("text/plain", "");
-        ev.dataTransfer.setData("text/uri-list", "");
-        ev.dataTransfer.setData("application/tab-id", String(newTabId));
-        ev.dataTransfer.effectAllowed = "move";
-      });
-
-      tabElem.addEventListener("drop", (ev) => {
-        ev.preventDefault();
-        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
-        reorderTabs(draggedTabId, newTabId);
-      });
-
-      titleSpan.addEventListener("dblclick", () => {
-        makeTabTitleEditable(tabObj);
-      });
-
       switchTab(newTabId);
 
       if (initialContent !== null) {
@@ -788,6 +750,7 @@
 
       return newTabId;
     }
+
 
     function getNextTabName() {
       let maxNum = 0;
