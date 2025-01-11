@@ -129,7 +129,7 @@ function relativeStack(error) {
         }
     });
     const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
-    const lastLine = `    at userCode (js:${lineNum})`;
+    const lastLine = `at userCode (js:${lineNum})`;
 
     return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
 }
