@@ -44,7 +44,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded rfefre")
+console.log("loaded 123")
 
 
 const wrapperSuffix = `})();`;
@@ -95,7 +95,7 @@ function getStack() {
     if (processedStack.length > 1) {
         return processedStack.join('\n') + '\n' + lastLine;
     } else {
-        return processedStack.join[0].replace(/^\s+|\s+$/g, '') + lastLine;
+        return processedStack.join("\n").replace(/^\s+|\s+$/g, '') + lastLine;
         console.log("processedStack", processedStack)
         console.log("lastLine", lastLine)
     }
