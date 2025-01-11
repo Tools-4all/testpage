@@ -96,6 +96,13 @@ function getStack() {
 }
 
 
+function relativeStack(error) {
+    console.log("error", error)
+    const stack = error.stack.split('\n');
+    console.log("stack", stack)
+}
+
+
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
@@ -347,7 +354,8 @@ self.addEventListener("message", (event) => {
                 userFunc(customConsole, customPrompt);
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
-                customConsole.error(e.message);
+                const error = relativeStack(e);
+                customConsole.error(error);
                 self.postMessage({ type: "log", message: "Script finished with exit code 1." });
             }
         };
