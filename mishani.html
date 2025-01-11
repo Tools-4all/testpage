@@ -1353,14 +1353,6 @@
       return await response.text();
     }
 
-    document.getElementById("clearTerminalButton").addEventListener("click", () => {
-      if (activeTabId === null) return;
-      const tabObj = tabs.find((t) => t.id === activeTabId);
-      if (!tabObj || !tabObj.outputElement) return;
-
-      tabObj.outputElement.innerHTML = "";
-    });
-
   </script>
 </body>
 
