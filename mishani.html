@@ -149,27 +149,11 @@
       color: #fff;
     }
 
-    #activityBar .icon:hover:before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 45px;
-      /* מיקום החץ מצד שמאל */
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-right: 8px solid #333;
-      /* צבע החץ */
-    }
-
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
-      left: 55px;
-      /* מרווח בין החץ לתווית */
       top: 50%;
+      left: 100%;
       transform: translateY(-50%);
       background: #333;
       color: #fff;
@@ -178,6 +162,20 @@
       border-radius: 3px;
       white-space: nowrap;
       z-index: 9;
+      margin-left: 10px;
+    }
+
+    #activityBar .icon:hover::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: calc(100% + 5px);
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-right: 5px solid #333;
     }
 
     .sidebar-panel {
