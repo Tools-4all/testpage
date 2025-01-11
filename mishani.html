@@ -152,8 +152,8 @@
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
+      left: 55px;
       top: 50%;
-      left: 100%;
       transform: translateY(-50%);
       background: #333;
       color: #fff;
@@ -161,21 +161,6 @@
       font-size: 12px;
       border-radius: 3px;
       white-space: nowrap;
-      z-index: 9;
-      margin-left: 10px;
-    }
-
-    #activityBar .icon:hover::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: calc(100% + 5px);
-      transform: translateY(-50%);
-      width: 0;
-      height: 0;
-      border-top: 5px solid transparent;
-      border-bottom: 5px solid transparent;
-      border-right: 5px solid #333;
       z-index: 9;
     }
 
@@ -397,6 +382,28 @@
       padding: 0px !important;
       background-color: transparent !important;
     }
+
+    .clearButton {
+      padding: 6px 12px;
+      background-color: #ff5555;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+    }
+
+    .clearButton i {
+      margin-right: 5px;
+    }
+
+    .clearButton:hover {
+      background-color: #ff7777;
+    }
+
 
     .runButton {
       padding: 6px 12px;
@@ -642,9 +649,13 @@
 
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
+      const clearTerminalButton = document.createElement("button");
+      clearTerminalButton.classList.add("clearButton");
+      clearTerminalButton.innerHTML = '<i class="fas fa-trash"></i> Clear';
       const runBtn = document.createElement("button");
       runBtn.classList.add("runButton");
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
+      controlsDiv.appendChild(clearTerminalButton);
       controlsDiv.appendChild(runBtn);
 
       const outputDiv = document.createElement("div");
