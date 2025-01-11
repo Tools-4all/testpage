@@ -384,18 +384,17 @@
     }
 
     .clearButton {
-      position: absolute;
-      left: 0px;
-      padding: 6px 12px;
-      background-color: #6c6868;
-      color: white;
+      padding: 6px 8px;
+      background-color: transparent;
+      color: #b2afaf;
       border: none;
       cursor: pointer;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 16px;
       display: flex;
       align-items: center;
-      margin-left: 10px;
+      margin-right: 10px;
+      transition: background-color 0.1s ease;
     }
 
     .clearButton:hover {
@@ -1390,6 +1389,14 @@
       }
       return await response.text();
     }
+
+    document.getElementById("clearTerminalButton").addEventListener("click", () => {
+      if (activeTabId === null) return;
+      const tabObj = tabs.find((t) => t.id === activeTabId);
+      if (!tabObj || !tabObj.outputElement) return;
+
+      tabObj.outputElement.innerHTML = "";
+    });
 
   </script>
 </body>
