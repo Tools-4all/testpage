@@ -44,7 +44,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded dwefwef")
+console.log("loaded 4ewe")
 
 
 const wrapperSuffix = `})();`;
@@ -56,16 +56,11 @@ function createWrappedCode(userCode) {
 }
 
 
-function getStack(errorStack) {
-    if (!errorStack) {
-        errorStack = new Error().stack || "";
-    }
-
-    const stackLines = errorStack.split('\n');
+function getStack() {
+    const stack = new Error().stack.split('\n');
     const userScriptIdentifier = '1919191.js';
-    const processedStack = [];
-
-    stackLines.forEach(line => {
+    let processedStack = [];
+    stack.forEach(line => {
         if (line.includes(userScriptIdentifier)) {
             const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
             const match = line.match(regex);
@@ -82,6 +77,7 @@ function getStack(errorStack) {
                 const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
                 const matchNoFunc = line.match(regexNoFunc);
                 if (matchNoFunc) {
+                    const fileName = matchNoFunc[1];
                     const lineNumber = parseInt(matchNoFunc[2], 10);
                     const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                     if (adjustedLine > 0) {
@@ -93,18 +89,11 @@ function getStack(errorStack) {
             }
         }
     });
+    const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
+    const lastLine = `    at userCode (js:${lineNum})`;
 
-    if (processedStack.length > 0) {
-        const match = processedStack[processedStack.length - 1].match(/js:(\d+)/);
-        if (match) {
-            const lineNum = match[1];
-            processedStack.push(`    at userCode (js:${lineNum})`);
-        }
-    }
-
-    return processedStack.join('\n');
+    return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
 }
-
 
 
 class myPrompt {
@@ -352,19 +341,22 @@ self.addEventListener("message", (event) => {
         };
 
         const executeCode = (userCode) => {
-            const wrappedCode = createWrappedCode(userCode);
-            const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
-            userFunc(customConsole, customPrompt);
-            self.postMessage({ type: "log", message: "Script finished with exit code 0." });
+            try {
+                const wrappedCode = createWrappedCode(userCode);
+                const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
+                userFunc(customConsole, customPrompt);
+                self.postMessage({ type: "log", message: "Script finished with exit code 0." });
+            } catch (e) {
+                customConsole.error(e.message);
+                self.postMessage({ type: "log", message: "Script finished with exit code 1." });
+            }
         };
 
         try {
             executeCode(code);
         } catch (e) {
-            const relativeStack = getStack(e.stack);
-            customConsole.error(`Error: ${e.message}\n${relativeStack}`);
+            self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
             self.postMessage({ type: "log", message: "Script finished with exit code 1." });
-            console.log("an error occured", e)
         }
     }
 });
