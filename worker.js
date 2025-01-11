@@ -44,7 +44,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded 123")
+console.log("loaded 456")
 
 
 const wrapperSuffix = `})();`;
@@ -92,14 +92,7 @@ function getStack() {
     const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
     processedStack = processedStack.slice(0, -2)
     const lastLine = `    at userCode (js:${lineNum})`;
-    if (processedStack.length > 1) {
-        return processedStack.join('\n') + '\n' + lastLine;
-    } else {
-        return processedStack.join("\n").replace(/^\s+|\s+$/g, '') + lastLine;
-        console.log("processedStack", processedStack)
-        console.log("lastLine", lastLine)
-    }
-}
+    return processedStack.join('\n').replace(/^\s+|\s+$/g, '') + '\n' + lastLine;
 
 
 function relativeStack(error) {
