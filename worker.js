@@ -92,8 +92,8 @@ function getStack() {
     const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
     processedStack = processedStack.slice(0, -2)
     const lastLine = `    at userCode (js:${lineNum})`;
-    return processedStack.join('\n') + '\n' + lastLine;
-
+    return processedStack.join('\n').replace(/^\s+|\s+$/g, '') + '\n' + lastLine;
+}
 
 function relativeStack(error) {
     const stack = error.stack.split('\n');
