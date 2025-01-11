@@ -96,6 +96,8 @@ function getStack() {
         return processedStack.join('\n') + '\n' + lastLine;
     } else {
         return processedStack.join[0].replace(/^\s+|\s+$/g, '') + lastLine;
+        console.log("processedStack", processedStack)
+        console.log("lastLine", lastLine)
     }
 }
 
