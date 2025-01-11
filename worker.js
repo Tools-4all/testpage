@@ -44,7 +44,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded 456")
+console.log("loaded rfefre")
 
 
 const wrapperSuffix = `})();`;
