@@ -369,6 +369,7 @@ self.addEventListener("message", (event) => {
             const relativeStack = getStack(e.stack);
             customConsole.error(`Error: ${e.message}\n${relativeStack}`);
             self.postMessage({ type: "log", message: "Script finished with exit code 1." });
+            console.log("an error occured", e)
         }
     }
 });
