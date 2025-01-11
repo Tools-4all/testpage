@@ -387,8 +387,11 @@ self.addEventListener("message", (event) => {
                 userFunc(customConsole, customPrompt);
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
-                const error = relativeStack(e);
-                customConsole.error(error);
+                customConsole.error(`Uncaught ${e.name}: ${e.message}`);
+            
+                const errorStack = relativeStack(e);
+                customConsole.error(errorStack);
+            
                 self.postMessage({ type: "log", message: "Script finished with exit code 1." });
             }
         };
