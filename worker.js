@@ -99,6 +99,40 @@ function getStack() {
 function relativeStack(error) {
     const stack = error.stack.split('\n');
     const userScriptIdentifier = '1919191.js';
+    let processedStack = [];
+    stack.forEach(line => {
+        if (line.includes(userScriptIdentifier)) {
+            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
+            const match = line.match(regex);
+            if (match) {
+                const functionName = match[1];
+                const lineNumber = parseInt(match[3], 10);
+                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                if (adjustedLine > 0) {
+                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
+                } else {
+                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
+                }
+            } else {
+                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
+                const matchNoFunc = line.match(regexNoFunc);
+                if (matchNoFunc) {
+                    const fileName = matchNoFunc[1];
+                    const lineNumber = parseInt(matchNoFunc[2], 10);
+                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                    if (adjustedLine > 0) {
+                        processedStack.push(`    at js (js:${adjustedLine})`);
+                    } else {
+                        processedStack.push(`    at js (js:${lineNumber})`);
+                    }
+                }
+            }
+        }
+    });
+    const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
+    const lastLine = `    at userCode (js:${lineNum})`;
+
+    return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
 }
 
 
