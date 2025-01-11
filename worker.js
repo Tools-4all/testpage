@@ -56,11 +56,16 @@ function createWrappedCode(userCode) {
 }
 
 
-function getStack() {
-    const stack = new Error().stack.split('\n');
+function getStack(errorStack) {
+    if (!errorStack) {
+        errorStack = new Error().stack || "";
+    }
+
+    const stackLines = errorStack.split('\n');
     const userScriptIdentifier = '1919191.js';
-    let processedStack = [];
-    stack.forEach(line => {
+    const processedStack = [];
+
+    stackLines.forEach(line => {
         if (line.includes(userScriptIdentifier)) {
             const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
             const match = line.match(regex);
@@ -77,7 +82,6 @@ function getStack() {
                 const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
                 const matchNoFunc = line.match(regexNoFunc);
                 if (matchNoFunc) {
-                    const fileName = matchNoFunc[1];
                     const lineNumber = parseInt(matchNoFunc[2], 10);
                     const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                     if (adjustedLine > 0) {
@@ -89,11 +93,18 @@ function getStack() {
             }
         }
     });
-    const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
-    const lastLine = `    at userCode (js:${lineNum})`;
 
-    return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
+    if (processedStack.length > 0) {
+        const match = processedStack[processedStack.length - 1].match(/js:(\d+)/);
+        if (match) {
+            const lineNum = match[1];
+            processedStack.push(`    at userCode (js:${lineNum})`);
+        }
+    }
+
+    return processedStack.join('\n');
 }
+
 
 
 class myPrompt {
@@ -355,7 +366,8 @@ self.addEventListener("message", (event) => {
         try {
             executeCode(code);
         } catch (e) {
-            self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
+            const relativeStack = getStack(e.stack);
+            customConsole.error(`Error: ${e.message}\n${relativeStack}`);
             self.postMessage({ type: "log", message: "Script finished with exit code 1." });
         }
     }
