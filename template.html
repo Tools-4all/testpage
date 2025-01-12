@@ -895,7 +895,7 @@
 
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
-      message = message.split("\n").join("\n    ");
+      message = message.split("\n").join("\n");
       const line = document.createElement("div");
       line.className = type;
       line.classList.add("outputContent");
