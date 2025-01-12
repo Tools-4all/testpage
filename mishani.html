@@ -823,14 +823,18 @@
       const targetIndex = tabs.findIndex((t) => t.id === targetTabId);
       if (draggedIndex === -1 || targetIndex === -1) return;
 
-      const draggedTabObj = tabs[draggedIndex];
-      tabs.splice(draggedIndex, 1);
-      tabs.splice(targetIndex, 0, draggedTabObj);
+      // Move the dragged tab in the `tabs` array
+      const [draggedTab] = tabs.splice(draggedIndex, 1);
+      tabs.splice(targetIndex, 0, draggedTab);
 
+      // Update the DOM to reflect the new order
       const tabBar = document.getElementById("tabBar");
-      tabs.forEach((t) => {
-        tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
+      tabs.forEach((tab) => {
+        tabBar.insertBefore(tab.tabElement, document.getElementById("addTabButton"));
       });
+
+      // Switch to the dropped tab
+      switchTab(draggedTabId);
     }
 
 
@@ -897,6 +901,7 @@
         removePlaceholder();
       });
     }
+
 
 
     function switchTab(tabId) {
