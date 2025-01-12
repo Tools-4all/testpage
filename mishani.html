@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-    * {
+     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -44,11 +44,11 @@
     }
 
     .vs-logo img {
-      height: 25px;
-      width: 25px;
+      height: 27px;
+      width: 27px;
       object-fit: contain;
       border-radius: 4px;
-      margin-bottom: 8px;
+      margin-bottom: 11px;
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -71,18 +71,14 @@
     }
 
     .vs-navbar-item {
-      margin-right: 10px;
-      margin-top: 1px;
+      margin-right: 20px;
       position: relative;
       cursor: pointer;
-      padding: 5px;
-      padding-top: 1px;
-      font-size: 12px;
-      border-radius: 5px;
+      line-height: 30px;
     }
 
     .vs-navbar-item:hover {
-      background-color: #9492923b;
+      color: #d4d4d4;
     }
 
     .vs-navbar-dropdown {
@@ -161,7 +157,6 @@
       font-size: 12px;
       border-radius: 3px;
       white-space: nowrap;
-      z-index: 9;
     }
 
     .sidebar-panel {
@@ -277,29 +272,31 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
+      padding: 0 5px;
     }
 
     .tab {
       background-color: #333;
       margin-right: 3px;
-      margin-top: 9px;
-      padding: 7px 10px 7px;
+      border-radius: 4px 4px 0 0;
       color: #fff;
       cursor: pointer;
       font-size: 13px;
       display: inline-flex;
       align-items: center;
+      padding: 0 8px;
       user-select: none;
       -webkit-user-drag: element;
     }
 
     .tab.active {
       background-color: #1e1e1e;
+      color: #d4d4d4;
       border-top: 1px solid #007acc;
     }
 
     .tab .tab-title {
-      margin-right: 15px;
+      margin-right: 8px;
     }
 
     .tab .close {
@@ -383,26 +380,6 @@
       background-color: transparent !important;
     }
 
-    .clearButton {
-      display: none;
-      padding: 6px 8px;
-      background-color: transparent;
-      color: #b2afaf;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      margin-right: 10px;
-      transition: background-color 0.1s ease;
-    }
-
-    .clearButton:hover {
-      background-color: #535252;
-    }
-
-
     .runButton {
       padding: 6px 12px;
       background-color: #0e639c;
@@ -431,31 +408,6 @@
       font-size: 14px;
       white-space: pre-wrap;
       background-color: #1e1e1e;
-    }
-
-    .output::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .output::-webkit-scrollbar-track {
-      background: #252526;
-    }
-
-    .output::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
-
-    .output::-webkit-scrollbar-thumb:hover {
-      background: #555;
-    }
-
-    .output::-webkit-scrollbar-corner {
-      background: #252526;
-    }
-
-    .output::-webkit-scrollbar-horizontal {
-      height: 8px;
     }
 
     .log {
@@ -543,13 +495,6 @@
 
       #statusBar {
         left: 50px;
-      }
-    }
-
-    @media (max-width: 675px) {
-      .sidebar-panel {
-        width: 100%;
-        padding-right: 50px;
       }
     }
   </style>
