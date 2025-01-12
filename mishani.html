@@ -294,7 +294,7 @@
     }
 
     .tab-placeholder {
-      width: 10px;
+      width: 5px;
       height: 100%;
       background-color: white;
       display: inline-block;
@@ -774,13 +774,17 @@
         if (!draggedTabId) return;
 
         const targetTabElem = ev.target.closest(".tab");
-        if (!targetTabElem) return;
+        const targetTab = targetTabElem
+          ? tabs.find((t) => t.tabElement === targetTabElem)
+          : null;
 
-        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
-        if (!targetTab) return;
+        reorderTabs(draggedTabId, targetTab ? targetTab.id : null);
 
-        reorderTabs(draggedTabId, targetTab.id);
+        if (placeholder.parentNode) {
+          placeholder.remove();
+        }
       });
+
 
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.clearData();
