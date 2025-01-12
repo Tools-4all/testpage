@@ -337,19 +337,6 @@
       overflow: hidden;
     }
 
-    .tab-placeholder {
-      height: 36px;
-      /* Same as your tab height */
-      width: 100px;
-      /* Adjust width to match your tabs */
-      background-color: rgba(0, 122, 204, 0.3);
-      /* Visual feedback */
-      border-radius: 4px;
-      margin: 3px;
-      display: inline-block;
-    }
-
-
     .editor-and-output {
       display: none;
       flex-direction: column;
@@ -560,12 +547,10 @@
     }
 
     @media (max-width: 675px) {
-
       .sidebar-panel {
         width: 100%;
         padding-right: 50px;
       }
-
     }
   </style>
 </head>
@@ -774,7 +759,6 @@
         editorAndOutput,
       };
       tabs.push(tabObj);
-      setupDragAndDropForTabs(tabObj);
 
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
@@ -817,102 +801,21 @@
 
 
     function reorderTabs(draggedTabId, targetTabId) {
+      if (draggedTabId === targetTabId) return;
+
       const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
       const targetIndex = tabs.findIndex((t) => t.id === targetTabId);
+      if (draggedIndex === -1 || targetIndex === -1) return;
 
-      if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) return;
-
-      // Update `tabs` array
-      const [draggedTab] = tabs.splice(draggedIndex, 1);
-      tabs.splice(targetIndex, 0, draggedTab);
-
-      // Update DOM
-      const tabBar = document.getElementById("tabBar");
-      tabs.forEach((tab) => {
-        tabBar.insertBefore(tab.tabElement, document.getElementById("addTabButton"));
-      });
-
-      console.log("Tabs reordered:", tabs.map((t) => t.name));
-    }
-
-
-
-    function showPlaceholder(targetTab, clientX) {
-      removePlaceholder();
-
-      const placeholder = document.createElement("div");
-      placeholder.className = "tab-placeholder";
+      const draggedTabObj = tabs[draggedIndex];
+      tabs.splice(draggedIndex, 1);
+      tabs.splice(targetIndex, 0, draggedTabObj);
 
       const tabBar = document.getElementById("tabBar");
-      const targetRect = targetTab.getBoundingClientRect();
-
-      if (clientX < targetRect.left + targetRect.width / 2) {
-        // Insert before the target tab
-        tabBar.insertBefore(placeholder, targetTab);
-      } else {
-        // Insert after the target tab
-        tabBar.insertBefore(placeholder, targetTab.nextSibling);
-      }
-    }
-
-
-    function removePlaceholder() {
-      const existingPlaceholder = document.querySelector(".tab-placeholder");
-      if (existingPlaceholder) {
-        existingPlaceholder.remove();
-      }
-    }
-
-
-
-    function removePlaceholder() {
-      const existingPlaceholder = document.querySelector(".tab-placeholder");
-      if (existingPlaceholder) {
-        existingPlaceholder.remove();
-      }
-    }
-
-    function setupDragAndDropForTabs(tabObj) {
-      const tabElem = tabObj.tabElement;
-
-      tabElem.addEventListener("dragstart", (e) => {
-        e.dataTransfer.effectAllowed = "move"; // Allow move operation
-        e.dataTransfer.setData("text/plain", tabObj.id); // Pass the dragged tab ID
-        tabElem.classList.add("dragging");
-      });
-
-      tabElem.addEventListener("dragend", () => {
-        tabElem.classList.remove("dragging");
-        removePlaceholder();
-      });
-
-      tabElem.addEventListener("dragover", (e) => {
-        e.preventDefault(); // Required to allow the drop
-        e.dataTransfer.dropEffect = "move"; // Indicate a valid drop target
-        const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
-        const targetTabId = tabObj.id;
-
-        if (draggedTabId === targetTabId) return;
-
-        showPlaceholder(tabElem, e.clientX); // Show the placeholder
-      });
-
-
-      tabElem.addEventListener("drop", (e) => {
-        e.preventDefault(); // Handle drop event
-        const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
-        const targetTabId = tabObj.id;
-
-        if (draggedTabId === targetTabId) return;
-
-        reorderTabs(draggedTabId, targetTabId); // Reorder tabs
-        removePlaceholder();
+      tabs.forEach((t) => {
+        tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
       });
     }
-
-
-
-
     function switchTab(tabId) {
       if (activeTabId !== null) {
         const currentTab = tabs.find((t) => t.id === activeTabId);
