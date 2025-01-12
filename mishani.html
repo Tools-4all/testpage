@@ -762,15 +762,19 @@
       document.getElementById("tabBar").addEventListener("dragover", (ev) => {
         ev.preventDefault();
 
-        const targetTabElem = ev.target.closest(".tab");
         const tabBar = document.getElementById("tabBar");
+        const targetTabElem = ev.target.closest(".tab");
 
+        // If hovering over a tab, place the placeholder before the hovered tab
         if (targetTabElem && targetTabElem !== placeholder) {
           tabBar.insertBefore(placeholder, targetTabElem);
-        } else if (!targetTabElem && !tabBar.contains(placeholder)) {
+        }
+        // If not hovering over any tab, place the placeholder at the end
+        else if (!targetTabElem && tabBar.lastElementChild !== placeholder) {
           tabBar.appendChild(placeholder);
         }
       });
+
 
 
 
@@ -778,22 +782,31 @@
         ev.preventDefault();
 
         const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
+        const tabBar = document.getElementById("tabBar");
         const targetTabElem = ev.target.closest(".tab");
 
         if (draggedTabId) {
-          if (targetTabElem) {
-            const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
-            if (targetTab) {
-              reorderTabs(draggedTabId, targetTab.id);
-            }
-          } else if (placeholder.parentElement) {
-            const tabIndex = Array.from(tabBar.children).indexOf(placeholder);
-            reorderTabs(draggedTabId, tabs[tabIndex]?.id);
+          const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
+
+          if (placeholder.parentElement === tabBar) {
+            const placeholderIndex = Array.from(tabBar.children).indexOf(placeholder);
+
+            // Remove the dragged tab from its current position
+            const [draggedTab] = tabs.splice(draggedIndex, 1);
+
+            // Add the dragged tab at the new position
+            tabs.splice(placeholderIndex, 0, draggedTab);
+
+            // Reorder the tabs in the DOM
+            tabs.forEach((tab) => {
+              tabBar.insertBefore(tab.tabElement, document.getElementById("addTabButton"));
+            });
           }
         }
 
-        placeholder.remove(); // Clean up placeholder
+        placeholder.remove(); // Remove the placeholder
       });
+
 
 
       tabElem.addEventListener("dragstart", (ev) => {
@@ -826,6 +839,10 @@
       return newTabId;
     }
 
+    tabElem.addEventListener("dragend", () => {
+      placeholder.remove();
+      tabElem.classList.remove("dragging");
+    });
 
 
     function getNextTabName() {
