@@ -759,17 +759,12 @@
 
       document.getElementById("tabBar").addEventListener("dragover", (ev) => {
         ev.preventDefault();
-
         const targetTabElem = ev.target.closest(".tab");
-        const tabBar = document.getElementById("tabBar");
-
         if (targetTabElem && targetTabElem !== placeholder) {
+          const tabBar = document.getElementById("tabBar");
           tabBar.insertBefore(placeholder, targetTabElem);
-        } else if (!targetTabElem && !tabBar.contains(placeholder)) {
-          tabBar.appendChild(placeholder);
         }
       });
-
 
 
       tabBar.addEventListener("drop", (ev) => {
