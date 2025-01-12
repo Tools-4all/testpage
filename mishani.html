@@ -383,26 +383,6 @@
       background-color: transparent !important;
     }
 
-    .clearButton {
-      display: none;
-      padding: 6px 8px;
-      background-color: transparent;
-      color: #b2afaf;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      margin-right: 10px;
-      transition: background-color 0.1s ease;
-    }
-
-    .clearButton:hover {
-      background-color: #535252;
-    }
-
-
     .runButton {
       padding: 6px 12px;
       background-color: #0e639c;
@@ -679,6 +659,7 @@
 
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
+
       const runBtn = document.createElement("button");
       runBtn.classList.add("runButton");
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
