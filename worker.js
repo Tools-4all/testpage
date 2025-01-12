@@ -235,6 +235,8 @@ self.addEventListener("message", (event) => {
         const countMap = {};
         let groupLevel = 0;
         const timers = {};
+        const profiles = {};
+        const headers = [];
         function indentMessage(message) {
             if (groupLevel <= 0) return message;
             return "  ".repeat(groupLevel) + message;
