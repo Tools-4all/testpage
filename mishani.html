@@ -780,10 +780,6 @@
           : null;
 
         reorderTabs(draggedTabId, targetTab ? targetTab.id : null);
-
-        if (placeholder.parentNode) {
-          placeholder.remove();
-        }
       });
 
 
@@ -800,6 +796,9 @@
         ev.preventDefault();
         const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
         reorderTabs(draggedTabId, newTabId);
+        if (placeholder.parentNode) {
+          placeholder.remove();
+        }
       });
 
       titleSpan.addEventListener("dblclick", () => {
