@@ -337,6 +337,19 @@
       overflow: hidden;
     }
 
+    .tab-placeholder {
+      height: 36px;
+      /* Same as your tab height */
+      width: 100px;
+      /* Adjust width to match your tabs */
+      background-color: rgba(0, 122, 204, 0.3);
+      /* Visual feedback */
+      border-radius: 4px;
+      margin: 3px;
+      display: inline-block;
+    }
+
+
     .editor-and-output {
       display: none;
       flex-direction: column;
@@ -761,6 +774,7 @@
         editorAndOutput,
       };
       tabs.push(tabObj);
+      setupDragAndDropForTabs(tabObj);
 
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
@@ -818,6 +832,73 @@
         tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
       });
     }
+
+
+    function showPlaceholder(targetTab, clientX) {
+      removePlaceholder();
+
+      const placeholder = document.createElement("div");
+      placeholder.className = "tab-placeholder";
+
+      const tabBar = document.getElementById("tabBar");
+      const targetRect = targetTab.getBoundingClientRect();
+
+      if (clientX < targetRect.left + targetRect.width / 2) {
+        // Insert before the target tab
+        tabBar.insertBefore(placeholder, targetTab);
+      } else {
+        // Insert after the target tab
+        if (targetTab.nextSibling) {
+          tabBar.insertBefore(placeholder, targetTab.nextSibling);
+        } else {
+          tabBar.appendChild(placeholder);
+        }
+      }
+    }
+
+    function removePlaceholder() {
+      const existingPlaceholder = document.querySelector(".tab-placeholder");
+      if (existingPlaceholder) {
+        existingPlaceholder.remove();
+      }
+    }
+
+    function setupDragAndDropForTabs(tabObj) {
+      const tabElem = tabObj.tabElement;
+
+      tabElem.addEventListener("dragstart", (e) => {
+        e.dataTransfer.setData("text/plain", tabObj.id);
+        tabElem.classList.add("dragging");
+      });
+
+      tabElem.addEventListener("dragend", () => {
+        tabElem.classList.remove("dragging");
+        removePlaceholder();
+      });
+
+      tabElem.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+        const targetTabId = tabObj.id;
+
+        if (draggedTabId === targetTabId) return;
+
+        showPlaceholder(tabElem, e.clientX);
+      });
+
+      tabElem.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+        const targetTabId = tabObj.id;
+
+        if (draggedTabId === targetTabId) return;
+
+        reorderTabs(draggedTabId, targetTabId);
+        removePlaceholder();
+      });
+    }
+
+
     function switchTab(tabId) {
       if (activeTabId !== null) {
         const currentTab = tabs.find((t) => t.id === activeTabId);
