@@ -817,17 +817,16 @@
 
 
     function reorderTabs(draggedTabId, targetTabId) {
-      if (draggedTabId === targetTabId) return;
-
       const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
       const targetIndex = tabs.findIndex((t) => t.id === targetTabId);
-      if (draggedIndex === -1 || targetIndex === -1) return;
 
-      // Move the dragged tab in the `tabs` array
+      if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) return;
+
+      // Update `tabs` array
       const [draggedTab] = tabs.splice(draggedIndex, 1);
       tabs.splice(targetIndex, 0, draggedTab);
 
-      // Update the DOM to reflect the new order
+      // Update DOM
       const tabBar = document.getElementById("tabBar");
       tabs.forEach((tab) => {
         tabBar.insertBefore(tab.tabElement, document.getElementById("addTabButton"));
@@ -867,11 +866,20 @@
       }
     }
 
+
+    function removePlaceholder() {
+      const existingPlaceholder = document.querySelector(".tab-placeholder");
+      if (existingPlaceholder) {
+        existingPlaceholder.remove();
+      }
+    }
+
     function setupDragAndDropForTabs(tabObj) {
       const tabElem = tabObj.tabElement;
 
       tabElem.addEventListener("dragstart", (e) => {
-        e.dataTransfer.setData("text/plain", tabObj.id);
+        e.dataTransfer.effectAllowed = "move"; // Allow move operation
+        e.dataTransfer.setData("text/plain", tabObj.id); // Pass the dragged tab ID
         tabElem.classList.add("dragging");
       });
 
@@ -881,7 +889,8 @@
       });
 
       tabElem.addEventListener("dragover", (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Allow drop
+        e.dataTransfer.dropEffect = "move"; // Indicate a valid drop target
         const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
         const targetTabId = tabObj.id;
 
@@ -891,16 +900,17 @@
       });
 
       tabElem.addEventListener("drop", (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Handle drop event
         const draggedTabId = parseInt(e.dataTransfer.getData("text/plain"), 10);
         const targetTabId = tabObj.id;
 
         if (draggedTabId === targetTabId) return;
 
-        reorderTabs(draggedTabId, targetTabId);
+        reorderTabs(draggedTabId, targetTabId); // Reorder tabs
         removePlaceholder();
       });
     }
+
 
 
 
