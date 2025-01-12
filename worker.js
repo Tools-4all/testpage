@@ -128,11 +128,27 @@ function relativeStack(error) {
             }
         }
     });
-    const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
-    const lastLine = `at userCode (js:${lineNum})`;
+    if (!processedStack.length) {
+        return '';
+    }
 
-    return processedStack.slice(0, -2).join('\n') + '\n' + lastLine;
+    const lastProcessed = processedStack[processedStack.length - 1];
+    const lineMatch = lastProcessed.match(/js:(\d+)/);
+    const lineNum = lineMatch ? lineMatch[1] : '0';
+    let sliceCount = 2;
+    if (processedStack.length < sliceCount) {
+        sliceCount = 1;
+    }
+    processedStack = processedStack.slice(0, processedStack.length - sliceCount);
+
+    const lastLine = `    at userCode (js:${lineNum})`;
+    if (processedStack.length > 0) {
+        return processedStack.join('\n') + '\n' + lastLine;
+    } else {
+        return lastLine;
+    }
 }
+
 
 
 class myPrompt {
