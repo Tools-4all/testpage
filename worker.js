@@ -266,12 +266,12 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
+                let dat;
                 if (Array.isArray(data)) {
                     if (data.length === 0) {
                         self.postMessage({ type: "log", message: "[] (Empty Array)" });
                         return;
                     }
-                    let dat;
                     if (typeof data[0] === "object") {
                         const headerRow = headers.map(header => header.padEnd(15, ' ')).join('|');
                         const separatorRow = headers.map(() => '---------------').join('+');
