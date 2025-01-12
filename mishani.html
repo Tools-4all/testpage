@@ -293,6 +293,16 @@
       -webkit-user-drag: element;
     }
 
+    .tab-placeholder {
+      width: 80px;
+      height: 36px;
+      background-color: rgba(0, 122, 204, 0.5);
+      border: 2px dashed #007acc;
+      margin-right: 3px;
+      display: inline-block;
+    }
+
+
     .tab.active {
       background-color: #1e1e1e;
       border-top: 1px solid #007acc;
@@ -608,6 +618,11 @@
     let activeTabId = null;
 
 
+    let placeholder = document.createElement("div");
+    placeholder.className = "tab-placeholder";
+
+
+
     function getUniqueTabName(baseName, ignoreTabId = null) {
       let candidate = baseName;
       let suffix = 1;
@@ -744,39 +759,51 @@
         closeTab(newTabId);
       });
 
-      document.addEventListener("dragover", (ev) => {
-        const isOverTabBar = ev.target.closest("#tabBar");
+      document.getElementById("tabBar").addEventListener("dragover", (ev) => {
+        ev.preventDefault();
 
-        if (isOverTabBar) {
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-        } else {
-          ev.dataTransfer.dropEffect = "none";
+        const targetTabElem = ev.target.closest(".tab");
+        const tabBar = document.getElementById("tabBar");
+
+        if (targetTabElem && targetTabElem !== placeholder) {
+          tabBar.insertBefore(placeholder, targetTabElem);
+        } else if (!targetTabElem && !tabBar.contains(placeholder)) {
+          tabBar.appendChild(placeholder);
         }
       });
 
-      tabBar.addEventListener("drop", (ev) => {
+
+
+      document.getElementById("tabBar").addEventListener("drop", (ev) => {
         ev.preventDefault();
 
         const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
-        if (!draggedTabId) return;
-
         const targetTabElem = ev.target.closest(".tab");
-        if (!targetTabElem) return;
 
-        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
-        if (!targetTab) return;
+        if (draggedTabId) {
+          if (targetTabElem) {
+            const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
+            if (targetTab) {
+              reorderTabs(draggedTabId, targetTab.id);
+            }
+          } else if (placeholder.parentElement) {
+            const tabIndex = Array.from(tabBar.children).indexOf(placeholder);
+            reorderTabs(draggedTabId, tabs[tabIndex]?.id);
+          }
+        }
 
-        reorderTabs(draggedTabId, targetTab.id);
+        placeholder.remove(); // Clean up placeholder
       });
+
 
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.clearData();
         ev.dataTransfer.setData("text/plain", "");
-        ev.dataTransfer.setData("text/uri-list", "");
         ev.dataTransfer.setData("application/tab-id", String(newTabId));
         ev.dataTransfer.effectAllowed = "move";
+        tabElem.classList.add("dragging");
       });
+
 
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
