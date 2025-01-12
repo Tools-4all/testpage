@@ -294,11 +294,9 @@
     }
 
     .tab-placeholder {
-      width: 80px;
-      height: 36px;
-      background-color: rgba(0, 122, 204, 0.5);
-      border: 2px dashed #007acc;
-      margin-right: 3px;
+      width: 10px;
+      height: 100%;
+      background-color: white;
       display: inline-block;
     }
 
@@ -762,52 +760,32 @@
       document.getElementById("tabBar").addEventListener("dragover", (ev) => {
         ev.preventDefault();
 
-        const tabBar = document.getElementById("tabBar");
         const targetTabElem = ev.target.closest(".tab");
+        const tabBar = document.getElementById("tabBar");
 
-        // If hovering over a tab, place the placeholder before the hovered tab
         if (targetTabElem && targetTabElem !== placeholder) {
           tabBar.insertBefore(placeholder, targetTabElem);
-        }
-        // If not hovering over any tab, place the placeholder at the end
-        else if (!targetTabElem && tabBar.lastElementChild !== placeholder) {
+        } else if (!targetTabElem && !tabBar.contains(placeholder)) {
           tabBar.appendChild(placeholder);
         }
       });
 
 
 
-
-      document.getElementById("tabBar").addEventListener("drop", (ev) => {
+      tabBar.addEventListener("drop", (ev) => {
         ev.preventDefault();
 
         const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
-        const tabBar = document.getElementById("tabBar");
+        if (!draggedTabId) return;
+
         const targetTabElem = ev.target.closest(".tab");
+        if (!targetTabElem) return;
 
-        if (draggedTabId) {
-          const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
+        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
+        if (!targetTab) return;
 
-          if (placeholder.parentElement === tabBar) {
-            const placeholderIndex = Array.from(tabBar.children).indexOf(placeholder);
-
-            // Remove the dragged tab from its current position
-            const [draggedTab] = tabs.splice(draggedIndex, 1);
-
-            // Add the dragged tab at the new position
-            tabs.splice(placeholderIndex, 0, draggedTab);
-
-            // Reorder the tabs in the DOM
-            tabs.forEach((tab) => {
-              tabBar.insertBefore(tab.tabElement, document.getElementById("addTabButton"));
-            });
-          }
-        }
-
-        placeholder.remove(); // Remove the placeholder
+        reorderTabs(draggedTabId, targetTab.id);
       });
-
-
 
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.clearData();
@@ -838,7 +816,6 @@
 
       return newTabId;
     }
-
 
 
 
