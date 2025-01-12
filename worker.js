@@ -18,27 +18,28 @@ importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.m
 
 const wrapperPrefixLines = [
     '"use strict";',
-    'const console = customConsole;',
-    'const prompt = customPrompt;',
-    'const self = undefined;',
-    'const postMessage = undefined;',
-    'const fetch = undefined;',
-    'const XMLHttpRequest = undefined;',
-    'const WebSocket = undefined;',
-    'const importScripts = undefined;',
-    'const sharedBuffer = undefined;',
-    'const myPrompt = undefined;',
-    'const myPromptInstance = undefined;',
-    'const executeCode = undefined;',
-    'const userFunc = undefined;',
-    'const myDir = undefined;',
-    'const getStack = undefined;',
-    'const objectToString = undefined;',
-    'const wrapperPrefixLines = undefined;',
-    'const wrapperSuffix = undefined;',
-    'const WRAPPER_LINE_COUNT = undefined;',
-    'const indentMessage = undefined;',
-    'const createWrappedCode = undefined;',
+    'var console = customConsole;',
+    'var prompt = customPrompt;',
+    'var self = undefined;',
+    'var postMessage = undefined;',
+    'var fetch = undefined;',
+    'var XMLHttpRequest = undefined;',
+    'var WebSocket = undefined;',
+    'var importScripts = undefined;',
+    'var sharedBuffer = undefined;',
+    'var myPrompt = undefined;',
+    'var myPromptInstance = undefined;',
+    'var executeCode = undefined;',
+    'var userFunc = undefined;',
+    'var myDir = undefined;',
+    'var getStack = undefined;',
+    'var relativeStack = undefined;',
+    'var objectToString = undefined;',
+    'var wrapperPrefixLines = undefined;',
+    'var wrapperSuffix = undefined;',
+    'var WRAPPER_LINE_COUNT = undefined;',
+    'var indentMessage = undefined;',
+    'var createWrappedCode = undefined;',
     'const code = undefined;',
 
     '//# sourceURL=1919191.js',
@@ -120,9 +121,9 @@ function relativeStack(error) {
                     const lineNumber = parseInt(matchNoFunc[2], 10);
                     const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                     if (adjustedLine > 0) {
-                        processedStack.push(`    at js (js:${adjustedLine})`);
+                        processedStack.push(`   at js (js:${adjustedLine})`);
                     } else {
-                        processedStack.push(`    at js (js:${lineNumber})`);
+                        processedStack.push(`   at js (js:${lineNumber})`);
                     }
                 }
             }
