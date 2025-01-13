@@ -2,10 +2,12 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Tab Sandboxed JS Compiler</title>
+
 
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
@@ -42,11 +44,11 @@
     }
 
     .vs-logo img {
-      height: 27px;
-      width: 27px;
+      height: 25px;
+      width: 25px;
       object-fit: contain;
       border-radius: 4px;
-      margin-bottom: 11px;
+      margin-bottom: 8px;
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -69,14 +71,18 @@
     }
 
     .vs-navbar-item {
-      margin-right: 20px;
+      margin-right: 10px;
+      margin-top: 1px;
       position: relative;
       cursor: pointer;
-      line-height: 30px;
+      padding: 5px;
+      padding-top: 1px;
+      font-size: 12px;
+      border-radius: 5px;
     }
 
     .vs-navbar-item:hover {
-      color: #d4d4d4;
+      background-color: #9492923b;
     }
 
     .vs-navbar-dropdown {
@@ -155,6 +161,7 @@
       font-size: 12px;
       border-radius: 3px;
       white-space: nowrap;
+      z-index: 9;
     }
 
     .sidebar-panel {
@@ -270,31 +277,38 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      padding: 0 5px;
     }
 
     .tab {
       background-color: #333;
       margin-right: 3px;
-      border-radius: 4px 4px 0 0;
+      margin-top: 9px;
+      padding: 7px 10px 7px;
       color: #fff;
       cursor: pointer;
       font-size: 13px;
       display: inline-flex;
       align-items: center;
-      padding: 0 8px;
       user-select: none;
       -webkit-user-drag: element;
     }
 
+    .tab-placeholder {
+      width: 2px;
+      height: 31px;
+      margin-top: 9px;
+      background-color: white;
+      display: inline-block;
+    }
+
+
     .tab.active {
       background-color: #1e1e1e;
-      color: #d4d4d4;
       border-top: 1px solid #007acc;
     }
 
     .tab .tab-title {
-      margin-right: 8px;
+      margin-right: 15px;
     }
 
     .tab .close {
@@ -408,6 +422,31 @@
       background-color: #1e1e1e;
     }
 
+    .output::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .output::-webkit-scrollbar-track {
+      background: #252526;
+    }
+
+    .output::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .output::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .output::-webkit-scrollbar-corner {
+      background: #252526;
+    }
+
+    .output::-webkit-scrollbar-horizontal {
+      height: 8px;
+    }
+
     .log {
       color: #d4d4d4;
     }
@@ -495,6 +534,13 @@
         left: 50px;
       }
     }
+
+    @media (max-width: 675px) {
+      .sidebar-panel {
+        width: 100%;
+        padding-right: 50px;
+      }
+    }
   </style>
 </head>
 
@@ -571,6 +617,11 @@
     let activeTabId = null;
 
 
+    let placeholder = document.createElement("div");
+    placeholder.className = "tab-placeholder";
+
+
+
     function getUniqueTabName(baseName, ignoreTabId = null) {
       let candidate = baseName;
       let suffix = 1;
@@ -584,7 +635,6 @@
       }
       return candidate;
     }
-
 
 
     function createTab(desiredName = null, initialContent = null) {
@@ -623,6 +673,7 @@
 
       const controlsDiv = document.createElement("div");
       controlsDiv.classList.add("controls");
+
       const runBtn = document.createElement("button");
       runBtn.classList.add("runButton");
       runBtn.innerHTML = '<i class="fas fa-play"></i> Run';
@@ -707,16 +758,15 @@
         closeTab(newTabId);
       });
 
-      document.addEventListener("dragover", (ev) => {
-        const isOverTabBar = ev.target.closest("#tabBar");
-
-        if (isOverTabBar) {
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-        } else {
-          ev.dataTransfer.dropEffect = "none";
+      document.getElementById("tabBar").addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        const targetTabElem = ev.target.closest(".tab");
+        if (targetTabElem && targetTabElem !== placeholder) {
+          const tabBar = document.getElementById("tabBar");
+          tabBar.insertBefore(placeholder, targetTabElem);
         }
       });
+
 
       tabBar.addEventListener("drop", (ev) => {
         ev.preventDefault();
@@ -725,26 +775,30 @@
         if (!draggedTabId) return;
 
         const targetTabElem = ev.target.closest(".tab");
-        if (!targetTabElem) return;
+        const targetTab = targetTabElem
+          ? tabs.find((t) => t.tabElement === targetTabElem)
+          : null;
 
-        const targetTab = tabs.find((t) => t.tabElement === targetTabElem);
-        if (!targetTab) return;
-
-        reorderTabs(draggedTabId, targetTab.id);
+        reorderTabs(draggedTabId, targetTab ? targetTab.id : null);
       });
+
 
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.clearData();
         ev.dataTransfer.setData("text/plain", "");
-        ev.dataTransfer.setData("text/uri-list", "");
         ev.dataTransfer.setData("application/tab-id", String(newTabId));
         ev.dataTransfer.effectAllowed = "move";
+        tabElem.classList.add("dragging");
       });
+
 
       tabElem.addEventListener("drop", (ev) => {
         ev.preventDefault();
         const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
         reorderTabs(draggedTabId, newTabId);
+        if (placeholder.parentNode) {
+          placeholder.remove();
+        }
       });
 
       titleSpan.addEventListener("dblclick", () => {
@@ -756,63 +810,13 @@
       if (initialContent !== null) {
         editorInstance.setValue(initialContent);
       } else {
-        editorInstance.setValue(`// ${tabName}
-console.clear()
-
-console.log("1 console.log - A general log message")
-console.info("2 console.info - An informational message")
-console.warn("3 console.warn - A warning message")
-console.error("4 console.error - An error message")
-console.debug("5 console.debug - A debug message")
-
-console.dir({
-  method: "6 console.dir - method property",
-  description: "Displays an interactive list of the properties of the specified object"
-})
-
-console.table([
-  { id: 1, name: "Alice", age: 28 },
-  { id: 2, name: "Bob", age: 34 }
-])
-
-console.group("7 console.group - Start group")
-console.log("Inside the first group")
-console.groupCollapsed("console.groupCollapsed - Collapsed group")
-console.log("Inside the collapsed group")
-console.groupEnd() 
-console.groupEnd()
-
-function exampleFunction() {
-  console.trace("8 console.trace - Here is a stack trace")
-}
-exampleFunction()
-
-console.assert(2 + 2 === 5, "9 console.assert - 2 + 2 is NOT 5! Assertion failed.")
-
-console.count("10 console.count - Count label")
-console.count("10 console.count - Count label")
-console.countReset("10 console.count - Count label") 
-console.count("10 console.count - Count label")
-
-console.time("11 console.time - Timer label")
-for (let i = 0; i < 10000; i++) {
-}
-console.timeLog("11 console.time - Timer label", "Timer label in the middle")
-for (let i = 0; i < 10000; i++) {
-}
-console.timeEnd("11 console.time - Timer label")
-
-console.profile("12 console.profile - Profile label")
-for (let i = 0; i < 100000; i++) {}
-console.profileEnd("12 console.profile - Profile label")
-
-console.log("Done demonstrating console methods!")
-prompt("This is a prompt")
-`);
+        editorInstance.setValue(`// ${tabName}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`);
       }
 
       return newTabId;
     }
+
+
 
     function getNextTabName() {
       let maxNum = 0;
@@ -886,9 +890,6 @@ prompt("This is a prompt")
       }
     }
 
-
-
-
     async function runTab(tabId) {
       const tabObj = tabs.find((t) => t.id === tabId);
       if (!tabObj) return;
@@ -912,8 +913,6 @@ prompt("This is a prompt")
           appendToOutput(tabObj.outputElement, type, message);
         } else if (type === "clear") {
           clearConsole(tabObj.outputElement);
-        } else if (type === "dir") {
-          appendHtmlToOutput(tabObj.outputElement, message);
         }
       };
       w.onerror = (error) => {
@@ -949,18 +948,9 @@ prompt("This is a prompt")
       prompt: "#55FF55",
     };
 
-        function appendHtmlToOutput(outputDiv, htmlString) {
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("outputContent");
-      wrapper.innerHTML = htmlString;
-      outputDiv.appendChild(wrapper);
-      outputDiv.scrollTop = outputDiv.scrollHeight;
-    }
-
 
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
-      // message = message.split("\n").join("\n");
       const line = document.createElement("div");
       line.className = type;
       line.classList.add("outputContent");
@@ -988,7 +978,7 @@ prompt("This is a prompt")
         input.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             const value = input.value.trim();
-            promptMsg.textContent = `[${symbolsMap["prompt"]}] ${msg} ${value}`;
+            promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
             input.remove();
 
             const textEncoder = new TextEncoder();
