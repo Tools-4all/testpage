@@ -62,11 +62,9 @@ function getStack() {
     const userScript = '1919191.js';
     const frames = [];
 
-    // 1) Parse each stack line referencing our user script.
     for (const line of rawLines) {
         if (!line.includes(userScript)) continue;
 
-        // Try “at fnName (file:line:col)”
         const matchFn = line.match(/at ([^(]+)\(([^:]+):(\d+):(\d+)\)/);
         if (matchFn) {
             const fnName = matchFn[1].trim();
@@ -76,7 +74,6 @@ function getStack() {
             continue;
         }
 
-        // Or “at file:line:col”
         const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
         if (matchNoFn) {
             const fnName = matchNoFn[1].trim();
@@ -86,26 +83,21 @@ function getStack() {
         }
     }
 
-    // 2) Remove consecutive duplicates if they point to the same exact line.
-    //    (JS engines often produce multiple frames for the same callsite.)
     const deduped = [];
     for (let i = 0; i < frames.length; i++) {
         if (i > 0 && frames[i].line === frames[i - 1].line) {
-            // same line as the previous frame -> skip
             continue;
         }
         deduped.push(frames[i]);
     }
+    
 
-    // 3) Force the very last frame to show “userCode”, ignoring its original fn.
-    //    This way, you’ll only ever see “extra” frames in between
-    //    if they truly have different line numbers and are not duplicates.
     if (deduped.length) {
+        deduped.pop();
         const lastIndex = deduped.length - 1;
         deduped[lastIndex].fn = 'userCode';
     }
 
-    // 4) Format them as "    at fnName (js:lineNum)" lines.
     return deduped
         .map(f => `    at ${f.fn} (js:${f.line})`)
         .join('\n');
