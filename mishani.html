@@ -803,7 +803,7 @@
       });
 
       tabBar.addEventListener("dragend", () => {
-        tabElem.classList.remove("dragging");
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("dragging"));
       });
 
       titleSpan.addEventListener("dblclick", () => {
