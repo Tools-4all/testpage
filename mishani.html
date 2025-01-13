@@ -802,7 +802,7 @@
         }
       });
 
-      tabBar.addEventListener("dragend", () => {
+      tabElem.addEventListener("dragend", () => {
         document.querySelectorAll(".tab").forEach((t) => t.classList.remove("dragging"));
       });
 
