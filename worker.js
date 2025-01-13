@@ -49,7 +49,7 @@ console.log("loaded eerffrerfere")
 
 const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 3;
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
