@@ -45,7 +45,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded e")
+console.log("loaded ferre")
 
 
 const wrapperSuffix = `})();`;
@@ -90,7 +90,7 @@ function getStack() {
         }
         deduped.push(frames[i]);
     }
-    
+
 
     if (deduped.length) {
         deduped.pop();
@@ -148,8 +148,6 @@ function relativeStack(error) {
 }
 
 
-
-
 class myPrompt {
     constructor(msg = "") {
         this.msg = msg;
@@ -175,6 +173,52 @@ class myPrompt {
     getResponse() {
         return this.response;
     }
+}
+
+
+function objectToHTML(obj, level = 0) {
+    // Safely handle null or non-object
+    if (obj === null) {
+        return `<span style="color:#aaa;">null</span>`;
+    }
+    if (typeof obj !== "object") {
+        // Simple primitives just become text
+        return `<span>${escapeHtml(String(obj))}</span>`;
+    }
+
+    // Arrays
+    if (Array.isArray(obj)) {
+        let html = `<details open style="margin-left:${level * 20}px;">`;
+        html += `<summary>Array(${obj.length})</summary>`;
+        obj.forEach((value, i) => {
+            html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
+        });
+        html += `</details>`;
+        return html;
+    }
+
+    // Plain object
+    const keys = Object.keys(obj);
+    let html = `<details open style="margin-left:${level * 20}px;">`;
+    html += `<summary>Object {${keys.length} keys}</summary>`;
+    keys.forEach((key) => {
+        // Render each key/value pair
+        html += `<div style="margin-left:${(level + 1) * 20}px;">
+                 <strong>${escapeHtml(key)}</strong>: 
+                 ${objectToHTML(obj[key], level + 1)}
+               </div>`;
+    });
+    html += `</details>`;
+    return html;
+}
+
+// A simple helper to avoid any accidental HTML injection
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
 }
 
 
@@ -311,8 +355,13 @@ self.addEventListener("message", (event) => {
                 }
             },
             dir: (obj) => {
-                const dirString = myDir(obj, "", true);
-                self.postMessage({ type: "log", message: dirString });
+                const htmlRepresentation = objectToHTML(obj, 0);
+                // Instead of posting type: "log", we can post type: "dir" 
+                // and include our HTML so the main thread knows it’s HTML
+                self.postMessage({
+                    type: "dir",
+                    message: htmlRepresentation
+                });
             },
             dirxml: (obj) => {
                 self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
@@ -404,10 +453,10 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
                 customConsole.error(`Uncaught ${e.name}: ${e.message}`);
-            
+
                 const errorStack = relativeStack(e);
                 customConsole.error(errorStack);
-            
+
                 self.postMessage({ type: "log", message: "Script finished with exit code 1." });
             }
         };

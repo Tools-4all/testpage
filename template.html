@@ -886,6 +886,19 @@ prompt("This is a prompt")
       }
     }
 
+    function appendHtmlToOutput(outputDiv, htmlString) {
+      // Create a wrapper div (to avoid messing with existing lines)
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("outputContent");  // same style as other lines
+      // Insert the HTML from the worker
+      wrapper.innerHTML = htmlString;
+      // Append
+      outputDiv.appendChild(wrapper);
+      // Scroll
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
+
     async function runTab(tabId) {
       const tabObj = tabs.find((t) => t.id === tabId);
       if (!tabObj) return;
@@ -909,6 +922,8 @@ prompt("This is a prompt")
           appendToOutput(tabObj.outputElement, type, message);
         } else if (type === "clear") {
           clearConsole(tabObj.outputElement);
+        } else if (type === "dir") {
+          appendHtmlToOutput(tabObj.outputElement, message);
         }
       };
       w.onerror = (error) => {
