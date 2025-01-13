@@ -584,7 +584,7 @@
       }
       return candidate;
     }
-    
+
 
 
     function createTab(desiredName = null, initialContent = null) {
@@ -756,7 +756,59 @@
       if (initialContent !== null) {
         editorInstance.setValue(initialContent);
       } else {
-        editorInstance.setValue(`// ${tabName}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`);
+        editorInstance.setValue(`// ${tabName}
+console.clear()
+
+console.log("1 console.log - A general log message")
+console.info("2 console.info - An informational message")
+console.warn("3 console.warn - A warning message")
+console.error("4 console.error - An error message")
+console.debug("5 console.debug - A debug message")
+
+console.dir({
+  method: "6 console.dir - method property",
+  description: "Displays an interactive list of the properties of the specified object"
+})
+
+console.table([
+  { id: 1, name: "Alice", age: 28 },
+  { id: 2, name: "Bob", age: 34 }
+])
+
+console.group("7 console.group - Start group")
+console.log("Inside the first group")
+console.groupCollapsed("console.groupCollapsed - Collapsed group")
+console.log("Inside the collapsed group")
+console.groupEnd() 
+console.groupEnd()
+
+function exampleFunction() {
+  console.trace("8 console.trace - Here is a stack trace")
+}
+exampleFunction()
+
+console.assert(2 + 2 === 5, "9 console.assert - 2 + 2 is NOT 5! Assertion failed.")
+
+console.count("10 console.count - Count label")
+console.count("10 console.count - Count label")
+console.countReset("10 console.count - Count label") 
+console.count("10 console.count - Count label")
+
+console.time("11 console.time - Timer label")
+for (let i = 0; i < 10000; i++) {
+}
+console.timeLog("11 console.time - Timer label", "Timer label in the middle")
+for (let i = 0; i < 10000; i++) {
+}
+console.timeEnd("11 console.time - Timer label")
+
+console.profile("12 console.profile - Profile label")
+for (let i = 0; i < 100000; i++) {}
+console.profileEnd("12 console.profile - Profile label")
+
+console.log("Done demonstrating console methods!")
+prompt("This is a prompt")
+`);
       }
 
       return newTabId;
@@ -857,7 +909,7 @@
           appendToOutput(tabObj.outputElement, type, message);
         } else if (type === "clear") {
           clearConsole(tabObj.outputElement);
-        } 
+        }
       };
       w.onerror = (error) => {
         appendToOutput(tabObj.outputElement, "error", error.message);
