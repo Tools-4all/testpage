@@ -58,43 +58,34 @@ function createWrappedCode(userCode) {
 
 
 function getStack() {
-    const stack = new Error().stack.split('\n');
-    const userScriptIdentifier = '1919191.js';
-    let processedStack = [];
-    stack.forEach(line => {
-        if (line.includes(userScriptIdentifier)) {
-            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
-            const match = line.match(regex);
-            if (match) {
-                const functionName = match[1];
-                const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                if (adjustedLine > 0) {
-                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
-                } else {
-                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
-                }
-            } else {
-                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
-                const matchNoFunc = line.match(regexNoFunc);
-                if (matchNoFunc) {
-                    const fileName = matchNoFunc[1];
-                    const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                    if (adjustedLine > 0) {
-                        processedStack.push(`    at js (js:${adjustedLine})`);
-                    } else {
-                        processedStack.push(`    at js (js:${lineNumber})`);
-                    }
-                }
-            }
+    const lines = new Error().stack.split('\n');
+    const userScript = '1919191.js';
+    const frames = [];
+
+    for (const line of lines) {
+        if (!line.includes(userScript)) continue;
+        const fnMatch = line.match(/at (\S+) \(([^:]+):(\d+):(\d+)\)/);
+        if (fnMatch) {
+            const fn = fnMatch[1];
+            const ln = parseInt(fnMatch[3], 10);
+            const adj = ln - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : ln;
+            frames.push(`    at ${fn} (js:${finalLine})`);
+            continue;
         }
-    });
-    const lineNum = processedStack[processedStack.length - 1].match(/js:(\d+)/)[1];
-    processedStack = processedStack.slice(0, -2)
-    const lastLine = `    at userCode (js:${lineNum})`;
-    return processedStack.join('\n').replace(/^\s+|\s+$/g, '') + lastLine;
+        const noFnMatch = line.match(/at ([^:]+):(\d+):(\d+)/);
+        if (noFnMatch) {
+            const ln = parseInt(noFnMatch[2], 10);
+            const adj = ln - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : ln;
+            frames.push(`    at <anonymous> (js:${finalLine})`);
+        }
+    }
+
+    if (!frames.length) return '';
+    return frames.join('\n');
 }
+
 
 function relativeStack(error) {
     const lines = error.stack.split('\n');
