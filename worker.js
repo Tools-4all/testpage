@@ -64,25 +64,36 @@ function getStack() {
 
     for (const line of lines) {
         if (!line.includes(userScript)) continue;
+        // Try "at functionName (file:line:col)"
         const fnMatch = line.match(/at (\S+) \(([^:]+):(\d+):(\d+)\)/);
         if (fnMatch) {
             const fn = fnMatch[1];
-            const ln = parseInt(fnMatch[3], 10);
-            const adj = ln - WRAPPER_LINE_COUNT;
-            const finalLine = adj > 0 ? adj : ln;
+            const fileLine = parseInt(fnMatch[3], 10);
+            const adj = fileLine - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : fileLine;
             frames.push(`    at ${fn} (js:${finalLine})`);
             continue;
         }
+        // Or "at file:line:col"
         const noFnMatch = line.match(/at ([^:]+):(\d+):(\d+)/);
         if (noFnMatch) {
-            const ln = parseInt(noFnMatch[2], 10);
-            const adj = ln - WRAPPER_LINE_COUNT;
-            const finalLine = adj > 0 ? adj : ln;
+            const fileLine = parseInt(noFnMatch[2], 10);
+            const adj = fileLine - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : fileLine;
             frames.push(`    at <anonymous> (js:${finalLine})`);
         }
     }
 
-    if (!frames.length) return '';
+    if (!frames.length) {
+        return '';
+    }
+
+    // Force the LAST line to say 'userCode' with the same line number
+    const lastLine = frames[frames.length - 1];
+    const matchNum = lastLine.match(/js:(\d+)/);
+    const lineNum = matchNum ? matchNum[1] : '?';
+    frames[frames.length - 1] = `    at userCode (js:${lineNum})`;
+
     return frames.join('\n');
 }
 
