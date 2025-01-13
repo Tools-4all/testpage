@@ -45,7 +45,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded f")
+console.log("loaded eerffrerfere")
 
 
 const wrapperSuffix = `})();`;
@@ -107,7 +107,7 @@ function relativeStack(error) {
             if (match) {
                 const functionName = match[1];
                 const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - 0;
+                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                 if (adjustedLine > 0) {
                     processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
                 } else {
@@ -119,7 +119,7 @@ function relativeStack(error) {
                 if (matchNoFunc) {
                     const fileName = matchNoFunc[1];
                     const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - 0;
+                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
                     if (adjustedLine > 0) {
                         processedStack.push(`   at js (js:${adjustedLine})`);
                     } else {
