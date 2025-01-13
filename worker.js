@@ -96,58 +96,48 @@ function getStack() {
 }
 
 function relativeStack(error) {
-    const stack = error.stack.split('\n');
-    const userScriptIdentifier = '1919191.js';
-    let processedStack = [];
-    stack.forEach(line => {
-        if (line.includes(userScriptIdentifier)) {
-            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
-            const match = line.match(regex);
-            if (match) {
-                const functionName = match[1];
-                const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                if (adjustedLine > 0) {
-                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
-                } else {
-                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
-                }
+    const lines = error.stack.split('\n');
+    const userScript = '1919191.js';
+    const result = [];
+
+    for (const line of lines) {
+        if (!line.includes(userScript)) continue;
+        const matchFn = line.match(/at (\S+) \(([^:]+):(\d+):(\d+)\)/);
+        if (matchFn) {
+            const fn = matchFn[1];
+            const ln = parseInt(matchFn[3], 10);
+            const adj = ln - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : ln;
+            if (fn === 'eval' || fn === '<anonymous>') {
+                result.push(`    at userCode (js:${finalLine})`);
+                break;
             } else {
-                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
-                const matchNoFunc = line.match(regexNoFunc);
-                if (matchNoFunc) {
-                    const fileName = matchNoFunc[1];
-                    const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                    if (adjustedLine > 0) {
-                        processedStack.push(`   at js (js:${adjustedLine})`);
-                    } else {
-                        processedStack.push(`   at js (js:${lineNumber})`);
-                    }
-                }
+                result.push(`    at ${fn} (js:${finalLine})`);
             }
+            continue;
         }
-    });
-    if (!processedStack.length) {
-        return '';
+        const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
+        if (matchNoFn) {
+            const ln = parseInt(matchNoFn[2], 10);
+            const adj = ln - WRAPPER_LINE_COUNT;
+            const finalLine = adj > 0 ? adj : ln;
+            result.push(`    at userCode (js:${finalLine})`);
+            break;
+        }
     }
 
-    const lastProcessed = processedStack[processedStack.length - 1];
-    const lineMatch = lastProcessed.match(/js:(\d+)/);
-    const lineNum = lineMatch ? lineMatch[1] : '0';
-    let sliceCount = 2;
-    if (processedStack.length < sliceCount) {
-        sliceCount = 1;
-    }
-    processedStack = processedStack.slice(0, processedStack.length - sliceCount);
+    if (!result.length) return '';
 
-    const lastLine = `    at userCode (js:${lineNum})`;
-    if (processedStack.length > 0) {
-        return processedStack.join('\n') + '\n' + lastLine;
-    } else {
-        return lastLine;
+    const last = result[result.length - 1];
+    if (!/userCode \(js:\d+\)/.test(last)) {
+        const lnMatch = last.match(/js:(\d+)/);
+        const ln = lnMatch ? lnMatch[1] : '?';
+        result.push(`    at userCode (js:${ln})`);
     }
+
+    return result.join('\n');
 }
+
 
 
 
