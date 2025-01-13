@@ -923,7 +923,7 @@
         input.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             const value = input.value.trim();
-            promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
+            promptMsg.textContent = `[${symbolsMap["prompt"]}] ${msg} ${value}`;
             input.remove();
 
             const textEncoder = new TextEncoder();
