@@ -41,7 +41,6 @@ const wrapperPrefixLines = [
     'var indentMessage = undefined;',
     'var createWrappedCode = undefined;',
     'const code = undefined;',
-
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -50,7 +49,7 @@ console.log("loaded eerffrerfere")
 
 const wrapperSuffix = `})();`;
 
-const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
+const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 3;
 
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
