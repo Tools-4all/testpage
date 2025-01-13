@@ -886,17 +886,7 @@ prompt("This is a prompt")
       }
     }
 
-    function appendHtmlToOutput(outputDiv, htmlString) {
-      // Create a wrapper div (to avoid messing with existing lines)
-      const wrapper = document.createElement("div");
-      wrapper.classList.add("outputContent");  // same style as other lines
-      // Insert the HTML from the worker
-      wrapper.innerHTML = htmlString;
-      // Append
-      outputDiv.appendChild(wrapper);
-      // Scroll
-      outputDiv.scrollTop = outputDiv.scrollHeight;
-    }
+
 
 
     async function runTab(tabId) {
@@ -959,10 +949,18 @@ prompt("This is a prompt")
       prompt: "#55FF55",
     };
 
+        function appendHtmlToOutput(outputDiv, htmlString) {
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("outputContent");
+      wrapper.innerHTML = htmlString;
+      outputDiv.appendChild(wrapper);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
 
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
-      message = message.split("\n").join("\n");
+      // message = message.split("\n").join("\n");
       const line = document.createElement("div");
       line.className = type;
       line.classList.add("outputContent");
