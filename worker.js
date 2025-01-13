@@ -45,7 +45,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded eerffrerfere")
+console.log("loaded e")
 
 
 const wrapperSuffix = `})();`;
@@ -58,43 +58,57 @@ function createWrappedCode(userCode) {
 
 
 function getStack() {
-    const lines = new Error().stack.split('\n');
+    const rawLines = new Error().stack.split('\n');
     const userScript = '1919191.js';
     const frames = [];
 
-    for (const line of lines) {
+    // 1) Parse each stack line referencing our user script.
+    for (const line of rawLines) {
         if (!line.includes(userScript)) continue;
-        // Try "at functionName (file:line:col)"
-        const fnMatch = line.match(/at (\S+) \(([^:]+):(\d+):(\d+)\)/);
-        if (fnMatch) {
-            const fn = fnMatch[1];
-            const fileLine = parseInt(fnMatch[3], 10);
-            const adj = fileLine - WRAPPER_LINE_COUNT;
-            const finalLine = adj > 0 ? adj : fileLine;
-            frames.push(`    at ${fn} (js:${finalLine})`);
+
+        // Try “at fnName (file:line:col)”
+        const matchFn = line.match(/at ([^(]+)\(([^:]+):(\d+):(\d+)\)/);
+        if (matchFn) {
+            const fnName = matchFn[1].trim();
+            const fileLine = parseInt(matchFn[3], 10);
+            const lineNum = fileLine - WRAPPER_LINE_COUNT > 0 ? fileLine - WRAPPER_LINE_COUNT : fileLine;
+            frames.push({ fn: fnName, line: lineNum });
             continue;
         }
-        // Or "at file:line:col"
-        const noFnMatch = line.match(/at ([^:]+):(\d+):(\d+)/);
-        if (noFnMatch) {
-            const fileLine = parseInt(noFnMatch[2], 10);
-            const adj = fileLine - WRAPPER_LINE_COUNT;
-            const finalLine = adj > 0 ? adj : fileLine;
-            frames.push(`    at <anonymous> (js:${finalLine})`);
+
+        // Or “at file:line:col”
+        const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
+        if (matchNoFn) {
+            const fnName = matchNoFn[1].trim();
+            const fileLine = parseInt(matchNoFn[2], 10);
+            const lineNum = fileLine - WRAPPER_LINE_COUNT > 0 ? fileLine - WRAPPER_LINE_COUNT : fileLine;
+            frames.push({ fn: fnName, line: lineNum });
         }
     }
 
-    if (!frames.length) {
-        return '';
+    // 2) Remove consecutive duplicates if they point to the same exact line.
+    //    (JS engines often produce multiple frames for the same callsite.)
+    const deduped = [];
+    for (let i = 0; i < frames.length; i++) {
+        if (i > 0 && frames[i].line === frames[i - 1].line) {
+            // same line as the previous frame -> skip
+            continue;
+        }
+        deduped.push(frames[i]);
     }
 
-    // Force the LAST line to say 'userCode' with the same line number
-    const lastLine = frames[frames.length - 1];
-    const matchNum = lastLine.match(/js:(\d+)/);
-    const lineNum = matchNum ? matchNum[1] : '?';
-    frames[frames.length - 1] = `    at userCode (js:${lineNum})`;
+    // 3) Force the very last frame to show “userCode”, ignoring its original fn.
+    //    This way, you’ll only ever see “extra” frames in between
+    //    if they truly have different line numbers and are not duplicates.
+    if (deduped.length) {
+        const lastIndex = deduped.length - 1;
+        deduped[lastIndex].fn = 'userCode';
+    }
 
-    return frames.join('\n');
+    // 4) Format them as "    at fnName (js:lineNum)" lines.
+    return deduped
+        .map(f => `    at ${f.fn} (js:${f.line})`)
+        .join('\n');
 }
 
 
