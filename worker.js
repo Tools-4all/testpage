@@ -107,7 +107,7 @@ function relativeStack(error) {
             if (match) {
                 const functionName = match[1];
                 const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                const adjustedLine = lineNumber - 0;
                 if (adjustedLine > 0) {
                     processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
                 } else {
@@ -119,7 +119,7 @@ function relativeStack(error) {
                 if (matchNoFunc) {
                     const fileName = matchNoFunc[1];
                     const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+                    const adjustedLine = lineNumber - 0;
                     if (adjustedLine > 0) {
                         processedStack.push(`   at js (js:${adjustedLine})`);
                     } else {
@@ -136,7 +136,7 @@ function relativeStack(error) {
     const lastProcessed = processedStack[processedStack.length - 1];
     const lineMatch = lastProcessed.match(/js:(\d+)/);
     const lineNum = lineMatch ? lineMatch[1] : '0';
-    let sliceCount = 0;
+    let sliceCount = 2;
     if (processedStack.length < sliceCount) {
         sliceCount = 1;
     }
