@@ -800,7 +800,10 @@
         if (placeholder.parentNode) {
           placeholder.remove();
         }
-        alert("wtf wtf")
+      });
+
+      tabBar.addEventListener("dragend", () => {
+        tabElem.classList.remove("dragging");
       });
 
       titleSpan.addEventListener("dblclick", () => {
