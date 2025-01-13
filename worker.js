@@ -136,7 +136,7 @@ function relativeStack(error) {
     const lastProcessed = processedStack[processedStack.length - 1];
     const lineMatch = lastProcessed.match(/js:(\d+)/);
     const lineNum = lineMatch ? lineMatch[1] : '0';
-    let sliceCount = 2;
+    let sliceCount = 0;
     if (processedStack.length < sliceCount) {
         sliceCount = 1;
     }
