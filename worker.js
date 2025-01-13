@@ -38,6 +38,7 @@ const wrapperPrefixLines = [
     'var wrapperPrefixLines = undefined;',
     'var wrapperSuffix = undefined;',
     'var WRAPPER_LINE_COUNT = undefined;',
+    'var WRAPPER_LINE_COUNT_FOR_ERR = undefined;',
     'var indentMessage = undefined;',
     'var createWrappedCode = undefined;',
     'const code = undefined;',
@@ -50,7 +51,7 @@ console.log("loaded eerffrerfere")
 const wrapperSuffix = `})();`;
 
 const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
-
+const WRAPPER_LINE_COUNT_FOR_ERR = wrapperPrefixLines.length + 2;
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
 }
@@ -106,7 +107,7 @@ function relativeStack(error) {
         if (matchFn) {
             const fn = matchFn[1];
             const ln = parseInt(matchFn[3], 10);
-            const adj = ln - WRAPPER_LINE_COUNT;
+            const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
             const finalLine = adj > 0 ? adj : ln;
             if (fn === 'eval' || fn === '<anonymous>') {
                 result.push(`    at userCode (js:${finalLine})`);
@@ -119,7 +120,7 @@ function relativeStack(error) {
         const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
         if (matchNoFn) {
             const ln = parseInt(matchNoFn[2], 10);
-            const adj = ln - WRAPPER_LINE_COUNT;
+            const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
             const finalLine = adj > 0 ? adj : ln;
             result.push(`    at userCode (js:${finalLine})`);
             break;
