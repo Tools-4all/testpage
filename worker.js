@@ -44,7 +44,7 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded eerffrerfere")
+console.log("loaded d")
 
 
 const wrapperSuffix = `})();`;
@@ -98,56 +98,58 @@ function getStack() {
 function relativeStack(error) {
     const stack = error.stack.split('\n');
     const userScriptIdentifier = '1919191.js';
-    let processedStack = [];
+
+    const processedStack = [];
+
     stack.forEach(line => {
-        if (line.includes(userScriptIdentifier)) {
-            const regex = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
-            const match = line.match(regex);
-            if (match) {
-                const functionName = match[1];
-                const lineNumber = parseInt(match[3], 10);
-                const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                if (adjustedLine > 0) {
-                    processedStack.push(`    at ${functionName} (js:${adjustedLine})`);
-                } else {
-                    processedStack.push(`    at ${functionName} (js:${lineNumber})`);
-                }
-            } else {
-                const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
-                const matchNoFunc = line.match(regexNoFunc);
-                if (matchNoFunc) {
-                    const fileName = matchNoFunc[1];
-                    const lineNumber = parseInt(matchNoFunc[2], 10);
-                    const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
-                    if (adjustedLine > 0) {
-                        processedStack.push(`   at js (js:${adjustedLine})`);
-                    } else {
-                        processedStack.push(`   at js (js:${lineNumber})`);
-                    }
-                }
-            }
+        if (!line.includes(userScriptIdentifier)) return;
+
+        const regexFunc = /at (\S+) \(([^:]+):(\d+):(\d+)\)/;
+        const matchFunc = line.match(regexFunc);
+
+        if (matchFunc) {
+            const functionName = matchFunc[1];
+            const lineNumber = parseInt(matchFunc[3], 10);
+            const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+            const finalLine = (adjustedLine > 0) ? adjustedLine : lineNumber;
+
+            processedStack.push(`    at ${functionName} (js:${finalLine})`);
+            return;
+        }
+
+        const regexNoFunc = /at ([^:]+):(\d+):(\d+)/;
+        const matchNoFunc = line.match(regexNoFunc);
+        if (matchNoFunc) {
+            const fileName = matchNoFunc[1];
+            const lineNumber = parseInt(matchNoFunc[2], 10);
+            const adjustedLine = lineNumber - WRAPPER_LINE_COUNT;
+            const finalLine = (adjustedLine > 0) ? adjustedLine : lineNumber;
+
+            processedStack.push(`    at <anonymous> (js:${finalLine})`);
         }
     });
+
     if (!processedStack.length) {
         return '';
     }
 
-    const lastProcessed = processedStack[processedStack.length - 1];
-    const lineMatch = lastProcessed.match(/js:(\d+)/);
-    const lineNum = lineMatch ? lineMatch[1] : '0';
-    let sliceCount = 2;
-    if (processedStack.length < sliceCount) {
-        sliceCount = 1;
-    }
-    processedStack = processedStack.slice(0, processedStack.length - sliceCount);
+    const lastIndex = processedStack.length - 1;
+    const lastLine = processedStack[lastIndex];
+    const anonRegex = /^(\s+at )<anonymous> \(js:(\d+)\)$/;
+    const matchAnon = lastLine.match(anonRegex);
 
-    const lastLine = `    at userCode (js:${lineNum})`;
-    if (processedStack.length > 0) {
-        return processedStack.join('\n') + '\n' + lastLine;
+    if (matchAnon) {
+        const spaces = matchAnon[1];  
+        const lineNum = matchAnon[2]; 
+        processedStack[lastIndex] = `${spaces}userCode (js:${lineNum})`;
     } else {
-        return lastLine;
+        const lineNum = (lastLine.match(/js:(\d+)/) || [])[1] || '?';
+        processedStack.push(`    at userCode (js:${lineNum})`);
     }
+
+    return processedStack.join('\n');
 }
+
 
 
 
