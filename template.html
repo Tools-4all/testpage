@@ -759,37 +759,60 @@
         closeTab(newTabId);
       });
 
-      document.getElementById("tabBar").addEventListener("dragover", (ev) => {
+      let draggedTabId = null;
+
+      function reorderTabsByIndex(draggedTabId, newIndex) {
+        const draggedIndex = tabs.findIndex((t) => t.id === draggedTabId);
+        if (draggedIndex === -1) return;
+        const [draggedTabObj] = tabs.splice(draggedIndex, 1);
+        if (draggedIndex < newIndex) newIndex -= 1;
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex > tabs.length) newIndex = tabs.length;
+        tabs.splice(newIndex, 0, draggedTabObj);
+        const tabBar = document.getElementById("tabBar");
+        tabs.forEach((t) => {
+          tabBar.insertBefore(t.tabElement, document.getElementById("addTabButton"));
+        });
+      }
+
+      tabBar.addEventListener("dragover", (ev) => {
         ev.preventDefault();
         const targetTabElem = ev.target.closest(".tab");
-        if (targetTabElem && targetTabElem !== placeholder) {
-          const tabBar = document.getElementById("tabBar");
-          tabBar.insertBefore(placeholder, targetTabElem);
+        if (!targetTabElem || targetTabElem === placeholder || targetTabElem.classList.contains("dragging")) return;
+        const rect = targetTabElem.getBoundingClientRect();
+        const midpoint = rect.left + rect.width / 2;
+        if (ev.clientX < midpoint) {
+          targetTabElem.parentNode.insertBefore(placeholder, targetTabElem);
+        } else {
+          targetTabElem.parentNode.insertBefore(placeholder, targetTabElem.nextSibling);
         }
       });
 
 
       tabBar.addEventListener("drop", (ev) => {
         ev.preventDefault();
-
-        const draggedTabId = parseInt(ev.dataTransfer.getData("application/tab-id"), 10);
         if (!draggedTabId) return;
-
-        const targetTabElem = ev.target.closest(".tab");
-        const targetTab = targetTabElem
-          ? tabs.find((t) => t.tabElement === targetTabElem)
-          : null;
-
-        reorderTabs(draggedTabId, targetTab ? targetTab.id : null);
+        const tabBar = document.getElementById("tabBar");
+        const children = Array.from(tabBar.children);
+        const placeholderIndex = children.indexOf(placeholder);
+        reorderTabsByIndex(draggedTabId, placeholderIndex);
+        draggedTabId = null;
+        placeholder.remove();
       });
 
 
       tabElem.addEventListener("dragstart", (ev) => {
         ev.dataTransfer.clearData();
         ev.dataTransfer.setData("text/plain", "");
-        ev.dataTransfer.setData("application/tab-id", String(newTabId));
         ev.dataTransfer.effectAllowed = "move";
+        draggedTabId = newTabId;
         tabElem.classList.add("dragging");
+      });
+
+      tabElem.addEventListener("dragend", () => {
+        tabElem.classList.remove("dragging");
+        draggedTabId = null;
+        if (placeholder.parentNode) placeholder.remove();
       });
 
 
@@ -800,15 +823,6 @@
         if (placeholder.parentNode) {
           placeholder.remove();
         }
-      });
-
-      tabElem.addEventListener("dragend", () => {
-        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("dragging"));
-
-        if (placeholder.parentNode) {
-          placeholder.remove();
-        }
-
       });
 
       titleSpan.addEventListener("dblclick", () => {
