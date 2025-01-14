@@ -21,7 +21,6 @@ const wrapperPrefixLines = [
     'var console = customConsole;',
     'var prompt = customPrompt;',
     'var alert = customAlert;',
-    'var customAlert = undefined;',
     'var self = undefined;',
     'var postMessage = undefined;',
     'var fetch = undefined;',
