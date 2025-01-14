@@ -827,6 +827,7 @@
         okBtn.focus();
 
         okBtn.addEventListener("click", () => {
+          appendToOutput(message, "info");
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
           alertLine.remove();
