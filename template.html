@@ -830,7 +830,7 @@
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
           alertLine.remove();
-          appendToOutput(message, "info");
+          appendToOutput(d, message, "info");
           resolve();
         });
       });
@@ -1181,7 +1181,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert('d')
+    alert('e')
   </script>
 </body>
 
