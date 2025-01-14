@@ -281,7 +281,7 @@
 
     .tab {
       background-color: #333;
-      margin-right: 3px;
+      margin-right: 2px;
       margin-top: 9px;
       padding: 7px 10px 7px;
       color: #fff;
@@ -294,7 +294,7 @@
     }
 
     .tab-placeholder {
-      width: 2px;
+      width: 3px;
       height: 31px;
       margin-top: 9px;
       background-color: white;
@@ -607,6 +607,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
   <script>
+    alert("3")
     const workerPath = "{% url 'betzi_test_js' %}";
     let workerBlobURL = null;
 
@@ -801,6 +802,15 @@
         }
       });
 
+      tabElem.addEventListener("dragend", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("dragging"));
+
+        if (placeholder.parentNode) {
+          placeholder.remove();
+        }
+
+      });
+
       titleSpan.addEventListener("dblclick", () => {
         makeTabTitleEditable(tabObj);
       });
@@ -978,7 +988,7 @@
         input.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             const value = input.value.trim();
-            promptMsg.textContent = `[PROMPT] ${msg} ${value}`;
+            promptMsg.textContent = `[${symbolsMap["prompt"]}] ${msg} ${value}`;
             input.remove();
 
             const textEncoder = new TextEncoder();
