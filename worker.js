@@ -441,6 +441,9 @@ self.addEventListener("message", (event) => {
         };
 
         function customAlert(msg) {
+            if (msg === undefined) {
+                msg = "";
+            }
             self.postMessage({ type: "alert", message: msg });
 
             const view = new Int32Array(sharedBuffer);
