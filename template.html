@@ -830,7 +830,7 @@
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
           alertLine.remove();
-          appendToOutput(d, message, "info");
+          appendToOutput(d,"info", message);
           resolve();
         });
       });
