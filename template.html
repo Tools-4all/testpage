@@ -619,6 +619,7 @@ function createTab(d=null,c=null){
   rb.addEventListener("click",()=>{runTab(id)})
   cl.addEventListener("click",(x)=>{x.stopPropagation();closeTab(id)})
   e.addEventListener("dragstart",(x)=>{
+    switchTab(id)
     x.dataTransfer.setData("text/plain","")
     x.dataTransfer.effectAllowed="move"
     draggedTabId=id
