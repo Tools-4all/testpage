@@ -452,7 +452,7 @@ self.addEventListener("message", (event) => {
         const executeCode = (userCode) => {
             try {
                 const wrappedCode = createWrappedCode(userCode);
-                const userFunc = new Function("customConsole", "customPrompt", wrappedCode);
+                const userFunc = new Function("customConsole", "customPrompt", "customAlert", wrappedCode);
                 userFunc(customConsole, customPrompt);
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
