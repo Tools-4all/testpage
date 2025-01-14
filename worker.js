@@ -20,6 +20,7 @@ const wrapperPrefixLines = [
     '"use strict";',
     'var console = customConsole;',
     'var prompt = customPrompt;',
+    'var alert = customAlert;',
     'var self = undefined;',
     'var postMessage = undefined;',
     'var fetch = undefined;',
@@ -177,16 +178,13 @@ class myPrompt {
 
 
 function objectToHTML(obj, level = 0) {
-    // Safely handle null or non-object
     if (obj === null) {
         return `<span style="color:#aaa;">null</span>`;
     }
     if (typeof obj !== "object") {
-        // Simple primitives just become text
         return `<span>${escapeHtml(String(obj))}</span>`;
     }
 
-    // Arrays
     if (Array.isArray(obj)) {
         let html = `<details open style="margin-left:${level * 20}px;">`;
         html += `<summary>Array(${obj.length})</summary>`;
@@ -197,12 +195,10 @@ function objectToHTML(obj, level = 0) {
         return html;
     }
 
-    // Plain object
     const keys = Object.keys(obj);
     let html = `<details open style="margin-left:${level * 20}px;">`;
     html += `<summary>Object {${keys.length} keys}</summary>`;
     keys.forEach((key) => {
-        // Render each key/value pair
         html += `<div style="margin-left:${(level + 1) * 20}px;">
                  <strong>${escapeHtml(key)}</strong>: 
                  ${objectToHTML(obj[key], level + 1)}
@@ -212,7 +208,6 @@ function objectToHTML(obj, level = 0) {
     return html;
 }
 
-// A simple helper to avoid any accidental HTML injection
 function escapeHtml(str) {
     return str
         .replace(/&/g, "&amp;")
@@ -444,6 +439,15 @@ self.addEventListener("message", (event) => {
             promptInstance.prompt(msg, sharedBuffer);
             return promptInstance.getResponse();
         };
+
+        function customAlert(msg) {
+            self.postMessage({ type: "alert", message: msg });
+
+            const view = new Int32Array(sharedBuffer);
+            Atomics.store(view, 0, 0);
+            while (Atomics.wait(view, 0, 0) === "ok");
+        }
+
 
         const executeCode = (userCode) => {
             try {
