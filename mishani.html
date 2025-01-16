@@ -304,6 +304,11 @@
       -webkit-user-drag: element;
     }
 
+    .tab:last-child {
+      margin-right: 50px;
+      /* אין רווח לטאב האחרון */
+    }
+
     .tab-placeholder {
       width: 3px;
       height: 31px;
@@ -675,7 +680,7 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("2");
+    alert("3");
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
       let tIndex = tabs.findIndex((x) => x.id === tId)
