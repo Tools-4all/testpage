@@ -855,14 +855,18 @@
     }
 
     function appendTable(outputElement, tableData, tableColumns) {
-
       const div = document.createElement("div");
       div.classList.add("outputContent");
 
       let dataArray = Array.isArray(tableData) ? tableData : [tableData];
 
+      // Determine columns
       let columns;
-      if (dataArray.length && typeof dataArray[0] === "object" && dataArray[0] !== null) {
+      if (
+        dataArray.length &&
+        typeof dataArray[0] === "object" &&
+        dataArray[0] !== null
+      ) {
         if (Array.isArray(tableColumns) && tableColumns.length) {
           columns = tableColumns;
         } else {
@@ -876,46 +880,55 @@
         columns = ["(index)", "(value)"];
       }
 
+      // Build a <table>
       const table = document.createElement("table");
       table.style.borderCollapse = "collapse";
-      table.style.margin = "4px 0";
-      table.style.fontSize = "14px";
+      // ... more styling as you like ...
 
+      // Thead
       const thead = document.createElement("thead");
       const headerRow = document.createElement("tr");
       columns.forEach(col => {
         const th = document.createElement("th");
+        th.style.border = "1px solid #333";
+        th.style.padding = "4px 6px";
         th.textContent = col;
-        th.style.border = "1px solid #666";
-        th.style.padding = "4px 8px";
         headerRow.appendChild(th);
       });
       thead.appendChild(headerRow);
       table.appendChild(thead);
 
+      // Tbody
       const tbody = document.createElement("tbody");
       dataArray.forEach((rowData, rowIndex) => {
         const tr = document.createElement("tr");
+
         if (typeof rowData === "object" && rowData !== null) {
           columns.forEach(col => {
             const td = document.createElement("td");
-            td.style.border = "1px solid #666";
-            td.style.padding = "4px 8px";
-            td.textContent = rowData[col] !== undefined ? rowData[col] : "";
+            td.style.border = "1px solid #333";
+            td.style.padding = "4px 6px";
+
+            // <-- The key part: turn nested objects into JSON strings
+            td.textContent =
+              typeof rowData[col] === "object" && rowData[col] !== null
+                ? JSON.stringify(rowData[col])
+                : String(rowData[col] ?? "");
+
             tr.appendChild(td);
           });
         } else {
+          // Primitive fallback (array of numbers, strings, etc.)
           const tdIndex = document.createElement("td");
-          tdIndex.style.border = "1px solid #666";
-          tdIndex.style.padding = "4px 8px";
+          tdIndex.style.border = "1px solid #333";
+          tdIndex.style.padding = "4px 6px";
           tdIndex.textContent = rowIndex;
+          tr.appendChild(tdIndex);
 
           const tdVal = document.createElement("td");
-          tdVal.style.border = "1px solid #666";
-          tdVal.style.padding = "4px 8px";
-          tdVal.textContent = rowData;
-
-          tr.appendChild(tdIndex);
+          tdVal.style.border = "1px solid #333";
+          tdVal.style.padding = "4px 6px";
+          tdVal.textContent = String(rowData);
           tr.appendChild(tdVal);
         }
 
@@ -926,9 +939,10 @@
       div.appendChild(table);
       outputElement.appendChild(div);
 
-      // scroll output to the bottom if desired
+      // Scroll down if needed
       outputElement.scrollTop = outputElement.scrollHeight;
     }
+
 
 
     async function runTab(i, btn) {
