@@ -148,56 +148,78 @@ function relativeStack(error) {
     return result.join('\n');
 }
 
-function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContainer = false) {
-    if (value === null || typeof value === "undefined") {
+function cloneForConsoleTable(value, seen = new WeakMap(), path = "", depth = 0) {
+    const MAX_DEPTH = 5;
+    if (depth > MAX_DEPTH) return "{…}";
+
+    // Handle primitives and null
+    if (
+        value === null ||
+        typeof value !== "object" &&
+        typeof value !== "function"
+    ) {
+        if (typeof value === "function") {
+            return Function.prototype.toString.call(value);
+        }
+        if (typeof value === "symbol") {
+            return value.toString();
+        }
         return value;
     }
 
-    if (typeof value === "function") {
-        return inContainer ? "ƒ" : value.toString();
-    }
-
+    // Handle cyclical references
     if (seen.has(value)) {
-        return "[Circular]";
+        return `[Circular ~${seen.get(value)}]`;
     }
     seen.set(value, path || ".");
 
+    // Handle Arrays
     if (Array.isArray(value)) {
-        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`, true));
+        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`, depth + 1));
     }
 
+    // Handle Maps
     if (value instanceof Map) {
         const mapClone = {};
-        for (const [key, val] of value.entries()) {
-            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map:${key}]`, true);
+        for (let [key, val] of value.entries()) {
+            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`, depth + 1);
         }
         return mapClone;
     }
 
+    // Handle Sets
     if (value instanceof Set) {
-        return Array.from(value).map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[Set:${index}]`, true)
-        );
+        const setClone = [];
+        let index = 0;
+        for (let item of value.values()) {
+            setClone.push(cloneForConsoleTable(item, seen, `${path}[Set:${index}]`, depth + 1));
+            index++;
+        }
+        return setClone;
     }
 
-    if (typeof value === "object") {
-        const objClone = {};
-        for (const key of Object.keys(value)) {
-            objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`, true);
-        }
-
-        // Include prototype properties
-        const proto = Object.getPrototypeOf(value);
-        if (proto) {
-            Object.assign(objClone, proto);
-        }
-
-        return objClone;
+    // Handle Dates
+    if (value instanceof Date) {
+        return value.toString();
     }
 
-    return value;
+    // Handle RegExps
+    if (value instanceof RegExp) {
+        return value.toString();
+    }
+
+    // Handle Proxies by representing them as "[Unserializable Proxy]"
+    if (isProxy(value)) {
+        return "[Unserializable Proxy]";
+    }
+
+    // Handle generic Objects
+    const objClone = {};
+    Object.keys(value).forEach(key => {
+        objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key, depth + 1);
+    });
+    return objClone;
 }
-
 
 // Helper to check if an object is a Proxy (limited detection)
 function isProxy(obj) {
