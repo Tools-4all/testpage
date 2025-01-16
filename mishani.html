@@ -273,12 +273,31 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    #tabBar::-webkit-scrollbar {
+      height: 6px;
+      /* Horizontal scrollbar height */
+    }
+
+    #tabBar::-webkit-scrollbar-thumb {
+      background-color: #333;
+      /* Scrollbar thumb color */
+      border-radius: 10px;
+      /* Rounded corners */
+    }
+
+    #tabBar::-webkit-scrollbar-track {
+      background-color: #eee;
+      /* Scrollbar track color */
     }
 
     .tab {
       background-color: #333;
       margin-right: 2px;
-      margin-top: 9px;
+      margin-top: 3px;
       padding: 7px 10px 7px;
       color: #fff;
       cursor: pointer;
