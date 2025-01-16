@@ -149,33 +149,98 @@ function relativeStack(error) {
 }
 
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
+    // Handle primitives and null
     if (
         value === null ||
-        value === undefined ||
         typeof value !== "object"
     ) {
+        // If it's a function, serialize it
+        if (typeof value === "function") {
+            return Function.prototype.toString.call(value);
+        }
+        // For symbols, BigInts, etc., convert to string
+        if (typeof value === "symbol") {
+            return value.toString();
+        }
         return value;
     }
 
-    if (typeof value === "function") {
-        return Function.prototype.toString.call(value);
-    }
-
+    // Handle cyclical references
     if (seen.has(value)) {
         return `[Circular ~${seen.get(value)}]`;
     }
-
     seen.set(value, path || ".");
 
+    // Handle Arrays
     if (Array.isArray(value)) {
         return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`));
-    } else {
-        const objClone = {};
-        Object.keys(value).forEach(key => {
-            objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key);
-        });
-        return objClone;
     }
+
+    // Handle Maps
+    if (value instanceof Map) {
+        const mapClone = {};
+        for (let [key, val] of value.entries()) {
+            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`);
+        }
+        return mapClone;
+    }
+
+    // Handle Sets
+    if (value instanceof Set) {
+        const setClone = [];
+        let index = 0;
+        for (let item of value.values()) {
+            setClone.push(cloneForConsoleTable(item, seen, `${path}[Set:${index}]`));
+            index++;
+        }
+        return setClone;
+    }
+
+    // Handle Dates
+    if (value instanceof Date) {
+        return value.toString();
+    }
+
+    // Handle RegExps
+    if (value instanceof RegExp) {
+        return value.toString();
+    }
+
+    // Handle Proxies by unwrapping
+    if (isProxy(value)) {
+        try {
+            const target = getProxyTarget(value);
+            return cloneForConsoleTable(target, seen, path);
+        } catch (e) {
+            return "[Unserializable Proxy]";
+        }
+    }
+
+    // Handle generic Objects
+    const objClone = {};
+    Object.keys(value).forEach(key => {
+        objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key);
+    });
+    return objClone;
+}
+
+// Helper to check if an object is a Proxy (limited detection)
+function isProxy(obj) {
+    // There is no standard way to detect Proxies. This is a heuristic.
+    try {
+        // Attempt to get own property descriptor; proxies without traps will behave normally
+        Object.getOwnPropertyDescriptor(obj, "__isProxy");
+        return false;
+    } catch (e) {
+        return true;
+    }
+}
+
+// Placeholder functions to get Proxy target (not standard)
+function getProxyTarget(proxy) {
+    // This functionality is not standard and cannot be implemented.
+    // Proxies do not expose their targets. This is just a placeholder.
+    throw new Error("Cannot retrieve Proxy target.");
 }
 
 
@@ -344,7 +409,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
-
+        
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -355,7 +420,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
-
+        
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
@@ -366,7 +431,7 @@ self.addEventListener("message", (event) => {
                     });
                     return;
                 }
-
+        
                 self.postMessage({
                     type: "table",
                     tableData: safeData
