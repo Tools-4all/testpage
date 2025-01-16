@@ -330,7 +330,11 @@ self.addEventListener("message", (event) => {
                 } else {
                     dat = String(data)
                 }
-                self.postMessage({ type: "log", message: dat });
+                self.postMessage({
+                    type: "table",
+                    tableData: data,
+                    tableColumns: columns
+                });
             },
 
             count: (label = "default") => {

@@ -527,6 +527,24 @@
       background-color: #1177bb;
     }
 
+    table {
+      border-collapse: collapse;
+      font-size: 14px;
+      color: #d4d4d4;
+    }
+
+    th,
+    td {
+      border: 1px solid #333;
+      padding: 4px 8px;
+    }
+
+    thead {
+      background-color: #3c3c3c;
+      font-weight: bold;
+    }
+
+
     @media (max-width: 768px) {
       #activityBar {
         width: 40px;
@@ -836,6 +854,83 @@
       });
     }
 
+    function appendTable(outputElement, tableData, tableColumns) {
+
+      const div = document.createElement("div");
+      div.classList.add("outputContent");
+
+      let dataArray = Array.isArray(tableData) ? tableData : [tableData];
+
+      let columns;
+      if (dataArray.length && typeof dataArray[0] === "object" && dataArray[0] !== null) {
+        if (Array.isArray(tableColumns) && tableColumns.length) {
+          columns = tableColumns;
+        } else {
+          const allKeys = new Set();
+          dataArray.forEach(obj => {
+            Object.keys(obj).forEach(k => allKeys.add(k));
+          });
+          columns = Array.from(allKeys);
+        }
+      } else {
+        columns = ["(index)", "(value)"];
+      }
+
+      const table = document.createElement("table");
+      table.style.borderCollapse = "collapse";
+      table.style.margin = "4px 0";
+      table.style.fontSize = "14px";
+
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        th.textContent = col;
+        th.style.border = "1px solid #666";
+        th.style.padding = "4px 8px";
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      dataArray.forEach((rowData, rowIndex) => {
+        const tr = document.createElement("tr");
+        if (typeof rowData === "object" && rowData !== null) {
+          columns.forEach(col => {
+            const td = document.createElement("td");
+            td.style.border = "1px solid #666";
+            td.style.padding = "4px 8px";
+            td.textContent = rowData[col] !== undefined ? rowData[col] : "";
+            tr.appendChild(td);
+          });
+        } else {
+          const tdIndex = document.createElement("td");
+          tdIndex.style.border = "1px solid #666";
+          tdIndex.style.padding = "4px 8px";
+          tdIndex.textContent = rowIndex;
+
+          const tdVal = document.createElement("td");
+          tdVal.style.border = "1px solid #666";
+          tdVal.style.padding = "4px 8px";
+          tdVal.textContent = rowData;
+
+          tr.appendChild(tdIndex);
+          tr.appendChild(tdVal);
+        }
+
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      div.appendChild(table);
+      outputElement.appendChild(div);
+
+      // scroll output to the bottom if desired
+      outputElement.scrollTop = outputElement.scrollHeight;
+    }
+
+
     async function runTab(i, btn) {
       btn.disabled = true
       let o = tabs.find((x) => x.id === i)
@@ -856,6 +951,9 @@
           else if (["log", "error", "warn", "info"].includes(t)) { appendToOutput(o.outputElement, t, m) }
           else if (t === "clear") { clearConsole(o.outputElement) }
           else if (t === "alert") { await handleAlert(m, o) }
+          else if (t === "table") {
+            appendTable(o.outputElement, e.data.tableData, e.data.tableColumns);
+          }
         }
         w.onerror = (x) => {
           appendToOutput(o.outputElement, "error", x.message)
