@@ -1296,12 +1296,12 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
     function toggleDisabled(e, d) {
       if (d) {
         e.classList.add("disabled");
-        e.style.color = "grey"; // Set color to grey when disabled
-        e.style.cursor = "not-allowed"; // Set cursor to not-allowed when disabled
+        e.style.color = "grey";
+        e.style.cursor = "ndefault";
       } else {
         e.classList.remove("disabled");
-        e.style.color = "white"; // Set color to white when enabled
-        e.style.cursor = "pointer"; // Set cursor to pointer when enabled
+        e.style.color = "white";
+        e.style.cursor = "pointer";
       }
     }
     function updateUndoRedoButtons() {
