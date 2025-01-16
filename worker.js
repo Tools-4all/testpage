@@ -303,12 +303,45 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-                self.postMessage({
-                    type: "table",
-                    tableData: data,
-                    tableColumns: columns
-                });
+
+                if (
+                    data === null ||
+                    data === undefined ||
+                    typeof data === "number" ||
+                    typeof data === "string" ||
+                    typeof data === "boolean" ||
+                    typeof data === "bigint" ||
+                    typeof data === "symbol"
+                ) {
+                    self.postMessage({ type: "log", message: String(data) });
+                    return;
+                }
+
+                if (typeof data === "function") {
+                    let fnString;
+                    try {
+                        fnString = Function.prototype.toString.call(data);
+                    } catch (err) {
+                        fnString = "[Function]";
+                    }
+                    self.postMessage({ type: "log", message: fnString });
+                    return;
+                }
+
+                try {
+                    self.postMessage({
+                        type: "table",
+                        tableData: data,
+                        tableColumns: columns
+                    });
+                } catch (err) {
+                    self.postMessage({
+                        type: "log",
+                        message: `[circular or uncloneable data] ${err.message}`
+                    });
+                }
             },
+
 
             count: (label = "default") => {
                 if (countMap[label]) {
