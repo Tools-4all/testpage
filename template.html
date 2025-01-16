@@ -901,8 +901,17 @@
 
           let value = rowObj[col];
           if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-            // Display nested objects as "{…}"
-            td.textContent = Object.keys(value).length ? "{…}" : "{}";
+            // Check for Map or Set
+            if (value instanceof Map) {
+              const mapEntries = Array.from(value.entries()).map(([k, v]) => `${k}: ${v}`).join(", ");
+              td.textContent = `{ ${mapEntries} }`;
+            } else if (value instanceof Set) {
+              const setValues = Array.from(value.values()).join(", ");
+              td.textContent = `{ ${setValues} }`;
+            } else {
+              // Display nested objects as "{…}" or "{}"
+              td.textContent = Object.keys(value).length ? "{…}" : "{}";
+            }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
             td.textContent = `(${value.length}) […]`;
@@ -939,11 +948,12 @@
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
+
     function buildChromeTableModel(input) {
       // Returns { rows: Array<Object>, columns: string[] }
       if (Array.isArray(input)) {
         if (input.length === 0) {
-          // Empty array: Show table with only (index) column
+          // Empty array: Show table with only (index) and Value columns
           return { rows: [], columns: ["(index)", "Value"] };
         }
 
@@ -952,15 +962,14 @@
           return (
             item === null ||
             typeof item === "undefined" ||
-            typeof item !== "object" &&
-            typeof item !== "function"
+            (typeof item !== "object" && typeof item !== "function")
           );
         });
 
         if (allPrimitives) {
           // Arrays of Primitives: (index) and Value columns
           const rows = input.map((item, index) => ({
-            "__index": index,
+            "(index)": index,
             "Value": item === undefined ? "undefined" : item
           }));
           return {
@@ -1036,6 +1045,7 @@
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
+
 
 
 

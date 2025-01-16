@@ -148,7 +148,10 @@ function relativeStack(error) {
     return result.join('\n');
 }
 
-function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
+function cloneForConsoleTable(value, seen = new WeakMap(), path = "", depth = 0) {
+    const MAX_DEPTH = 5;
+    if (depth > MAX_DEPTH) return "{…}";
+
     // Handle primitives and null
     if (
         value === null ||
@@ -172,14 +175,14 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 
     // Handle Arrays
     if (Array.isArray(value)) {
-        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`));
+        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`, depth + 1));
     }
 
     // Handle Maps
     if (value instanceof Map) {
         const mapClone = {};
         for (let [key, val] of value.entries()) {
-            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`);
+            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`, depth + 1);
         }
         return mapClone;
     }
@@ -189,7 +192,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         const setClone = [];
         let index = 0;
         for (let item of value.values()) {
-            setClone.push(cloneForConsoleTable(item, seen, `${path}[Set:${index}]`));
+            setClone.push(cloneForConsoleTable(item, seen, `${path}[Set:${index}]`, depth + 1));
             index++;
         }
         return setClone;
@@ -213,7 +216,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     // Handle generic Objects
     const objClone = {};
     Object.keys(value).forEach(key => {
-        objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key);
+        objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key, depth + 1);
     });
     return objClone;
 }
