@@ -149,34 +149,25 @@ function relativeStack(error) {
 }
 
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
-    // Handle primitives and null
-    if (
-        value === null ||
-        typeof value !== "object"
-    ) {
-        // If it's a function, serialize it
+    if (value === null || typeof value !== "object") {
         if (typeof value === "function") {
             return Function.prototype.toString.call(value);
         }
-        // For symbols, BigInts, etc., convert to string
         if (typeof value === "symbol") {
             return value.toString();
         }
         return value;
     }
 
-    // Handle cyclical references
     if (seen.has(value)) {
         return `[Circular ~${seen.get(value)}]`;
     }
     seen.set(value, path || ".");
 
-    // Handle Arrays
     if (Array.isArray(value)) {
         return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`));
     }
 
-    // Handle Maps
     if (value instanceof Map) {
         const mapClone = {};
         for (let [key, val] of value.entries()) {
@@ -185,7 +176,6 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         return mapClone;
     }
 
-    // Handle Sets
     if (value instanceof Set) {
         const setClone = [];
         let index = 0;
@@ -196,17 +186,15 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         return setClone;
     }
 
-    // Handle Dates
     if (value instanceof Date) {
         return value.toString();
     }
 
-    // Handle RegExps
     if (value instanceof RegExp) {
         return value.toString();
     }
 
-    // Handle Proxies by unwrapping
+    // Proxies are complex; represent them as strings or omit
     if (isProxy(value)) {
         try {
             const target = getProxyTarget(value);
@@ -216,7 +204,6 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         }
     }
 
-    // Handle generic Objects
     const objClone = {};
     Object.keys(value).forEach(key => {
         objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key);
@@ -224,16 +211,19 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     return objClone;
 }
 
-// Helper to check if an object is a Proxy (limited detection)
 function isProxy(obj) {
-    // There is no standard way to detect Proxies. This is a heuristic.
+    // Heuristic: Proxies throw on certain operations
     try {
-        // Attempt to get own property descriptor; proxies without traps will behave normally
         Object.getOwnPropertyDescriptor(obj, "__isProxy");
         return false;
     } catch (e) {
         return true;
     }
+}
+
+function getProxyTarget(proxy) {
+    // Not implementable; proxies do not expose their targets
+    throw new Error("Cannot retrieve Proxy target.");
 }
 
 
@@ -390,7 +380,6 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-                // Determine if data is table-worthy
                 if (
                     data === null ||
                     data === undefined ||
@@ -400,13 +389,11 @@ self.addEventListener("message", (event) => {
                     typeof data === "bigint" ||
                     typeof data === "symbol"
                 ) {
-                    // Log primitive types as strings
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
         
                 if (typeof data === "function") {
-                    // Serialize function to string and log it
                     let fnString;
                     try {
                         fnString = Function.prototype.toString.call(data);
@@ -417,12 +404,10 @@ self.addEventListener("message", (event) => {
                     return;
                 }
         
-                // Handle objects and arrays
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
                 } catch (err) {
-                    // Fallback if cloning fails
                     self.postMessage({
                         type: "log",
                         message: `[Uncloneable data] ${err.message}`
@@ -430,7 +415,6 @@ self.addEventListener("message", (event) => {
                     return;
                 }
         
-                // Send table data to main thread
                 self.postMessage({
                     type: "table",
                     tableData: safeData
