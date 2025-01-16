@@ -837,7 +837,6 @@
     }
 
     async function runTab(i, btn) {
-      btn.disabled = true
       let o = tabs.find((x) => x.id === i)
       if (!o)  btn.disabled = false; return
       try {
