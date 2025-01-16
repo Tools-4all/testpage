@@ -1062,7 +1062,7 @@
           else if (t === "clear") { clearConsole(o.outputElement) }
           else if (t === "alert") { await handleAlert(m, o) }
           else if (t === "table") {
-            appendTable(currentTab.outputElement, e.data.tableData);
+            appendTable(o.outputElement, e.data.tableData);
           }
         }
         w.onerror = (x) => {
