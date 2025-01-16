@@ -236,13 +236,6 @@ function isProxy(obj) {
     }
 }
 
-// Placeholder functions to get Proxy target (not standard)
-function getProxyTarget(proxy) {
-    // This functionality is not standard and cannot be implemented.
-    // Proxies do not expose their targets. This is just a placeholder.
-    throw new Error("Cannot retrieve Proxy target.");
-}
-
 
 class myPrompt {
     constructor(msg = "") {
@@ -397,6 +390,7 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
+                // Determine if data is table-worthy
                 if (
                     data === null ||
                     data === undefined ||
@@ -406,11 +400,13 @@ self.addEventListener("message", (event) => {
                     typeof data === "bigint" ||
                     typeof data === "symbol"
                 ) {
+                    // Log primitive types as strings
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
         
                 if (typeof data === "function") {
+                    // Serialize function to string and log it
                     let fnString;
                     try {
                         fnString = Function.prototype.toString.call(data);
@@ -421,10 +417,12 @@ self.addEventListener("message", (event) => {
                     return;
                 }
         
+                // Handle objects and arrays
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
                 } catch (err) {
+                    // Fallback if cloning fails
                     self.postMessage({
                         type: "log",
                         message: `[Uncloneable data] ${err.message}`
@@ -432,6 +430,7 @@ self.addEventListener("message", (event) => {
                     return;
                 }
         
+                // Send table data to main thread
                 self.postMessage({
                     type: "table",
                     tableData: safeData

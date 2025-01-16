@@ -864,14 +864,18 @@
 
 
     function appendTable(outputElement, tableData) {
+      // Build the table model based on Chrome's logic
       const { rows, columns } = buildChromeTableModel(tableData);
 
+      // Create table container
       const div = document.createElement("div");
       div.classList.add("outputContent");
 
+      // Create table element
       const table = document.createElement("table");
       table.classList.add("console-table");
 
+      // Create table header
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -885,6 +889,7 @@
       thead.appendChild(headRow);
       table.appendChild(thead);
 
+      // Create table body
       const tbody = document.createElement("tbody");
 
       rows.forEach(rowObj => {
@@ -896,15 +901,20 @@
           td.classList.add("console-table-data");
 
           let value = rowObj[col];
-          if (value && typeof value === "object" && !Array.isArray(value)) {
+          if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+            // Display nested objects as "{…}"
             td.textContent = Object.keys(value).length ? "{…}" : "{}";
-          } else if (value && Array.isArray(value)) {
+          } else if (Array.isArray(value)) {
+            // Display arrays as "(length) […]"
             td.textContent = `(${value.length}) […]`;
           } else if (typeof value === "string" && value.startsWith("[Circular")) {
+            // Display circular references
             td.textContent = value;
-          } else if (value === undefined) {
-            td.textContent = "";
+          } else if (typeof value === "string" && value.startsWith("function")) {
+            // Display functions as their string representation
+            td.textContent = value;
           } else {
+            // Display primitive values
             td.textContent = String(value);
           }
 
@@ -915,14 +925,17 @@
       });
       table.appendChild(tbody);
 
+      // Append table to output
       div.appendChild(table);
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
     function buildChromeTableModel(input) {
+      // Returns { rows: Array<Object>, columns: string[] }
       if (Array.isArray(input)) {
         if (input.length === 0) {
+          // Empty array: Show table with only (index) column
           return { rows: [], columns: ["(index)"] };
         }
 
@@ -948,11 +961,13 @@
       if (input && typeof input === "object") {
         const keys = Object.keys(input);
         if (keys.length === 0) {
+          // Empty object: Show table with only (index) column
           return { rows: [], columns: ["(index)"] };
         }
 
         const allNumeric = keys.every(k => /^\d+$/.test(k));
         if (allNumeric) {
+          // Treat as sparse array
           let columnsSet = new Set(["__index"]);
           let rowObjs = [];
 
@@ -970,6 +985,7 @@
 
           return { rows: rowObjs, columns: Array.from(columnsSet) };
         } else {
+          // Plain object with non-numeric keys: Single row
           let rowObj = {};
           keys.forEach(k => {
             rowObj[k] = input[k];
@@ -978,8 +994,10 @@
         }
       }
 
-      return { rows: [], columns: [] };
+      // Fallback: Not table-worthy
+      return { rows: [], columns: ["Value"] };
     }
+
 
 
     async function runTab(i, btn) {
@@ -1341,7 +1359,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert('1')
+    alert('2')
   </script>
 </body>
 
