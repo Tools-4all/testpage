@@ -157,31 +157,26 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         return value;
     }
 
+    if (typeof value === "function") {
+        return Function.prototype.toString.call(value);
+    }
+
     if (seen.has(value)) {
         return `[Circular ~${seen.get(value)}]`;
     }
+
     seen.set(value, path || ".");
 
-    // Now clone
     if (Array.isArray(value)) {
-        let arrClone = [];
-        value.forEach((item, idx) => {
-            arrClone[idx] = cloneForConsoleTable(item, seen, path + `[${idx}]`);
-        });
-        return arrClone;
+        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`));
     } else {
-        let objClone = {};
+        const objClone = {};
         Object.keys(value).forEach(key => {
-            objClone[key] = cloneForConsoleTable(
-                value[key],
-                seen,
-                path ? path + "." + key : key
-            );
+            objClone[key] = cloneForConsoleTable(value[key], seen, path ? `${path}.${key}` : key);
         });
         return objClone;
     }
 }
-
 
 
 class myPrompt {
@@ -300,7 +295,6 @@ function objectToString(obj) {
 }
 
 
-
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer } = event.data;
     if (type === "execute") {
@@ -364,7 +358,7 @@ self.addEventListener("message", (event) => {
 
                 let safeData;
                 try {
-                    safeData = cloneForConsoleTable(data); 
+                    safeData = cloneForConsoleTable(data);
                 } catch (err) {
                     self.postMessage({
                         type: "log",
@@ -373,21 +367,11 @@ self.addEventListener("message", (event) => {
                     return;
                 }
 
-                try {
-                    self.postMessage({
-                        type: "table",
-                        tableData: safeData,
-                        tableColumns: columns
-                    });
-                } catch (err) {
-                    self.postMessage({
-                        type: "log",
-                        message: `[Uncloneable data] ${err.message}`
-                    });
-                }
+                self.postMessage({
+                    type: "table",
+                    tableData: safeData
+                });
             },
-
-
 
             count: (label = "default") => {
                 if (countMap[label]) {

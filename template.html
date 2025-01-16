@@ -861,29 +861,16 @@
       });
     }
 
+
     function appendTable(outputElement, tableData) {
-      // Decide whether it’s array-like or object with numeric keys, etc.
       const { rows, columns } = buildChromeTableModel(tableData);
 
-      // If “rows” is empty and “columns” is empty, 
-      // that means we basically have nothing to show (like an empty array).
-      if (columns.length === 0 && rows.length === 0) {
-        const div = document.createElement("div");
-        div.classList.add("outputContent");
-        div.textContent = "[]"; // Or "Empty array" – up to you
-        outputElement.appendChild(div);
-        outputElement.scrollTop = outputElement.scrollHeight;
-        return;
-      }
-
-      // Build the actual DOM <table>
       const div = document.createElement("div");
       div.classList.add("outputContent");
 
       const table = document.createElement("table");
       table.classList.add("console-table");
 
-      // THEAD
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -897,7 +884,6 @@
       thead.appendChild(headRow);
       table.appendChild(thead);
 
-      // TBODY
       const tbody = document.createElement("tbody");
 
       rows.forEach(rowObj => {
@@ -909,15 +895,12 @@
           td.classList.add("console-table-data");
 
           let value = rowObj[col];
-          // If “value” is an object (non-array), DevTools shows either `"[object Object]"` or `"{…}"`.
-          // Usually it’s `"{…}"` if it has properties, else `"{}"`. 
           if (value && typeof value === "object" && !Array.isArray(value)) {
-            // To mimic Chrome exactly, we usually show "{…}"
-            // But you can show "[object Object]" if you prefer. 
             td.textContent = Object.keys(value).length ? "{…}" : "{}";
           } else if (value && Array.isArray(value)) {
-            // Chrome might show "Array(n)". 
             td.textContent = `(${value.length}) […]`;
+          } else if (typeof value === "string" && value.startsWith("[Circular")) {
+            td.textContent = value;
           } else if (value === undefined) {
             td.textContent = "";
           } else {
@@ -936,33 +919,22 @@
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
-
     function buildChromeTableModel(input) {
-      // Returns { rows: Array<Object>, columns: string[] }
-      // so we can build a table. Each element of “rows” is a plain object
-      // whose keys match the union of columns.
-
-      // 1) If input is an array
       if (Array.isArray(input)) {
         if (input.length === 0) {
-          // empty array => no columns, no rows => Chrome shows an empty table with just (index).
-          // We'll handle that as a special case in appendTable
-          return { rows: [], columns: [] };
+          return { rows: [], columns: ["(index)"] };
         }
-        // If array of primitives => columns = (“(index)”, “Value”)
-        // If array of objects => columns = (“(index)”) + union of all keys
+
         let columnsSet = new Set(["__index"]);
         let rows = [];
 
         input.forEach((item, index) => {
-          if (item && typeof item === "object" && !Array.isArray(item)) {
-            // gather keys
+          if (item && typeof item === "object") {
             Object.keys(item).forEach(k => columnsSet.add(k));
-            rows.push({ __index: index, ...item });
+            rows.push({ "__index": index, ...item });
           } else {
-            // primitive
             columnsSet.add("Value");
-            rows.push({ __index: index, Value: item });
+            rows.push({ "__index": index, "Value": item });
           }
         });
 
@@ -972,73 +944,41 @@
         };
       }
 
-      // 2) If input is an object
-      //    Chrome’s special case: if *all* keys are numeric, 
-      //    it’s treated like a sparse array. 
-      //    Otherwise, for object with string keys, Chrome usually
-      //    tries to show one row per numeric key. 
-      //    But if no numeric keys, it shows the object in one row. 
-      //    This part is the trickiest to replicate exactly.
-
       if (input && typeof input === "object") {
-        let keys = Object.keys(input);
-        if (!keys.length) {
-          // empty object => single row? Actually Chrome shows an empty table with (index) if you do `console.table({})`.
-          // Let's produce no rows for an empty object
-          return { rows: [], columns: [] };
+        const keys = Object.keys(input);
+        if (keys.length === 0) {
+          return { rows: [], columns: ["(index)"] };
         }
 
-        // Check if *all* keys are numeric
-        let allNumeric = keys.every(k => /^[0-9]+$/.test(k));
+        const allNumeric = keys.every(k => /^\d+$/.test(k));
         if (allNumeric) {
-          // treat it like a sparse array with numeric keys
           let columnsSet = new Set(["__index"]);
           let rowObjs = [];
-          // sort numeric keys
-          let numericKeys = keys.map(k => parseInt(k, 10)).sort((a, b) => a - b);
 
+          const numericKeys = keys.map(k => parseInt(k, 10)).sort((a, b) => a - b);
           numericKeys.forEach(numKey => {
             let val = input[numKey];
-            if (val && typeof val === "object" && !Array.isArray(val)) {
-              // gather subkeys
+            if (val && typeof val === "object") {
               Object.keys(val).forEach(k => columnsSet.add(k));
-              rowObjs.push({ __index: numKey, ...val });
+              rowObjs.push({ "__index": numKey, ...val });
             } else {
               columnsSet.add("Value");
-              rowObjs.push({ __index: numKey, Value: val });
+              rowObjs.push({ "__index": numKey, "Value": val });
             }
           });
 
           return { rows: rowObjs, columns: Array.from(columnsSet) };
         } else {
-          // If we have a mix of numeric & string keys, or only string keys,
-          // Chrome typically makes a single row or something more advanced. 
-          // For simplicity, do what Chrome does if *none* are numeric:
-          // => single row, columns = all keys
-          // => rowObj = { key1: value1, key2: value2, ... }
-          // => no “(index)” column is displayed.
-          // Try it in real DevTools to see.
-
-          // If there's any numeric key, it might do something else, but let's keep it simple:
           let rowObj = {};
           keys.forEach(k => {
             rowObj[k] = input[k];
           });
-          // columns in alphabetical or original insertion order?
-          // Chrome does something akin to alphabetical for object keys, 
-          // but we’ll keep them in insertion order for simplicity:
           return { rows: [rowObj], columns: keys };
         }
       }
 
-      // 3) fallback – if it’s not an array or plain object (shouldn’t happen here,
-      //    since we handled that in the worker “table(...)” check).
-      //    But just in case:
       return { rows: [], columns: [] };
     }
-
-
-
 
 
     async function runTab(i, btn) {
