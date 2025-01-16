@@ -148,25 +148,20 @@ function relativeStack(error) {
     return result.join('\n');
 }
 
-function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContainer = false) {
-    if (
-        value === null ||
-        typeof value === "undefined" ||
-        typeof value === "boolean" ||
-        typeof value === "number" ||
-        typeof value === "bigint" ||
-        typeof value === "symbol" ||
-        typeof value === "string"
-    ) {
-        // Return the primitive value directly
-        return value;
+function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
+    if (value === null || value === undefined) return String(value); // "null" or "undefined"
+    if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
+        return value; // Primitive types
     }
-
+    if (typeof value === "string") {
+        return `"${value}"`; // Quote strings
+    }
+    if (typeof value === "symbol") {
+        return value.toString(); // Symbol description
+    }
     if (typeof value === "function") {
-        // If the function is inside an array or object, simplify to "ƒ"
-        return inContainer ? "ƒ" : value.toString();
+        return "ƒ"; // Function short representation
     }
-
     if (seen.has(value)) {
         return "[Circular]";
     }
@@ -174,50 +169,40 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContaine
 
     if (Array.isArray(value)) {
         return value.map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[${index}]`, true)
+            cloneForConsoleTable(item, seen, `${path}[${index}]`)
         );
     }
 
     if (value instanceof Map) {
-        const mapClone = {};
-        for (let [key, val] of value.entries()) {
-            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`, true);
-        }
-        return mapClone;
+        return Array.from(value.entries()).reduce((acc, [key, val]) => {
+            acc[`[Map: ${key}]`] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`);
+            return acc;
+        }, {});
     }
 
     if (value instanceof Set) {
-        return Array.from(value).map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[Set:${index}]`, true)
+        return Array.from(value.values()).map((item, index) =>
+            cloneForConsoleTable(item, seen, `${path}[Set:${index}]`)
         );
     }
 
-    if (value instanceof Date) {
-        return value.toISOString();
+    if (typeof value === "object") {
+        const objClone = {};
+        Object.keys(value).forEach((key) => {
+            objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`);
+        });
+
+        // Include Symbols
+        Object.getOwnPropertySymbols(value).forEach((sym) => {
+            objClone[sym.toString()] = cloneForConsoleTable(value[sym], seen, `${path}[${sym.toString()}]`);
+        });
+
+        return objClone;
     }
 
-    if (value instanceof RegExp) {
-        return value.toString();
-    }
-
-    // Handle Proxies
-    if (isProxy(value)) {
-        return "[Proxy]";
-    }
-
-    // Generic Objects
-    const objClone = {};
-    for (const key of Object.keys(value)) {
-        objClone[key] = cloneForConsoleTable(
-            value[key],
-            seen,
-            path ? `${path}.${key}` : key,
-            true
-        );
-    }
-
-    return objClone;
+    return String(value);
 }
+
 
 
 // Helper to check if an object is a Proxy (limited detection)
