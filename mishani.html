@@ -304,11 +304,6 @@
       -webkit-user-drag: element;
     }
 
-    .tab:last-of-type {
-      margin-right: 10px;
-      /* רווח של 10 פיקסלים בין הטאב האחרון לכפתור */
-    }
-
     .tab-placeholder {
       width: 3px;
       height: 31px;
@@ -1253,7 +1248,25 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
         document.getElementById("statusPosition").textContent = `Ln ${p.lineNumber}, Col ${p.column}`
       }
     }
-    document.getElementById("addTabButton").addEventListener("click", () => { createTab() })
+
+    function updateTabSpacing() {
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach((tab, index) => {
+        if (index === tabs.length - 1) {
+          tab.style.marginRight = "10px"; // רווח לטאב האחרון
+        } else {
+          tab.style.marginRight = "2px"; // רווח בין שאר הטאבים
+        }
+      });
+    }
+
+    document.getElementById("addTabButton").addEventListener("click", () => {
+      createTab();
+      updateTabSpacing();
+    })
+
+
+
     document.getElementById("tabBar").addEventListener("click", (e) => {
       let c = tabs.find((t) => t.tabElement === e.target || t.tabElement.contains(e.target))
       if (c) { switchTab(c.id) }
