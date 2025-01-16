@@ -305,8 +305,8 @@
     }
 
     .tab:last-of-type {
-      margin-right: 50px;
-      /* אין רווח לטאב האחרון */
+      margin-right: 10px;
+      /* רווח של 10 פיקסלים בין הטאב האחרון לכפתור */
     }
 
     .tab-placeholder {
@@ -349,6 +349,7 @@
       cursor: pointer;
       margin-left: auto;
       margin-right: 5px;
+      flex-shrink: 0;
     }
 
     #addTabButton:hover {
@@ -680,7 +681,7 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("4");
+    alert("5");
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
       let tIndex = tabs.findIndex((x) => x.id === tId)
