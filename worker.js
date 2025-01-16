@@ -303,33 +303,6 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-                let dat;
-                if (Array.isArray(data)) {
-                    if (data.length === 0) {
-                        self.postMessage({ type: "log", message: "[] (Empty Array)" });
-                        return;
-                    }
-                    if (typeof data[0] === "object") {
-                        const headerRow = headers.map(header => header.padEnd(15, ' ')).join('|');
-                        const separatorRow = headers.map(() => '---------------').join('+');
-                        const rows = data.map(item =>
-                            headers.map(header => String(item[header] || '').padEnd(15, ' ')).join('|')
-                        );
-
-                        const tableString = `${headerRow}\n${separatorRow}\n${rows.join('\n')}`;
-                        dat = tableString;
-                    } else {
-                        const rows = data.map((item, index) => `${String(index).padEnd(5)}: ${String(item)}`);
-                        const tableString = `Index | Value\n------+-------\n${rows.join('\n')}`;
-                        dat = tableString;
-                    }
-                    const keys = columns || Object.keys(data);
-                    const rows = keys.map(key => `${key.padEnd(15, ' ')}: ${String(data[key])}`);
-                    const tableString = rows.join('\n');
-                    dat = tableString;
-                } else {
-                    dat = String(data)
-                }
                 self.postMessage({
                     type: "table",
                     tableData: data,

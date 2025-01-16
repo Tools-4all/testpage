@@ -527,21 +527,28 @@
       background-color: #1177bb;
     }
 
-    table {
+    .console-table {
       border-collapse: collapse;
       font-size: 14px;
       color: #d4d4d4;
+      margin: 4px 0;
+      width: auto;
     }
 
-    th,
-    td {
-      border: 1px solid #333;
-      padding: 4px 8px;
-    }
-
-    thead {
+    .console-table thead {
       background-color: #3c3c3c;
       font-weight: bold;
+    }
+
+    .console-table th,
+    .console-table td {
+      border: 1px solid #333;
+      padding: 4px 8px;
+      vertical-align: top;
+    }
+
+    .console-table-row:hover {
+      background-color: #2d2d2d;
     }
 
 
@@ -854,83 +861,127 @@
       });
     }
 
-    function appendTable(outputElement, tableData, tableColumns) {
+    function appendTable(outputElement, tableData, userColumns) {
+      // 1) Wrap non-arrays in an array, so we always handle “rows”.
+      let dataArray;
+      let isObjectWithNumericKeys = false;
+
+      if (Array.isArray(tableData)) {
+        dataArray = tableData;
+      } else if (
+        tableData &&
+        typeof tableData === "object" &&
+        // quick check if *all* keys are numeric
+        Object.keys(tableData).every(k => /^\d+$/.test(k))
+      ) {
+        // Treat it like a sparse array with numeric indexes
+        isObjectWithNumericKeys = true;
+
+        // figure out the “max” numeric index to create a row for each
+        const numericKeys = Object.keys(tableData)
+          .map(k => parseInt(k, 10))
+          .sort((a, b) => a - b);
+
+        // Each numeric key is one row. We'll gather them into an array
+        dataArray = numericKeys.map(idx => {
+          // If the “value” at that index is a primitive, we store that
+          // under `Value`. If it’s an object, store keys under that object.
+          const val = tableData[idx];
+          if (
+            val &&
+            typeof val === "object" &&
+            !Array.isArray(val)
+          ) {
+            // Return an object with each subkey, plus we might or might not have “Value”.
+            return { __index: idx, ...val };
+          } else {
+            // Just store it under “Value”
+            return { __index: idx, Value: val };
+          }
+        });
+      } else {
+        // fallback: just treat it as an array of 1 item
+        dataArray = [tableData];
+      }
+
+      // 2) Gather all columns that appear in *any* row
+      let columnsSet = new Set();
+      dataArray.forEach(row => {
+        if (row && typeof row === "object") {
+          Object.keys(row).forEach(k => columnsSet.add(k));
+        } else {
+          // row is primitive => we’ll show (index) + Value
+          columnsSet.add("__index");
+          columnsSet.add("Value");
+        }
+      });
+
+      // If we used numeric-keys logic, we always want to ensure __index is first column
+      // Then “Value” if present, then everything else in sorted order (the way Chrome does).
+      let columns = Array.from(columnsSet);
+      if (isObjectWithNumericKeys) {
+        // Put __index at front if present
+        columns = columns.filter(c => c !== "__index");
+        columns = ["__index", ...columns];
+      } else {
+        // For a normal array or a single object, Chrome typically does:
+        //    (index) | key1 | key2 ...
+        // if it’s an array. Or if it’s an object with non-numeric keys,
+        // we get just the keys. Adjust if you want to get fancy.
+        // e.g. For a normal array of objects, Chrome would have (index) then columns.
+        // This is left as-is for brevity.
+      }
+
+      // 3) Build the DOM table
       const div = document.createElement("div");
       div.classList.add("outputContent");
 
-      let dataArray = Array.isArray(tableData) ? tableData : [tableData];
-
-      // Determine columns
-      let columns;
-      if (
-        dataArray.length &&
-        typeof dataArray[0] === "object" &&
-        dataArray[0] !== null
-      ) {
-        if (Array.isArray(tableColumns) && tableColumns.length) {
-          columns = tableColumns;
-        } else {
-          const allKeys = new Set();
-          dataArray.forEach(obj => {
-            Object.keys(obj).forEach(k => allKeys.add(k));
-          });
-          columns = Array.from(allKeys);
-        }
-      } else {
-        columns = ["(index)", "(value)"];
-      }
-
-      // Build a <table>
       const table = document.createElement("table");
-      table.style.borderCollapse = "collapse";
-      // ... more styling as you like ...
+      table.classList.add("console-table");
 
-      // Thead
       const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
+      const headRow = document.createElement("tr");
+      headRow.classList.add("console-table-row");
+
+      // Column labels: if we see “__index”, label it “(index)”
       columns.forEach(col => {
         const th = document.createElement("th");
-        th.style.border = "1px solid #333";
-        th.style.padding = "4px 6px";
-        th.textContent = col;
-        headerRow.appendChild(th);
+        th.classList.add("console-table-header");
+        th.textContent = col === "__index" ? "(index)" : col;
+        headRow.appendChild(th);
       });
-      thead.appendChild(headerRow);
+      thead.appendChild(headRow);
       table.appendChild(thead);
 
-      // Tbody
       const tbody = document.createElement("tbody");
-      dataArray.forEach((rowData, rowIndex) => {
+      dataArray.forEach((row, rowIdx) => {
         const tr = document.createElement("tr");
+        tr.classList.add("console-table-row");
 
-        if (typeof rowData === "object" && rowData !== null) {
-          columns.forEach(col => {
-            const td = document.createElement("td");
-            td.style.border = "1px solid #333";
-            td.style.padding = "4px 6px";
-
-            // <-- The key part: turn nested objects into JSON strings
-            td.textContent =
-              typeof rowData[col] === "object" && rowData[col] !== null
-                ? JSON.stringify(rowData[col])
-                : String(rowData[col] ?? "");
-
-            tr.appendChild(td);
-          });
+        // if row is primitive => create an object { __index: rowIdx, Value: row }
+        let rowObj;
+        if (row && typeof row === "object") {
+          rowObj = row;
         } else {
-          // Primitive fallback (array of numbers, strings, etc.)
-          const tdIndex = document.createElement("td");
-          tdIndex.style.border = "1px solid #333";
-          tdIndex.style.padding = "4px 6px";
-          tdIndex.textContent = rowIndex;
-          tr.appendChild(tdIndex);
-
-          const tdVal = document.createElement("td");
-          tdVal.style.border = "1px solid #333";
-          tdVal.style.padding = "4px 6px";
-          tdVal.textContent = String(rowData);
-          tr.appendChild(tdVal);
+          rowObj = { __index: rowIdx, Value: row };
         }
+
+        columns.forEach(col => {
+          const td = document.createElement("td");
+          td.classList.add("console-table-data");
+
+          let value = rowObj[col];
+          // If the value is an object, we mimic DevTools showing `[object Object]` or `{…}`
+          if (value && typeof value === "object") {
+            td.textContent = "{…}";
+          } else if (value === undefined) {
+            td.textContent = ""; // Chrome prints empty cells
+          } else {
+            td.textContent = String(value);
+          }
+
+          tr.appendChild(td);
+        });
 
         tbody.appendChild(tr);
       });
@@ -938,8 +989,6 @@
 
       div.appendChild(table);
       outputElement.appendChild(div);
-
-      // Scroll down if needed
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
@@ -1304,7 +1353,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert('7')
+    alert('5')
   </script>
 </body>
 
