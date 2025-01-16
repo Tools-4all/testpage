@@ -354,7 +354,7 @@ self.addEventListener("message", (event) => {
                 // Instead of posting type: "log", we can post type: "dir" 
                 // and include our HTML so the main thread knows it’s HTML
                 self.postMessage({
-                    type: "dir",
+                    type: "log",
                     message: htmlRepresentation
                 });
             },
