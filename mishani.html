@@ -1304,6 +1304,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
         e.style.cursor = "pointer";
       }
     }
+    alert(sds);
     function updateUndoRedoButtons() {
       if (activeTabId === null) { toggleDisabled(undoBtn, true); toggleDisabled(redoBtn, true); return }
       let t = tabs.find((x) => x.id === activeTabId)
