@@ -148,6 +148,41 @@ function relativeStack(error) {
     return result.join('\n');
 }
 
+function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
+    if (
+        value === null ||
+        value === undefined ||
+        typeof value !== "object"
+    ) {
+        return value;
+    }
+
+    if (seen.has(value)) {
+        return `[Circular ~${seen.get(value)}]`;
+    }
+    seen.set(value, path || ".");
+
+    // Now clone
+    if (Array.isArray(value)) {
+        let arrClone = [];
+        value.forEach((item, idx) => {
+            arrClone[idx] = cloneForConsoleTable(item, seen, path + `[${idx}]`);
+        });
+        return arrClone;
+    } else {
+        let objClone = {};
+        Object.keys(value).forEach(key => {
+            objClone[key] = cloneForConsoleTable(
+                value[key],
+                seen,
+                path ? path + "." + key : key
+            );
+        });
+        return objClone;
+    }
+}
+
+
 
 class myPrompt {
     constructor(msg = "") {
@@ -303,7 +338,6 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-
                 if (
                     data === null ||
                     data === undefined ||
@@ -321,26 +355,38 @@ self.addEventListener("message", (event) => {
                     let fnString;
                     try {
                         fnString = Function.prototype.toString.call(data);
-                    } catch (err) {
+                    } catch {
                         fnString = "[Function]";
                     }
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
 
+                let safeData;
+                try {
+                    safeData = cloneForConsoleTable(data); 
+                } catch (err) {
+                    self.postMessage({
+                        type: "log",
+                        message: `[Uncloneable data] ${err.message}`
+                    });
+                    return;
+                }
+
                 try {
                     self.postMessage({
                         type: "table",
-                        tableData: data,
+                        tableData: safeData,
                         tableColumns: columns
                     });
                 } catch (err) {
                     self.postMessage({
                         type: "log",
-                        message: `[circular or uncloneable data] ${err.message}`
+                        message: `[Uncloneable data] ${err.message}`
                     });
                 }
             },
+
 
 
             count: (label = "default") => {
