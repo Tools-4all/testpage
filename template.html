@@ -882,7 +882,7 @@
       columns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
-        th.textContent = col === "__index" ? "(index)" : col;
+        th.textContent = col;
         headRow.appendChild(th);
       });
       thead.appendChild(headRow);
@@ -915,8 +915,11 @@
           } else if (typeof value === "string" && value.startsWith("Symbol")) {
             // Display symbols
             td.textContent = value;
-          } else if (value === undefined) {
-            // Empty cell for undefined
+          } else if (value === "undefined") {
+            // Display "undefined" string
+            td.textContent = "undefined";
+          } else if (value === "") {
+            // Empty string for missing properties
             td.textContent = "";
           } else {
             // Display primitive values
@@ -941,26 +944,55 @@
       if (Array.isArray(input)) {
         if (input.length === 0) {
           // Empty array: Show table with only (index) column
-          return { rows: [], columns: ["(index)"] };
+          return { rows: [], columns: ["(index)", "Value"] };
         }
 
-        let columnsSet = new Set(["__index"]);
-        let rows = [];
-
-        input.forEach((item, index) => {
-          if (item && typeof item === "object") {
-            Object.keys(item).forEach(k => columnsSet.add(k));
-            rows.push({ "__index": index, ...item });
-          } else {
-            columnsSet.add("Value");
-            rows.push({ "__index": index, "Value": item });
-          }
+        // Determine if the array contains only primitives
+        const allPrimitives = input.every(item => {
+          return (
+            item === null ||
+            typeof item === "undefined" ||
+            typeof item !== "object" &&
+            typeof item !== "function"
+          );
         });
 
-        return {
-          rows,
-          columns: Array.from(columnsSet)
-        };
+        if (allPrimitives) {
+          // Arrays of Primitives: (index) and Value columns
+          const rows = input.map((item, index) => ({
+            "__index": index,
+            "Value": item === undefined ? "undefined" : item
+          }));
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
+        } else {
+          // Arrays of Objects or Mixed Types
+          let columnsSet = new Set(["(index)"]);
+          input.forEach((item, index) => {
+            if (item && typeof item === "object") {
+              Object.keys(item).forEach(k => columnsSet.add(k));
+            } else {
+              columnsSet.add("Value");
+            }
+          });
+          const columns = Array.from(columnsSet);
+          const rows = input.map((item, index) => {
+            const row = { "(index)": index };
+            if (item && typeof item === "object") {
+              columns.forEach(col => {
+                if (col !== "(index)") {
+                  row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
+                }
+              });
+            } else {
+              row["Value"] = item === undefined ? "undefined" : item;
+            }
+            return row;
+          });
+          return { rows, columns };
+        }
       }
 
       if (input && typeof input === "object") {
@@ -970,38 +1002,41 @@
           return { rows: [], columns: ["(index)"] };
         }
 
-        const allNumeric = keys.every(k => /^\d+$/.test(k));
-        if (allNumeric) {
-          // Treat as sparse array
-          let columnsSet = new Set(["__index"]);
-          let rowObjs = [];
+        const isArrayLike =
+          "length" in input &&
+          typeof input.length === "number" &&
+          input.length >= 0 &&
+          Number.isInteger(input.length);
 
-          const numericKeys = keys.map(k => parseInt(k, 10)).sort((a, b) => a - b);
-          numericKeys.forEach(numKey => {
-            let val = input[numKey];
-            if (val && typeof val === "object") {
-              Object.keys(val).forEach(k => columnsSet.add(k));
-              rowObjs.push({ "__index": numKey, ...val });
-            } else {
-              columnsSet.add("Value");
-              rowObjs.push({ "__index": numKey, "Value": val });
-            }
-          });
-
-          return { rows: rowObjs, columns: Array.from(columnsSet) };
-        } else {
-          // Plain object with non-numeric keys: Single row
-          let rowObj = {};
-          keys.forEach(k => {
-            rowObj[k] = input[k];
-          });
-          return { rows: [rowObj], columns: keys };
+        if (isArrayLike) {
+          // Treat as array-like object
+          const length = input.length;
+          const rows = [];
+          for (let i = 0; i < length; i++) {
+            rows.push({
+              "(index)": i,
+              "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
+            });
+          }
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
         }
+
+        // Plain Object with non-numeric keys: keys as columns
+        const columns = keys.map(k => k);
+        const rowObj = {};
+        columns.forEach(k => {
+          rowObj[k] = input[k] === undefined ? "undefined" : input[k];
+        });
+        return { rows: [rowObj], columns };
       }
 
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
+
 
 
 
