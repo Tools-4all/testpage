@@ -149,21 +149,11 @@ function relativeStack(error) {
 }
 
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContainer = false) {
-    if (
-        value === null ||
-        typeof value === "undefined" ||
-        typeof value === "boolean" ||
-        typeof value === "number" ||
-        typeof value === "bigint" ||
-        typeof value === "symbol" ||
-        typeof value === "string"
-    ) {
-        // Return the primitive value directly
+    if (value === null || typeof value === "undefined") {
         return value;
     }
 
     if (typeof value === "function") {
-        // If the function is inside an array or object, simplify to "ƒ"
         return inContainer ? "ƒ" : value.toString();
     }
 
@@ -173,15 +163,13 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContaine
     seen.set(value, path || ".");
 
     if (Array.isArray(value)) {
-        return value.map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[${index}]`, true)
-        );
+        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`, true));
     }
 
     if (value instanceof Map) {
         const mapClone = {};
-        for (let [key, val] of value.entries()) {
-            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`, true);
+        for (const [key, val] of value.entries()) {
+            mapClone[key] = cloneForConsoleTable(val, seen, `${path}[Map:${key}]`, true);
         }
         return mapClone;
     }
@@ -192,31 +180,22 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "", inContaine
         );
     }
 
-    if (value instanceof Date) {
-        return value.toISOString();
+    if (typeof value === "object") {
+        const objClone = {};
+        for (const key of Object.keys(value)) {
+            objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`, true);
+        }
+
+        // Include prototype properties
+        const proto = Object.getPrototypeOf(value);
+        if (proto) {
+            Object.assign(objClone, proto);
+        }
+
+        return objClone;
     }
 
-    if (value instanceof RegExp) {
-        return value.toString();
-    }
-
-    // Handle Proxies
-    if (isProxy(value)) {
-        return "[Proxy]";
-    }
-
-    // Generic Objects
-    const objClone = {};
-    for (const key of Object.keys(value)) {
-        objClone[key] = cloneForConsoleTable(
-            value[key],
-            seen,
-            path ? `${path}.${key}` : key,
-            true
-        );
-    }
-
-    return objClone;
+    return value;
 }
 
 
