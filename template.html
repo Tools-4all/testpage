@@ -761,7 +761,37 @@
       })
       ti.addEventListener("dblclick", () => { makeTabTitleEditable(o) })
       switchTab(id)
-      if (c !== null) { ed.setValue(c) } else { ed.setValue(`// ${n}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`) }
+      if (c !== null) {
+        ed.setValue(c);
+      } else {
+        ed.setValue(`// ${n}
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+console.debug("This is a debug message");
+console.table(["This","is","a","table"]);
+
+console.group("Starting group");
+  console.log("Inside group...");
+console.groupEnd();
+
+console.time("Timing example");
+  // some code...
+console.timeEnd("Timing example");
+
+console.count("Counting");
+console.count("Counting");
+
+console.assert(false, "This is an assertion that failed");
+console.trace("This is a trace");
+console.dir({exampleKey: "This is a dir output"});
+console.dirxml({exampleKey: "This is a dirxml output"});
+
+alert("This is an alert");
+prompt("This is a prompt:");
+`);
+      }
       return id
     }
     function getNextTabName() {
@@ -839,7 +869,7 @@
     async function runTab(i, btn) {
       btn.disabled = true
       let o = tabs.find((x) => x.id === i)
-      if (!o)  btn.disabled = false; return
+      if (!o) btn.disabled = false; return
       try {
         clearConsole(o.outputElement)
         if (o.worker) { o.worker.terminate(); o.worker = null }
