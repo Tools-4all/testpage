@@ -695,14 +695,13 @@
 
     function fullScreen() {
       console.log('dfdf');
-
       const compiler = document.getElementById("compiler");
       if (compiler.width == "60%") {
-        compiler.width = "100%";
-        compiler.height = "100vh";
+        compiler.style.width = "100%";
+        compiler.style.height = "100vh";
       } else {
-        compiler.width = "60%";
-        compiler.height = "500px";
+        compiler.style.width = "60%";
+        compiler.style.height = "500px";
       }
     }
 
