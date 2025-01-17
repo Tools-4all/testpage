@@ -713,7 +713,7 @@
     }
 
     document.addEventListener('keydown', function (event) {
-      if (compiler.style.width == "60%") {
+      if (compiler.style.width == "100%") {
         if (event.key === 'Escape') {
           compiler.style.width = "60%";
           compiler.style.height = "500px";
@@ -722,7 +722,7 @@
       }
     });
 
-    alert("shay");
+    alert("shay2");
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
