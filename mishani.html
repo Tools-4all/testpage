@@ -712,6 +712,18 @@
       }
     }
 
+    document.addEventListener('keydown', function (event) {
+      if (compiler.style.width == "60%") {
+        if (event.key === 'Escape') {
+          compiler.style.width = "60%";
+          compiler.style.height = "500px";
+          compiler.style.margin = '100px auto';
+        }
+      }
+    });
+
+    alert("shay");
+
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
       let tIndex = tabs.findIndex((x) => x.id === tId)
