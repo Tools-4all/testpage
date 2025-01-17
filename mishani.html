@@ -691,17 +691,18 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("9");
+    alert("10");
 
     function fullScreen() {
-      console.log('dfdf');
       const compiler = document.getElementById("compiler");
-      if (compiler.width == "60%") {
+      if (compiler.style.width == "60%") {
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
+        console.log('60');
       } else {
         compiler.style.width = "60%";
         compiler.style.height = "500px";
+        console.log('100');
       }
     }
 
