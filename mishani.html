@@ -28,6 +28,7 @@
       background-color: #1e1e1e;
       color: #d4d4d4;
       overflow: hidden;
+      transition: width 0.3s ease;
     }
 
     .vs-logo {
@@ -691,7 +692,7 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("14");
+    alert("15");
 
     function fullScreen() {
       const compiler = document.getElementById("compiler");
@@ -705,6 +706,7 @@
         compiler.style.width = "60%";
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
+        console.log('100');
       }
     }
 
