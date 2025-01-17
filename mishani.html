@@ -21,10 +21,6 @@
       position: relative;
       font-family: 'Fira Code', monospace;
       display: flex;
-      flex-direction: row;
-      height: 500px;
-      width: 60%;
-      margin: 100px auto;
       background-color: #1e1e1e;
       color: #d4d4d4;
       overflow: hidden;
@@ -692,10 +688,17 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("15");
+
+    alert(15);
+
+    const compiler = document.getElementById("compiler");
+    window.onload = function () {
+      compiler.style.width = '60%';
+      compiler.style.height = '500px';
+      compiler.style.margin = '100px auto';
+    };
 
     function fullScreen() {
-      const compiler = document.getElementById("compiler");
       if (compiler.style.width == "60%") {
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
