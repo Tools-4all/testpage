@@ -119,6 +119,12 @@
       opacity: 0.5;
     }
 
+    #fullScreenBtn {
+      margin-left: auto;
+      margin-top: 3px;
+      font-size: 13px;
+    }
+
     #activityBar {
       width: 50px;
       background-color: #252526;
@@ -636,7 +642,7 @@
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
-      <div style="margin-left: auto;margin-top: 5px;font-size: 13px;">
+      <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
@@ -684,7 +690,19 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("7");
+    alert("8");
+
+    function fullScreen() {
+      const compiler = document.getElementById("compiler");
+      if (compiler.width == "60%") {
+        compiler.width = "100%";
+        compiler.height = "100vh";
+      } else {
+        compiler.width = "60%";
+        compiler.height = "500px";
+      }
+    }
+
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
       let tIndex = tabs.findIndex((x) => x.id === tId)
@@ -1214,9 +1232,9 @@
     window.MonacoEnvironment = {
       getWorkerUrl: function (m, l) {
         return "data:text/javascript;charset=utf-8," + encodeURIComponent(`
-self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'};
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-`)
+        self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'};
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+        `)
       }
     }
     async function cacheWorkerCode() {
