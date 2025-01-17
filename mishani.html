@@ -691,10 +691,11 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
-    alert("12");
+    alert("13");
 
     function fullScreen() {
       const compiler = document.getElementById("compiler");
+      const margin = compiler.style.margin;
       if (compiler.style.width == "60%") {
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
@@ -702,7 +703,7 @@
       } else {
         compiler.style.width = "60%";
         compiler.style.height = "500px";
-        compiler.style.margin = "100 auto";
+        compiler.style.margin = margin;
 
       }
     }
