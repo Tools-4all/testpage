@@ -18,10 +18,13 @@
     }
 
     #compiler {
+      position: relative;
       font-family: 'Fira Code', monospace;
       display: flex;
       flex-direction: row;
-      height: 100vh;
+      height: 500px;
+      width: 60%;
+      margin: 100px auto;
       background-color: #1e1e1e;
       color: #d4d4d4;
       overflow: hidden;
@@ -57,7 +60,7 @@
       display: flex;
       padding: 5px 10px;
       border-bottom: 1px solid #333;
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -631,8 +634,8 @@
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
-      <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i>
-      </div>
+      <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
+      <div style="margin: 0 auto;"><i class="fa-solid fa-expand"></i></div>
     </div>
     <div id="activityBar">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
