@@ -646,6 +646,9 @@
       <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
+      <div id="lightMode" onclick="changeToDark()">
+        <i class="fa-regular fa-sun-bright"></i>
+      </div>
     </div>
     <div id="activityBar">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
@@ -730,6 +733,22 @@
         }
       }
     });
+
+    let darkModeFlag = true;
+    function changeToDark() {
+      const lightModeDiv = document.getElementById("lightMode");
+      if (darkModeFlag) {
+        darkModeFlag = false;
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
+        compiler.style.backgroundColor = "#f0f0f0";
+        compiler.style.color = "#000";
+      }
+      else {
+        darkModeFlag = true;
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-sun-bright"></i>';
+        compiler.style.backgroundColor = "#1e1e1e";
+      }
+    }
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
