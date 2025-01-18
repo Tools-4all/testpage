@@ -693,9 +693,18 @@
     let lastDropSide = null
 
     const compiler = document.getElementById("compiler");
-    window.onload = function () {
-      compiler.style.width = '60%';
-    };
+
+    if (window.innerWidth < 768) {
+      compiler.style.width = '100%';
+      compiler.style.height = '100vh';
+      compiler.style.margin = '0';
+      document.getElementById("fullScreenBtn").style.display = 'none';
+    }
+    else {
+      window.onload = function () {
+        compiler.style.width = '60%';
+      };
+    }
 
     function fullScreen() {
       if (compiler.style.width == "60%") {
@@ -721,8 +730,6 @@
         }
       }
     });
-
-    alert("shay2");
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
