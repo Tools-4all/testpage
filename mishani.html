@@ -644,10 +644,7 @@
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
       <div id="lightMode" style="margin-left: auto;margin-right: 25px;margin-top: 2px;" onclick="changeToDark()">
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <!-- Sun's center -->
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
-
-          <!-- Sun rays -->
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
           <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
           <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2" />
@@ -749,19 +746,18 @@
       }
     });
 
+    const lightModeDiv = document.getElementById("lightMode");
+    const sunSvg = lightModeDiv.innerHTML;
     let darkModeFlag = true;
+
     function changeToDark() {
-      const lightModeDiv = document.getElementById("lightMode");
       if (darkModeFlag) {
         darkModeFlag = false;
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
-        compiler.style.backgroundColor = "#f0f0f0";
-        compiler.style.color = "#000";
       }
       else {
         darkModeFlag = true;
-        lightModeDiv.innerHTML = '<i class="fa-regular fa-sun-bright"></i>';
-        compiler.style.backgroundColor = "#1e1e1e";
+        lightModeDiv.innerHTML = sunSvg;
       }
     }
 
