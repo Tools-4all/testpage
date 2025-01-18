@@ -119,6 +119,13 @@
       opacity: 0.5;
     }
 
+    #lightMode {
+      margin-left: auto;
+      margin-right: 25px;
+      margin-top: 2px;
+      cursor: pointer;
+    }
+
     #fullScreenBtn {
       margin-top: 3px;
       font-size: 13px;
@@ -642,7 +649,7 @@
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
-      <div id="lightMode" style="margin-left: auto;margin-right: 25px;margin-top: 2px;" onclick="changeToDark()">
+      <div id="lightMode" onclick="changeToDark()">
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
