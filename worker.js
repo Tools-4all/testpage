@@ -148,19 +148,21 @@ function relativeStack(error) {
     return result.join('\n');
 }
 
+
+
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     if (value === null || value === undefined) return String(value); // "null" or "undefined"
     if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
-        return value; // Primitive types
+        return value; 
     }
     if (typeof value === "string") {
-        return `"${value}"`; // Quote strings
+        return `"${value}"`; 
     }
     if (typeof value === "symbol") {
-        return value.toString(); // Symbol description
+        return value.toString(); 
     }
     if (typeof value === "function") {
-        return "ƒ"; // Function short representation
+        return "ƒ"; 
     }
     if (seen.has(value)) {
         return "[Circular]";
@@ -192,7 +194,6 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
             objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`);
         });
 
-        // Include Symbols
         Object.getOwnPropertySymbols(value).forEach((sym) => {
             objClone[sym.toString()] = cloneForConsoleTable(value[sym], seen, `${path}[${sym.toString()}]`);
         });
@@ -205,10 +206,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 
 
 
-// Helper to check if an object is a Proxy (limited detection)
 function isProxy(obj) {
-    // There is no standard way to detect Proxies. This is a heuristic.
-    // Attempting to access properties that are not trapped
     try {
         Object.getOwnPropertyDescriptor(obj, "__isProxy");
         return false;
@@ -371,7 +369,6 @@ self.addEventListener("message", (event) => {
             clear: () => self.postMessage({ type: "clear" }),
 
             table: (data, columns) => {
-                // Determine if data is table-worthy
                 if (
                     data === null ||
                     data === undefined ||
@@ -381,13 +378,11 @@ self.addEventListener("message", (event) => {
                     typeof data === "bigint" ||
                     typeof data === "symbol"
                 ) {
-                    // Log primitive types as strings
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
-        
+            
                 if (typeof data === "function") {
-                    // Serialize function to string and log it
                     let fnString;
                     try {
                         fnString = Function.prototype.toString.call(data);
@@ -397,24 +392,22 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
-        
-                // Handle objects and arrays
+            
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
                 } catch (err) {
-                    // Fallback if cloning fails
                     self.postMessage({
                         type: "log",
                         message: `[Uncloneable data] ${err.message}`
                     });
                     return;
                 }
-        
-                // Send table data to main thread
+            
                 self.postMessage({
                     type: "table",
-                    tableData: safeData
+                    tableData: safeData,
+                    columns: columns || null 
                 });
             },
 

@@ -527,12 +527,14 @@
       background-color: #1177bb;
     }
 
+    /* Existing styles */
     .console-table {
       border-collapse: collapse;
       font-size: 14px;
       color: #d4d4d4;
       margin-top: 4px;
-      width: auto;
+      width: 100%;
+      /* Ensure tables take full width */
     }
 
     .console-table thead {
@@ -549,6 +551,32 @@
 
     .console-table-row:hover {
       background-color: #2d2d2d;
+    }
+
+    /* Additional styles for expandables */
+    .expandable {
+      cursor: pointer;
+      color: #3794ff;
+      /* Info color for expand/collapse */
+    }
+
+    .expandable::after {
+      content: " ▸";
+      /* Right arrow for collapsed state */
+    }
+
+    .expandable.expanded::after {
+      content: " ▾";
+      /* Down arrow for expanded state */
+    }
+
+    .expandable-details {
+      display: none;
+      margin-left: 20px;
+    }
+
+    .expandable.expanded+.expandable-details {
+      display: block;
     }
 
 
@@ -863,8 +891,11 @@
     }
 
 
-    function appendTable(outputElement, tableData) {
-      const { rows, columns } = buildChromeTableModel(tableData);
+    function appendTable(outputElement, tableData, columns = null) {
+      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
+
+      // Use provided columns or derived columns
+      const finalColumns = columns || derivedColumns;
 
       // Create table container
       const div = document.createElement("div");
@@ -872,14 +903,14 @@
 
       // Create table element
       const table = document.createElement("table");
-      table.classList.add("console-table");
+      table.classList.add("console-table"); // Ensure this class matches your CSS
 
       // Create table header
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
 
-      columns.forEach(col => {
+      finalColumns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
         th.textContent = col;
@@ -895,7 +926,7 @@
         const tr = document.createElement("tr");
         tr.classList.add("console-table-row");
 
-        columns.forEach(col => {
+        finalColumns.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
 
@@ -909,8 +940,9 @@
               const setValues = Array.from(value.values()).join(", ");
               td.textContent = `{ ${setValues} }`;
             } else {
-              // Display nested objects as "{…}" or "{}"
-              td.textContent = Object.keys(value).length ? "{…}" : "{}";
+              // Display nested objects as expandable
+              td.innerHTML = `{ <span class="expandable">…</span> }`;
+              // Implement expandable functionality as needed
             }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
@@ -947,6 +979,7 @@
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
+
 
 
     function buildChromeTableModel(input) {
@@ -1045,6 +1078,7 @@
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
+
 
 
 
@@ -1409,7 +1443,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert('7')
+    alert('27')
   </script>
 </body>
 
