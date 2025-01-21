@@ -922,7 +922,7 @@
     }
 
 
-    alert(9);
+    alert(10);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -1143,33 +1143,58 @@
 
     function applyDarkModeToNewTab(tab) {
       if (!tab) return;
+
+      // Tab styles
       if (tab.tabElement) {
         tab.tabElement.style.backgroundColor = "#333";
         tab.tabElement.style.color = "#fff";
       }
+
+      // Editor container styles
       if (tab.editorContainer) {
         tab.editorContainer.style.backgroundColor = "#1e1e1e";
       }
+
+      // Output container styles
       if (tab.outputElement) {
         tab.outputElement.style.backgroundColor = "#1e1e1e";
         tab.outputElement.style.color = "#d4d4d4";
+      }
+
+      // Controls styles
+      if (tab.controls) {
+        tab.controls.style.backgroundColor = "#252526";
+        tab.controls.style.color = "#ffffff";
       }
     }
 
     function applyLightModeToNewTab(tab) {
       if (!tab) return;
+
+      // Tab styles
       if (tab.tabElement) {
         tab.tabElement.style.backgroundColor = "#d4d4d4";
         tab.tabElement.style.color = "#000";
       }
+
+      // Editor container styles
       if (tab.editorContainer) {
         tab.editorContainer.style.backgroundColor = "#ffffff";
       }
+
+      // Output container styles
       if (tab.outputElement) {
         tab.outputElement.style.backgroundColor = "#f9f9f9";
         tab.outputElement.style.color = "#000";
       }
+
+      // Controls styles
+      if (tab.controls) {
+        tab.controls.style.backgroundColor = "#f0f0f0";
+        tab.controls.style.color = "#000";
+      }
     }
+
 
 
 
