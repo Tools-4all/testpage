@@ -943,7 +943,7 @@
     }
 
 
-    alert(8);
+    alert(9);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -959,64 +959,78 @@
     }
     function getUniqueTabName(b, i = null) { let c = b, s = 1; while (tabs.some((t) => t.id !== i && t.name.toLowerCase() === c.toLowerCase())) { c = b + `(${s++})` } return c }
 
+
     function createTab(d = null, c = null) {
-      let tabName = d ? getUniqueTabName(d) : getNextTabName();
+      let n = d ? getUniqueTabName(d) : getNextTabName();
       let id = Date.now();
-      let sharedBuffer = new SharedArrayBuffer(1024);
-      let sharedView = new Int32Array(sharedBuffer);
+      let sb = new SharedArrayBuffer(1024);
+      let v = new Int32Array(sb);
 
-      // Tab UI
-      let tabElement = document.createElement("div");
-      tabElement.classList.add("tab");
-      tabElement.draggable = true;
+      // Create tab element
+      let e = document.createElement("div");
+      e.classList.add("tab");
+      e.draggable = true;
 
-      let tabTitle = document.createElement("span");
-      tabTitle.classList.add("tab-title");
-      tabTitle.textContent = tabName;
-      tabElement.appendChild(tabTitle);
+      // Tab title
+      let ti = document.createElement("span");
+      ti.classList.add("tab-title");
+      ti.textContent = n;
+      e.appendChild(ti);
 
-      let closeIcon = document.createElement("i");
-      closeIcon.classList.add("fas", "fa-times", "close");
-      tabElement.appendChild(closeIcon);
+      // Close icon
+      let cl = document.createElement("i");
+      cl.classList.add("fas", "fa-times", "close");
+      e.appendChild(cl);
 
-      // Editor and Output Containers
-      let editorAndOutput = document.createElement("div");
-      editorAndOutput.classList.add("editor-and-output");
+      // Editor and Output container
+      let eo = document.createElement("div");
+      eo.classList.add("editor-and-output");
 
-      let editorContainer = document.createElement("div");
-      editorContainer.classList.add("editorContainer");
-      editorAndOutput.appendChild(editorContainer);
+      // Editor container
+      let ec = document.createElement("div");
+      ec.classList.add("editorContainer");
+      eo.appendChild(ec);
 
-      let outputContainer = document.createElement("div");
-      outputContainer.classList.add("outputContainer");
+      // Output container
+      let oc = document.createElement("div");
+      oc.classList.add("outputContainer");
 
-      let controls = document.createElement("div");
-      controls.classList.add("controls");
+      // Controls
+      let co = document.createElement("div");
+      co.classList.add("controls");
 
-      let runButton = document.createElement("button");
-      runButton.classList.add("runButton");
-      runButton.innerHTML = '<i class="fas fa-play"></i> Run';
-      controls.appendChild(runButton);
-      outputContainer.appendChild(controls);
+      let rb = document.createElement("button");
+      rb.classList.add("runButton");
+      rb.innerHTML = '<i class="fas fa-play"></i> Run';
+      co.appendChild(rb);
+      oc.appendChild(co);
 
-      let output = document.createElement("div");
-      output.classList.add("output");
-      output.tabIndex = 0;
-      outputContainer.appendChild(output);
+      let od = document.createElement("div");
+      od.classList.add("output");
+      od.setAttribute("tabindex", "0");
+      od.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === "a") {
+          e.preventDefault();
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(od);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+      oc.appendChild(od);
+      eo.appendChild(oc);
 
-      editorAndOutput.appendChild(outputContainer);
+      // Add to DOM
+      let tb = document.getElementById("tabBar");
+      let ab = document.getElementById("addTabButton");
+      tb.insertBefore(e, ab);
 
-      // Add tab to tab bar
-      let tabBar = document.getElementById("tabBar");
-      let addTabButton = document.getElementById("addTabButton");
-      tabBar.insertBefore(tabElement, addTabButton);
+      let tc = document.getElementById("tabsContainer");
+      tc.appendChild(eo);
 
-      // Add editor and output to tabs container
-      let tabsContainer = document.getElementById("tabsContainer");
-      tabsContainer.appendChild(editorAndOutput);
-
-      // Create Monaco editor
-      let editorInstance = monaco.editor.create(editorContainer, {
+      // Create Monaco Editor
+      let ed = monaco.editor.create(ec, {
         language: "javascript",
         theme: darkModeFlag ? "custom-dark" : "vs-light",
         automaticLayout: true,
@@ -1025,62 +1039,126 @@
         minimap: { enabled: true },
         fontSize: 14,
         fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
-        wordWrap: "on",
+        fontLigatures: true,
         folding: true,
         lineNumbers: "on",
+        wordWrap: "on",
         scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+        contextmenu: true,
+        selectionHighlight: true,
+        renderIndentGuides: true,
+        renderLineHighlight: "all",
+        cursorStyle: "line",
+        cursorBlinking: "blink",
         quickSuggestions: true,
         parameterHints: true,
+        autoClosingBrackets: "always",
+        autoClosingQuotes: "always",
+        formatOnType: true,
+        formatOnPaste: true,
+        suggestOnTriggerCharacters: true,
+        smoothScrolling: true,
+        breadcrumbs: { enabled: true },
       });
 
-      // Save tab data
-      let tabData = {
+      // Tab object
+      let o = {
         id,
-        name: tabName,
-        sharedBuffer,
-        view: sharedView,
-        tabElement,
-        editorContainer,
-        outputElement: output,
-        editorInstance,
+        name: n,
+        sharedBuffer: sb,
+        view: v,
+        tabElement: e,
+        editorContainer: ec,
+        outputElement: od,
+        editorInstance: ed,
         worker: null,
-        editorAndOutput,
+        editorAndOutput: eo,
       };
-      tabs.push(tabData);
 
-      // Event Listeners
-      closeIcon.addEventListener("click", (e) => {
-        e.stopPropagation();
+      tabs.push(o);
+
+      // Event listeners
+      ed.onDidChangeCursorPosition(() => {
+        updateStatusPosition();
+      });
+
+      rb.addEventListener("click", () => {
+        runTab(id, rb);
+      });
+
+      cl.addEventListener("click", (x) => {
+        x.stopPropagation();
         closeTab(id);
       });
 
-      tabTitle.addEventListener("dblclick", () => makeTabTitleEditable(tabData));
-      tabElement.addEventListener("dragstart", (e) => handleDragStart(e, id));
-      tabElement.addEventListener("dragover", (e) => handleDragOver(e, tabElement));
-      tabElement.addEventListener("drop", (e) => handleDrop(e, id));
-      tabElement.addEventListener("dragend", handleDragEnd);
+      e.addEventListener("dragstart", (x) => {
+        switchTab(id);
+        x.dataTransfer.setData("text/plain", "");
+        x.dataTransfer.effectAllowed = "move";
+        draggedTabId = id;
+        e.classList.add("dragging");
+      });
 
-      runButton.addEventListener("click", () => runTab(id, runButton));
+      e.addEventListener("dragend", () => {
+        e.classList.remove("dragging");
+        draggedTabId = null;
+        lastDropSide = null;
+        document.querySelectorAll(".tab").forEach((m) =>
+          m.classList.remove("tab-drop-left", "tab-drop-right", "dragging")
+        );
+      });
 
-      tabElement.addEventListener("click", () => switchTab(id));
+      e.addEventListener("dragover", (x) => {
+        x.preventDefault();
+        if (!draggedTabId || e.classList.contains("dragging")) return;
+        let r = e.getBoundingClientRect();
+        let mid = r.left + r.width / 2;
+        if (x.clientX < mid) {
+          e.classList.add("tab-drop-left");
+          e.classList.remove("tab-drop-right");
+          lastDropSide = "left";
+        } else {
+          e.classList.add("tab-drop-right");
+          e.classList.remove("tab-drop-left");
+          lastDropSide = "right";
+        }
+      });
 
-      editorInstance.onDidChangeCursorPosition(() => updateStatusPosition());
+      e.addEventListener("dragleave", () => {
+        e.classList.remove("tab-drop-left", "tab-drop-right");
+      });
 
-      // Set initial content
+      e.addEventListener("drop", (x) => {
+        x.preventDefault();
+        e.classList.remove("tab-drop-left", "tab-drop-right");
+        if (!draggedTabId) return;
+        reorderTabsByTab(draggedTabId, id, lastDropSide);
+        lastDropSide = null;
+      });
+
+      ti.addEventListener("dblclick", () => {
+        makeTabTitleEditable(o);
+      });
+
+      // Set content
       if (c !== null) {
-        editorInstance.setValue(c);
+        ed.setValue(c);
       } else {
-        editorInstance.setValue(`// ${tabName}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`);
+        ed.setValue(
+          `// ${n}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`
+        );
       }
 
-      // Apply current theme styles
+      // Apply styles based on theme
       if (darkModeFlag) {
-        applyDarkModeToNewTab(tabData);
+        applyDarkModeToNewTab(o);
       } else {
-        applyLightModeToNewTab(tabData);
+        applyLightModeToNewTab(o);
       }
 
-      switchTab(id); // Activate the new tab
+      // Activate tab
+      switchTab(id);
+
       return id;
     }
 
