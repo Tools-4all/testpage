@@ -767,6 +767,8 @@
       const monacoEditors = document.querySelectorAll('.monaco-editor');
       const outputs = document.querySelectorAll('.outputContainer');
       const consoleOutputs = document.querySelectorAll('.output');
+      const statusBar = document.getElementById('statusBar'); // Target the status bar
+      const mainContainer = document.getElementById('mainContainer'); // Target the main container
 
       if (darkModeFlag) {
         // Switch to light mode
@@ -816,6 +818,14 @@
           output.style.color = '#000';
         });
 
+        // Update status bar
+        statusBar.style.backgroundColor = '#eaeaea';
+        statusBar.style.color = '#000';
+
+        // Update main container
+        mainContainer.style.backgroundColor = '#f9f9f9';
+        mainContainer.style.color = '#000';
+
       } else {
         // Switch back to dark mode
         darkModeFlag = true;
@@ -863,10 +873,19 @@
           output.style.backgroundColor = '#1e1e1e';
           output.style.color = '#d4d4d4';
         });
+
+        // Update status bar
+        statusBar.style.backgroundColor = '#252526';
+        statusBar.style.color = '#cccccc';
+
+        // Update main container
+        mainContainer.style.backgroundColor = '#1e1e1e';
+        mainContainer.style.color = '#d4d4d4';
       }
     }
 
-    alert(1);
+
+    alert(2);
 
 
     function reorderTabsByTab(dId, tId, side) {
