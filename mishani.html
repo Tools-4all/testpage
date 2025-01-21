@@ -922,27 +922,6 @@
     }
 
 
-    function applyLightModeToNewTab(tab) {
-      tab.tabElement.style.backgroundColor = '#d4d4d4';
-      tab.tabElement.style.color = '#000';
-      tab.editorContainer.style.backgroundColor = '#ffffff';
-      tab.outputElement.style.backgroundColor = '#f9f9f9';
-      tab.outputElement.style.color = '#000';
-      tab.controls.style.backgroundColor = '#f0f0f0';
-      tab.controls.style.color = '#000';
-    }
-
-    function applyDarkModeToNewTab(tab) {
-      tab.tabElement.style.backgroundColor = '#333';
-      tab.tabElement.style.color = '#fff';
-      tab.editorContainer.style.backgroundColor = '#1e1e1e';
-      tab.outputElement.style.backgroundColor = '#1e1e1e';
-      tab.outputElement.style.color = '#d4d4d4';
-      tab.controls.style.backgroundColor = '#252526';
-      tab.controls.style.color = '#ffffff';
-    }
-
-
     alert(9);
 
 
@@ -1160,6 +1139,26 @@
       switchTab(id);
 
       return id;
+    }
+
+    function applyLightModeToNewTab(tab) {
+      tab.tabElement.style.backgroundColor = '#d4d4d4';
+      tab.tabElement.style.color = '#000';
+      tab.editorContainer.style.backgroundColor = '#ffffff';
+      tab.outputElement.style.backgroundColor = '#f9f9f9';
+      tab.outputElement.style.color = '#000';
+      tab.controls.style.backgroundColor = '#f0f0f0';
+      tab.controls.style.color = '#000';
+    }
+
+    function applyDarkModeToNewTab(tab) {
+      tab.tabElement.style.backgroundColor = '#333';
+      tab.tabElement.style.color = '#fff';
+      tab.editorContainer.style.backgroundColor = '#1e1e1e';
+      tab.outputElement.style.backgroundColor = '#1e1e1e';
+      tab.outputElement.style.color = '#d4d4d4';
+      tab.controls.style.backgroundColor = '#252526';
+      tab.controls.style.color = '#ffffff';
     }
 
 
