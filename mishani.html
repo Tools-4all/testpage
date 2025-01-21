@@ -767,8 +767,9 @@
       const monacoEditors = document.querySelectorAll('.monaco-editor');
       const outputs = document.querySelectorAll('.outputContainer');
       const consoleOutputs = document.querySelectorAll('.output');
-      const statusBar = document.getElementById('statusBar'); // Target the status bar
-      const mainContainer = document.getElementById('mainContainer'); // Target the main container
+      const statusBar = document.getElementById('statusBar');
+      const mainContainer = document.getElementById('mainContainer');
+      const runButtons = document.querySelectorAll('.runButton'); // Run button style
 
       if (darkModeFlag) {
         // Switch to light mode
@@ -821,11 +822,17 @@
         // Update status bar
         statusBar.style.backgroundColor = '#eaeaea';
         statusBar.style.color = '#000';
+        statusBar.style.borderTop = '1px solid #ccc';
 
         // Update main container
         mainContainer.style.backgroundColor = '#f9f9f9';
         mainContainer.style.color = '#000';
 
+        // Update run button
+        runButtons.forEach(button => {
+          button.style.backgroundColor = '#007acc';
+          button.style.color = '#fff';
+        });
       } else {
         // Switch back to dark mode
         darkModeFlag = true;
@@ -877,12 +884,20 @@
         // Update status bar
         statusBar.style.backgroundColor = '#252526';
         statusBar.style.color = '#cccccc';
+        statusBar.style.borderTop = '1px solid #333';
 
         // Update main container
         mainContainer.style.backgroundColor = '#1e1e1e';
         mainContainer.style.color = '#d4d4d4';
+
+        // Update run button
+        runButtons.forEach(button => {
+          button.style.backgroundColor = '#0e639c';
+          button.style.color = '#fff';
+        });
       }
     }
+
 
 
     alert(2);
