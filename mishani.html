@@ -768,8 +768,8 @@
       const outputs = document.querySelectorAll('.outputContainer');
       const consoleOutputs = document.querySelectorAll('.output');
       const statusBar = document.getElementById('statusBar');
-      const mainContainer = document.getElementById('mainContainer');
-      const runButtons = document.querySelectorAll('.runButton'); // Run button style
+      const runButtons = document.querySelectorAll('.runButton');
+      const editorAndOutput = document.querySelectorAll('.editor-and-output');
 
       if (darkModeFlag) {
         // Switch to light mode
@@ -779,7 +779,6 @@
         // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#f0f0f0';
         vsNavbar.style.color = '#000';
-        vsNavbar.style.borderBottom = '1px solid #ccc';
         activityBar.style.backgroundColor = '#f0f0f0';
         activityBar.style.color = '#000';
 
@@ -797,41 +796,40 @@
           tab.style.color = '#000';
         });
 
-        // Update Monaco editor container
+        // Update Monaco editor container and themes
         editorContainers.forEach(editor => {
           editor.style.backgroundColor = '#ffffff';
         });
 
-        // Update Monaco editor directly
         monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#ffffff'; // Ensure the Monaco editor itself changes
-          editor.style.color = '#000'; // Text color for Monaco
+          editor.style.backgroundColor = '#ffffff'; // Editor's container background
+          editor.style.color = '#000'; // Ensure text color
         });
+
+        editorAndOutput.forEach(container => {
+          container.style.backgroundColor = '#ffffff';
+        });
+
+        monaco.editor.setTheme('vs-light');
 
         // Update console output
         outputs.forEach(output => {
-          output.style.backgroundColor = '#f7f7f7';
+          output.style.backgroundColor = '#f9f9f9';
           output.style.color = '#000';
         });
-
         consoleOutputs.forEach(output => {
-          output.style.backgroundColor = '#f7f7f7';
+          output.style.backgroundColor = '#f9f9f9';
           output.style.color = '#000';
         });
 
         // Update status bar
         statusBar.style.backgroundColor = '#eaeaea';
         statusBar.style.color = '#000';
-        statusBar.style.borderTop = '1px solid #ccc';
 
-        // Update main container
-        mainContainer.style.backgroundColor = '#f9f9f9';
-        mainContainer.style.color = '#000';
-
-        // Update run button
+        // Update run buttons
         runButtons.forEach(button => {
           button.style.backgroundColor = '#007acc';
-          button.style.color = '#fff';
+          button.style.color = '#ffffff';
         });
       } else {
         // Switch back to dark mode
@@ -841,7 +839,6 @@
         // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#252526';
         vsNavbar.style.color = '#ffffff';
-        vsNavbar.style.borderBottom = '1px solid #333';
         activityBar.style.backgroundColor = '#252526';
         activityBar.style.color = '#ffffff';
 
@@ -859,23 +856,27 @@
           tab.style.color = '#fff';
         });
 
-        // Update Monaco editor container
+        // Update Monaco editor container and themes
         editorContainers.forEach(editor => {
           editor.style.backgroundColor = '#1e1e1e';
         });
 
-        // Update Monaco editor directly
         monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#1e1e1e'; // Dark background
-          editor.style.color = '#d4d4d4'; // Text color for Monaco
+          editor.style.backgroundColor = '#1e1e1e'; // Editor's container background
+          editor.style.color = '#d4d4d4'; // Ensure text color
         });
+
+        editorAndOutput.forEach(container => {
+          container.style.backgroundColor = '#1e1e1e';
+        });
+
+        monaco.editor.setTheme('vs-dark');
 
         // Update console output
         outputs.forEach(output => {
           output.style.backgroundColor = '#1e1e1e';
           output.style.color = '#d4d4d4';
         });
-
         consoleOutputs.forEach(output => {
           output.style.backgroundColor = '#1e1e1e';
           output.style.color = '#d4d4d4';
@@ -884,20 +885,14 @@
         // Update status bar
         statusBar.style.backgroundColor = '#252526';
         statusBar.style.color = '#cccccc';
-        statusBar.style.borderTop = '1px solid #333';
 
-        // Update main container
-        mainContainer.style.backgroundColor = '#1e1e1e';
-        mainContainer.style.color = '#d4d4d4';
-
-        // Update run button
+        // Update run buttons
         runButtons.forEach(button => {
           button.style.backgroundColor = '#0e639c';
-          button.style.color = '#fff';
+          button.style.color = '#ffffff';
         });
       }
     }
-
 
 
     alert(4);
