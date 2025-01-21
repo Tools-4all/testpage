@@ -767,14 +767,14 @@
       const monacoEditors = document.querySelectorAll('.monaco-editor');
       const outputs = document.querySelectorAll('.outputContainer');
       const consoleOutputs = document.querySelectorAll('.output');
+      const controls = document.querySelectorAll('.controls');
       const statusBar = document.getElementById('statusBar');
       const runButtons = document.querySelectorAll('.runButton');
       const editorAndOutput = document.querySelectorAll('.editor-and-output');
 
-      if (darkModeFlag) {
-        // Switch to light mode
-        darkModeFlag = false;
+      function applyLightMode() {
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
+        darkModeFlag = false;
 
         // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#f0f0f0';
@@ -802,8 +802,8 @@
         });
 
         monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#ffffff'; // Editor's container background
-          editor.style.color = '#000'; // Ensure text color
+          editor.style.backgroundColor = '#ffffff';
+          editor.style.color = '#000';
         });
 
         editorAndOutput.forEach(container => {
@@ -822,6 +822,12 @@
           output.style.color = '#000';
         });
 
+        // Update controls
+        controls.forEach(control => {
+          control.style.backgroundColor = '#f0f0f0';
+          control.style.color = '#000';
+        });
+
         // Update status bar
         statusBar.style.backgroundColor = '#eaeaea';
         statusBar.style.color = '#000';
@@ -831,10 +837,11 @@
           button.style.backgroundColor = '#007acc';
           button.style.color = '#ffffff';
         });
-      } else {
-        // Switch back to dark mode
-        darkModeFlag = true;
+      }
+
+      function applyDarkMode() {
         lightModeDiv.innerHTML = sunSvg;
+        darkModeFlag = true;
 
         // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#252526';
@@ -862,8 +869,8 @@
         });
 
         monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#1e1e1e'; // Editor's container background
-          editor.style.color = '#d4d4d4'; // Ensure text color
+          editor.style.backgroundColor = '#1e1e1e';
+          editor.style.color = '#d4d4d4';
         });
 
         editorAndOutput.forEach(container => {
@@ -882,6 +889,12 @@
           output.style.color = '#d4d4d4';
         });
 
+        // Update controls
+        controls.forEach(control => {
+          control.style.backgroundColor = '#252526';
+          control.style.color = '#ffffff';
+        });
+
         // Update status bar
         statusBar.style.backgroundColor = '#252526';
         statusBar.style.color = '#cccccc';
@@ -892,10 +905,40 @@
           button.style.color = '#ffffff';
         });
       }
+
+      if (darkModeFlag) {
+        applyLightMode();
+      } else {
+        applyDarkMode();
+      }
+    }
+
+    function createTab(d = null, c = null) {
+      let tabId = originalCreateTab(d, c); // Call the original createTab logic
+
+      const newTab = tabs.find(tab => tab.id === tabId);
+
+      if (darkModeFlag) {
+        // Apply dark mode styles to the new tab components
+        newTab.editorContainer.style.backgroundColor = '#1e1e1e';
+        newTab.outputElement.style.backgroundColor = '#1e1e1e';
+        newTab.outputElement.style.color = '#d4d4d4';
+        newTab.controls.style.backgroundColor = '#252526';
+        newTab.controls.style.color = '#ffffff';
+      } else {
+        // Apply light mode styles to the new tab components
+        newTab.editorContainer.style.backgroundColor = '#ffffff';
+        newTab.outputElement.style.backgroundColor = '#f9f9f9';
+        newTab.outputElement.style.color = '#000';
+        newTab.controls.style.backgroundColor = '#f0f0f0';
+        newTab.controls.style.color = '#000';
+      }
+
+      return tabId;
     }
 
 
-    alert(4);
+    alert(5);
 
 
     function reorderTabsByTab(dId, tId, side) {
