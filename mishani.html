@@ -922,7 +922,7 @@
     }
 
 
-    alert(10);
+    alert(11);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -1161,11 +1161,10 @@
         tab.outputElement.style.color = "#d4d4d4";
       }
 
-      // Controls styles
-      if (tab.controls) {
-        tab.controls.style.backgroundColor = "#252526";
-        tab.controls.style.color = "#ffffff";
-      }
+      controls.forEach(control => {
+        control.style.backgroundColor = '#252526';
+        control.style.color = '#ffffff';
+      });
     }
 
     function applyLightModeToNewTab(tab) {
@@ -1188,11 +1187,10 @@
         tab.outputElement.style.color = "#000";
       }
 
-      // Controls styles
-      if (tab.controls) {
-        tab.controls.style.backgroundColor = "#f0f0f0";
-        tab.controls.style.color = "#000";
-      }
+      controls.forEach(control => {
+        control.style.backgroundColor = '#f0f0f0';
+        control.style.color = '#000';
+      });
     }
 
 
