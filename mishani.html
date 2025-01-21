@@ -758,23 +758,62 @@
     let darkModeFlag = true;
 
     function changeToLightMode() {
-
-      const vsNavbar = document.getElementsByClassName('.vs-navbar');
+      const vsNavbar = document.querySelector('.vs-navbar');
       const activityBar = document.getElementById('activityBar');
+      const tabs = document.querySelectorAll('.tab');
+      const activeTabs = document.querySelectorAll('.tab.active');
+      const body = document.body;
 
       if (darkModeFlag) {
+        // Switch to light mode
         darkModeFlag = false;
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
         vsNavbar.style.backgroundColor = '#f0f0f0';
-        vsNavbar.style.borderBottom = '1px solid #f0f0f0';
+        vsNavbar.style.color = '#000';
+        vsNavbar.style.borderBottom = '1px solid #ccc';
         activityBar.style.backgroundColor = '#f0f0f0';
-        document.querySelectorAll('.tab').style.backgroundColor = '#bcb8b8';
-        document.querySelectorAll('.tab').style.color = '#000';
-        document.getElementsByClassName('.tab.active').style.backgroundColor = '#787675';
-      }
-      else {
+        activityBar.style.color = '#000';
+        body.style.backgroundColor = '#ffffff';
+        body.style.color = '#000';
+
+        tabs.forEach(tab => {
+          tab.style.backgroundColor = '#d4d4d4';
+          tab.style.color = '#000';
+        });
+
+        activeTabs.forEach(tab => {
+          tab.style.backgroundColor = '#c0c0c0';
+          tab.style.color = '#000';
+        });
+
+        document.querySelectorAll('.editorContainer').forEach(editor => {
+          editor.style.backgroundColor = '#ffffff';
+        });
+      } else {
+        // Switch to dark mode
         darkModeFlag = true;
         lightModeDiv.innerHTML = sunSvg;
+        vsNavbar.style.backgroundColor = '#252526';
+        vsNavbar.style.color = '#ffffff';
+        vsNavbar.style.borderBottom = '1px solid #333';
+        activityBar.style.backgroundColor = '#252526';
+        activityBar.style.color = '#ffffff';
+        body.style.backgroundColor = '#1e1e1e';
+        body.style.color = '#d4d4d4';
+
+        tabs.forEach(tab => {
+          tab.style.backgroundColor = '#333';
+          tab.style.color = '#fff';
+        });
+
+        activeTabs.forEach(tab => {
+          tab.style.backgroundColor = '#1e1e1e';
+          tab.style.color = '#fff';
+        });
+
+        document.querySelectorAll('.editorContainer').forEach(editor => {
+          editor.style.backgroundColor = '#1e1e1e';
+        });
       }
     }
 
