@@ -762,60 +762,97 @@
       const activityBar = document.getElementById('activityBar');
       const tabs = document.querySelectorAll('.tab');
       const activeTabs = document.querySelectorAll('.tab.active');
-      const body = document.body;
+      const compiler = document.getElementById('compiler');
+      const editorContainers = document.querySelectorAll('.editorContainer');
+      const outputs = document.querySelectorAll('.outputContainer');
+      const consoleOutputs = document.querySelectorAll('.output');
 
       if (darkModeFlag) {
         // Switch to light mode
         darkModeFlag = false;
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
+
+        // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#f0f0f0';
         vsNavbar.style.color = '#000';
         vsNavbar.style.borderBottom = '1px solid #ccc';
         activityBar.style.backgroundColor = '#f0f0f0';
         activityBar.style.color = '#000';
-        body.style.backgroundColor = '#ffffff';
-        body.style.color = '#000';
 
+        // Update compiler container
+        compiler.style.backgroundColor = '#ffffff';
+        compiler.style.color = '#000';
+
+        // Update tabs
         tabs.forEach(tab => {
           tab.style.backgroundColor = '#d4d4d4';
           tab.style.color = '#000';
         });
-
         activeTabs.forEach(tab => {
           tab.style.backgroundColor = '#c0c0c0';
           tab.style.color = '#000';
         });
 
-        document.querySelectorAll('.editorContainer').forEach(editor => {
+        // Update Monaco editor container
+        editorContainers.forEach(editor => {
           editor.style.backgroundColor = '#ffffff';
         });
+
+        // Update console output
+        outputs.forEach(output => {
+          output.style.backgroundColor = '#f7f7f7';
+          output.style.color = '#000';
+        });
+
+        consoleOutputs.forEach(output => {
+          output.style.backgroundColor = '#f7f7f7';
+          output.style.color = '#000';
+        });
+
       } else {
-        // Switch to dark mode
+        // Switch back to dark mode
         darkModeFlag = true;
         lightModeDiv.innerHTML = sunSvg;
+
+        // Update navbar and activity bar
         vsNavbar.style.backgroundColor = '#252526';
         vsNavbar.style.color = '#ffffff';
         vsNavbar.style.borderBottom = '1px solid #333';
         activityBar.style.backgroundColor = '#252526';
         activityBar.style.color = '#ffffff';
-        body.style.backgroundColor = '#1e1e1e';
-        body.style.color = '#d4d4d4';
 
+        // Update compiler container
+        compiler.style.backgroundColor = '#1e1e1e';
+        compiler.style.color = '#d4d4d4';
+
+        // Update tabs
         tabs.forEach(tab => {
           tab.style.backgroundColor = '#333';
           tab.style.color = '#fff';
         });
-
         activeTabs.forEach(tab => {
           tab.style.backgroundColor = '#1e1e1e';
           tab.style.color = '#fff';
         });
 
-        document.querySelectorAll('.editorContainer').forEach(editor => {
+        // Update Monaco editor container
+        editorContainers.forEach(editor => {
           editor.style.backgroundColor = '#1e1e1e';
+        });
+
+        // Update console output
+        outputs.forEach(output => {
+          output.style.backgroundColor = '#1e1e1e';
+          output.style.color = '#d4d4d4';
+        });
+
+        consoleOutputs.forEach(output => {
+          output.style.backgroundColor = '#1e1e1e';
+          output.style.color = '#d4d4d4';
         });
       }
     }
+
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
