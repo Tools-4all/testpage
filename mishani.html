@@ -756,7 +756,6 @@
     const lightModeDiv = document.getElementById("lightMode");
     const sunSvg = lightModeDiv.innerHTML;
     let darkModeFlag = true;
-
     function changeToLightMode() {
       const vsNavbar = document.querySelector('.vs-navbar');
       const activityBar = document.getElementById('activityBar');
@@ -769,6 +768,7 @@
       const consoleOutputs = document.querySelectorAll('.output');
       const controls = document.querySelectorAll('.controls');
       const statusBar = document.getElementById('statusBar');
+      const tabBar = document.getElementById('tabBar');
       const runButtons = document.querySelectorAll('.runButton');
       const editorAndOutput = document.querySelectorAll('.editor-and-output');
 
@@ -785,6 +785,10 @@
         // Update compiler container
         compiler.style.backgroundColor = '#ffffff';
         compiler.style.color = '#000';
+
+        // Update tabBar
+        tabBar.style.backgroundColor = '#f7f7f7';
+        tabBar.style.color = '#000';
 
         // Update tabs
         tabs.forEach(tab => {
@@ -853,6 +857,10 @@
         compiler.style.backgroundColor = '#1e1e1e';
         compiler.style.color = '#d4d4d4';
 
+        // Update tabBar
+        tabBar.style.backgroundColor = '#252526';
+        tabBar.style.color = '#ffffff';
+
         // Update tabs
         tabs.forEach(tab => {
           tab.style.backgroundColor = '#333';
@@ -913,32 +921,29 @@
       }
     }
 
-    function createTab(d = null, c = null) {
-      let tabId = originalCreateTab(d, c); // Call the original createTab logic
 
-      const newTab = tabs.find(tab => tab.id === tabId);
+    function applyLightModeToNewTab(tab) {
+      tab.tabElement.style.backgroundColor = '#d4d4d4';
+      tab.tabElement.style.color = '#000';
+      tab.editorContainer.style.backgroundColor = '#ffffff';
+      tab.outputElement.style.backgroundColor = '#f9f9f9';
+      tab.outputElement.style.color = '#000';
+      tab.controls.style.backgroundColor = '#f0f0f0';
+      tab.controls.style.color = '#000';
+    }
 
-      if (darkModeFlag) {
-        // Apply dark mode styles to the new tab components
-        newTab.editorContainer.style.backgroundColor = '#1e1e1e';
-        newTab.outputElement.style.backgroundColor = '#1e1e1e';
-        newTab.outputElement.style.color = '#d4d4d4';
-        newTab.controls.style.backgroundColor = '#252526';
-        newTab.controls.style.color = '#ffffff';
-      } else {
-        // Apply light mode styles to the new tab components
-        newTab.editorContainer.style.backgroundColor = '#ffffff';
-        newTab.outputElement.style.backgroundColor = '#f9f9f9';
-        newTab.outputElement.style.color = '#000';
-        newTab.controls.style.backgroundColor = '#f0f0f0';
-        newTab.controls.style.color = '#000';
-      }
-
-      return tabId;
+    function applyDarkModeToNewTab(tab) {
+      tab.tabElement.style.backgroundColor = '#333';
+      tab.tabElement.style.color = '#fff';
+      tab.editorContainer.style.backgroundColor = '#1e1e1e';
+      tab.outputElement.style.backgroundColor = '#1e1e1e';
+      tab.outputElement.style.color = '#d4d4d4';
+      tab.controls.style.backgroundColor = '#252526';
+      tab.controls.style.color = '#ffffff';
     }
 
 
-    alert(5);
+    alert(7);
 
 
     function reorderTabsByTab(dId, tId, side) {
