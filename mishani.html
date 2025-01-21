@@ -764,6 +764,7 @@
       const activeTabs = document.querySelectorAll('.tab.active');
       const compiler = document.getElementById('compiler');
       const editorContainers = document.querySelectorAll('.editorContainer');
+      const monacoEditors = document.querySelectorAll('.monaco-editor');
       const outputs = document.querySelectorAll('.outputContainer');
       const consoleOutputs = document.querySelectorAll('.output');
 
@@ -796,6 +797,12 @@
         // Update Monaco editor container
         editorContainers.forEach(editor => {
           editor.style.backgroundColor = '#ffffff';
+        });
+
+        // Update Monaco editor directly
+        monacoEditors.forEach(editor => {
+          editor.style.backgroundColor = '#ffffff'; // Ensure the Monaco editor itself changes
+          editor.style.color = '#000'; // Text color for Monaco
         });
 
         // Update console output
@@ -840,6 +847,12 @@
           editor.style.backgroundColor = '#1e1e1e';
         });
 
+        // Update Monaco editor directly
+        monacoEditors.forEach(editor => {
+          editor.style.backgroundColor = '#1e1e1e'; // Dark background
+          editor.style.color = '#d4d4d4'; // Text color for Monaco
+        });
+
         // Update console output
         outputs.forEach(output => {
           output.style.backgroundColor = '#1e1e1e';
@@ -852,6 +865,7 @@
         });
       }
     }
+
 
 
     function reorderTabsByTab(dId, tId, side) {
