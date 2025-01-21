@@ -922,7 +922,7 @@
     }
 
 
-    alert(11);
+    alert(10);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -1142,6 +1142,8 @@
     }
 
     function applyDarkModeToNewTab(tab) {
+      const controls = document.querySelectorAll('.controls');
+
       if (!tab) return;
 
       // Tab styles
@@ -1168,6 +1170,8 @@
     }
 
     function applyLightModeToNewTab(tab) {
+      const controls = document.querySelectorAll('.controls');
+
       if (!tab) return;
 
       // Tab styles
