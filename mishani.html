@@ -926,7 +926,7 @@
     }
 
 
-    alert(1);
+    alert(2);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -1130,11 +1130,11 @@
         );
       }
 
-      // if (darkModeFlag) {
-      //   applyDarkModeToNewTab(o);
-      // } else {
-      //   applyLightModeToNewTab(o);
-      // }
+      if (darkModeFlag) {
+        applyDarkModeToNewTab(o);
+      } else {
+        applyLightModeToNewTab(o);
+      }
 
       switchTab(id);
 
@@ -1146,10 +1146,10 @@
 
       if (!tab) return;
 
-      if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
-        tab.tabElement.style.backgroundColor = "#333";
-        tab.tabElement.style.color = "#fff";
-      }
+      // if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
+      //   tab.tabElement.style.backgroundColor = "#333";
+      //   tab.tabElement.style.color = "#fff";
+      // }
 
       if (tab.editorContainer) {
         tab.editorContainer.style.backgroundColor = "#1e1e1e";
@@ -1172,10 +1172,10 @@
       if (!tab) return;
 
       // Tab styles
-      if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
-        tab.tabElement.style.backgroundColor = "#d4d4d4";
-        tab.tabElement.style.color = "#000";
-      }
+      // if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
+      //   tab.tabElement.style.backgroundColor = "#d4d4d4";
+      //   tab.tabElement.style.color = "#000";
+      // }
 
       // Editor container styles
       if (tab.editorContainer) {
