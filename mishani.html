@@ -756,6 +756,7 @@
     const lightModeDiv = document.getElementById("lightMode");
     const sunSvg = lightModeDiv.innerHTML;
     let darkModeFlag = true;
+
     function changeToLightMode() {
       const vsNavbar = document.querySelector('.vs-navbar');
       const activityBar = document.getElementById('activityBar');
@@ -795,10 +796,10 @@
           tab.style.backgroundColor = '#d4d4d4';
           tab.style.color = '#000';
         });
-        activeTabs.forEach(tab => {
-          tab.style.backgroundColor = '#c0c0c0';
-          tab.style.color = '#000';
-        });
+        // activeTabs.forEach(tab => {
+        //   tab.style.backgroundColor = '#c0c0c0';
+        //   tab.style.color = '#000';
+        // });
 
         // Update Monaco editor container and themes
         editorContainers.forEach(editor => {
@@ -866,10 +867,10 @@
           tab.style.backgroundColor = '#333';
           tab.style.color = '#fff';
         });
-        activeTabs.forEach(tab => {
-          tab.style.backgroundColor = '#1e1e1e';
-          tab.style.color = '#fff';
-        });
+        // activeTabs.forEach(tab => {
+        //   tab.style.backgroundColor = '#1e1e1e';
+        //   tab.style.color = '#fff';
+        // });
 
         // Update Monaco editor container and themes
         editorContainers.forEach(editor => {
@@ -922,7 +923,7 @@
     }
 
 
-    alert(10);
+    alert(11);
 
 
     function reorderTabsByTab(dId, tId, side) {
@@ -1040,7 +1041,6 @@
         breadcrumbs: { enabled: true },
       });
 
-      // Tab object
       let o = {
         id,
         name: n,
@@ -1119,7 +1119,6 @@
         makeTabTitleEditable(o);
       });
 
-      // Set content
       if (c !== null) {
         ed.setValue(c);
       } else {
@@ -1128,14 +1127,12 @@
         );
       }
 
-      // Apply styles based on theme
       if (darkModeFlag) {
         applyDarkModeToNewTab(o);
       } else {
         applyLightModeToNewTab(o);
       }
 
-      // Activate tab
       switchTab(id);
 
       return id;
@@ -1146,18 +1143,15 @@
 
       if (!tab) return;
 
-      // Tab styles
       if (tab.tabElement) {
         tab.tabElement.style.backgroundColor = "#333";
         tab.tabElement.style.color = "#fff";
       }
 
-      // Editor container styles
       if (tab.editorContainer) {
         tab.editorContainer.style.backgroundColor = "#1e1e1e";
       }
 
-      // Output container styles
       if (tab.outputElement) {
         tab.outputElement.style.backgroundColor = "#1e1e1e";
         tab.outputElement.style.color = "#d4d4d4";
