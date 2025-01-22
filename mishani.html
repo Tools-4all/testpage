@@ -918,11 +918,11 @@
         });
       }
 
-      // if (darkModeFlag) {
-      //   applyLightMode();
-      // } else {
-      //   applyDarkMode();
-      // }
+      if (darkModeFlag) {
+        applyLightMode();
+      } else {
+        applyDarkMode();
+      }
     }
 
 
@@ -1146,7 +1146,7 @@
 
       if (!tab) return;
 
-      if (tab.tabElement) {
+      if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
         tab.tabElement.style.backgroundColor = "#333";
         tab.tabElement.style.color = "#fff";
       }
@@ -1172,7 +1172,7 @@
       if (!tab) return;
 
       // Tab styles
-      if (tab.tabElement) {
+      if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
         tab.tabElement.style.backgroundColor = "#d4d4d4";
         tab.tabElement.style.color = "#000";
       }
@@ -1193,6 +1193,7 @@
         control.style.color = '#000';
       });
     }
+
 
 
 
