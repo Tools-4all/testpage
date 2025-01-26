@@ -1271,8 +1271,11 @@
     }
 
 
-    function appendTable(outputElement, tableData) {
-      const { rows, columns } = buildChromeTableModel(tableData);
+    function appendTable(outputElement, tableData, columns = null) {
+      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
+
+      // Use provided columns or derived columns
+      const finalColumns = columns || derivedColumns;
 
       // Create table container
       const div = document.createElement("div");
@@ -1280,14 +1283,14 @@
 
       // Create table element
       const table = document.createElement("table");
-      table.classList.add("console-table");
+      table.classList.add("console-table"); // Ensure this class matches your CSS
 
       // Create table header
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
 
-      columns.forEach(col => {
+      finalColumns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
         th.textContent = col;
@@ -1303,7 +1306,7 @@
         const tr = document.createElement("tr");
         tr.classList.add("console-table-row");
 
-        columns.forEach(col => {
+        finalColumns.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
 
@@ -1317,8 +1320,9 @@
               const setValues = Array.from(value.values()).join(", ");
               td.textContent = `{ ${setValues} }`;
             } else {
-              // Display nested objects as "{…}" or "{}"
-              td.textContent = Object.keys(value).length ? "{…}" : "{}";
+              // Display nested objects as expandable
+              td.innerHTML = `{ <span class="expandable">…</span> }`;
+              // Implement expandable functionality as needed
             }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
@@ -1357,104 +1361,103 @@
     }
 
 
+
     function buildChromeTableModel(input) {
-      // Returns { rows: Array<Object>, columns: string[] }
-      if (Array.isArray(input)) {
+    // Returns { rows: Array<Object>, columns: string[] }
+    if (Array.isArray(input)) {
         if (input.length === 0) {
-          // Empty array: Show table with only (index) and Value columns
-          return { rows: [], columns: ["(index)", "Value"] };
+            // Empty array: Show table with only (index) and Value columns
+            return { rows: [], columns: ["(index)", "Value"] };
         }
 
         // Determine if the array contains only primitives
         const allPrimitives = input.every(item => {
-          return (
-            item === null ||
-            typeof item === "undefined" ||
-            (typeof item !== "object" && typeof item !== "function")
-          );
+            return (
+                item === null ||
+                typeof item === "undefined" ||
+                (typeof item !== "object" && typeof item !== "function")
+            );
         });
 
         if (allPrimitives) {
-          // Arrays of Primitives: (index) and Value columns
-          const rows = input.map((item, index) => ({
-            "(index)": index,
-            "Value": item === undefined ? "undefined" : item
-          }));
-          return {
-            rows,
-            columns: ["(index)", "Value"]
-          };
+            // Arrays of Primitives: (index) and Value columns
+            const rows = input.map((item, index) => ({
+                "(index)": index,
+                "Value": item === undefined ? "undefined" : item
+            }));
+            return {
+                rows,
+                columns: ["(index)", "Value"]
+            };
         } else {
-          // Arrays of Objects or Mixed Types
-          let columnsSet = new Set(["(index)"]);
-          input.forEach((item, index) => {
-            if (item && typeof item === "object") {
-              Object.keys(item).forEach(k => columnsSet.add(k));
-            } else {
-              columnsSet.add("Value");
-            }
-          });
-          const columns = Array.from(columnsSet);
-          const rows = input.map((item, index) => {
-            const row = { "(index)": index };
-            if (item && typeof item === "object") {
-              columns.forEach(col => {
-                if (col !== "(index)") {
-                  row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
+            // Arrays of Objects or Mixed Types
+            let columnsSet = new Set(["(index)"]);
+            input.forEach((item, index) => {
+                if (item && typeof item === "object") {
+                    Object.keys(item).forEach(k => columnsSet.add(k));
+                } else {
+                    columnsSet.add("Value");
                 }
-              });
-            } else {
-              row["Value"] = item === undefined ? "undefined" : item;
-            }
-            return row;
-          });
-          return { rows, columns };
+            });
+            const columns = Array.from(columnsSet);
+            const rows = input.map((item, index) => {
+                const row = { "(index)": index };
+                if (item && typeof item === "object") {
+                    columns.forEach(col => {
+                        if (col !== "(index)") {
+                            row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
+                        }
+                    });
+                } else {
+                    row["Value"] = item === undefined ? "undefined" : item;
+                }
+                return row;
+            });
+            return { rows, columns };
         }
-      }
+    }
 
-      if (input && typeof input === "object") {
+    if (input && typeof input === "object") {
         const keys = Object.keys(input);
         if (keys.length === 0) {
-          // Empty object: Show table with only (index) column
-          return { rows: [], columns: ["(index)"] };
+            // Empty object: Show table with only (index) column
+            return { rows: [], columns: ["(index)"] };
         }
 
         const isArrayLike =
-          "length" in input &&
-          typeof input.length === "number" &&
-          input.length >= 0 &&
-          Number.isInteger(input.length);
+            "length" in input &&
+            typeof input.length === "number" &&
+            input.length >= 0 &&
+            Number.isInteger(input.length);
 
         if (isArrayLike) {
-          // Treat as array-like object
-          const length = input.length;
-          const rows = [];
-          for (let i = 0; i < length; i++) {
-            rows.push({
-              "(index)": i,
-              "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
-            });
-          }
-          return {
-            rows,
-            columns: ["(index)", "Value"]
-          };
+            // Treat as array-like object
+            const length = input.length;
+            const rows = [];
+            for (let i = 0; i < length; i++) {
+                rows.push({
+                    "(index)": i,
+                    "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
+                });
+            }
+            return {
+                rows,
+                columns: ["(index)", "Value"]
+            };
         }
 
         // Plain Object with non-numeric keys: keys as columns
         const columns = keys.map(k => k);
         const rowObj = {};
         columns.forEach(k => {
-          rowObj[k] = input[k] === undefined ? "undefined" : input[k];
+            rowObj[k] = input[k] === undefined ? "undefined" : input[k];
         });
         return { rows: [rowObj], columns };
-      }
-
-      // Fallback: Not table-worthy
-      return { rows: [], columns: ["Value"] };
     }
 
-
+    // Fallback: Not table-worthy
+    return { rows: [], columns: ["Value"] };
+}
 
 
 
@@ -1845,7 +1848,7 @@
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-
+    alert("1")
   </script>
 </body>
 
