@@ -17,14 +17,17 @@
       padding: 0;
     }
 
-    body {
+    #compiler {
+      position: relative;
       font-family: 'Fira Code', monospace;
       display: flex;
-      flex-direction: row;
-      height: 100vh;
       background-color: #1e1e1e;
+      width: 60%;
+      height: 500px;
+      margin: 100px auto;
       color: #d4d4d4;
       overflow: hidden;
+      transition: width 0.3s ease;
     }
 
     .vs-logo {
@@ -56,8 +59,9 @@
       font-size: 14px;
       display: flex;
       padding: 5px 10px;
+      padding-right: 5px;
       border-bottom: 1px solid #333;
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -113,6 +117,19 @@
     .vs-navbar-dropdown-item.disabled {
       pointer-events: none;
       opacity: 0.5;
+    }
+
+    #lightMode {
+      margin-left: auto;
+      margin-right: 25px;
+      margin-top: 1px;
+      cursor: pointer;
+    }
+
+    #fullScreenBtn {
+      margin-top: 3px;
+      font-size: 13px;
+      cursor: pointer;
     }
 
     #activityBar {
@@ -273,12 +290,27 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    #tabBar::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    #tabBar::-webkit-scrollbar-thumb {
+      background-color: #007acc;
+      border-radius: 10px;
+    }
+
+    #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
     }
 
     .tab {
       background-color: #333;
       margin-right: 2px;
-      margin-top: 9px;
+      margin-top: 3px;
       padding: 7px 10px 7px;
       color: #fff;
       cursor: pointer;
@@ -329,6 +361,7 @@
       cursor: pointer;
       margin-left: auto;
       margin-right: 5px;
+      flex-shrink: 0;
     }
 
     #addTabButton:hover {
@@ -527,14 +560,12 @@
       background-color: #1177bb;
     }
 
-    /* Existing styles */
     .console-table {
       border-collapse: collapse;
       font-size: 14px;
       color: #d4d4d4;
       margin-top: 4px;
-      width: 100%;
-      /* Ensure tables take full width */
+      width: auto;
     }
 
     .console-table thead {
@@ -553,33 +584,15 @@
       background-color: #2d2d2d;
     }
 
-    /* Additional styles for expandables */
-    .expandable {
-      cursor: pointer;
-      color: #3794ff;
-      /* Info color for expand/collapse */
+    #undoBtn,
+    #redoBtn {
+      margin-top: 3px;
+      font-size: 11px;
     }
 
-    .expandable::after {
-      content: " ▸";
-      /* Right arrow for collapsed state */
+    #undoBtn {
+      margin-right: 10px;
     }
-
-    .expandable.expanded::after {
-      content: " ▾";
-      /* Down arrow for expanded state */
-    }
-
-    .expandable-details {
-      display: none;
-      margin-left: 20px;
-    }
-
-    .expandable.expanded+.expandable-details {
-      display: block;
-    }
-
-
 
     @media (max-width: 768px) {
       #activityBar {
@@ -615,56 +628,79 @@
 </head>
 
 <body>
-  <div class="vs-logo">
-    <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
-  </div>
-  <div class="vs-navbar">
-    <div class="vs-navbar-item" data-dropdown="fileDropdown">
-      File
-      <div class="vs-navbar-dropdown" id="fileDropdown">
-        <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
-        <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
+  <div id="compiler">
+    <div class="vs-logo">
+      <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
+    </div>
+    <div class="vs-navbar">
+      <div class="vs-navbar-item" data-dropdown="fileDropdown">
+        File
+        <div class="vs-navbar-dropdown" id="fileDropdown">
+          <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
+          <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
+        </div>
+      </div>
+      <div class="vs-navbar-item" data-dropdown="editDropdown">
+        Edit
+        <div class="vs-navbar-dropdown" id="editDropdown">
+          <div class="vs-navbar-dropdown-item">exmple</div>
+          <div class="vs-navbar-dropdown-item">exmple</div>
+        </div>
+      </div>
+      <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
+      <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
+      <div id="lightMode" onclick="changeToLightMode()">
+        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+          <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
+          <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
+          <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
+          <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2" />
+          <line x1="20" y1="12" x2="22" y2="12" stroke="white" stroke-width="2" />
+          <line x1="5.5" y1="5.5" x2="7" y2="7" stroke="white" stroke-width="2" />
+          <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
+          <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
+          <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
+        </svg>
+
+
+
+      </div>
+      <div id="fullScreenBtn" onclick="fullScreen()">
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-    <div class="vs-navbar-item" data-dropdown="editDropdown">
-      Edit
-      <div class="vs-navbar-dropdown" id="editDropdown">
-        <div class="vs-navbar-dropdown-item" id="undoBtn">Undo</div>
-        <div class="vs-navbar-dropdown-item" id="redoBtn">Redo</div>
+    <div id="activityBar">
+      <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
+        <i class="fas fa-search"></i>
+      </div>
+      <div class="icon" id="gitIcon" data-label="Source Control" data-target="gitPanel">
+        <i class="fas fa-code-branch"></i>
+      </div>
+      <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
+        <i class="fas fa-cog"></i>
       </div>
     </div>
-  </div>
-  <div id="activityBar">
-    <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
-      <i class="fas fa-search"></i>
+    <div id="gitPanel" class="sidebar-panel">
+      <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
+      <button id="loadGitButton" disabled="true">Load</button>
     </div>
-    <div class="icon" id="gitIcon" data-label="Source Control" data-target="gitPanel">
-      <i class="fas fa-code-branch"></i>
+    <div id="settingsPanel" class="sidebar-panel">
+      <div>
+        <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
+        <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
+      </div>
     </div>
-    <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
-      <i class="fas fa-cog"></i>
-    </div>
-  </div>
-  <div id="gitPanel" class="sidebar-panel">
-    <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
-    <button id="loadGitButton" disabled="true">Load</button>
-  </div>
-  <div id="settingsPanel" class="sidebar-panel">
-    <div>
-      <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
-      <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
-    </div>
-  </div>
-  <div id="mainContainer">
-    <div id="tabBar">
-      <div id="addTabButton"><i class="fas fa-plus"></i></div>
-    </div>
-    <div id="tabsContainer"></div>
-    <div id="statusBar">
-      <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
-      <div class="status-item">UTF-8</div>
-      <div class="status-item" id="statusSpaces">Spaces: 3</div>
-      <div class="status-item">JavaScript</div>
+    <div id="mainContainer">
+      <div id="tabBar">
+        <div id="addTabButton"><i class="fas fa-plus"></i></div>
+      </div>
+      <div id="tabsContainer"></div>
+      <div id="statusBar">
+        <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
+        <div class="status-item">UTF-8</div>
+        <div class="status-item" id="statusSpaces">Spaces: 3</div>
+        <div class="status-item">JavaScript</div>
+      </div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
@@ -677,6 +713,222 @@
     let activeTabId = null
     let draggedTabId = null
     let lastDropSide = null
+
+    const compiler = document.getElementById("compiler");
+
+    if (window.innerWidth < 768) {
+      compiler.style.width = '100%';
+      compiler.style.height = '100vh';
+      compiler.style.margin = '0';
+      document.getElementById("fullScreenBtn").style.display = 'none';
+    }
+    else {
+      window.onload = function () {
+        compiler.style.width = '60%';
+      };
+    }
+
+    function fullScreen() {
+      if (compiler.style.width == "60%") {
+        compiler.style.width = "100%";
+        compiler.style.height = "100vh";
+        compiler.style.margin = "0";
+        console.log('60');
+
+      } else {
+        compiler.style.width = "60%";
+        compiler.style.height = "500px";
+        compiler.style.margin = '100px auto';
+        console.log('100');
+      }
+    }
+
+    document.addEventListener('keydown', function (event) {
+      if (compiler.style.width == "100%") {
+        if (event.key === 'Escape') {
+          compiler.style.width = "60%";
+          compiler.style.height = "500px";
+          compiler.style.margin = '100px auto';
+        }
+      }
+    });
+
+    const lightModeDiv = document.getElementById("lightMode");
+    const sunSvg = lightModeDiv.innerHTML;
+    let darkModeFlag = true;
+
+    function changeToLightMode() {
+      const vsNavbar = document.querySelector('.vs-navbar');
+      const activityBar = document.getElementById('activityBar');
+      const tabs = document.querySelectorAll('.tab');
+      const activeTabs = document.querySelectorAll('.tab.active');
+      const compiler = document.getElementById('compiler');
+      const editorContainers = document.querySelectorAll('.editorContainer');
+      const monacoEditors = document.querySelectorAll('.monaco-editor');
+      const outputs = document.querySelectorAll('.outputContainer');
+      const consoleOutputs = document.querySelectorAll('.output');
+      const controls = document.querySelectorAll('.controls');
+      const statusBar = document.getElementById('statusBar');
+      const tabBar = document.getElementById('tabBar');
+      const runButtons = document.querySelectorAll('.runButton');
+      const editorAndOutput = document.querySelectorAll('.editor-and-output');
+
+      function applyLightMode() {
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
+        darkModeFlag = false;
+
+        // Update navbar and activity bar
+        vsNavbar.style.backgroundColor = '#f0f0f0';
+        vsNavbar.style.color = '#000';
+        activityBar.style.backgroundColor = '#f0f0f0';
+        activityBar.style.color = '#000';
+
+        // Update compiler container
+        compiler.style.backgroundColor = '#ffffff';
+        compiler.style.color = '#000';
+
+        // Update tabBar
+        tabBar.style.backgroundColor = '#f7f7f7';
+        tabBar.style.color = '#000';
+
+        // Update tabs
+        tabs.forEach(tab => {
+          if (!tab.classList.contains('active')) { // בדיקה אם הכרטיסייה לא פעילה
+            tab.style.backgroundColor = '#d4d4d4';
+            tab.style.color = '#000';
+          }
+        });
+        // activeTabs.forEach(tab => {
+        //   tab.style.backgroundColor = '#c0c0c0';
+        //   tab.style.color = '#000';
+        // });
+
+        // Update Monaco editor container and themes
+        editorContainers.forEach(editor => {
+          editor.style.backgroundColor = '#ffffff';
+        });
+
+        monacoEditors.forEach(editor => {
+          editor.style.backgroundColor = '#ffffff';
+          editor.style.color = '#000';
+        });
+
+        editorAndOutput.forEach(container => {
+          container.style.backgroundColor = '#ffffff';
+        });
+
+        monaco.editor.setTheme('vs-light');
+
+        // Update console output
+        outputs.forEach(output => {
+          output.style.backgroundColor = '#f9f9f9';
+          output.style.color = '#000';
+        });
+        consoleOutputs.forEach(output => {
+          output.style.backgroundColor = '#f9f9f9';
+          output.style.color = '#000';
+        });
+
+        // Update controls
+        controls.forEach(control => {
+          control.style.backgroundColor = '#f0f0f0';
+          control.style.color = '#000';
+        });
+
+        // Update status bar
+        statusBar.style.backgroundColor = '#eaeaea';
+        statusBar.style.color = '#000';
+
+        // Update run buttons
+        runButtons.forEach(button => {
+          button.style.backgroundColor = '#007acc';
+          button.style.color = '#ffffff';
+        });
+      }
+
+      function applyDarkMode() {
+        lightModeDiv.innerHTML = sunSvg;
+        darkModeFlag = true;
+
+        // Update navbar and activity bar
+        vsNavbar.style.backgroundColor = '#252526';
+        vsNavbar.style.color = '#ffffff';
+        activityBar.style.backgroundColor = '#252526';
+        activityBar.style.color = '#ffffff';
+
+        // Update compiler container
+        compiler.style.backgroundColor = '#1e1e1e';
+        compiler.style.color = '#d4d4d4';
+
+        // Update tabBar
+        tabBar.style.backgroundColor = '#252526';
+        tabBar.style.color = '#ffffff';
+
+        // Update tabs
+        tabs.forEach(tab => {
+          if (!tab.classList.contains('active')) { // בדיקה אם הכרטיסייה לא פעילה
+            tab.style.backgroundColor = '#d4d4d4';
+            tab.style.color = '#000';
+          }
+        });
+        // activeTabs.forEach(tab => {
+        //   tab.style.backgroundColor = '#1e1e1e';
+        //   tab.style.color = '#fff';
+        // });
+
+        // Update Monaco editor container and themes
+        editorContainers.forEach(editor => {
+          editor.style.backgroundColor = '#1e1e1e';
+        });
+
+        monacoEditors.forEach(editor => {
+          editor.style.backgroundColor = '#1e1e1e';
+          editor.style.color = '#d4d4d4';
+        });
+
+        editorAndOutput.forEach(container => {
+          container.style.backgroundColor = '#1e1e1e';
+        });
+
+        monaco.editor.setTheme('vs-dark');
+
+        // Update console output
+        outputs.forEach(output => {
+          output.style.backgroundColor = '#1e1e1e';
+          output.style.color = '#d4d4d4';
+        });
+        consoleOutputs.forEach(output => {
+          output.style.backgroundColor = '#1e1e1e';
+          output.style.color = '#d4d4d4';
+        });
+
+        // Update controls
+        controls.forEach(control => {
+          control.style.backgroundColor = '#252526';
+          control.style.color = '#ffffff';
+        });
+
+        // Update status bar
+        statusBar.style.backgroundColor = '#252526';
+        statusBar.style.color = '#cccccc';
+
+        runButtons.forEach(button => {
+          button.style.backgroundColor = '#0e639c';
+          button.style.color = '#ffffff';
+        });
+      }
+
+      if (darkModeFlag) {
+        applyLightMode();
+      } else {
+        applyDarkMode();
+      }
+    }
+
+
+    alert(2);
+
+
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId)
       let tIndex = tabs.findIndex((x) => x.id === tId)
@@ -689,36 +941,56 @@
       tabs.forEach((x) => { b.insertBefore(x.tabElement, document.getElementById("addTabButton")) })
     }
     function getUniqueTabName(b, i = null) { let c = b, s = 1; while (tabs.some((t) => t.id !== i && t.name.toLowerCase() === c.toLowerCase())) { c = b + `(${s++})` } return c }
+
+
     function createTab(d = null, c = null) {
-      let n
-      if (!d) { n = getNextTabName() } else { n = getUniqueTabName(d) }
-      let id = Date.now()
-      let sb = new SharedArrayBuffer(1024)
-      let v = new Int32Array(sb)
-      let e = document.createElement("div")
-      e.classList.add("tab")
-      e.draggable = true
-      let ti = document.createElement("span")
-      ti.classList.add("tab-title")
-      ti.textContent = n
-      e.appendChild(ti)
-      let cl = document.createElement("i")
-      cl.classList.add("fas", "fa-times", "close")
-      e.appendChild(cl)
-      let eo = document.createElement("div")
-      eo.classList.add("editor-and-output")
-      let ec = document.createElement("div")
-      ec.classList.add("editorContainer")
-      let oc = document.createElement("div")
-      oc.classList.add("outputContainer")
-      let co = document.createElement("div")
-      co.classList.add("controls")
-      let rb = document.createElement("button")
-      rb.classList.add("runButton")
-      rb.innerHTML = '<i class="fas fa-play"></i> Run'
-      co.appendChild(rb)
-      let od = document.createElement("div")
-      od.classList.add("output")
+      let n = d ? getUniqueTabName(d) : getNextTabName();
+      let id = Date.now();
+      let sb = new SharedArrayBuffer(1024);
+      let v = new Int32Array(sb);
+
+      // Create tab element
+      let e = document.createElement("div");
+      e.classList.add("tab");
+      e.draggable = true;
+
+      // Tab title
+      let ti = document.createElement("span");
+      ti.classList.add("tab-title");
+      ti.textContent = n;
+      e.appendChild(ti);
+
+      // Close icon
+      let cl = document.createElement("i");
+      cl.classList.add("fas", "fa-times", "close");
+      e.appendChild(cl);
+
+      // Editor and Output container
+      let eo = document.createElement("div");
+      eo.classList.add("editor-and-output");
+
+      // Editor container
+      let ec = document.createElement("div");
+      ec.classList.add("editorContainer");
+      eo.appendChild(ec);
+
+      // Output container
+      let oc = document.createElement("div");
+      oc.classList.add("outputContainer");
+
+      // Controls
+      let co = document.createElement("div");
+      co.classList.add("controls");
+
+      let rb = document.createElement("button");
+      rb.classList.add("runButton");
+      rb.innerHTML = '<i class="fas fa-play"></i> Run';
+      co.appendChild(rb);
+      oc.appendChild(co);
+
+      let od = document.createElement("div");
+      od.classList.add("output");
+      od.setAttribute("tabindex", "0");
       od.addEventListener("keydown", (e) => {
         if (e.ctrlKey && e.key.toLowerCase() === "a") {
           e.preventDefault();
@@ -728,21 +1000,22 @@
           selection.removeAllRanges();
           selection.addRange(range);
         }
-      })
+      });
+      oc.appendChild(od);
+      eo.appendChild(oc);
 
-      oc.appendChild(co)
-      oc.appendChild(od)
-      eo.appendChild(ec)
-      eo.appendChild(oc)
-      od.setAttribute("tabindex", "0");
-      let tb = document.getElementById("tabBar")
-      let ab = document.getElementById("addTabButton")
-      tb.insertBefore(e, ab)
-      let tc = document.getElementById("tabsContainer")
-      tc.appendChild(eo)
+      // Add to DOM
+      let tb = document.getElementById("tabBar");
+      let ab = document.getElementById("addTabButton");
+      tb.insertBefore(e, ab);
+
+      let tc = document.getElementById("tabsContainer");
+      tc.appendChild(eo);
+
+      // Create Monaco Editor
       let ed = monaco.editor.create(ec, {
         language: "javascript",
-        theme: "custom-dark",
+        theme: darkModeFlag ? "custom-dark" : "vs-light",
         automaticLayout: true,
         tabSize: spaces,
         insertSpaces: true,
@@ -768,56 +1041,163 @@
         formatOnPaste: true,
         suggestOnTriggerCharacters: true,
         smoothScrolling: true,
-        breadcrumbs: { enabled: true }
-      })
-      let o = { id, name: n, sharedBuffer: sb, view: v, tabElement: e, editorContainer: ec, outputElement: od, editorInstance: ed, worker: null, editorAndOutput: eo }
-      tabs.push(o)
-      ed.onDidChangeCursorPosition(() => { updateStatusPosition() })
-      rb.addEventListener("click", () => { runTab(id, rb) })
-      cl.addEventListener("click", (x) => { x.stopPropagation(); closeTab(id) })
+        breadcrumbs: { enabled: true },
+      });
+
+      let o = {
+        id,
+        name: n,
+        sharedBuffer: sb,
+        view: v,
+        tabElement: e,
+        editorContainer: ec,
+        outputElement: od,
+        editorInstance: ed,
+        worker: null,
+        editorAndOutput: eo,
+      };
+
+      tabs.push(o);
+
+      // Event listeners
+      ed.onDidChangeCursorPosition(() => {
+        updateStatusPosition();
+      });
+
+      rb.addEventListener("click", () => {
+        runTab(id, rb);
+      });
+
+      cl.addEventListener("click", (x) => {
+        x.stopPropagation();
+        closeTab(id);
+      });
+
       e.addEventListener("dragstart", (x) => {
-        switchTab(id)
-        x.dataTransfer.setData("text/plain", "")
-        x.dataTransfer.effectAllowed = "move"
-        draggedTabId = id
-        e.classList.add("dragging")
-      })
+        switchTab(id);
+        x.dataTransfer.setData("text/plain", "");
+        x.dataTransfer.effectAllowed = "move";
+        draggedTabId = id;
+        e.classList.add("dragging");
+      });
+
       e.addEventListener("dragend", () => {
-        e.classList.remove("dragging")
-        draggedTabId = null
-        lastDropSide = null
-        document.querySelectorAll(".tab").forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"))
-      })
+        e.classList.remove("dragging");
+        draggedTabId = null;
+        lastDropSide = null;
+        document.querySelectorAll(".tab").forEach((m) =>
+          m.classList.remove("tab-drop-left", "tab-drop-right", "dragging")
+        );
+      });
+
       e.addEventListener("dragover", (x) => {
-        x.preventDefault()
-        if (!draggedTabId || e.classList.contains("dragging")) return
-        let r = e.getBoundingClientRect()
-        let mid = r.left + r.width / 2
+        x.preventDefault();
+        if (!draggedTabId || e.classList.contains("dragging")) return;
+        let r = e.getBoundingClientRect();
+        let mid = r.left + r.width / 2;
         if (x.clientX < mid) {
-          e.classList.add("tab-drop-left")
-          e.classList.remove("tab-drop-right")
-          lastDropSide = "left"
+          e.classList.add("tab-drop-left");
+          e.classList.remove("tab-drop-right");
+          lastDropSide = "left";
         } else {
-          e.classList.add("tab-drop-right")
-          e.classList.remove("tab-drop-left")
-          lastDropSide = "right"
+          e.classList.add("tab-drop-right");
+          e.classList.remove("tab-drop-left");
+          lastDropSide = "right";
         }
-      })
+      });
+
       e.addEventListener("dragleave", () => {
-        e.classList.remove("tab-drop-left", "tab-drop-right")
-      })
+        e.classList.remove("tab-drop-left", "tab-drop-right");
+      });
+
       e.addEventListener("drop", (x) => {
-        x.preventDefault()
-        e.classList.remove("tab-drop-left", "tab-drop-right")
-        if (!draggedTabId) return
-        reorderTabsByTab(draggedTabId, id, lastDropSide)
-        lastDropSide = null
-      })
-      ti.addEventListener("dblclick", () => { makeTabTitleEditable(o) })
-      switchTab(id)
-      if (c !== null) { ed.setValue(c) } else { ed.setValue(`// ${n}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`) }
-      return id
+        x.preventDefault();
+        e.classList.remove("tab-drop-left", "tab-drop-right");
+        if (!draggedTabId) return;
+        reorderTabsByTab(draggedTabId, id, lastDropSide);
+        lastDropSide = null;
+      });
+
+      ti.addEventListener("dblclick", () => {
+        makeTabTitleEditable(o);
+      });
+
+      if (c !== null) {
+        ed.setValue(c);
+      } else {
+        ed.setValue(
+          `// ${n}\nconsole.log("This is a log");\nconsole.info("This is an info");\nconsole.warn("This is a warning");\nconsole.error("This is an error");\nprompt("This is a prompt:");`
+        );
+      }
+
+      if (darkModeFlag) {
+        applyDarkModeToNewTab(o);
+      } else {
+        applyLightModeToNewTab(o);
+      }
+
+      switchTab(id);
+
+      return id;
     }
+
+    function applyDarkModeToNewTab(tab) {
+      const controls = document.querySelectorAll('.controls');
+
+      if (!tab) return;
+
+      // if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
+      //   tab.tabElement.style.backgroundColor = "#333";
+      //   tab.tabElement.style.color = "#fff";
+      // }
+
+      if (tab.editorContainer) {
+        tab.editorContainer.style.backgroundColor = "#1e1e1e";
+      }
+
+      if (tab.outputElement) {
+        tab.outputElement.style.backgroundColor = "#1e1e1e";
+        tab.outputElement.style.color = "#d4d4d4";
+      }
+
+      controls.forEach(control => {
+        control.style.backgroundColor = '#252526';
+        control.style.color = '#ffffff';
+      });
+    }
+
+    function applyLightModeToNewTab(tab) {
+      const controls = document.querySelectorAll('.controls');
+
+      if (!tab) return;
+
+      // Tab styles
+      // if (tab.tabElement && !tab.tabElement.classList.contains('active')) {
+      //   tab.tabElement.style.backgroundColor = "#d4d4d4";
+      //   tab.tabElement.style.color = "#000";
+      // }
+
+      // Editor container styles
+      if (tab.editorContainer) {
+        tab.editorContainer.style.backgroundColor = "#ffffff";
+      }
+
+      // Output container styles
+      if (tab.outputElement) {
+        tab.outputElement.style.backgroundColor = "#f9f9f9";
+        tab.outputElement.style.color = "#000";
+      }
+
+      controls.forEach(control => {
+        control.style.backgroundColor = '#f0f0f0';
+        control.style.color = '#000';
+      });
+    }
+
+
+
+
+
     function getNextTabName() {
       let m = 0
       for (let t of tabs) {
@@ -891,11 +1271,8 @@
     }
 
 
-    function appendTable(outputElement, tableData, columns = null) {
-      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
-
-      // Use provided columns or derived columns
-      const finalColumns = columns || derivedColumns;
+    function appendTable(outputElement, tableData) {
+      const { rows, columns } = buildChromeTableModel(tableData);
 
       // Create table container
       const div = document.createElement("div");
@@ -903,14 +1280,14 @@
 
       // Create table element
       const table = document.createElement("table");
-      table.classList.add("console-table"); // Ensure this class matches your CSS
+      table.classList.add("console-table");
 
       // Create table header
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
 
-      finalColumns.forEach(col => {
+      columns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
         th.textContent = col;
@@ -926,7 +1303,7 @@
         const tr = document.createElement("tr");
         tr.classList.add("console-table-row");
 
-        finalColumns.forEach(col => {
+        columns.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
 
@@ -940,9 +1317,8 @@
               const setValues = Array.from(value.values()).join(", ");
               td.textContent = `{ ${setValues} }`;
             } else {
-              // Display nested objects as expandable
-              td.innerHTML = `{ <span class="expandable">…</span> }`;
-              // Implement expandable functionality as needed
+              // Display nested objects as "{…}" or "{}"
+              td.textContent = Object.keys(value).length ? "{…}" : "{}";
             }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
@@ -979,7 +1355,6 @@
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
-
 
 
     function buildChromeTableModel(input) {
@@ -1078,7 +1453,6 @@
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
-
 
 
 
@@ -1212,9 +1586,9 @@
     window.MonacoEnvironment = {
       getWorkerUrl: function (m, l) {
         return "data:text/javascript;charset=utf-8," + encodeURIComponent(`
-self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'};
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
-`)
+        self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'};
+        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
+        `)
       }
     }
     async function cacheWorkerCode() {
@@ -1254,7 +1628,25 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
         document.getElementById("statusPosition").textContent = `Ln ${p.lineNumber}, Col ${p.column}`
       }
     }
-    document.getElementById("addTabButton").addEventListener("click", () => { createTab() })
+
+    function updateTabSpacing() {
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach((tab, index) => {
+        if (index === tabs.length - 1) {
+          tab.style.marginRight = "30px";
+        } else {
+          tab.style.marginRight = "2px";
+        }
+      });
+    }
+
+    document.getElementById("addTabButton").addEventListener("click", () => {
+      createTab();
+      updateTabSpacing();
+    })
+
+
+
     document.getElementById("tabBar").addEventListener("click", (e) => {
       let c = tabs.find((t) => t.tabElement === e.target || t.tabElement.contains(e.target))
       if (c) { switchTab(c.id) }
@@ -1316,7 +1708,17 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
     })
     let redoBtn = document.getElementById("redoBtn")
     let undoBtn = document.getElementById("undoBtn")
-    function toggleDisabled(e, d) { if (d) { e.classList.add("disabled") } else { e.classList.remove("disabled") } }
+    function toggleDisabled(e, d) {
+      if (d) {
+        e.classList.add("disabled");
+        e.style.color = "grey";
+        e.style.cursor = "default";
+      } else {
+        e.classList.remove("disabled");
+        e.style.color = "white";
+        e.style.cursor = "pointer";
+      }
+    }
     function updateUndoRedoButtons() {
       if (activeTabId === null) { toggleDisabled(undoBtn, true); toggleDisabled(redoBtn, true); return }
       let t = tabs.find((x) => x.id === activeTabId)
@@ -1443,7 +1845,7 @@ importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/v
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert('27')
+
   </script>
 </body>
 
