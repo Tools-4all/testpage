@@ -165,7 +165,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
         return `ƒ ${value.name || ''}`;
     }
     if (seen.has(value)) {
-        return "[Circular]";
+        return "{…}"; // Represent cyclical reference as {…}
     }
     seen.set(value, path || ".");
 
@@ -203,6 +203,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 
     return String(value);
 }
+
 
 
 

@@ -1327,11 +1327,16 @@
             } else if (value instanceof Set) {
               const setValues = Array.from(value.values()).join(", ");
               td.textContent = `{ ${setValues} }`;
+            } else if (value === "{…}") {
+              // Represent cyclical reference as {…}
+              td.textContent = "{…}";
             } else {
               // Display nested objects as expandable
               const expandable = document.createElement("span");
               expandable.classList.add("expandable");
               expandable.textContent = "{…}";
+              expandable.style.cursor = "pointer";
+              expandable.style.color = "#9CDCFE"; // Light blue for better visibility
               expandable.addEventListener("click", () => {
                 if (expandable.classList.contains("expanded")) {
                   expandable.classList.remove("expanded");
@@ -1343,6 +1348,8 @@
                   const details = document.createElement("div");
                   details.classList.add("expandable-details");
                   details.innerHTML = objectToHTML(value, 1); // Reuse your existing objectToHTML
+                  details.style.marginTop = "4px";
+                  details.style.marginLeft = "20px";
                   td.appendChild(details);
                 }
               });
@@ -1351,9 +1358,9 @@
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
             td.textContent = `(${value.length}) […]`;
-          } else if (typeof value === "string" && value.startsWith("[Circular")) {
-            // Display circular references
-            td.textContent = value;
+          } else if (typeof value === "string" && value.startsWith("{…}")) {
+            // Display cyclical references as {…}
+            td.textContent = "{…}";
           } else if (typeof value === "string" && value.startsWith("ƒ")) {
             // Display functions as their string representation
             td.textContent = value;
@@ -1386,9 +1393,9 @@
 
 
 
-
     function buildChromeTableModel(input) {
       // Returns { rows: Array<Object>, columns: string[] }
+
       if (Array.isArray(input)) {
         if (input.length === 0) {
           // Empty array: Show table with only (index) and Value columns
@@ -1417,7 +1424,7 @@
         } else {
           // Arrays of Objects or Mixed Types
           let columnsSet = new Set(["(index)"]);
-          input.forEach((item, index) => {
+          input.forEach((item) => {
             if (item && typeof item === "object") {
               Object.keys(item).forEach(k => columnsSet.add(k));
             } else {
@@ -1471,13 +1478,13 @@
           };
         }
 
-        // Plain Object with non-numeric keys: keys as columns
-        const columns = keys.map(k => k);
-        const rowObj = {};
-        columns.forEach(k => {
-          rowObj[k] = input[k] === undefined ? "undefined" : input[k];
-        });
-        return { rows: [rowObj], columns };
+        // Plain Object: Treat as key-value pairs with (index) and Value
+        const columns = ["(index)", "Value"];
+        const rows = Object.keys(input).map(key => ({
+          "(index)": key,
+          "Value": input[key] === undefined ? "undefined" : input[key]
+        }));
+        return { rows, columns };
       }
 
       // Fallback: Not table-worthy
@@ -1874,7 +1881,7 @@
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert("2")
+    alert("3")
   </script>
 </body>
 
