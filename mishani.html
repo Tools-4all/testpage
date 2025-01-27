@@ -796,13 +796,10 @@
         </div>
       </div>
 
-      <!-- UNDO/REDO -->
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
 
-      <!-- THEME TOGGLE -->
       <div id="lightMode" onclick="changeToLightMode()">
-        <!-- Sun icon (showing by default in dark mode) -->
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
@@ -816,13 +813,11 @@
         </svg>
       </div>
 
-      <!-- FULLSCREEN -->
       <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
 
-    <!-- ACTIVITY BAR -->
     <div id="activityBar" class="theme color252526">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -835,7 +830,6 @@
       </div>
     </div>
 
-    <!-- GIT PANEL -->
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton" disabled="true">Load</button>
@@ -941,9 +935,13 @@
       "colorffffff": "color1e1e1e"
     };
 
+    const lightModeDiv = document.getElementById("lightMode");
+    const sunSvg = lightModeDiv.innerHTML;
+
     function changeToLightMode() {
       if (darkModeFlag) {
-        // Currently dark -> switching to light
+        const moon = `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"> `
+        lightModeDiv.innerHTML = moon;
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -957,6 +955,7 @@
         monaco.editor.setTheme("vs-light");
       } else {
         // Currently light -> switching to dark
+        lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
