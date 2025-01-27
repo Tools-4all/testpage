@@ -50,7 +50,24 @@
 
     .colorf0f0f0 {
       background-color: #f0f0f0;
+      color: #000
     }
+
+    .color1e1e1e {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+
+    .colorffffff {
+      background-color: #ffffff;
+      color: #000
+    }
+
+   .colorf7f7f7 {
+      background-color: #f7f7f7;
+    }
+
+
 
     .vs-logo img {
       height: 25px;
@@ -293,7 +310,6 @@
     }
 
     #tabBar {
-      background-color: #252526;
       border-bottom: 1px solid #333;
       display: flex;
       align-items: center;
@@ -457,7 +473,7 @@
       font-size: 14px;
       white-space: pre-wrap;
       background-color: #1e1e1e;
-    }
+    }`
 
     .output::-webkit-scrollbar {
       width: 8px;
@@ -637,7 +653,7 @@
 </head>
 
 <body>
-  <div id="compiler">
+  <div id="compiler theme color1e1e1e">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
@@ -678,7 +694,7 @@
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-    <div id="activityBar">
+    <div id="activityBar theme color252526">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
       </div>
@@ -700,7 +716,7 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar">
+      <div id="tabBar" class="theme color252526">
         <div id="addTabButton"><i class="fas fa-plus"></i></div>
       </div>
       <div id="tabsContainer"></div>
@@ -769,6 +785,7 @@
 
     const themeMapDark = {
       "color252526": "colorf0f0f0",
+      
     }
 
     let themeMapLight = {}
