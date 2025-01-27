@@ -1513,6 +1513,7 @@
           else if (t === "alert") { await handleAlert(m, o) }
           else if (t === "table") {
             appendTable(o.outputElement, e.data.tableData);
+            console.log(o.outputElement.textContent);
           }
         }
         w.onerror = (x) => {

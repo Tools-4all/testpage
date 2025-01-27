@@ -408,7 +408,7 @@ self.addEventListener("message", (event) => {
                 self.postMessage({
                     type: "table",
                     tableData: safeData,
-                    columns: columns || null // Pass columns if provided
+                    columns: columns || null 
                 });
             },
 
@@ -430,8 +430,6 @@ self.addEventListener("message", (event) => {
             },
             dir: (obj) => {
                 const htmlRepresentation = objectToHTML(obj, 0);
-                // Instead of posting type: "log", we can post type: "dir" 
-                // and include our HTML so the main thread knows it’s HTML
                 self.postMessage({
                     type: "log",
                     message: htmlRepresentation
