@@ -773,9 +773,9 @@
 
     let themeMapLight = {}
 
-    themeMapDark.forEach((v, k) => {
-      themeMapLight[v] = k
-    })
+    for (let key in themeMapDark) {
+      themeMapLight[themeMapDark[key]] = key;
+    }
 
     function changeToLightMode() {
       if (darkModeFlag) {
@@ -1678,7 +1678,7 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
-    alert("2")
+    alert("3")
   </script>
 </body>
 
