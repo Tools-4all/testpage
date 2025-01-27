@@ -766,11 +766,13 @@
 
     function changeToLightMode() {
       if (darkModeFlag) {
+        darkModeFlag = false;
         document.querySelectorAll(".color252526").forEach((x) => {
           x.classList.remove("color252526");
           x.classList.add("colorf0f0f0");
         })
       } else {
+        darkModeFlag = true;
         document.querySelectorAll(".colorf0f0f0").forEach((x) => {
           x.classList.remove("colorf0f0f0");
           x.classList.add("color252526");
