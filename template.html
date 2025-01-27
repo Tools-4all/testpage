@@ -1908,7 +1908,16 @@
       html += `</details>`;
       return html;
     }
-    alert("4")
+
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+    alert("5")
   </script>
 </body>
 
