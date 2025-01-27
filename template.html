@@ -392,7 +392,7 @@
     /* OUTPUT/CONSOLE */
     .outputContainer {
       height: 200px;
-      border-top: 1px solid #333;
+      border-top: 1px solid;
       display: flex;
       flex-direction: column;
     }
@@ -400,7 +400,7 @@
       display: flex;
       justify-content: flex-end;
       padding: 8px 12px;
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid;
     }
     .runButton {
       padding: 6px 12px;
@@ -928,6 +928,11 @@
       // Controls bar (Run button)
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
+      if (darkModeFlag) {
+        controlsBar.classList.add("color252526");
+      } else {
+        controlsBar.classList.add("colorffffff");
+      }
 
       let runButton = document.createElement("button");
       runButton.classList.add("runButton");
