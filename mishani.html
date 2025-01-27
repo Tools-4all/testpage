@@ -42,6 +42,14 @@
       align-items: center;
     }
 
+    .color252526 {
+      background-color: #252526;
+    }
+
+    .colorf0f0f0 {
+      background-color: #f0f0f0;
+    }
+
     .vs-logo img {
       height: 25px;
       width: 25px;
@@ -53,7 +61,6 @@
     }
 
     .vs-navbar {
-      background-color: #252526;
       color: #ffffff;
       font-family: 'Fira Code', monospace;
       font-size: 14px;
@@ -632,7 +639,7 @@
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
-    <div class="vs-navbar">
+    <div class="vs-navbar color252526">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
         <div class="vs-navbar-dropdown" id="fileDropdown">
@@ -758,170 +765,11 @@
     let darkModeFlag = true;
 
     function changeToLightMode() {
-      const vsNavbar = document.querySelector('.vs-navbar');
-      const activityBar = document.getElementById('activityBar');
-      const tabs = document.querySelectorAll('.tab');
-      const activeTabs = document.querySelectorAll('.tab.active');
-      const compiler = document.getElementById('compiler');
-      const editorContainers = document.querySelectorAll('.editorContainer');
-      const monacoEditors = document.querySelectorAll('.monaco-editor');
-      const outputs = document.querySelectorAll('.outputContainer');
-      const consoleOutputs = document.querySelectorAll('.output');
-      const controls = document.querySelectorAll('.controls');
-      const statusBar = document.getElementById('statusBar');
-      const tabBar = document.getElementById('tabBar');
-      const runButtons = document.querySelectorAll('.runButton');
-      const editorAndOutput = document.querySelectorAll('.editor-and-output');
-
-      function applyLightMode() {
-        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
-        darkModeFlag = false;
-
-        // Update navbar and activity bar
-        vsNavbar.style.backgroundColor = '#f0f0f0';
-        vsNavbar.style.color = '#000';
-        activityBar.style.backgroundColor = '#f0f0f0';
-        activityBar.style.color = '#000';
-
-        // Update compiler container
-        compiler.style.backgroundColor = '#ffffff';
-        compiler.style.color = '#000';
-
-        // Update tabBar
-        tabBar.style.backgroundColor = '#f7f7f7';
-        tabBar.style.color = '#000';
-
-        // Update tabs
-        tabs.forEach(tab => {
-          if (!tab.classList.contains('active')) { // בדיקה אם הכרטיסייה לא פעילה
-            tab.style.backgroundColor = '#d4d4d4';
-            tab.style.color = '#000';
-          }
-        });
-        // activeTabs.forEach(tab => {
-        //   tab.style.backgroundColor = '#c0c0c0';
-        //   tab.style.color = '#000';
-        // });
-
-        // Update Monaco editor container and themes
-        editorContainers.forEach(editor => {
-          editor.style.backgroundColor = '#ffffff';
-        });
-
-        monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#ffffff';
-          editor.style.color = '#000';
-        });
-
-        editorAndOutput.forEach(container => {
-          container.style.backgroundColor = '#ffffff';
-        });
-
-        monaco.editor.setTheme('vs-light');
-
-        // Update console output
-        outputs.forEach(output => {
-          output.style.backgroundColor = '#f9f9f9';
-          output.style.color = '#000';
-        });
-        consoleOutputs.forEach(output => {
-          output.style.backgroundColor = '#f9f9f9';
-          output.style.color = '#000';
-        });
-
-        // Update controls
-        controls.forEach(control => {
-          control.style.backgroundColor = '#f0f0f0';
-          control.style.color = '#000';
-        });
-
-        // Update status bar
-        statusBar.style.backgroundColor = '#eaeaea';
-        statusBar.style.color = '#000';
-
-        // Update run buttons
-        runButtons.forEach(button => {
-          button.style.backgroundColor = '#007acc';
-          button.style.color = '#ffffff';
-        });
-      }
-
-      function applyDarkMode() {
-        lightModeDiv.innerHTML = sunSvg;
-        darkModeFlag = true;
-
-        // Update navbar and activity bar
-        vsNavbar.style.backgroundColor = '#252526';
-        vsNavbar.style.color = '#ffffff';
-        activityBar.style.backgroundColor = '#252526';
-        activityBar.style.color = '#ffffff';
-
-        // Update compiler container
-        compiler.style.backgroundColor = '#1e1e1e';
-        compiler.style.color = '#d4d4d4';
-
-        // Update tabBar
-        tabBar.style.backgroundColor = '#252526';
-        tabBar.style.color = '#ffffff';
-
-        // Update tabs
-        tabs.forEach(tab => {
-          if (!tab.classList.contains('active')) { // בדיקה אם הכרטיסייה לא פעילה
-            tab.style.backgroundColor = '#d4d4d4';
-            tab.style.color = '#000';
-          }
-        });
-        // activeTabs.forEach(tab => {
-        //   tab.style.backgroundColor = '#1e1e1e';
-        //   tab.style.color = '#fff';
-        // });
-
-        // Update Monaco editor container and themes
-        editorContainers.forEach(editor => {
-          editor.style.backgroundColor = '#1e1e1e';
-        });
-
-        monacoEditors.forEach(editor => {
-          editor.style.backgroundColor = '#1e1e1e';
-          editor.style.color = '#d4d4d4';
-        });
-
-        editorAndOutput.forEach(container => {
-          container.style.backgroundColor = '#1e1e1e';
-        });
-
-        monaco.editor.setTheme('vs-dark');
-
-        // Update console output
-        outputs.forEach(output => {
-          output.style.backgroundColor = '#1e1e1e';
-          output.style.color = '#d4d4d4';
-        });
-        consoleOutputs.forEach(output => {
-          output.style.backgroundColor = '#1e1e1e';
-          output.style.color = '#d4d4d4';
-        });
-
-        // Update controls
-        controls.forEach(control => {
-          control.style.backgroundColor = '#252526';
-          control.style.color = '#ffffff';
-        });
-
-        // Update status bar
-        statusBar.style.backgroundColor = '#252526';
-        statusBar.style.color = '#cccccc';
-
-        runButtons.forEach(button => {
-          button.style.backgroundColor = '#0e639c';
-          button.style.color = '#ffffff';
-        });
-      }
-
       if (darkModeFlag) {
-        applyLightMode();
-      } else {
-        applyDarkMode();
+        document.querySelectorAll(".color252526").forEach((x) => {
+          x.classList.remove("color252526");
+          x.classList.add("colorf0f0f0");
+        })
       }
     }
 
@@ -1271,11 +1119,8 @@
     }
 
 
-    function appendTable(outputElement, tableData, columns = null) {
-      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
-
-      // Use provided columns or derived columns
-      const finalColumns = columns || derivedColumns;
+    function appendTable(outputElement, tableData) {
+      const { rows, columns } = buildChromeTableModel(tableData);
 
       // Create table container
       const div = document.createElement("div");
@@ -1283,14 +1128,14 @@
 
       // Create table element
       const table = document.createElement("table");
-      table.classList.add("console-table"); // Ensure this class matches your CSS
+      table.classList.add("console-table");
 
       // Create table header
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
 
-      finalColumns.forEach(col => {
+      columns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
         th.textContent = col;
@@ -1306,7 +1151,7 @@
         const tr = document.createElement("tr");
         tr.classList.add("console-table-row");
 
-        finalColumns.forEach(col => {
+        columns.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
 
@@ -1320,9 +1165,8 @@
               const setValues = Array.from(value.values()).join(", ");
               td.textContent = `{ ${setValues} }`;
             } else {
-              // Display nested objects as expandable
-              td.innerHTML = `{ <span class="expandable">…</span> }`;
-              // Implement expandable functionality as needed
+              // Display nested objects as "{…}" or "{}"
+              td.textContent = Object.keys(value).length ? "{…}" : "{}";
             }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
@@ -1361,103 +1205,104 @@
     }
 
 
-
     function buildChromeTableModel(input) {
-    // Returns { rows: Array<Object>, columns: string[] }
-    if (Array.isArray(input)) {
+      // Returns { rows: Array<Object>, columns: string[] }
+      if (Array.isArray(input)) {
         if (input.length === 0) {
-            // Empty array: Show table with only (index) and Value columns
-            return { rows: [], columns: ["(index)", "Value"] };
+          // Empty array: Show table with only (index) and Value columns
+          return { rows: [], columns: ["(index)", "Value"] };
         }
 
         // Determine if the array contains only primitives
         const allPrimitives = input.every(item => {
-            return (
-                item === null ||
-                typeof item === "undefined" ||
-                (typeof item !== "object" && typeof item !== "function")
-            );
+          return (
+            item === null ||
+            typeof item === "undefined" ||
+            (typeof item !== "object" && typeof item !== "function")
+          );
         });
 
         if (allPrimitives) {
-            // Arrays of Primitives: (index) and Value columns
-            const rows = input.map((item, index) => ({
-                "(index)": index,
-                "Value": item === undefined ? "undefined" : item
-            }));
-            return {
-                rows,
-                columns: ["(index)", "Value"]
-            };
+          // Arrays of Primitives: (index) and Value columns
+          const rows = input.map((item, index) => ({
+            "(index)": index,
+            "Value": item === undefined ? "undefined" : item
+          }));
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
         } else {
-            // Arrays of Objects or Mixed Types
-            let columnsSet = new Set(["(index)"]);
-            input.forEach((item, index) => {
-                if (item && typeof item === "object") {
-                    Object.keys(item).forEach(k => columnsSet.add(k));
-                } else {
-                    columnsSet.add("Value");
+          // Arrays of Objects or Mixed Types
+          let columnsSet = new Set(["(index)"]);
+          input.forEach((item, index) => {
+            if (item && typeof item === "object") {
+              Object.keys(item).forEach(k => columnsSet.add(k));
+            } else {
+              columnsSet.add("Value");
+            }
+          });
+          const columns = Array.from(columnsSet);
+          const rows = input.map((item, index) => {
+            const row = { "(index)": index };
+            if (item && typeof item === "object") {
+              columns.forEach(col => {
+                if (col !== "(index)") {
+                  row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
                 }
-            });
-            const columns = Array.from(columnsSet);
-            const rows = input.map((item, index) => {
-                const row = { "(index)": index };
-                if (item && typeof item === "object") {
-                    columns.forEach(col => {
-                        if (col !== "(index)") {
-                            row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
-                        }
-                    });
-                } else {
-                    row["Value"] = item === undefined ? "undefined" : item;
-                }
-                return row;
-            });
-            return { rows, columns };
+              });
+            } else {
+              row["Value"] = item === undefined ? "undefined" : item;
+            }
+            return row;
+          });
+          return { rows, columns };
         }
-    }
+      }
 
-    if (input && typeof input === "object") {
+      if (input && typeof input === "object") {
         const keys = Object.keys(input);
         if (keys.length === 0) {
-            // Empty object: Show table with only (index) column
-            return { rows: [], columns: ["(index)"] };
+          // Empty object: Show table with only (index) column
+          return { rows: [], columns: ["(index)"] };
         }
 
         const isArrayLike =
-            "length" in input &&
-            typeof input.length === "number" &&
-            input.length >= 0 &&
-            Number.isInteger(input.length);
+          "length" in input &&
+          typeof input.length === "number" &&
+          input.length >= 0 &&
+          Number.isInteger(input.length);
 
         if (isArrayLike) {
-            // Treat as array-like object
-            const length = input.length;
-            const rows = [];
-            for (let i = 0; i < length; i++) {
-                rows.push({
-                    "(index)": i,
-                    "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
-                });
-            }
-            return {
-                rows,
-                columns: ["(index)", "Value"]
-            };
+          // Treat as array-like object
+          const length = input.length;
+          const rows = [];
+          for (let i = 0; i < length; i++) {
+            rows.push({
+              "(index)": i,
+              "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
+            });
+          }
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
         }
 
         // Plain Object with non-numeric keys: keys as columns
         const columns = keys.map(k => k);
         const rowObj = {};
         columns.forEach(k => {
-            rowObj[k] = input[k] === undefined ? "undefined" : input[k];
+          rowObj[k] = input[k] === undefined ? "undefined" : input[k];
         });
         return { rows: [rowObj], columns };
+      }
+
+      // Fallback: Not table-worthy
+      return { rows: [], columns: ["Value"] };
     }
 
-    // Fallback: Not table-worthy
-    return { rows: [], columns: ["Value"] };
-}
+
 
 
 
@@ -1848,7 +1693,7 @@
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert("1")
+
   </script>
 </body>
 
