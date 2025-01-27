@@ -940,8 +940,7 @@
 
     function changeToLightMode() {
       if (darkModeFlag) {
-        const moon = `<svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="black"> `
-        lightModeDiv.innerHTML = moon;
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
