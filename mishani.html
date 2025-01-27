@@ -178,11 +178,11 @@
       position: relative;
     }
 
-    #activityBar .icon:hover,
+    /* #activityBar .icon:hover,
     #activityBar .icon.active {
       background-color: #3c3c3c;
       color: #fff;
-    }
+    } */
 
     #activityBar .icon:hover:after {
       content: attr(data-label);
@@ -586,6 +586,12 @@
       color: #cccccc;
     }
 
+    #activityBar.theme.color1e1e1e .icon:hover,
+    #activityBar.theme.color1e1e1e .icon.active {
+      background-color: #3c3c3c;
+      color: #fff;
+    }
+
     .theme.color1e1e1e .sidebar-panel.active {
       background-color: #2b2b2b;
       color: #ffffff;
@@ -648,9 +654,9 @@
       color: #9b9a9a !important;
     }
 
-    #activityBar.theme.colorf0f0f0 .icon:hover {
+    #activityBar.theme.colorf0f0f0 .icon:hover #activityBar.theme.colorf0f0f0 .icon.active {
       background-color: rgb(128, 127, 127);
-      color: white;
+      color: #cac8c8;
     }
 
 
@@ -1707,7 +1713,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("8");
+    alert("7");
   </script>
 </body>
 
