@@ -784,7 +784,7 @@
           x.classList.forEach((c) => {
             if (themeMapDark[c]) {
               x.classList.remove(c);
-              x.classList.add(themeMapLight[c]);
+              x.classList.add(themeMapDark[c]);
             }
           })
         })
@@ -794,7 +794,7 @@
           x.classList.forEach((c) => {
             if (themeMapLight[c]) {
               x.classList.remove(c);
-              x.classList.add(themeMapDark[c]);
+              x.classList.add(themeMapLight[c]);
             }
           })
         })
@@ -1679,6 +1679,7 @@
         .replace(/"/g, "&quot;");
     }
     alert("5")
+    
   </script>
 </body>
 
