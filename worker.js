@@ -205,9 +205,6 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 }
 
 
-
-
-
 function isProxy(obj) {
     try {
         Object.getOwnPropertyDescriptor(obj, "__isProxy");
@@ -383,7 +380,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
-
+        
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -394,7 +391,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
-
+        
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
@@ -405,34 +402,42 @@ self.addEventListener("message", (event) => {
                     });
                     return;
                 }
-
+        
                 // Determine columns if not provided
                 let determinedColumns = columns;
                 if (!columns) {
                     if (Array.isArray(data)) {
                         if (data.length > 0 && typeof data[0] === "object") {
                             // Collect all unique keys from objects in the array
-                            determinedColumns = ["(index)", ...new Set(data.flatMap(item => Object.keys(item)))];
+                            const uniqueKeys = new Set();
+                            data.forEach(item => {
+                                if (item && typeof item === "object" && !Array.isArray(item)) {
+                                    Object.keys(item).forEach(key => uniqueKeys.add(key));
+                                }
+                            });
+                            determinedColumns = ["(index)", ...Array.from(uniqueKeys).sort()];
                         } else {
                             determinedColumns = ["(index)", "Value"];
                         }
                     } else if (typeof data === "object") {
-                        // Collect all unique keys from the object
-                        determinedColumns = ["(index)", ...new Set(Object.keys(data).flatMap(key => {
+                        // Collect all unique sub-keys from the object
+                        const uniqueSubKeys = new Set();
+                        Object.keys(data).forEach(key => {
                             const val = data[key];
-                            if (val && typeof val === "object" && !Array.isArray(val)) {
-                                return Object.keys(val);
-                            } else if (Array.isArray(val)) {
-                                return val.map((_, idx) => String(idx));
-                            } else {
-                                return [];
+                            if (val && typeof val === "object") {
+                                if (Array.isArray(val)) {
+                                    val.forEach((_, idx) => uniqueSubKeys.add(String(idx)));
+                                } else {
+                                    Object.keys(val).forEach(k => uniqueSubKeys.add(k));
+                                }
                             }
-                        }))];
+                        });
+                        determinedColumns = ["(index)", ...Array.from(uniqueSubKeys).sort()];
                     } else {
                         determinedColumns = ["(index)", "Value"];
                     }
                 }
-
+        
                 self.postMessage({
                     type: "table",
                     tableData: safeData,

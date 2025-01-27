@@ -1275,7 +1275,7 @@
       const finalColumns = columns || derivedColumns;
 
       // Handle cases where no table should be built
-      if (finalColumns.length === 0 || rows.length === 0) {
+      if (!finalColumns || finalColumns.length === 0 || !rows || rows.length === 0) {
         // Fallback to regular log if no table can be constructed
         const fallbackMessage = typeof tableData === "object" ? JSON.stringify(tableData, null, 2) : String(tableData);
         appendToOutput(outputElement, "log", fallbackMessage);
@@ -1382,8 +1382,6 @@
     }
 
 
-
-
     function buildChromeTableModel(tableData, columns) {
       // Returns { rows: Array<Object>, columns: string[] }
 
@@ -1451,14 +1449,10 @@
           if (val && typeof val === "object") {
             if (Array.isArray(val)) {
               // For arrays, sub-keys are indices
-              val.forEach((_, idx) => {
-                subKeysSet.add(String(idx));
-              });
+              val.forEach((_, idx) => subKeysSet.add(String(idx)));
             } else {
               // For objects, sub-keys are property names
-              Object.keys(val).forEach(k => {
-                subKeysSet.add(k);
-              });
+              Object.keys(val).forEach(k => subKeysSet.add(k));
             }
           }
         });
@@ -1487,7 +1481,6 @@
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
-
 
 
     async function runTab(i, btn) {
@@ -1917,7 +1910,7 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
-    alert("1")
+    alert("2")
   </script>
 </body>
 
