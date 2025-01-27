@@ -406,10 +406,37 @@ self.addEventListener("message", (event) => {
                     return;
                 }
 
+                // Determine columns if not provided
+                let determinedColumns = columns;
+                if (!columns) {
+                    if (Array.isArray(data)) {
+                        if (data.length > 0 && typeof data[0] === "object") {
+                            // Collect all unique keys from objects in the array
+                            determinedColumns = ["(index)", ...new Set(data.flatMap(item => Object.keys(item)))];
+                        } else {
+                            determinedColumns = ["(index)", "Value"];
+                        }
+                    } else if (typeof data === "object") {
+                        // Collect all unique keys from the object
+                        determinedColumns = ["(index)", ...new Set(Object.keys(data).flatMap(key => {
+                            const val = data[key];
+                            if (val && typeof val === "object" && !Array.isArray(val)) {
+                                return Object.keys(val);
+                            } else if (Array.isArray(val)) {
+                                return val.map((_, idx) => String(idx));
+                            } else {
+                                return [];
+                            }
+                        }))];
+                    } else {
+                        determinedColumns = ["(index)", "Value"];
+                    }
+                }
+
                 self.postMessage({
                     type: "table",
                     tableData: safeData,
-                    columns: columns || null // Pass columns if provided
+                    columns: determinedColumns
                 });
             },
 

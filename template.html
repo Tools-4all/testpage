@@ -1269,7 +1269,7 @@
 
 
     function appendTable(outputElement, tableData, columns = null) {
-      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
+      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData, columns);
 
       // Use provided columns or derived columns
       const finalColumns = columns || derivedColumns;
@@ -1317,15 +1317,8 @@
 
           let value = rowObj[col];
           if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-            // Check for Map or Set
-            if (value instanceof Map) {
-              const mapEntries = Array.from(value.entries()).map(([k, v]) => `${k}: ${v}`).join(", ");
-              td.textContent = `{ ${mapEntries} }`;
-            } else if (value instanceof Set) {
-              const setValues = Array.from(value.values()).join(", ");
-              td.textContent = `{ ${setValues} }`;
-            } else if (value === "{…}") {
-              // Represent cyclical reference as {…}
+            // Represent cyclical reference as {…}
+            if (value === "{…}") {
               td.textContent = "{…}";
             } else {
               // Display nested objects as expandable
@@ -1390,17 +1383,18 @@
 
 
 
-    function buildChromeTableModel(input) {
+
+    function buildChromeTableModel(tableData, columns) {
       // Returns { rows: Array<Object>, columns: string[] }
 
-      if (Array.isArray(input)) {
-        if (input.length === 0) {
+      if (Array.isArray(tableData)) {
+        if (tableData.length === 0) {
           // Empty array: Show table with only (index) and Value columns
           return { rows: [], columns: ["(index)", "Value"] };
         }
 
         // Determine if the array contains only primitives
-        const allPrimitives = input.every(item => {
+        const allPrimitives = tableData.every(item => {
           return (
             item === null ||
             typeof item === "undefined" ||
@@ -1410,7 +1404,7 @@
 
         if (allPrimitives) {
           // Arrays of Primitives: (index) and Value columns
-          const rows = input.map((item, index) => ({
+          const rows = tableData.map((item, index) => ({
             "(index)": index,
             "Value": item === undefined ? "undefined" : item
           }));
@@ -1420,23 +1414,20 @@
           };
         } else {
           // Arrays of Objects or Mixed Types
-          let columnsSet = new Set(["(index)"]);
-          input.forEach((item) => {
-            if (item && typeof item === "object") {
-              Object.keys(item).forEach(k => columnsSet.add(k));
-            } else {
-              columnsSet.add("Value");
-            }
-          });
-          const columns = Array.from(columnsSet);
-          const rows = input.map((item, index) => {
+          const rows = tableData.map((item, index) => {
             const row = { "(index)": index };
             if (item && typeof item === "object") {
-              columns.forEach(col => {
-                if (col !== "(index)") {
-                  row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
-                }
-              });
+              if (Array.isArray(item)) {
+                // For arrays within arrays
+                item.forEach((val, idx) => {
+                  row[String(idx)] = val;
+                });
+              } else {
+                // For objects within arrays
+                Object.keys(item).forEach(k => {
+                  row[k] = item[k];
+                });
+              }
             } else {
               row["Value"] = item === undefined ? "undefined" : item;
             }
@@ -1446,48 +1437,56 @@
         }
       }
 
-      if (input && typeof input === "object") {
-        const keys = Object.keys(input);
+      if (typeof tableData === "object" && tableData !== null) {
+        const keys = Object.keys(tableData);
         if (keys.length === 0) {
           // Empty object: Show table with only (index) column
           return { rows: [], columns: ["(index)"] };
         }
 
-        const isArrayLike =
-          "length" in input &&
-          typeof input.length === "number" &&
-          input.length >= 0 &&
-          Number.isInteger(input.length);
-
-        if (isArrayLike) {
-          // Treat as array-like object
-          const length = input.length;
-          const rows = [];
-          for (let i = 0; i < length; i++) {
-            rows.push({
-              "(index)": i,
-              "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
-            });
+        // Collect all unique sub-keys
+        const subKeysSet = new Set();
+        keys.forEach(key => {
+          const val = tableData[key];
+          if (val && typeof val === "object") {
+            if (Array.isArray(val)) {
+              // For arrays, sub-keys are indices
+              val.forEach((_, idx) => {
+                subKeysSet.add(String(idx));
+              });
+            } else {
+              // For objects, sub-keys are property names
+              Object.keys(val).forEach(k => {
+                subKeysSet.add(k);
+              });
+            }
           }
-          return {
-            rows,
-            columns: ["(index)", "Value"]
-          };
-        }
+        });
 
-        // Plain Object: Treat as key-value pairs with (index) and Value
-        const columns = ["(index)", "Value"];
-        const rows = Object.keys(input).map(key => ({
-          "(index)": key,
-          "Value": input[key] === undefined ? "undefined" : input[key]
-        }));
-        return { rows, columns };
+        const finalColumns = ["(index)", ...Array.from(subKeysSet).sort()];
+        const rows = keys.map(key => {
+          const row = { "(index)": key };
+          const val = tableData[key];
+          if (val && typeof val === "object") {
+            if (Array.isArray(val)) {
+              val.forEach((item, idx) => {
+                row[String(idx)] = item;
+              });
+            } else {
+              Object.keys(val).forEach(k => {
+                row[k] = val[k];
+              });
+            }
+          }
+          return row;
+        });
+
+        return { rows, columns: finalColumns };
       }
 
       // Fallback: Not table-worthy
       return { rows: [], columns: ["Value"] };
     }
-
 
 
 
@@ -1918,7 +1917,7 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
-    alert("7")
+    alert("1")
   </script>
 </body>
 
