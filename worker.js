@@ -1,4 +1,3 @@
-
 importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js")
 
 
@@ -154,57 +153,56 @@ function relativeStack(error) {
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     if (value === null || value === undefined) return String(value); // "null" or "undefined"
     if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
-        return value;
+        return value; 
     }
     if (typeof value === "string") {
-        return `"${value}"`;
+        return `"${value}"`; 
     }
     if (typeof value === "symbol") {
-        return value.toString();
+        return value.toString(); 
     }
     if (typeof value === "function") {
-        return `ƒ ${value.name || ''}`;
+        return `ƒ ${value.name || ''}`; 
     }
     if (seen.has(value)) {
-        return "{…}"; // Represent cyclical reference as {…}
+        return "[Circular]";
     }
     seen.set(value, path || ".");
-
+    
     if (Array.isArray(value)) {
         return value.map((item, index) =>
             cloneForConsoleTable(item, seen, `${path}[${index}]`)
         );
     }
-
+    
     if (value instanceof Map) {
         return Array.from(value.entries()).reduce((acc, [key, val]) => {
             acc[`Map(${key})`] = cloneForConsoleTable(val, seen, `${path}[Map(${key})]`);
             return acc;
         }, {});
     }
-
+    
     if (value instanceof Set) {
         return Array.from(value.values()).map((item, index) =>
             cloneForConsoleTable(item, seen, `${path}[Set:${index}]`)
         );
     }
-
+    
     if (typeof value === "object") {
         const objClone = {};
         Object.keys(value).forEach((key) => {
             objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`);
         });
-
+    
         Object.getOwnPropertySymbols(value).forEach((sym) => {
             objClone[sym.toString()] = cloneForConsoleTable(value[sym], seen, `${path}[${sym.toString()}]`);
         });
-
+    
         return objClone;
     }
-
+    
     return String(value);
 }
-
 
 
 
@@ -384,7 +382,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
-
+        
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -395,7 +393,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
-
+        
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
@@ -406,38 +404,11 @@ self.addEventListener("message", (event) => {
                     });
                     return;
                 }
-
-                // Determine columns if not provided
-                let determinedColumns = columns;
-                if (!columns) {
-                    if (Array.isArray(data)) {
-                        if (data.length > 0 && typeof data[0] === "object") {
-                            // Collect all unique keys from objects in the array
-                            determinedColumns = ["(index)", ...new Set(data.flatMap(item => Object.keys(item)))];
-                        } else {
-                            determinedColumns = ["(index)", "Value"];
-                        }
-                    } else if (typeof data === "object") {
-                        // Collect all unique keys from the object
-                        determinedColumns = ["(index)", ...new Set(Object.keys(data).flatMap(key => {
-                            const val = data[key];
-                            if (val && typeof val === "object" && !Array.isArray(val)) {
-                                return Object.keys(val);
-                            } else if (Array.isArray(val)) {
-                                return val.map((_, idx) => String(idx));
-                            } else {
-                                return [];
-                            }
-                        }))];
-                    } else {
-                        determinedColumns = ["(index)", "Value"];
-                    }
-                }
-
+        
                 self.postMessage({
                     type: "table",
                     tableData: safeData,
-                    columns: determinedColumns
+                    columns: columns || null // Pass columns if provided
                 });
             },
 
