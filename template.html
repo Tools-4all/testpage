@@ -782,7 +782,7 @@
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((x) => {
           x.classList.forEach((c) => {
-            if (themeMapLight[c]) {
+            if (themeMapDark[c]) {
               x.classList.remove(c);
               x.classList.add(themeMapLight[c]);
             }
