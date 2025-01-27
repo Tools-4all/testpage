@@ -1268,124 +1268,109 @@
     }
 
 
-    function appendTable(outputElement, tableData, columns = null) {
-      const { rows, columns: derivedColumns } = buildChromeTableModel(tableData);
+    function appendTable(outputElement, rows, columns) {
+        if (!outputElement) return;
 
-      // Use provided columns or derived columns
-      const finalColumns = columns || derivedColumns;
+        // Validate rows and columns
+        if (!Array.isArray(rows) || !Array.isArray(columns)) {
+            appendToOutput(outputElement, "error", "Invalid table data received.");
+            return;
+        }
 
-      // Handle cases where no table should be built
-      if (finalColumns.length === 0 || rows.length === 0) {
-        // Fallback to regular log if no table can be constructed
-        const fallbackMessage = typeof tableData === "object" ? JSON.stringify(tableData, null, 2) : String(tableData);
-        appendToOutput(outputElement, "log", fallbackMessage);
-        return;
-      }
+        if (columns.length === 0 || rows.length === 0) {
+            // Fallback to regular log if no table can be constructed
+            const fallbackMessage = (rows.length === 0) ? "Empty Table" : "No data to display.";
+            appendToOutput(outputElement, "log", fallbackMessage);
+            return;
+        }
 
-      // Create table container
-      const div = document.createElement("div");
-      div.classList.add("outputContent");
+        // Create table container
+        const div = document.createElement("div");
+        div.classList.add("outputContent");
 
-      // Create table element
-      const table = document.createElement("table");
-      table.classList.add("console-table"); // Ensure this class matches your CSS
+        // Create table element
+        const table = document.createElement("table");
+        table.classList.add("console-table"); // Ensure this class matches your CSS
 
-      // Create table header
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      headRow.classList.add("console-table-row");
+        // Create table header
+        const thead = document.createElement("thead");
+        const headRow = document.createElement("tr");
+        headRow.classList.add("console-table-row");
 
-      finalColumns.forEach(col => {
-        const th = document.createElement("th");
-        th.classList.add("console-table-header");
-        th.textContent = col;
-        headRow.appendChild(th);
-      });
-      thead.appendChild(headRow);
-      table.appendChild(thead);
-
-      // Create table body
-      const tbody = document.createElement("tbody");
-
-      rows.forEach(rowObj => {
-        const tr = document.createElement("tr");
-        tr.classList.add("console-table-row");
-
-        finalColumns.forEach(col => {
-          const td = document.createElement("td");
-          td.classList.add("console-table-data");
-
-          let value = rowObj[col];
-          if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-            // Check for Map or Set
-            if (value instanceof Map) {
-              const mapEntries = Array.from(value.entries()).map(([k, v]) => `${k}: ${v}`).join(", ");
-              td.textContent = `{ ${mapEntries} }`;
-            } else if (value instanceof Set) {
-              const setValues = Array.from(value.values()).join(", ");
-              td.textContent = `{ ${setValues} }`;
-            } else if (value === "{…}") {
-              // Represent cyclical reference as {…}
-              td.textContent = "{…}";
-            } else {
-              // Display nested objects as expandable
-              const expandable = document.createElement("span");
-              expandable.classList.add("expandable");
-              expandable.textContent = "{…}";
-              expandable.style.cursor = "pointer";
-              expandable.style.color = "#9CDCFE"; // Light blue for better visibility
-              expandable.addEventListener("click", () => {
-                if (expandable.classList.contains("expanded")) {
-                  expandable.classList.remove("expanded");
-                  if (td.querySelector(".expandable-details")) {
-                    td.querySelector(".expandable-details").remove();
-                  }
-                } else {
-                  expandable.classList.add("expanded");
-                  const details = document.createElement("div");
-                  details.classList.add("expandable-details");
-                  details.innerHTML = objectToHTML(value, 1); // Reuse your existing objectToHTML
-                  details.style.marginTop = "4px";
-                  details.style.marginLeft = "20px";
-                  td.appendChild(details);
-                }
-              });
-              td.appendChild(expandable);
-            }
-          } else if (Array.isArray(value)) {
-            // Display arrays as "(length) […]"
-            td.textContent = `(${value.length}) […]`;
-          } else if (typeof value === "string" && value.startsWith("{…}")) {
-            // Display cyclical references as {…}
-            td.textContent = "{…}";
-          } else if (typeof value === "string" && value.startsWith("ƒ")) {
-            // Display functions as their string representation
-            td.textContent = value;
-          } else if (typeof value === "string" && value.startsWith("Symbol")) {
-            // Display symbols
-            td.textContent = value;
-          } else if (value === "undefined") {
-            // Display "undefined" string
-            td.textContent = "undefined";
-          } else if (value === "") {
-            // Empty string for missing properties
-            td.textContent = "";
-          } else {
-            // Display primitive values
-            td.textContent = String(value);
-          }
-
-          tr.appendChild(td);
+        columns.forEach(col => {
+            const th = document.createElement("th");
+            th.classList.add("console-table-header");
+            th.textContent = col;
+            headRow.appendChild(th);
         });
 
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
 
-      // Append table to output
-      div.appendChild(table);
-      outputElement.appendChild(div);
-      outputElement.scrollTop = outputElement.scrollHeight;
+        // Create table body
+        const tbody = document.createElement("tbody");
+
+        rows.forEach(rowObj => {
+            const tr = document.createElement("tr");
+            tr.classList.add("console-table-row");
+
+            columns.forEach(col => {
+                const td = document.createElement("td");
+                td.classList.add("console-table-data");
+
+                let value = rowObj[col];
+
+                // Handle different value types
+                if (typeof value === "object" && value !== null) {
+                    if (Array.isArray(value)) {
+                        td.textContent = `[Array(${value.length})]`;
+                    } else if (value === "[Circular]") {
+                        td.textContent = "{…}";
+                    } else {
+                        // For nested objects, display as expandable
+                        const expandable = document.createElement("span");
+                        expandable.classList.add("expandable");
+                        expandable.textContent = "{…}";
+                        expandable.style.cursor = "pointer";
+                        expandable.style.color = "#9CDCFE"; // Light blue for better visibility
+
+                        expandable.addEventListener("click", () => {
+                            if (expandable.classList.contains("expanded")) {
+                                expandable.classList.remove("expanded");
+                                if (td.querySelector(".expandable-details")) {
+                                    td.querySelector(".expandable-details").remove();
+                                }
+                            } else {
+                                expandable.classList.add("expanded");
+                                const details = document.createElement("div");
+                                details.classList.add("expandable-details");
+                                details.innerHTML = objectToHTML(value, 1); // Reuse existing objectToHTML
+                                details.style.marginTop = "4px";
+                                details.style.marginLeft = "20px";
+                                td.appendChild(details);
+                            }
+                        });
+
+                        td.appendChild(expandable);
+                    }
+                } else if (typeof value === "function") {
+                    td.textContent = value; // Display function as string
+                } else {
+                    td.textContent = (value === "undefined") ? "undefined" : String(value);
+                }
+
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+
+        // Append table to output
+        div.appendChild(table);
+        outputElement.appendChild(div);
+        outputElement.scrollTop = outputElement.scrollHeight;
     }
 
 
@@ -1511,7 +1496,8 @@
           else if (t === "clear") { clearConsole(o.outputElement) }
           else if (t === "alert") { await handleAlert(m, o) }
           else if (t === "table") {
-            appendTable(o.outputElement, e.data.tableData);
+            const { rows, columns } = e.data;
+            appendTable(o.outputElement, rows, columns);
           }
         }
         w.onerror = (x) => {
@@ -1917,7 +1903,7 @@
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
-    alert("7")
+    alert("2")
   </script>
 </body>
 

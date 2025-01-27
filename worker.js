@@ -151,59 +151,160 @@ function relativeStack(error) {
 
 
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
-    if (value === null || value === undefined) return String(value); // "null" or "undefined"
+    if (value === null) return null;
+    if (typeof value === "undefined") return "undefined";
     if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
-        return value; 
+        return value;
     }
     if (typeof value === "string") {
-        return `"${value}"`; 
+        return value;
     }
     if (typeof value === "symbol") {
-        return value.toString(); 
+        return value.toString();
     }
     if (typeof value === "function") {
-        return `ƒ ${value.name || ''}`; 
+        return `ƒ ${value.name || 'anonymous'}`;
     }
     if (seen.has(value)) {
         return "[Circular]";
     }
-    seen.set(value, path || ".");
-    
+    seen.set(value, path || "root");
+
     if (Array.isArray(value)) {
-        return value.map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[${index}]`)
-        );
+        return value.map((item, index) => cloneForConsoleTable(item, seen, `${path}[${index}]`));
     }
-    
+
     if (value instanceof Map) {
-        return Array.from(value.entries()).reduce((acc, [key, val]) => {
-            acc[`Map(${key})`] = cloneForConsoleTable(val, seen, `${path}[Map(${key})]`);
-            return acc;
-        }, {});
+        const mapObj = {};
+        value.forEach((val, key) => {
+            mapObj[`Map(${key})`] = cloneForConsoleTable(val, seen, `${path}[Map(${key})]`);
+        });
+        return mapObj;
     }
-    
+
     if (value instanceof Set) {
-        return Array.from(value.values()).map((item, index) =>
-            cloneForConsoleTable(item, seen, `${path}[Set:${index}]`)
-        );
+        const setArray = [];
+        value.forEach((val) => {
+            setArray.push(cloneForConsoleTable(val, seen, `${path}[Set]`));
+        });
+        return setArray;
     }
-    
+
     if (typeof value === "object") {
         const objClone = {};
         Object.keys(value).forEach((key) => {
             objClone[key] = cloneForConsoleTable(value[key], seen, `${path}.${key}`);
         });
-    
+
+        // Handle Symbol keys
         Object.getOwnPropertySymbols(value).forEach((sym) => {
             objClone[sym.toString()] = cloneForConsoleTable(value[sym], seen, `${path}[${sym.toString()}]`);
         });
-    
+
         return objClone;
     }
-    
+
     return String(value);
 }
 
+// Function to build rows and columns for console.table
+function buildChromeTableModel(input) {
+    // Returns { rows: Array<Object>, columns: string[] }
+
+    if (Array.isArray(input)) {
+        if (input.length === 0) {
+            // Empty array: Show table with only (index) and Value columns
+            return { rows: [], columns: ["(index)", "Value"] };
+        }
+
+        // Determine if the array contains only primitives
+        const allPrimitives = input.every(item => {
+            return (
+                item === null ||
+                typeof item === "undefined" ||
+                (typeof item !== "object" && typeof item !== "function")
+            );
+        });
+
+        if (allPrimitives) {
+            // Arrays of Primitives: (index) and Value columns
+            const rows = input.map((item, index) => ({
+                "(index)": index,
+                "Value": item === undefined ? "undefined" : item
+            }));
+            return {
+                rows,
+                columns: ["(index)", "Value"]
+            };
+        } else {
+            // Arrays of Objects or Mixed Types
+            let columnsSet = new Set(["(index)"]);
+            input.forEach((item) => {
+                if (item && typeof item === "object") {
+                    Object.keys(item).forEach(k => columnsSet.add(k));
+                } else {
+                    columnsSet.add("Value");
+                }
+            });
+            const columns = Array.from(columnsSet);
+            const rows = input.map((item, index) => {
+                const row = { "(index)": index };
+                if (item && typeof item === "object") {
+                    columns.forEach(col => {
+                        if (col !== "(index)") {
+                            row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
+                        }
+                    });
+                } else {
+                    row["Value"] = item === undefined ? "undefined" : item;
+                }
+                return row;
+            });
+            return { rows, columns };
+        }
+    }
+
+    if (input && typeof input === "object") {
+        const keys = Object.keys(input);
+        if (keys.length === 0) {
+            // Empty object: Show table with only (index) column
+            return { rows: [], columns: ["(index)"] };
+        }
+
+        const isArrayLike =
+            "length" in input &&
+            typeof input.length === "number" &&
+            input.length >= 0 &&
+            Number.isInteger(input.length);
+
+        if (isArrayLike) {
+            // Treat as array-like object
+            const length = input.length;
+            const rows = [];
+            for (let i = 0; i < length; i++) {
+                rows.push({
+                    "(index)": i,
+                    "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
+                });
+            }
+            return {
+                rows,
+                columns: ["(index)", "Value"]
+            };
+        }
+
+        // Plain Object: Treat as key-value pairs with (index) and Value
+        const columns = ["(index)", "Value"];
+        const rows = Object.keys(input).map(key => ({
+            "(index)": key,
+            "Value": input[key] === undefined ? "undefined" : input[key]
+        }));
+        return { rows, columns };
+    }
+
+    // Fallback: Not table-worthy
+    return { rows: [], columns: ["Value"] };
+}
 
 
 
@@ -379,10 +480,10 @@ self.addEventListener("message", (event) => {
                     typeof data === "bigint" ||
                     typeof data === "symbol"
                 ) {
-                    self.postMessage({ type: "log", message: String(data) });
+                    customConsole.log(String(data));
                     return;
                 }
-        
+    
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -390,25 +491,23 @@ self.addEventListener("message", (event) => {
                     } catch {
                         fnString = "[Function]";
                     }
-                    self.postMessage({ type: "log", message: fnString });
+                    customConsole.log(fnString);
                     return;
                 }
-        
-                let safeData;
+    
+                let clonedData;
                 try {
-                    safeData = cloneForConsoleTable(data);
+                    clonedData = cloneForConsoleTable(data);
                 } catch (err) {
-                    self.postMessage({
-                        type: "log",
-                        message: `[Uncloneable data] ${err.message}`
-                    });
+                    customConsole.error(`Error cloning data for table: ${err.message}`);
                     return;
                 }
-        
+    
+                let tableModel = buildChromeTableModel(clonedData);
                 self.postMessage({
                     type: "table",
-                    tableData: safeData,
-                    columns: columns || null 
+                    rows: tableModel.rows,
+                    columns: tableModel.columns
                 });
             },
 
