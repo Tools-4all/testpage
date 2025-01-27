@@ -1490,7 +1490,6 @@
 
 
 
-    var x = 1
     async function runTab(i, btn) {
       btn.disabled = true
       let o = tabs.find((x) => x.id === i)
@@ -1513,7 +1512,6 @@
           else if (t === "alert") { await handleAlert(m, o) }
           else if (t === "table") {
             appendTable(o.outputElement, e.data.tableData);
-            console.log("called table x times, x = ", x++);
           }
         }
         w.onerror = (x) => {
