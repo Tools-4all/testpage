@@ -1277,6 +1277,14 @@
       // Use provided columns or derived columns
       const finalColumns = columns || derivedColumns;
 
+      // Handle cases where no table should be built
+      if (finalColumns.length === 0 || rows.length === 0) {
+        // Fallback to regular log if no table can be constructed
+        const fallbackMessage = typeof tableData === "object" ? JSON.stringify(tableData, null, 2) : String(tableData);
+        appendToOutput(outputElement, "log", fallbackMessage);
+        return;
+      }
+
       // Create table container
       const div = document.createElement("div");
       div.classList.add("outputContent");
@@ -1321,8 +1329,24 @@
               td.textContent = `{ ${setValues} }`;
             } else {
               // Display nested objects as expandable
-              td.innerHTML = `{ <span class="expandable">…</span> }`;
-              // Implement expandable functionality as needed
+              const expandable = document.createElement("span");
+              expandable.classList.add("expandable");
+              expandable.textContent = "{…}";
+              expandable.addEventListener("click", () => {
+                if (expandable.classList.contains("expanded")) {
+                  expandable.classList.remove("expanded");
+                  if (td.querySelector(".expandable-details")) {
+                    td.querySelector(".expandable-details").remove();
+                  }
+                } else {
+                  expandable.classList.add("expanded");
+                  const details = document.createElement("div");
+                  details.classList.add("expandable-details");
+                  details.innerHTML = objectToHTML(value, 1); // Reuse your existing objectToHTML
+                  td.appendChild(details);
+                }
+              });
+              td.appendChild(expandable);
             }
           } else if (Array.isArray(value)) {
             // Display arrays as "(length) […]"
@@ -1330,7 +1354,7 @@
           } else if (typeof value === "string" && value.startsWith("[Circular")) {
             // Display circular references
             td.textContent = value;
-          } else if (typeof value === "string" && value.startsWith("function")) {
+          } else if (typeof value === "string" && value.startsWith("ƒ")) {
             // Display functions as their string representation
             td.textContent = value;
           } else if (typeof value === "string" && value.startsWith("Symbol")) {
@@ -1362,102 +1386,104 @@
 
 
 
+
     function buildChromeTableModel(input) {
-    // Returns { rows: Array<Object>, columns: string[] }
-    if (Array.isArray(input)) {
+      // Returns { rows: Array<Object>, columns: string[] }
+      if (Array.isArray(input)) {
         if (input.length === 0) {
-            // Empty array: Show table with only (index) and Value columns
-            return { rows: [], columns: ["(index)", "Value"] };
+          // Empty array: Show table with only (index) and Value columns
+          return { rows: [], columns: ["(index)", "Value"] };
         }
 
         // Determine if the array contains only primitives
         const allPrimitives = input.every(item => {
-            return (
-                item === null ||
-                typeof item === "undefined" ||
-                (typeof item !== "object" && typeof item !== "function")
-            );
+          return (
+            item === null ||
+            typeof item === "undefined" ||
+            (typeof item !== "object" && typeof item !== "function")
+          );
         });
 
         if (allPrimitives) {
-            // Arrays of Primitives: (index) and Value columns
-            const rows = input.map((item, index) => ({
-                "(index)": index,
-                "Value": item === undefined ? "undefined" : item
-            }));
-            return {
-                rows,
-                columns: ["(index)", "Value"]
-            };
+          // Arrays of Primitives: (index) and Value columns
+          const rows = input.map((item, index) => ({
+            "(index)": index,
+            "Value": item === undefined ? "undefined" : item
+          }));
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
         } else {
-            // Arrays of Objects or Mixed Types
-            let columnsSet = new Set(["(index)"]);
-            input.forEach((item, index) => {
-                if (item && typeof item === "object") {
-                    Object.keys(item).forEach(k => columnsSet.add(k));
-                } else {
-                    columnsSet.add("Value");
+          // Arrays of Objects or Mixed Types
+          let columnsSet = new Set(["(index)"]);
+          input.forEach((item, index) => {
+            if (item && typeof item === "object") {
+              Object.keys(item).forEach(k => columnsSet.add(k));
+            } else {
+              columnsSet.add("Value");
+            }
+          });
+          const columns = Array.from(columnsSet);
+          const rows = input.map((item, index) => {
+            const row = { "(index)": index };
+            if (item && typeof item === "object") {
+              columns.forEach(col => {
+                if (col !== "(index)") {
+                  row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
                 }
-            });
-            const columns = Array.from(columnsSet);
-            const rows = input.map((item, index) => {
-                const row = { "(index)": index };
-                if (item && typeof item === "object") {
-                    columns.forEach(col => {
-                        if (col !== "(index)") {
-                            row[col] = col in item ? (item[col] === undefined ? "undefined" : item[col]) : "";
-                        }
-                    });
-                } else {
-                    row["Value"] = item === undefined ? "undefined" : item;
-                }
-                return row;
-            });
-            return { rows, columns };
+              });
+            } else {
+              row["Value"] = item === undefined ? "undefined" : item;
+            }
+            return row;
+          });
+          return { rows, columns };
         }
-    }
+      }
 
-    if (input && typeof input === "object") {
+      if (input && typeof input === "object") {
         const keys = Object.keys(input);
         if (keys.length === 0) {
-            // Empty object: Show table with only (index) column
-            return { rows: [], columns: ["(index)"] };
+          // Empty object: Show table with only (index) column
+          return { rows: [], columns: ["(index)"] };
         }
 
         const isArrayLike =
-            "length" in input &&
-            typeof input.length === "number" &&
-            input.length >= 0 &&
-            Number.isInteger(input.length);
+          "length" in input &&
+          typeof input.length === "number" &&
+          input.length >= 0 &&
+          Number.isInteger(input.length);
 
         if (isArrayLike) {
-            // Treat as array-like object
-            const length = input.length;
-            const rows = [];
-            for (let i = 0; i < length; i++) {
-                rows.push({
-                    "(index)": i,
-                    "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
-                });
-            }
-            return {
-                rows,
-                columns: ["(index)", "Value"]
-            };
+          // Treat as array-like object
+          const length = input.length;
+          const rows = [];
+          for (let i = 0; i < length; i++) {
+            rows.push({
+              "(index)": i,
+              "Value": i in input ? (input[i] === undefined ? "undefined" : input[i]) : ""
+            });
+          }
+          return {
+            rows,
+            columns: ["(index)", "Value"]
+          };
         }
 
         // Plain Object with non-numeric keys: keys as columns
         const columns = keys.map(k => k);
         const rowObj = {};
         columns.forEach(k => {
-            rowObj[k] = input[k] === undefined ? "undefined" : input[k];
+          rowObj[k] = input[k] === undefined ? "undefined" : input[k];
         });
         return { rows: [rowObj], columns };
+      }
+
+      // Fallback: Not table-worthy
+      return { rows: [], columns: ["Value"] };
     }
 
-    // Fallback: Not table-worthy
-    return { rows: [], columns: ["Value"] };
-}
 
 
 
@@ -1848,7 +1874,7 @@
       if (!r.ok) throw new Error(`Failed to fetch raw file: ${r.statusText}`)
       return await r.text()
     }
-    alert("1")
+    alert("2")
   </script>
 </body>
 

@@ -153,16 +153,16 @@ function relativeStack(error) {
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     if (value === null || value === undefined) return String(value); // "null" or "undefined"
     if (typeof value === "boolean" || typeof value === "number" || typeof value === "bigint") {
-        return value; 
+        return value;
     }
     if (typeof value === "string") {
-        return `"${value}"`; 
+        return `"${value}"`;
     }
     if (typeof value === "symbol") {
-        return value.toString(); 
+        return value.toString();
     }
     if (typeof value === "function") {
-        return "ƒ"; 
+        return `ƒ ${value.name || ''}`;
     }
     if (seen.has(value)) {
         return "[Circular]";
@@ -177,7 +177,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 
     if (value instanceof Map) {
         return Array.from(value.entries()).reduce((acc, [key, val]) => {
-            acc[`[Map: ${key}]`] = cloneForConsoleTable(val, seen, `${path}[Map: ${key}]`);
+            acc[`Map(${key})`] = cloneForConsoleTable(val, seen, `${path}[Map(${key})]`);
             return acc;
         }, {});
     }
@@ -203,6 +203,7 @@ function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
 
     return String(value);
 }
+
 
 
 
@@ -381,7 +382,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: String(data) });
                     return;
                 }
-            
+
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -392,7 +393,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: fnString });
                     return;
                 }
-            
+
                 let safeData;
                 try {
                     safeData = cloneForConsoleTable(data);
@@ -403,11 +404,11 @@ self.addEventListener("message", (event) => {
                     });
                     return;
                 }
-            
+
                 self.postMessage({
                     type: "table",
                     tableData: safeData,
-                    columns: columns || null 
+                    columns: columns || null // Pass columns if provided
                 });
             },
 
