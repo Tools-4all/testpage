@@ -976,16 +976,18 @@
             } else if (line.classList.contains("light-info")) {
               line.classList.remove("light-info");
               line.classList.add("dark-info");
-            } else if (line.classList.contains("light-prompt")) {
-              line.classList.remove("light-prompt");
-              line.classList.add("dark-prompt");
+            }
+            let promptSpan = line.querySelector(".dark-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("light-prompt");
+              promptSpan.classList.add("dark-prompt");
             }
           });
         });
       }
     }
 
-    alert("Hesdllo");
+    alert("s");
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
