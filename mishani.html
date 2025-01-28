@@ -925,7 +925,7 @@
         // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
           let lines = tab.outputElement.querySelectorAll(".outputContent");
-          lines.forEach(line, span => {
+          lines.forEach(line => {
             if (line.classList.contains("dark-log")) {
               line.classList.remove("dark-log");
               line.classList.add("light-log");
@@ -938,10 +938,11 @@
             } else if (line.classList.contains("dark-info")) {
               line.classList.remove("dark-info");
               line.classList.add("light-info");
-            } else if (span.classList.contains("dark-prompt")) {
-              console.log("changing to light prompt");
-              span.classList.remove("dark-prompt");
-              span.classList.add("light-prompt");
+            }
+            let promptSpan = line.querySelector(".dark-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("dark-prompt");
+              promptSpan.classList.add("light-prompt");
             }
           });
         });
@@ -984,7 +985,7 @@
       }
     }
 
-    alert("Hello");
+    alert("Hesdllo");
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
