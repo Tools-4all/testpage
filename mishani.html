@@ -939,6 +939,7 @@
               line.classList.remove("dark-info");
               line.classList.add("light-info");
             } else if (line.classList.contains("dark-prompt")) {
+              console.log("changing to light prompt");
               line.classList.remove("dark-prompt");
               line.classList.add("light-prompt");
             }
@@ -982,6 +983,8 @@
         });
       }
     }
+
+    alert("Hello");
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
