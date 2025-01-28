@@ -204,20 +204,13 @@
       border-right: 1px solid #333;
       overflow-y: auto;
       padding: 10px;
-      /* Remove display:none; so we can animate */
-      /* Make sure the panel starts off-screen to the left */
-      transform: translateX(-100%);
-      opacity: 0;
-      pointer-events: none;
-      transition: transform 0.3s ease, opacity 0.3s ease;
+      display: none;
+      flex-shrink: 0;
       margin-top: 30px;
     }
 
-    /* Slide into view */
     .sidebar-panel.active {
-      transform: translateX(0);
-      opacity: 1;
-      pointer-events: auto;
+      display: block;
     }
 
     #gitUrl {
@@ -1767,7 +1760,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("3");
+    alert("2");
   </script>
 </body>
 
