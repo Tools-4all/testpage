@@ -907,8 +907,10 @@
     };
     const lightModeDiv = document.getElementById("lightMode");
     const sunSvg = lightModeDiv.innerHTML;
+
     function changeToLightMode() {
       if (darkModeFlag) {
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon"></i>';
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -944,7 +946,7 @@
         });
 
       } else {
-        // Switch from light → dark mode
+        lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
