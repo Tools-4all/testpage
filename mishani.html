@@ -1513,8 +1513,12 @@ prompt("This is a prompt:");
         el.style.cursor = "default";
       } else {
         el.classList.remove("disabled");
-        el.style.color = "default";
         el.style.cursor = "pointer";
+        if (darkModeFlag) {
+          el.style.color = "white";
+        } else {
+          el.style.color = "black";
+        }
       }
     }
     function updateUndoRedoButtons() {
