@@ -1,35 +1,27 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Tab Sandboxed JS Compiler</title>
-
-  <!-- MONACO EDITOR CSS -->
   <link rel="stylesheet" data-name="vs/editor/editor.main"
-    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css"/>
-
-  <!-- FONT AWESOME CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-
-  <!-- OPTIONAL FONT -->
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
-
+    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* BASIC RESET */
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    /* WRAPPER */
     #compiler {
       position: relative;
       font-family: 'Fira Code', monospace;
       display: flex;
-      background-color: #1e1e1e; /* default dark background */
+      background-color: #1e1e1e;
       width: 60%;
       height: 500px;
       margin: 100px auto;
@@ -38,13 +30,13 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
-    /* THEME MARKERS */
     .theme {}
-    /* Dark background classes */
+
     .color1e1e1e {
       background-color: #1e1e1e;
       color: #d4d4d4;
     }
+
     .color252526 {
       background-color: #252526;
       color: #cccccc;
@@ -52,18 +44,18 @@
       border-bottom-color: #333;
     }
 
-    /* Light background classes */
     .colorffffff {
       background-color: #ffffff;
       color: #000;
     }
+
     .colorf0f0f0 {
       background-color: #f0f0f0;
-      color: #000;
+      color: #131313;
       border-color: #c0c0c0 !important;
       border-bottom-color: #c0c0c0;
     }
-    /* VS CODE LOGO */
+
     .vs-logo {
       position: absolute;
       top: 0;
@@ -75,6 +67,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .vs-logo img {
       height: 25px;
       width: 25px;
@@ -85,7 +78,6 @@
       -webkit-user-drag: none;
     }
 
-    /* NAVBAR */
     .vs-navbar {
       font-family: 'Fira Code', monospace;
       font-size: 14px;
@@ -101,6 +93,7 @@
       padding-left: 40px;
       height: 30px;
     }
+
     .vs-navbar-item {
       margin-right: 10px;
       margin-top: 1px;
@@ -111,53 +104,56 @@
       font-size: 12px;
       border-radius: 5px;
     }
+
     .vs-navbar-item:hover {
       background-color: #9492923b;
     }
+
     .vs-navbar-dropdown {
       display: none;
       position: absolute;
       top: 100%;
       left: 0;
-      background-color: #333;
       border: 1px solid #252526;
       border-radius: 4px;
       overflow: hidden;
       z-index: 1000;
       min-width: 120px;
     }
+
     .vs-navbar-dropdown.active {
       display: block;
     }
+
     .vs-navbar-dropdown-item {
       padding: 8px 12px;
-      color: #d4d4d4;
       cursor: pointer;
       white-space: nowrap;
     }
+
     .vs-navbar-dropdown-item:hover {
       background-color: #444;
       color: #ffffff;
     }
+
     .vs-navbar-dropdown-item.disabled {
       pointer-events: none;
       opacity: 0.5;
     }
 
-    /* THEME TOGGLE & FULLSCREEN ICONS */
     #lightMode {
       margin-left: auto;
       margin-right: 25px;
       margin-top: 1px;
       cursor: pointer;
     }
+
     #fullScreenBtn {
       margin-top: 3px;
       font-size: 13px;
       cursor: pointer;
     }
 
-    /* ACTIVITY BAR */
     #activityBar {
       width: 50px;
       display: flex;
@@ -169,8 +165,8 @@
       flex-shrink: 0;
       margin-top: 30px;
     }
+
     #activityBar .icon {
-      color: #b3b3b3;
       padding: 12px 0;
       cursor: pointer;
       transition: background-color 0.3s, color 0.3s;
@@ -179,11 +175,13 @@
       font-size: 20px;
       position: relative;
     }
-    #activityBar .icon:hover,
+
+    /* #activityBar .icon:hover,
     #activityBar .icon.active {
       background-color: #3c3c3c;
       color: #fff;
-    }
+    } */
+
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
@@ -191,7 +189,6 @@
       top: 50%;
       transform: translateY(-50%);
       background: #333;
-      color: #fff;
       padding: 5px 10px;
       font-size: 12px;
       border-radius: 3px;
@@ -199,7 +196,6 @@
       z-index: 9;
     }
 
-    /* SIDEBAR PANELS */
     .sidebar-panel {
       width: 250px;
       background-color: #1e1e1e;
@@ -208,9 +204,9 @@
       padding: 10px;
       display: none;
       flex-shrink: 0;
-      transition: all 0.3s ease;
       margin-top: 30px;
     }
+
     .sidebar-panel.active {
       display: block;
     }
@@ -228,9 +224,11 @@
       outline: none;
       transition: border-color 0.2s;
     }
+
     #gitUrl:focus {
       border-color: #007acc;
     }
+
     #loadGitButton {
       width: 100%;
       padding: 8px 10px;
@@ -243,14 +241,15 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
+
     #loadGitButton:hover {
       background-color: #005f99;
     }
 
-    /* SETTINGS PANEL */
     #tabSizeInput {
       width: 100%;
     }
+
     .vs-range {
       -webkit-appearance: none;
       appearance: none;
@@ -261,6 +260,7 @@
       border-radius: 3px;
       cursor: pointer;
     }
+
     .vs-range::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -272,6 +272,7 @@
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
+
     .vs-range::-moz-range-thumb {
       width: 14px;
       height: 14px;
@@ -281,16 +282,17 @@
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
+
     .vs-range::-webkit-slider-thumb:hover,
     .vs-range::-moz-range-thumb:hover {
       background: #119eff;
     }
+
     .vs-range::-webkit-slider-thumb:active,
     .vs-range::-moz-range-thumb:active {
       background: #0067a8;
     }
 
-    /* MAIN CONTAINER */
     #mainContainer {
       display: flex;
       flex-direction: column;
@@ -299,7 +301,6 @@
       overflow: hidden;
     }
 
-    /* TABS BAR */
     #tabBar {
       border-bottom: 1px solid #333;
       display: flex;
@@ -309,13 +310,16 @@
       overflow-x: auto;
       overflow-y: hidden;
     }
+
     #tabBar::-webkit-scrollbar {
       height: 6px;
     }
+
     #tabBar::-webkit-scrollbar-thumb {
       background-color: #007acc;
       border-radius: 10px;
     }
+
     #tabBar::-webkit-scrollbar-track {
       background-color: #333;
     }
@@ -331,13 +335,16 @@
       user-select: none;
       -webkit-user-drag: element;
     }
+
     .tab .tab-title {
       margin-right: 15px;
     }
+
     .tab .close {
       font-size: 12px;
       cursor: pointer;
     }
+
     .tab-title-edit {
       background: #555;
       border: 1px solid #666;
@@ -348,6 +355,7 @@
       font-family: inherit;
       outline: none;
     }
+
     #addTabButton {
       background: none;
       color: #c5c5c5;
@@ -356,17 +364,19 @@
       margin-left: auto;
       margin-right: 5px;
       flex-shrink: 0;
+      transition: color 0.2s;
     }
+
     #addTabButton:hover {
       color: #fff;
     }
 
-    /* EDITOR/OUTPUT AREA */
     #tabsContainer {
       position: relative;
       flex: 1;
       overflow: hidden;
     }
+
     .editor-and-output {
       display: none;
       flex-direction: column;
@@ -376,25 +386,33 @@
       left: 0;
       right: 0;
     }
+
     .editor-and-output.active {
       display: flex;
     }
+
     .editorContainer {
       flex: 1;
       position: relative;
       min-height: 0;
     }
+
     .monaco-editor {
       width: 100%;
       height: 100%;
     }
 
-    /* OUTPUT/CONSOLE */
     .outputContainer {
       height: 200px;
       display: flex;
       flex-direction: column;
     }
+
+    .monaco-editor .find-widget.visible .controls {
+      padding: 0px !important;
+      border: none !important;
+    }
+
     .controls {
       display: flex;
       justify-content: flex-end;
@@ -402,6 +420,7 @@
       border-top: 1px solid;
       border-bottom: 1px solid;
     }
+
     .runButton {
       padding: 6px 12px;
       background-color: #0e639c;
@@ -413,12 +432,15 @@
       display: flex;
       align-items: center;
     }
+
     .runButton:hover {
       background-color: #1177bb;
     }
+
     .runButton i {
       margin-right: 5px;
     }
+
     .output {
       flex: 1;
       padding: 10px;
@@ -427,22 +449,28 @@
       font-size: 14px;
       white-space: pre-wrap;
     }
+
     .output::-webkit-scrollbar {
       width: 8px;
     }
+
     .output::-webkit-scrollbar-track {
       background: #252526;
     }
+
     .output::-webkit-scrollbar-thumb {
       background: #888;
       border-radius: 4px;
     }
+
     .output::-webkit-scrollbar-thumb:hover {
       background: #555;
     }
+
     .output::-webkit-scrollbar-corner {
       background: #252526;
     }
+
     .output::-webkit-scrollbar-horizontal {
       height: 8px;
     }
@@ -450,15 +478,18 @@
     .outputContent {
       margin-top: 2px;
     }
+
     .prompt-line {
       display: flex;
       align-items: center;
       font-size: 14px;
     }
+
     .prompt-line span {
       margin-right: 5px;
       white-space: pre;
     }
+
     .prompt-line input {
       flex: 1;
       padding: 0;
@@ -471,7 +502,6 @@
       caret-color: currentColor;
     }
 
-    /* STATUS BAR */
     #statusBar {
       height: 24px;
       border-top: 1px solid #333;
@@ -482,19 +512,19 @@
       font-size: 12px;
       flex-shrink: 0;
     }
+
     .status-item {
       margin-right: 10px;
     }
 
-    /* TAB DRAGGING */
     .tab-drop-left {
       box-shadow: inset 4px 0 0 0 #007acc;
     }
+
     .tab-drop-right {
       box-shadow: inset -4px 0 0 0 #007acc;
     }
 
-    /* BUTTONS */
     .vs-button {
       background-color: #0e639c;
       color: #ffffff;
@@ -505,157 +535,259 @@
       font-size: 14px;
       cursor: pointer;
     }
+
     .vs-button:hover {
       background-color: #1177bb;
     }
 
-    /* TABLES IN THE CONSOLE (for console.table) */
     .console-table {
       border-collapse: collapse;
       font-size: 14px;
       margin-top: 4px;
       width: auto;
     }
+
     .console-table thead {
       font-weight: bold;
     }
+
     .console-table th,
     .console-table td {
       border: 1px solid #333;
       padding: 4px 8px;
       vertical-align: top;
     }
+
     .console-table-row:hover {
       opacity: 0.9;
     }
 
-    /* UNDO/REDO ICONS */
     #undoBtn,
     #redoBtn {
       margin-top: 3px;
       font-size: 11px;
     }
+
     #undoBtn {
       margin-right: 10px;
     }
 
-    /* ========================
-       CUSTOM STYLING PER THEME
-       FOR TABS, STATUSBAR, SIDEBARS,
-       OUTPUT LOG COLORS, ETC.
-       ======================== */
+    .theme.color1e1e1e {}
 
-    /* 1) DARK THEME OVERRIDES */
-    .theme.color1e1e1e {
-      /* Just a container marker for dark mode */
-    }
-    /* Tabs in dark mode */
     .theme.color1e1e1e .tab {
       background-color: #2c2c2c;
       color: #ffffff;
     }
+
     .theme.color1e1e1e .tab.active {
       background-color: #1c1c1c;
       border-top: 1px solid #007acc !important;
     }
-    /* Status bar in dark mode */
+
     .theme.color1e1e1e #statusBar {
       background-color: #2c2c2c;
       color: #cccccc;
     }
-    /* Sidebar panel active in dark mode */
+
+    #activityBar.theme.color252526 .icon:hover,
+    #activityBar.theme.color252526 .icon.active {
+      background-color: #3c3c3c;
+      color: #fff;
+    }
+
     .theme.color1e1e1e .sidebar-panel.active {
       background-color: #2b2b2b;
       color: #ffffff;
+      border-color: #3c3c3c !important;
     }
-    /* Output background in dark mode */
+
+    .theme.color1e1e1e .sidebar-panel.active #gitUrl {
+      background-color: #3c3c3c;
+      border-color: #4c4c4c;
+      color: #ffffff;
+    }
+
+    .theme.color1e1e1e .sidebar-panel.active .vs-range {
+      background-color: #3c3c3c;
+      border: 1px solid #4c4c4c;
+    }
+
     .theme.color1e1e1e .output {
       background-color: #1e1e1e;
       color: #d4d4d4;
     }
-    /* console.table in dark mode */
+
     .theme.color1e1e1e .console-table thead {
       background-color: #3c3c3c;
       color: #ffffff;
     }
+
     .theme.color1e1e1e .console-table td,
     .theme.color1e1e1e .console-table th {
       color: #d4d4d4;
     }
 
-    /* For log lines in dark mode */
-    .dark-log    { color: #BBBBBB !important; }
-    .dark-error  { color: #FF6666 !important; }
-    .dark-warn   { color: #FFFF66 !important; }
-    .dark-info   { color: #66FFFF !important; }
-    .dark-prompt { color: #99FF99 !important; }
-
-    /* 2) LIGHT THEME OVERRIDES */
-    .theme.colorffffff {
-      /* Container marker for light mode */
+    .dark-log {
+      color: #BBBBBB !important;
     }
-    /* Tabs in light mode */
+
+    .dark-error {
+      color: #FF6666 !important;
+    }
+
+    .dark-warn {
+      color: #FFFF66 !important;
+    }
+
+    .dark-info {
+      color: #74cbfb !important;
+    }
+
+    .dark-prompt {
+      color: #99FF99 !important;
+    }
+
     .theme.colorffffff .tab {
       background-color: #e0e0e0;
       color: #000000;
     }
+
+    .theme.colorffffff .tab {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
     .theme.colorffffff .tab.active {
       background-color: #d0d0d0;
       border-top: 1px solid #007acc !important;
     }
-    /* Status bar in light mode */
+
     .theme.colorffffff #statusBar {
-      background-color: #cccccc;
+      background-color: #ecebeb;
       color: #000000;
+      border-color: #c0c0c0 !important;
     }
-    /* Sidebar panel active in light mode */
+
+    .theme.colorf0f0f0.vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
+      background-color: #c0c0c0;
+      color: black;
+    }
+
+    #tabBar.theme.colorf0f0f0 #addTabButton {
+      color: #636262 !important;
+    }
+
+    #tabBar.theme.colorf0f0f0 #addTabButton:hover {
+      color: #000000 !important;
+    }
+
+    #activityBar.theme.colorf0f0f0 .icon {
+      color: #9b9a9a !important;
+    }
+
+    #activityBar.theme.colorf0f0f0 .icon:hover,
+    #activityBar.theme.colorf0f0f0 .icon.active {
+      background-color: rgb(183, 182, 182);
+      color: #eae8e8 !important;
+    }
+
+
+    .theme.colorf0f0f0 #activityBar .icon {
+      color: #9b9a9a !important;
+    }
+
     .theme.colorffffff .sidebar-panel.active {
       background-color: #eeeeee;
       color: #000000;
+      border-color: #c0c0c0 !important;
     }
-    /* Output in light mode */
+
+    .theme.colorffffff .sidebar-panel.active #gitUrl {
+      background-color: #f9f9f9;
+      border-color: #c0c0c0;
+      color: #000000;
+    }
+
+    .theme.colorffffff .sidebar-panel.active .vs-range {
+      background-color: #f9f9f9;
+      border: 1px solid #c0c0c0;
+    }
+
     .theme.colorffffff .output {
       background-color: #f9f9f9;
       color: #000;
     }
-    /* console.table in light mode */
+
     .theme.colorffffff .console-table thead {
       background-color: #dddddd;
       color: #000000;
     }
+
     .theme.colorffffff .console-table td,
     .theme.colorffffff .console-table th {
       color: #333333;
     }
 
-    /* For log lines in light mode */
-    .light-log    { color: #444444 !important; }
-    .light-error  { color: #cc0000 !important; }
-    .light-warn   { color: #cc9a00 !important; }
-    .light-info   { color: #0066cc !important; }
-    .light-prompt { color: #008000 !important; }
+    .light-log {
+      color: #444444 !important;
+    }
 
+    .light-error {
+      color: #cc0000 !important;
+    }
 
-    /* RESPONSIVE */
+    .light-warn {
+      color: #cc9a00 !important;
+    }
+
+    .light-info {
+      color: #0066cc !important;
+    }
+
+    .light-prompt {
+      color: #008000 !important;
+    }
+
+    .theme.color1e1e1e .prompt-line input {
+      color: #ffffff;
+    }
+
+    .theme.colorffffff .prompt-line input {
+      color: #000000;
+    }
+
+    #moon {
+      font-size: 17px;
+      height: 20px;
+      width: 20px;
+      padding-top: 1px;
+      margin-left: 2px;
+    }
+
     @media (max-width: 768px) {
       #activityBar {
         width: 40px;
       }
+
       #activityBar .icon {
         font-size: 18px;
         padding: 10px 0;
       }
+
       .sidebar-panel {
         width: 200px;
       }
+
       .runButton {
         padding: 6px 10px;
         font-size: 12px;
       }
+
       #statusBar {
         left: 50px;
       }
     }
+
     @media (max-width: 675px) {
       .sidebar-panel {
         width: 100%;
@@ -667,55 +799,43 @@
 
 <body>
   <div id="compiler" class="theme color1e1e1e">
-    <!-- LOGO -->
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
-
-    <!-- NAVBAR -->
     <div class="vs-navbar theme color252526">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
-        <div class="vs-navbar-dropdown" id="fileDropdown">
+        <div class="theme color252526 vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
           <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
-        <div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item">example</div>
-          <div class="vs-navbar-dropdown-item">example</div>
+        <div class="theme color252526 vs-navbar-dropdown" id="editDropdown">
+          <div class="vs-navbar-dropdown-item"> </div>
+          <div class="vs-navbar-dropdown-item"> </div>
         </div>
       </div>
-
-      <!-- UNDO/REDO -->
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
-
-      <!-- THEME TOGGLE -->
       <div id="lightMode" onclick="changeToLightMode()">
-        <!-- Sun icon (showing by default in dark mode) -->
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none"/>
-          <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2"/>
-          <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2"/>
-          <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2"/>
-          <line x1="20" y1="12" x2="22" y2="12" stroke="white" stroke-width="2"/>
-          <line x1="5.5" y1="5.5" x2="7" y2="7" stroke="white" stroke-width="2"/>
-          <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2"/>
-          <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2"/>
-          <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2"/>
+          <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
+          <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
+          <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
+          <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2" />
+          <line x1="20" y1="12" x2="22" y2="12" stroke="white" stroke-width="2" />
+          <line x1="5.5" y1="5.5" x2="7" y2="7" stroke="white" stroke-width="2" />
+          <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
+          <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
+          <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
         </svg>
       </div>
-
-      <!-- FULLSCREEN -->
       <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-
-    <!-- ACTIVITY BAR -->
     <div id="activityBar" class="theme color252526">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -727,32 +847,21 @@
         <i class="fas fa-cog"></i>
       </div>
     </div>
-
-    <!-- GIT PANEL -->
     <div id="gitPanel" class="sidebar-panel">
-      <input type="url" id="gitUrl" placeholder="Enter GitHub file URL"/>
+      <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton" disabled="true">Load</button>
     </div>
-
-    <!-- SETTINGS PANEL -->
     <div id="settingsPanel" class="sidebar-panel">
       <div>
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
-        <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range"/>
+        <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
       </div>
     </div>
-
-    <!-- MAIN CONTAINER -->
     <div id="mainContainer">
-      <!-- TABS BAR -->
       <div id="tabBar" class="theme color252526">
         <div id="addTabButton"><i class="fas fa-plus"></i></div>
       </div>
-
-      <!-- WHERE TABS ARE RENDERED -->
       <div id="tabsContainer"></div>
-
-      <!-- STATUS BAR -->
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
         <div class="status-item">UTF-8</div>
@@ -761,33 +870,18 @@
       </div>
     </div>
   </div>
-
-  <!-- REQUIRE.JS + MONACO -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-
   <script>
-    /**************************************************************
-     *                WORKER PATH (DJANGO URL)
-     **************************************************************/
     const workerPath = "{% url 'betzi_test_js' %}";
-
-    /**************************************************************
-     *                GLOBALS & STATE
-     **************************************************************/
     let workerBlobURL = null;
     let activeDropdown = null;
-    let spaces = 3;      // current tab size
-    let tabs = [];       // array of all opened tabs
+    let spaces = 3;
+    let tabs = [];
     let activeTabId = null;
     let draggedTabId = null;
     let lastDropSide = null;
-    let darkModeFlag = true; // start in dark mode by default
-
+    let darkModeFlag = true;
     const compiler = document.getElementById("compiler");
-
-    /**************************************************************
-     *            RESPONSIVE INITIAL SIZING / FULLSCREEN
-     **************************************************************/
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -799,7 +893,6 @@
         fullScreen();
       };
     }
-
     function fullScreen() {
       if (compiler.style.width === "60%") {
         compiler.style.width = "100%";
@@ -811,7 +904,6 @@
         compiler.style.margin = '100px auto';
       }
     }
-
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape') {
@@ -821,22 +913,20 @@
         }
       }
     });
-
-    /**************************************************************
-     *   THEME MAPPING FOR DARK <-> LIGHT
-     **************************************************************/
     const themeMapDark = {
-      "color252526": "colorf0f0f0",   // #252526 -> #f0f0f0
-      "color1e1e1e": "colorffffff"    // #1e1e1e -> #ffffff
+      "color252526": "colorf0f0f0",
+      "color1e1e1e": "colorffffff"
     };
     const themeMapLight = {
       "colorf0f0f0": "color252526",
       "colorffffff": "color1e1e1e"
     };
+    const lightModeDiv = document.getElementById("lightMode");
+    const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
-        // Currently dark -> switching to light
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon" id="moon"></i>';
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -846,10 +936,35 @@
             }
           });
         });
-        // Switch Monaco to vs-light
         monaco.editor.setTheme("vs-light");
+
+        // Reassign log classes for ALL existing tabs:
+        tabs.forEach(tab => {
+          let lines = tab.outputElement.querySelectorAll(".outputContent");
+          lines.forEach(line => {
+            if (line.classList.contains("dark-log")) {
+              line.classList.remove("dark-log");
+              line.classList.add("light-log");
+            } else if (line.classList.contains("dark-error")) {
+              line.classList.remove("dark-error");
+              line.classList.add("light-error");
+            } else if (line.classList.contains("dark-warn")) {
+              line.classList.remove("dark-warn");
+              line.classList.add("light-warn");
+            } else if (line.classList.contains("dark-info")) {
+              line.classList.remove("dark-info");
+              line.classList.add("light-info");
+            }
+            let promptSpan = line.querySelector(".dark-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("dark-prompt");
+              promptSpan.classList.add("light-prompt");
+            }
+          });
+        });
+
       } else {
-        // Currently light -> switching to dark
+        lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -859,89 +974,86 @@
             }
           });
         });
-        // Switch Monaco to custom-dark
         monaco.editor.setTheme("custom-dark");
+
+        // Reassign log classes for ALL existing tabs:
+        tabs.forEach(tab => {
+          let lines = tab.outputElement.querySelectorAll(".outputContent");
+          lines.forEach(line => {
+            if (line.classList.contains("light-log")) {
+              line.classList.remove("light-log");
+              line.classList.add("dark-log");
+            } else if (line.classList.contains("light-error")) {
+              line.classList.remove("light-error");
+              line.classList.add("dark-error");
+            } else if (line.classList.contains("light-warn")) {
+              line.classList.remove("light-warn");
+              line.classList.add("dark-warn");
+            } else if (line.classList.contains("light-info")) {
+              line.classList.remove("light-info");
+              line.classList.add("dark-info");
+            }
+            let promptSpan = line.querySelector(".light-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("light-prompt");
+              promptSpan.classList.add("dark-prompt");
+            }
+          });
+        });
       }
     }
 
-    /**************************************************************
-     *     REORDER TABS (DRAG & DROP)
-     **************************************************************/
+
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
       let tIndex = tabs.findIndex((x) => x.id === tId);
       if (dIndex < 0 || tIndex < 0) return;
-
       let removed = tabs.splice(dIndex, 1)[0];
       let newI = tIndex + (side === "right" ? 1 : 0);
       if (dIndex < tIndex) newI--;
       tabs.splice(newI, 0, removed);
-
       let b = document.getElementById("tabBar");
       tabs.forEach((x) => {
         b.insertBefore(x.tabElement, document.getElementById("addTabButton"));
       });
     }
-
-    /**************************************************************
-     *          CREATE A NEW TAB
-     **************************************************************/
     function createTab(desiredName = null, content = null) {
-      let name = desiredName 
-        ? getUniqueTabName(desiredName) 
+      let name = desiredName
+        ? getUniqueTabName(desiredName)
         : getNextTabName();
       let id = Date.now();
-
-      // We use a SharedArrayBuffer to handle prompt/alert concurrency
       let sharedBuffer = new SharedArrayBuffer(1024);
       let view = new Int32Array(sharedBuffer);
-
-      // CREATE THE TAB ELEMENT
       let tabEl = document.createElement("div");
       tabEl.classList.add("tab");
       tabEl.draggable = true;
-
-      // TITLE
       let titleSpan = document.createElement("span");
       titleSpan.classList.add("tab-title");
       titleSpan.textContent = name;
       tabEl.appendChild(titleSpan);
-
-      // CLOSE ICON
       let closeIcon = document.createElement("i");
       closeIcon.classList.add("fas", "fa-times", "close");
       tabEl.appendChild(closeIcon);
-
-      // CREATE EDITOR + OUTPUT CONTAINER
       let editorOutputWrapper = document.createElement("div");
       editorOutputWrapper.classList.add("editor-and-output");
-
-      // Editor container
       let editorContainer = document.createElement("div");
       editorContainer.classList.add("editorContainer");
       editorOutputWrapper.appendChild(editorContainer);
-
-      // Output container
       let outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
-
-      // Controls bar (Run button)
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
       controlsBar.classList.add("theme");
-      controlsBar.classList.add(darkModeFlag ? "color252526" : "colorffffff");
+      controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
       let runButton = document.createElement("button");
       runButton.classList.add("runButton");
       runButton.innerHTML = '<i class="fas fa-play"></i> Run';
       controlsBar.appendChild(runButton);
       outputContainer.appendChild(controlsBar);
-
-      // Actual console output
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
       outputDiv.setAttribute("tabindex", "0");
       outputDiv.addEventListener("keydown", (e) => {
-        // Ctrl+A to select all within output
         if (e.ctrlKey && e.key.toLowerCase() === "a") {
           e.preventDefault();
           const selection = window.getSelection();
@@ -952,18 +1064,12 @@
         }
       });
       outputContainer.appendChild(outputDiv);
-
       editorOutputWrapper.appendChild(outputContainer);
-
-      // ADD TAB TO THE DOM
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
       tabBar.insertBefore(tabEl, addTabBtn);
-
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
-
-      // CREATE MONACO EDITOR
       let editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
         theme: darkModeFlag ? "custom-dark" : "vs-light",
@@ -994,8 +1100,6 @@
         smoothScrolling: true,
         breadcrumbs: { enabled: true }
       });
-
-      // TAB OBJECT
       let tabObj = {
         id,
         name,
@@ -1009,24 +1113,16 @@
         editorAndOutput: editorOutputWrapper
       };
       tabs.push(tabObj);
-
-      // Update line/col status on cursor movement
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
       });
-
-      // RUN BUTTON
       runButton.addEventListener("click", () => {
         runTab(id, runButton);
       });
-
-      // CLOSE ICON
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
         closeTab(id);
       });
-
-      // DRAG EVENTS
       tabEl.addEventListener("dragstart", (ev) => {
         switchTab(id);
         ev.dataTransfer.setData("text/plain", "");
@@ -1039,7 +1135,7 @@
         draggedTabId = null;
         lastDropSide = null;
         document.querySelectorAll(".tab")
-          .forEach((m) => m.classList.remove("tab-drop-left","tab-drop-right","dragging"));
+          .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
       });
       tabEl.addEventListener("dragover", (ev) => {
         ev.preventDefault();
@@ -1057,22 +1153,18 @@
         }
       });
       tabEl.addEventListener("dragleave", () => {
-        tabEl.classList.remove("tab-drop-left","tab-drop-right");
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
       });
       tabEl.addEventListener("drop", (ev) => {
         ev.preventDefault();
-        tabEl.classList.remove("tab-drop-left","tab-drop-right");
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
         if (!draggedTabId) return;
         reorderTabsByTab(draggedTabId, id, lastDropSide);
         lastDropSide = null;
       });
-
-      // DOUBLE-CLICK TO RENAME TAB
       titleSpan.addEventListener("dblclick", () => {
         makeTabTitleEditable(tabObj);
       });
-
-      // SET INITIAL CONTENT
       if (content !== null) {
         editorInstance.setValue(content);
       } else {
@@ -1084,16 +1176,9 @@ console.error("This is an error");
 prompt("This is a prompt:");
 `);
       }
-
-      // ACTIVATE THIS NEW TAB
       switchTab(id);
-
       return id;
     }
-
-    /**************************************************************
-     *     GENERATE UNIQUE TAB NAMES
-     **************************************************************/
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
       let suffix = 1;
@@ -1115,10 +1200,6 @@ prompt("This is a prompt:");
       }
       return `Tab${max + 1}`;
     }
-
-    /**************************************************************
-     *     SWITCH/ACTIVATE A TAB
-     **************************************************************/
     function switchTab(tabId) {
       if (activeTabId !== null) {
         let current = tabs.find((x) => x.id === activeTabId);
@@ -1135,10 +1216,6 @@ prompt("This is a prompt:");
         updateStatusPosition();
       }
     }
-
-    /**************************************************************
-     *     CLOSE A TAB
-     **************************************************************/
     function closeTab(tabId) {
       let i = tabs.findIndex((x) => x.id === tabId);
       if (i === -1) return;
@@ -1158,32 +1235,22 @@ prompt("This is a prompt:");
         }
       }
     }
-
-    /**************************************************************
-     *     PROMPT & ALERT HANDLERS (WORKER->MAIN)
-     **************************************************************/
     async function handlePrompt(message, tab) {
       return new Promise((resolve) => {
         let d = tab.outputElement;
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
-
         let pm = document.createElement("span");
         pm.textContent = `[?] ${message}`;
-
-        // Add either "dark-prompt" or "light-prompt"
         pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
-
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
-
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
             pm.textContent = `[?] ${message} ${val}`;
             inp.remove();
-
             let te = new TextEncoder();
             let encoded = te.encode(val + "\0");
             let respBuffer = new Uint8Array(tab.sharedBuffer, 4);
@@ -1194,7 +1261,6 @@ prompt("This is a prompt:");
             resolve();
           }
         });
-
         pl.appendChild(pm);
         pl.appendChild(inp);
         d.appendChild(pl);
@@ -1206,36 +1272,26 @@ prompt("This is a prompt:");
         const d = tab.outputElement;
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
-
         const alertSpan = document.createElement("span");
         alertSpan.textContent = `[!] ${message}`;
-        // color for alert -> "dark-info" or "light-info"
         alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
         alertLine.appendChild(alertSpan);
-
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
         okBtn.style.marginLeft = "10px";
         okBtn.textContent = "OK";
         alertLine.appendChild(okBtn);
-
         d.appendChild(alertLine);
         okBtn.focus();
-
         okBtn.addEventListener("click", () => {
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
-          // Also append a final line with the same message
           appendToOutput(d, "info", message);
           alertLine.remove();
           resolve();
         });
       });
     }
-
-    /**************************************************************
-     *     RUN THE CODE IN A WORKER
-     **************************************************************/
     async function runTab(tabId, btn) {
       btn.disabled = true;
       let tab = tabs.find((x) => x.id === tabId);
@@ -1252,7 +1308,6 @@ prompt("This is a prompt:");
         await cacheWorkerCode();
         let w = new Worker(workerBlobURL);
         tab.worker = w;
-
         w.onmessage = async (e) => {
           let type = e.data.type;
           let msg = e.data.message;
@@ -1265,16 +1320,15 @@ prompt("This is a prompt:");
           } else if (type === "table") {
             const { rows, columns } = e.data;
             appendTable(tab.outputElement, rows, columns);
-          } else if (["log","error","warn","info"].includes(type)) {
+          } else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tab.outputElement, type, msg);
           }
         };
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
           appendToOutput(tab.outputElement, "log",
-                         "The script has finished running with exit code 1.");
+            "The script has finished running with exit code 1.");
         };
-
         let code = tab.editorInstance.getValue();
         w.postMessage({
           type: "execute",
@@ -1285,41 +1339,24 @@ prompt("This is a prompt:");
       catch (ex) {
         appendToOutput(tab.outputElement, "error", ex.message);
         appendToOutput(tab.outputElement, "log",
-                       "The script has finished running with exit code 1.");
+          "The script has finished running with exit code 1.");
       }
       btn.disabled = false;
     }
-
-    /**************************************************************
-     *     CONSOLE HELPER FUNCTIONS
-     **************************************************************/
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
-
-    /* 
-      We now rely on CSS classes for the colors: 
-      .dark-log, .dark-error, .dark-warn, .dark-info, 
-      .light-log, .light-error, .light-warn, .light-info 
-    */
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       let line = document.createElement("div");
       line.classList.add("outputContent");
-
-      // Add a class for the type, depending on dark or light mode
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
-
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
-
-    /**************************************************************
-     *     console.table IMPLEMENTATION
-     **************************************************************/
     function appendTable(outputElement, rows, columns) {
       if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
@@ -1332,19 +1369,13 @@ prompt("This is a prompt:");
         appendToOutput(outputElement, "log", fallbackMessage);
         return;
       }
-      // Create container
       const div = document.createElement("div");
       div.classList.add("outputContent");
-
-      // Create table
       const table = document.createElement("table");
       table.classList.add("console-table");
-
-      // Thead
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
-
       columns.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
@@ -1353,8 +1384,6 @@ prompt("This is a prompt:");
       });
       thead.appendChild(headRow);
       table.appendChild(thead);
-
-      // Tbody
       const tbody = document.createElement("tbody");
       rows.forEach(rowObj => {
         const tr = document.createElement("tr");
@@ -1363,8 +1392,6 @@ prompt("This is a prompt:");
           const td = document.createElement("td");
           td.classList.add("console-table-data");
           let value = rowObj[col];
-
-          // Basic logic for various data types
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
               td.textContent = `[Array(${value.length})]`;
@@ -1375,7 +1402,6 @@ prompt("This is a prompt:");
               expandable.classList.add("expandable");
               expandable.textContent = "{…}";
               expandable.style.cursor = "pointer";
-
               expandable.addEventListener("click", () => {
                 if (expandable.classList.contains("expanded")) {
                   expandable.classList.remove("expanded");
@@ -1386,9 +1412,9 @@ prompt("This is a prompt:");
                   expandable.classList.add("expanded");
                   const details = document.createElement("div");
                   details.classList.add("expandable-details");
-                  details.innerHTML = objectToHTML(value, 1);
                   details.style.marginTop = "4px";
                   details.style.marginLeft = "20px";
+                  details.innerHTML = objectToHTML(value, 1);
                   td.appendChild(details);
                 }
               });
@@ -1404,13 +1430,10 @@ prompt("This is a prompt:");
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
-
       div.appendChild(table);
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
-
-    /* Helper to print objects as nested HTML for console.table details */
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
         return `<span style="opacity:0.7;">null</span>`;
@@ -1432,7 +1455,7 @@ prompt("This is a prompt:");
       html += `<summary>Object {${keys.length} keys}</summary>`;
       keys.forEach((key) => {
         html += `<div style="margin-left:${(level + 1) * 20}px;">
-          <strong>${escapeHtml(key)}</strong>: 
+          <strong>${escapeHtml(key)}</strong>:
           ${objectToHTML(obj[key], level + 1)}
         </div>`;
       });
@@ -1446,10 +1469,6 @@ prompt("This is a prompt:");
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
     }
-
-    /**************************************************************
-     *     MONACO EDITOR CONFIG (WORKER LOADING)
-     **************************************************************/
     require.config({
       paths: {
         vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs"
@@ -1463,7 +1482,6 @@ prompt("This is a prompt:");
         `);
       }
     };
-    /* Cache our custom worker code for later use */
     async function cacheWorkerCode() {
       if (!workerBlobURL) {
         let resp = await fetch(workerPath);
@@ -1472,30 +1490,23 @@ prompt("This is a prompt:");
         workerBlobURL = URL.createObjectURL(blob);
       }
     }
-
-    require(["vs/editor/editor.main"], function() {
-      // Define our custom dark theme
+    require(["vs/editor/editor.main"], function () {
       monaco.editor.defineTheme("custom-dark", {
         base: "vs-dark",
         inherit: true,
         rules: [
-          { token: "keyword",    foreground: "C586C0" },
+          { token: "keyword", foreground: "C586C0" },
           { token: "identifier", foreground: "9CDCFE" },
-          { token: "string",     foreground: "CE9178" },
-          { token: "comment",    foreground: "6A9955" },
-          { token: "number",     foreground: "B5CEA8" }
+          { token: "string", foreground: "CE9178" },
+          { token: "comment", foreground: "6A9955" },
+          { token: "number", foreground: "B5CEA8" }
         ],
         colors: {
           "editor.background": "#1E1E1E"
         }
       });
-      // Create an initial tab on load
       createTab();
     });
-
-    /**************************************************************
-     *     STATUS BAR (LINE/COLUMN)
-     **************************************************************/
     function updateStatusPosition() {
       if (activeTabId === null) {
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
@@ -1505,14 +1516,10 @@ prompt("This is a prompt:");
       if (!t) return;
       let pos = t.editorInstance.getPosition();
       if (pos) {
-        document.getElementById("statusPosition").textContent = 
+        document.getElementById("statusPosition").textContent =
           `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
-
-    /**************************************************************
-     *     ADD TAB BUTTON
-     **************************************************************/
     document.getElementById("addTabButton").addEventListener("click", () => {
       createTab();
     });
@@ -1524,10 +1531,6 @@ prompt("This is a prompt:");
         switchTab(clickedTab.id);
       }
     });
-
-    /**************************************************************
-     *     SIDEBAR ICONS CLICK
-     **************************************************************/
     ["gitIcon", "settingsIcon"].forEach((iconId) => {
       let el = document.getElementById(iconId);
       el.addEventListener("click", (e) => {
@@ -1549,10 +1552,6 @@ prompt("This is a prompt:");
       if (!t) return;
       t.editorInstance.getAction("actions.find").run();
     });
-
-    /**************************************************************
-     *     NAVBAR DROPDOWN BEHAVIOR
-     **************************************************************/
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
         document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
@@ -1584,10 +1583,6 @@ prompt("This is a prompt:");
         }
       });
     });
-
-    /**************************************************************
-     *     TAB SIZE SLIDER
-     **************************************************************/
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     tabSizeInput.addEventListener("input", () => {
@@ -1598,13 +1593,8 @@ prompt("This is a prompt:");
         t.editorInstance.updateOptions({ tabSize: spaces });
       });
     });
-
-    /**************************************************************
-     *     UNDO/REDO
-     **************************************************************/
     let redoBtn = document.getElementById("redoBtn");
     let undoBtn = document.getElementById("undoBtn");
-
     function toggleDisabled(el, disabled) {
       if (disabled) {
         el.classList.add("disabled");
@@ -1612,8 +1602,12 @@ prompt("This is a prompt:");
         el.style.cursor = "default";
       } else {
         el.classList.remove("disabled");
-        el.style.color = "white";
         el.style.cursor = "pointer";
+        if (darkModeFlag) {
+          el.style.color = "white";
+        } else {
+          el.style.color = "black";
+        }
       }
     }
     function updateUndoRedoButtons() {
@@ -1635,7 +1629,7 @@ prompt("This is a prompt:");
         document.getElementById("saveScriptBtn")
           .dispatchEvent(new MouseEvent("click"));
       } else if ((e.ctrlKey && e.key === "z") ||
-                 (e.ctrlKey && e.shiftKey && e.key === "Z")) {
+        (e.ctrlKey && e.shiftKey && e.key === "Z")) {
         setTimeout(() => updateUndoRedoButtons(), 100);
       }
     });
@@ -1652,10 +1646,6 @@ prompt("This is a prompt:");
       updateUndoRedoButtons();
     });
     setInterval(() => updateUndoRedoButtons(), 500);
-
-    /**************************************************************
-     *     FILE MENU: UPLOAD / SAVE
-     **************************************************************/
     document.getElementById("uploadFileBtn").addEventListener("click", () => {
       let input = document.createElement("input");
       input.type = "file";
@@ -1681,7 +1671,6 @@ prompt("This is a prompt:");
       let content = t.editorInstance.getValue();
       let blob = new Blob([content], { type: "text/javascript" });
       let url = URL.createObjectURL(blob);
-
       let a = document.createElement("a");
       a.href = url;
       a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
@@ -1693,13 +1682,8 @@ prompt("This is a prompt:");
       document.querySelectorAll(".vs-navbar-dropdown")
         .forEach((d) => d.classList.remove("active"));
     }
-
-    /**************************************************************
-     *     GIT PANEL (LOAD FILE FROM GITHUB)
-     **************************************************************/
     let gitInp = document.getElementById("gitUrl");
     let loadGitButton = document.getElementById("loadGitButton");
-
     gitInp.addEventListener("keydown", (e) => {
       if (e.key === "Enter") loadGitButton.click();
     });
@@ -1715,7 +1699,7 @@ prompt("This is a prompt:");
       if (!urlVal) return;
       let fileName = "untitled.js";
       try {
-        new URL(urlVal); // check valid URL
+        new URL(urlVal);
       } catch (e) {
         alert("Invalid URL");
         return;
@@ -1723,7 +1707,6 @@ prompt("This is a prompt:");
       let normalized = normalizeUrl(urlVal);
       let parsed = parseGitHubUrl(normalized);
       if (parsed.isRawFile) {
-        // raw.githubusercontent.com
         let slashIdx = parsed.rawUrl.lastIndexOf("/");
         if (slashIdx !== -1) {
           fileName = parsed.rawUrl.substring(slashIdx + 1);
@@ -1803,26 +1786,19 @@ prompt("This is a prompt:");
       }
       return await r.text();
     }
-
-    /**************************************************************
-     *     RENAME TAB (DOUBLE CLICK)
-     **************************************************************/
     function makeTabTitleEditable(tabObj) {
       let span = tabObj.tabElement.querySelector(".tab-title");
       let closeIcon = tabObj.tabElement.querySelector(".close");
       if (!span) return;
       closeIcon.style.display = "none";
-
       let oldName = tabObj.name;
       let input = document.createElement("input");
       input.type = "text";
       input.value = oldName;
       input.classList.add("tab-title-edit");
       tabObj.tabElement.replaceChild(input, span);
-
       input.focus();
       input.select();
-
       let done = false;
       let finalize = () => {
         if (done) return;
@@ -1834,7 +1810,6 @@ prompt("This is a prompt:");
           newVal = getUniqueTabName(newVal, tabObj.id);
         }
         tabObj.name = newVal;
-
         let newSpan = document.createElement("span");
         newSpan.classList.add("tab-title");
         newSpan.textContent = newVal;
@@ -1856,11 +1831,8 @@ prompt("This is a prompt:");
         }
       });
     }
-
-    /**************************************************************
-     *     DEMO ALERT (REMOVE IF DESIRED)
-     **************************************************************/
-    alert("1");
+    alert("w");
   </script>
 </body>
+
 </html>
