@@ -307,21 +307,22 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    #tabBar:hover {
       overflow-x: auto;
       overflow-y: hidden;
+      transition: overflow 0.3s;
     }
 
     #tabBar::-webkit-scrollbar {
-      height: 6px;
+      height: 3px;
     }
 
     #tabBar::-webkit-scrollbar-thumb {
       background-color: #007acc;
       border-radius: 10px;
-    }
-
-    #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
     }
 
     .tab {
@@ -448,14 +449,16 @@
       font-family: 'Fira Code', monospace;
       font-size: 14px;
       white-space: pre-wrap;
+      overflow: hidden;
+    }
+
+    .output:hover {
+      overflow: auto;
+      transition: overflow 0.3s;
     }
 
     .output::-webkit-scrollbar {
       width: 8px;
-    }
-
-    .output::-webkit-scrollbar-track {
-      background: #252526;
     }
 
     .output::-webkit-scrollbar-thumb {
@@ -465,10 +468,6 @@
 
     .output::-webkit-scrollbar-thumb:hover {
       background: #555;
-    }
-
-    .output::-webkit-scrollbar-corner {
-      background: #252526;
     }
 
     .output::-webkit-scrollbar-horizontal {
@@ -677,9 +676,35 @@
       color: #636262 !important;
     }
 
+
     #tabBar.theme.colorf0f0f0 #addTabButton:hover {
       color: #000000 !important;
     }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526.output::-webkit-scrollbar-corner {
+      background: #252526;
+    }
+
+    .theme.colorf0f0f0.output::-webkit-scrollbar-corner {
+      background: #f0f0f0;
+    }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
 
     #activityBar.theme.colorf0f0f0 .icon {
       color: #9b9a9a !important;
@@ -691,6 +716,9 @@
       color: #eae8e8 !important;
     }
 
+    #activityBar.theme.colorf0f0f0 .icon:hover:after {
+      background: #acabab;
+    }
 
     .theme.colorf0f0f0 #activityBar .icon {
       color: #9b9a9a !important;
@@ -761,7 +789,7 @@
       height: 20px;
       width: 20px;
       padding-top: 1px;
-      margin-left: 2px;
+      padding-left: 4px;
     }
 
     @media (max-width: 768px) {
