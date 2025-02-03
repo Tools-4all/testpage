@@ -1399,6 +1399,11 @@ prompt("This is a prompt:");
       }
       const div = document.createElement("div");
       div.classList.add("outputContent");
+
+      // Add a left padding so that the table appears with a four–space indent.
+      // (You can also insert a text node if you want a literal "    " prefix.)
+      div.style.paddingLeft = "4ch";
+
       const table = document.createElement("table");
       table.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1462,6 +1467,7 @@ prompt("This is a prompt:");
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
+
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
         return `<span style="opacity:0.7;">null</span>`;
