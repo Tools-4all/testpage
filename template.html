@@ -1386,6 +1386,7 @@ prompt("This is a prompt:");
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
     function appendTable(outputElement, rows, columns) {
+      appendToOutput(outputElement, "log", "");
       if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
         appendToOutput(outputElement, "error", "Invalid table data received.");
@@ -1400,8 +1401,6 @@ prompt("This is a prompt:");
       const div = document.createElement("div");
       div.classList.add("outputContent");
 
-      // Add a left padding so that the table appears with a four–space indent.
-      // (You can also insert a text node if you want a literal "    " prefix.)
       div.style.paddingLeft = "4ch";
 
       const table = document.createElement("table");
