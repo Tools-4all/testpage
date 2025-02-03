@@ -1386,7 +1386,6 @@ prompt("This is a prompt:");
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
     function appendTable(outputElement, rows, columns) {
-      appendToOutput(outputElement, "log", "");
       if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
         appendToOutput(outputElement, "error", "Invalid table data received.");
@@ -1864,7 +1863,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("1");
   </script>
 </body>
 
