@@ -1375,16 +1375,30 @@ prompt("This is a prompt:");
       outputDiv.innerHTML = "";
     }
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
+
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       let line = document.createElement("div");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
-      line.textContent = `[${symbolsMap[type]}] ${message}`;
+
+      let processedMessage = message
+        .split('\n')
+        .map((l, i) => {
+          if (i === 0) return l;
+          if (l.trim().length > 0 && !/^[>\?!xi]/.test(l.trim()[0])) {
+            return "    " + l;
+          }
+          return l;
+        })
+        .join('\n');
+
+      line.textContent = `[${symbolsMap[type]}] ${processedMessage}`;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
+
     function appendTable(outputElement, rows, columns) {
       if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
