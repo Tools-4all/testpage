@@ -1412,45 +1412,67 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Create one table with an extra first column for the symbol.
-      const table = document.createElement("table");
-      table.classList.add("console-table");
+      // Define a fixed width for the console symbol.
+      // Adjust this value as needed so that header and body cells align.
+      const symbolWidth = "4.5ch";
 
-      // --- HEADER ---
+      // Create an outer container.
+      const container = document.createElement("div");
+      container.classList.add("outputContent");
+
+      // --------------------------
+      // HEADER SECTION (first line)
+      // --------------------------
+
+      // Create a container for the header row.
+      // Use flex display so the symbol and header table appear side by side.
+      const headerContainer = document.createElement("div");
+      headerContainer.style.display = "flex";
+      headerContainer.style.alignItems = "center";
+
+      // Create a span for the console symbol.
+      const symbolSpan = document.createElement("span");
+      // The symbol text includes a trailing space.
+      symbolSpan.textContent = "[>] ";
+      symbolSpan.style.display = "inline-block";
+      symbolSpan.style.width = symbolWidth;
+      symbolSpan.style.textAlign = "right";
+      // (Optional) Adjust the right margin if needed.
+      // symbolSpan.style.marginRight = "0.5ch";
+
+      headerContainer.appendChild(symbolSpan);
+
+      // Create the header table containing only the header row.
+      const headerTable = document.createElement("table");
+      headerTable.classList.add("console-table");
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
-
-      // Extra first header cell with the console symbol.
-      const symbolTh = document.createElement("th");
-      symbolTh.textContent = "[>] "; // note the trailing space
-      // Fix its width so that body rows line up exactly.
-      symbolTh.style.width = "4ch";
-      symbolTh.style.textAlign = "right";
-      headRow.appendChild(symbolTh);
-
-      // Create header cells for each column.
       columns.forEach(col => {
         const th = document.createElement("th");
         th.textContent = col;
         headRow.appendChild(th);
       });
       thead.appendChild(headRow);
-      table.appendChild(thead);
+      headerTable.appendChild(thead);
 
-      // --- BODY ---
+      headerContainer.appendChild(headerTable);
+      container.appendChild(headerContainer);
+
+      // --------------------------
+      // BODY SECTION (subsequent lines)
+      // --------------------------
+
+      // Wrap the body table in a container that indents its content.
+      // The left padding equals the width of the symbol.
+      const bodyContainer = document.createElement("div");
+      bodyContainer.style.paddingLeft = symbolWidth;
+
+      const bodyTable = document.createElement("table");
+      bodyTable.classList.add("console-table");
       const tbody = document.createElement("tbody");
+
       rows.forEach(rowObj => {
         const tr = document.createElement("tr");
-
-        // For body rows, create an extra first (empty) cell.
-        const emptyTd = document.createElement("td");
-        // Give it the same fixed width as the header symbol cell.
-        emptyTd.style.width = "4ch";
-        // Optionally add a little left padding so the content aligns nicely.
-        emptyTd.style.paddingLeft = "0.5ch";
-        tr.appendChild(emptyTd);
-
-        // Now create cells for each data column.
         columns.forEach(col => {
           const td = document.createElement("td");
           let value = rowObj[col];
@@ -1490,9 +1512,13 @@ prompt("This is a prompt:");
         });
         tbody.appendChild(tr);
       });
-      table.appendChild(tbody);
 
-      outputElement.appendChild(table);
+      bodyTable.appendChild(tbody);
+      bodyContainer.appendChild(bodyTable);
+      container.appendChild(bodyContainer);
+
+      // Append the entire container to the output element.
+      outputElement.appendChild(container);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
@@ -1894,7 +1920,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("s");
   </script>
 </body>
 
