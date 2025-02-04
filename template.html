@@ -1436,13 +1436,12 @@ prompt("This is a prompt:");
       headerWrapper.style.display = "flex";
       headerWrapper.style.alignItems = "center";
 
-      // Create the symbol element.
-      // Note the symbol text now includes a trailing space: "[>] "
+      // Create the symbol element (with no extra left spacing).
       const symbolElem = document.createElement("div");
-      symbolElem.textContent = `[>] `;
-      // Set a fixed width so that the header columns line up with the body.
-      // Adjust the width as needed. Here, we use 4ch to roughly match the width of "[>] ".
-      symbolElem.style.flex = "0 0 4ch";
+      symbolElem.textContent = `[${symbolsMap["log"]}]`;
+      // Optionally fix the width of the symbol element so that body rows align correctly.
+      // Adjust the width (here, "3ch") as needed.
+      symbolElem.style.flex = "0 0 3ch";
       symbolElem.style.textAlign = "right";
       symbolElem.style.paddingRight = "0.5ch";
 
@@ -1454,9 +1453,9 @@ prompt("This is a prompt:");
       // *** BODY SECTION (subsequent lines) ***
 
       // Wrap the body table in a container that indents it.
-      // The left indent should equal the width of the symbol element (here, roughly 4.5ch total).
+      // The left indent should equal the width of the symbol (here, about 3ch + 0.5ch gap).
       const bodyWrapper = document.createElement("div");
-      bodyWrapper.style.paddingLeft = "4.5ch";
+      bodyWrapper.style.paddingLeft = "3.5ch";
 
       // Create a table for the body rows.
       const bodyTable = document.createElement("table");
@@ -1910,7 +1909,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("3");
+    alert("s");
   </script>
 </body>
 
