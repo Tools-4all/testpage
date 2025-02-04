@@ -1411,61 +1411,31 @@ prompt("This is a prompt:");
         appendToOutput(outputElement, "log", fallbackMessage);
         return;
       }
+      const div = document.createElement("div");
+      div.classList.add("outputContent");
 
-      // Create an outer container for the table output.
-      const container = document.createElement("div");
-      container.classList.add("outputContent");
+      div.style.paddingLeft = "4ch";
 
-      // *** HEADER SECTION (first line) ***
-
-      // Create a table for the header only.
-      const headerTable = document.createElement("table");
-      headerTable.classList.add("console-table");
+      const table = document.createElement("table");
+      table.classList.add("console-table");
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
+      headRow.classList.add("console-table-row");
       columns.forEach(col => {
         const th = document.createElement("th");
+        th.classList.add("console-table-header");
         th.textContent = col;
         headRow.appendChild(th);
       });
       thead.appendChild(headRow);
-      headerTable.appendChild(thead);
-
-      // Create a flex wrapper to hold the symbol and the header table on one line.
-      const headerWrapper = document.createElement("div");
-      headerWrapper.style.display = "flex";
-      headerWrapper.style.alignItems = "center";
-
-      // Create the symbol element (with no extra left spacing).
-      const symbolElem = document.createElement("div");
-      symbolElem.textContent = `[${symbolsMap["log"]}]`;
-      // Optionally fix the width of the symbol element so that body rows align correctly.
-      // Adjust the width (here, "3ch") as needed.
-      symbolElem.style.flex = "0 0 3ch";
-      symbolElem.style.textAlign = "right";
-      symbolElem.style.paddingRight = "0.5ch";
-
-      // Add the symbol and header table to the header wrapper.
-      headerWrapper.appendChild(symbolElem);
-      headerWrapper.appendChild(headerTable);
-      container.appendChild(headerWrapper);
-
-      // *** BODY SECTION (subsequent lines) ***
-
-      // Wrap the body table in a container that indents it.
-      // The left indent should equal the width of the symbol (here, about 3ch + 0.5ch gap).
-      const bodyWrapper = document.createElement("div");
-      bodyWrapper.style.paddingLeft = "3.5ch";
-
-      // Create a table for the body rows.
-      const bodyTable = document.createElement("table");
-      bodyTable.classList.add("console-table");
+      table.appendChild(thead);
       const tbody = document.createElement("tbody");
-
       rows.forEach(rowObj => {
         const tr = document.createElement("tr");
+        tr.classList.add("console-table-row");
         columns.forEach(col => {
           const td = document.createElement("td");
+          td.classList.add("console-table-data");
           let value = rowObj[col];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
@@ -1480,8 +1450,9 @@ prompt("This is a prompt:");
               expandable.addEventListener("click", () => {
                 if (expandable.classList.contains("expanded")) {
                   expandable.classList.remove("expanded");
-                  const details = td.querySelector(".expandable-details");
-                  if (details) details.remove();
+                  if (td.querySelector(".expandable-details")) {
+                    td.querySelector(".expandable-details").remove();
+                  }
                 } else {
                   expandable.classList.add("expanded");
                   const details = document.createElement("div");
@@ -1503,12 +1474,9 @@ prompt("This is a prompt:");
         });
         tbody.appendChild(tr);
       });
-      bodyTable.appendChild(tbody);
-      bodyWrapper.appendChild(bodyTable);
-      container.appendChild(bodyWrapper);
-
-      // Append the entire container to the output element.
-      outputElement.appendChild(container);
+      table.appendChild(tbody);
+      div.appendChild(table);
+      outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
