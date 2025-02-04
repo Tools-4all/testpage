@@ -1412,13 +1412,9 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Create an outer container for the table output.
       const container = document.createElement("div");
       container.classList.add("outputContent");
 
-      // *** HEADER SECTION (first line) ***
-
-      // Create a table for the header only.
       const headerTable = document.createElement("table");
       headerTable.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1431,33 +1427,22 @@ prompt("This is a prompt:");
       thead.appendChild(headRow);
       headerTable.appendChild(thead);
 
-      // Create a flex wrapper to hold the symbol and the header table on one line.
       const headerWrapper = document.createElement("div");
       headerWrapper.style.display = "flex";
       headerWrapper.style.alignItems = "center";
 
-      // Create the symbol element (with no extra left spacing).
       const symbolElem = document.createElement("div");
-      symbolElem.textContent = `[${symbolsMap["log"]}]`;
-      // Optionally fix the width of the symbol element so that body rows align correctly.
-      // Adjust the width (here, "3ch") as needed.
+      symbolElem.textContent = `[${symbolsMap["log"]} ]`;
       symbolElem.style.flex = "0 0 3ch";
       symbolElem.style.textAlign = "right";
       symbolElem.style.paddingRight = "0.5ch";
 
-      // Add the symbol and header table to the header wrapper.
       headerWrapper.appendChild(symbolElem);
       headerWrapper.appendChild(headerTable);
       container.appendChild(headerWrapper);
-
-      // *** BODY SECTION (subsequent lines) ***
-
-      // Wrap the body table in a container that indents it.
-      // The left indent should equal the width of the symbol (here, about 3ch + 0.5ch gap).
       const bodyWrapper = document.createElement("div");
       bodyWrapper.style.paddingLeft = "3.5ch";
 
-      // Create a table for the body rows.
       const bodyTable = document.createElement("table");
       bodyTable.classList.add("console-table");
       const tbody = document.createElement("tbody");
@@ -1507,7 +1492,6 @@ prompt("This is a prompt:");
       bodyWrapper.appendChild(bodyTable);
       container.appendChild(bodyWrapper);
 
-      // Append the entire container to the output element.
       outputElement.appendChild(container);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
@@ -1909,7 +1893,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("s");
+    alert("2");
   </script>
 </body>
 
