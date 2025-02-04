@@ -1412,39 +1412,51 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Define a fixed width for the console symbol.
-      // Adjust this value as needed so that header and body cells align.
-      const symbolWidth = "4.5ch";
+      // Set a fixed width (in pixels) for the console symbol.
+      // Adjust this value as needed.
+      const symbolWidthPx = 40;
 
       // Create an outer container.
       const container = document.createElement("div");
       container.classList.add("outputContent");
 
-      // --------------------------
+      // ----------------------------
       // HEADER SECTION (first line)
-      // --------------------------
+      // ----------------------------
 
-      // Create a container for the header row.
-      // Use flex display so the symbol and header table appear side by side.
+      // Create a header container using flex so that the symbol and table appear side by side.
       const headerContainer = document.createElement("div");
       headerContainer.style.display = "flex";
       headerContainer.style.alignItems = "center";
 
-      // Create a span for the console symbol.
+      // Create the symbol element (with trailing space).
       const symbolSpan = document.createElement("span");
-      // The symbol text includes a trailing space.
       symbolSpan.textContent = "[>] ";
       symbolSpan.style.display = "inline-block";
-      symbolSpan.style.width = symbolWidth;
+      symbolSpan.style.width = symbolWidthPx + "px";
       symbolSpan.style.textAlign = "right";
-      // (Optional) Adjust the right margin if needed.
-      // symbolSpan.style.marginRight = "0.5ch";
+      // (Optional: adjust right margin if needed)
+      // symbolSpan.style.marginRight = "5px";
 
       headerContainer.appendChild(symbolSpan);
 
-      // Create the header table containing only the header row.
+      // Create the header table.
       const headerTable = document.createElement("table");
       headerTable.classList.add("console-table");
+      // Use fixed layout so the columns have consistent widths.
+      headerTable.style.tableLayout = "fixed";
+      headerTable.style.width = "100%";
+
+      // Define a colgroup for the header table (one <col> per data column).
+      const headerColgroup = document.createElement("colgroup");
+      // (For simplicity, let each column share the available width equally.)
+      columns.forEach(() => {
+        const col = document.createElement("col");
+        headerColgroup.appendChild(col);
+      });
+      headerTable.appendChild(headerColgroup);
+
+      // Build the header row.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       columns.forEach(col => {
@@ -1458,17 +1470,28 @@ prompt("This is a prompt:");
       headerContainer.appendChild(headerTable);
       container.appendChild(headerContainer);
 
-      // --------------------------
-      // BODY SECTION (subsequent lines)
-      // --------------------------
+      // ----------------------------
+      // BODY SECTION (subsequent rows)
+      // ----------------------------
 
-      // Wrap the body table in a container that indents its content.
-      // The left padding equals the width of the symbol.
+      // Create a body container whose left margin equals the symbol’s width.
       const bodyContainer = document.createElement("div");
-      bodyContainer.style.paddingLeft = symbolWidth;
+      bodyContainer.style.marginLeft = symbolWidthPx + "px";
 
+      // Create the body table.
       const bodyTable = document.createElement("table");
       bodyTable.classList.add("console-table");
+      bodyTable.style.tableLayout = "fixed";
+      bodyTable.style.width = "100%";
+
+      // Use the same colgroup as the header table.
+      const bodyColgroup = document.createElement("colgroup");
+      columns.forEach(() => {
+        const col = document.createElement("col");
+        bodyColgroup.appendChild(col);
+      });
+      bodyTable.appendChild(bodyColgroup);
+
       const tbody = document.createElement("tbody");
 
       rows.forEach(rowObj => {
@@ -1482,6 +1505,7 @@ prompt("This is a prompt:");
             } else if (value === "[Circular]") {
               td.textContent = "{…}";
             } else {
+              // For objects, show an expandable summary.
               const expandable = document.createElement("span");
               expandable.classList.add("expandable");
               expandable.textContent = "{…}";
@@ -1512,12 +1536,11 @@ prompt("This is a prompt:");
         });
         tbody.appendChild(tr);
       });
-
       bodyTable.appendChild(tbody);
       bodyContainer.appendChild(bodyTable);
       container.appendChild(bodyContainer);
 
-      // Append the entire container to the output element.
+      // Append the outer container to the output element.
       outputElement.appendChild(container);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
