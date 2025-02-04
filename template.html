@@ -1411,93 +1411,31 @@ prompt("This is a prompt:");
         appendToOutput(outputElement, "log", fallbackMessage);
         return;
       }
+      const div = document.createElement("div");
+      div.classList.add("outputContent");
 
-      // Set a fixed width (in pixels) for the console symbol.
-      // Adjust this value as needed.
-      const symbolWidthPx = 40;
+      div.style.paddingLeft = "4ch";
 
-      // Create an outer container.
-      const container = document.createElement("div");
-      container.classList.add("outputContent");
-
-      // ----------------------------
-      // HEADER SECTION (first line)
-      // ----------------------------
-
-      // Create a header container using flex so that the symbol and table appear side by side.
-      const headerContainer = document.createElement("div");
-      headerContainer.style.display = "flex";
-      headerContainer.style.alignItems = "center";
-
-      // Create the symbol element (with trailing space).
-      const symbolSpan = document.createElement("span");
-      symbolSpan.textContent = "[>] ";
-      symbolSpan.style.display = "inline-block";
-      symbolSpan.style.width = symbolWidthPx + "px";
-      symbolSpan.style.textAlign = "right";
-      // (Optional: adjust right margin if needed)
-      // symbolSpan.style.marginRight = "5px";
-
-      headerContainer.appendChild(symbolSpan);
-
-      // Create the header table.
-      const headerTable = document.createElement("table");
-      headerTable.classList.add("console-table");
-      // Use fixed layout so the columns have consistent widths.
-      headerTable.style.tableLayout = "fixed";
-      headerTable.style.width = "100%";
-
-      // Define a colgroup for the header table (one <col> per data column).
-      const headerColgroup = document.createElement("colgroup");
-      // (For simplicity, let each column share the available width equally.)
-      columns.forEach(() => {
-        const col = document.createElement("col");
-        headerColgroup.appendChild(col);
-      });
-      headerTable.appendChild(headerColgroup);
-
-      // Build the header row.
+      const table = document.createElement("table");
+      table.classList.add("console-table");
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
+      headRow.classList.add("console-table-row");
       columns.forEach(col => {
         const th = document.createElement("th");
+        th.classList.add("console-table-header");
         th.textContent = col;
         headRow.appendChild(th);
       });
       thead.appendChild(headRow);
-      headerTable.appendChild(thead);
-
-      headerContainer.appendChild(headerTable);
-      container.appendChild(headerContainer);
-
-      // ----------------------------
-      // BODY SECTION (subsequent rows)
-      // ----------------------------
-
-      // Create a body container whose left margin equals the symbol’s width.
-      const bodyContainer = document.createElement("div");
-      bodyContainer.style.marginLeft = symbolWidthPx + "px";
-
-      // Create the body table.
-      const bodyTable = document.createElement("table");
-      bodyTable.classList.add("console-table");
-      bodyTable.style.tableLayout = "fixed";
-      bodyTable.style.width = "100%";
-
-      // Use the same colgroup as the header table.
-      const bodyColgroup = document.createElement("colgroup");
-      columns.forEach(() => {
-        const col = document.createElement("col");
-        bodyColgroup.appendChild(col);
-      });
-      bodyTable.appendChild(bodyColgroup);
-
+      table.appendChild(thead);
       const tbody = document.createElement("tbody");
-
       rows.forEach(rowObj => {
         const tr = document.createElement("tr");
+        tr.classList.add("console-table-row");
         columns.forEach(col => {
           const td = document.createElement("td");
+          td.classList.add("console-table-data");
           let value = rowObj[col];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
@@ -1505,7 +1443,6 @@ prompt("This is a prompt:");
             } else if (value === "[Circular]") {
               td.textContent = "{…}";
             } else {
-              // For objects, show an expandable summary.
               const expandable = document.createElement("span");
               expandable.classList.add("expandable");
               expandable.textContent = "{…}";
@@ -1513,8 +1450,9 @@ prompt("This is a prompt:");
               expandable.addEventListener("click", () => {
                 if (expandable.classList.contains("expanded")) {
                   expandable.classList.remove("expanded");
-                  const details = td.querySelector(".expandable-details");
-                  if (details) details.remove();
+                  if (td.querySelector(".expandable-details")) {
+                    td.querySelector(".expandable-details").remove();
+                  }
                 } else {
                   expandable.classList.add("expanded");
                   const details = document.createElement("div");
@@ -1536,15 +1474,11 @@ prompt("This is a prompt:");
         });
         tbody.appendChild(tr);
       });
-      bodyTable.appendChild(tbody);
-      bodyContainer.appendChild(bodyTable);
-      container.appendChild(bodyContainer);
-
-      // Append the outer container to the output element.
-      outputElement.appendChild(container);
+      table.appendChild(tbody);
+      div.appendChild(table);
+      outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
-
 
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
