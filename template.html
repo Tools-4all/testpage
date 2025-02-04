@@ -1411,13 +1411,20 @@ prompt("This is a prompt:");
         appendToOutput(outputElement, "log", fallbackMessage);
         return;
       }
-      const div = document.createElement("div");
-      div.classList.add("outputContent");
 
-      div.style.paddingLeft = "4ch";
+      const container = document.createElement("div");
+      container.classList.add("outputContent");
+
+      const firstLine = document.createElement("div");
+      firstLine.textContent = `[${symbolsMap["log"]}]`;
+      container.appendChild(firstLine);
+
+      const wrapper = document.createElement("div");
+      wrapper.style.paddingLeft = "4ch";
 
       const table = document.createElement("table");
       table.classList.add("console-table");
+
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1429,6 +1436,7 @@ prompt("This is a prompt:");
       });
       thead.appendChild(headRow);
       table.appendChild(thead);
+
       const tbody = document.createElement("tbody");
       rows.forEach(rowObj => {
         const tr = document.createElement("tr");
@@ -1450,9 +1458,8 @@ prompt("This is a prompt:");
               expandable.addEventListener("click", () => {
                 if (expandable.classList.contains("expanded")) {
                   expandable.classList.remove("expanded");
-                  if (td.querySelector(".expandable-details")) {
-                    td.querySelector(".expandable-details").remove();
-                  }
+                  const details = td.querySelector(".expandable-details");
+                  if (details) details.remove();
                 } else {
                   expandable.classList.add("expanded");
                   const details = document.createElement("div");
@@ -1475,8 +1482,11 @@ prompt("This is a prompt:");
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
-      div.appendChild(table);
-      outputElement.appendChild(div);
+
+      wrapper.appendChild(table);
+      container.appendChild(wrapper);
+
+      outputElement.appendChild(container);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
 
@@ -1877,7 +1887,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("s");
+    alert("1");
   </script>
 </body>
 
