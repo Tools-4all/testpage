@@ -349,31 +349,35 @@ class myPrompt {
 
 
 function objectToHTML(obj, level = 0) {
-    if (obj === null) return `<span>null</span>`;
-    if (typeof obj !== "object") return `<span>${escapeHtml(String(obj))}</span>`;
-  
-    if (Array.isArray(obj)) {
-      let html = `<details><summary>Array(${obj.length})</summary>`;
-      obj.forEach((val, i) => {
-        html += `<div>[${i}] => ${objectToHTML(val, level + 1)}</div>`;
-      });
-      html += `</details>`;
-      return html;
-    } else {
-      const keys = Object.keys(obj);
-      let html = `<details><summary>Object {${keys.length} keys}</summary>`;
-      for (let key of keys) {
-        html += `
-          <div>
-            <strong>${escapeHtml(key)}</strong>:
-            ${objectToHTML(obj[key], level + 1)}
-          </div>`;
-      }
-      html += `</details>`;
-      return html;
+    if (obj === null) {
+        return `<span style="color:#aaa;">null</span>`;
     }
-  }
-  
+    if (typeof obj !== "object") {
+        return `<span>${escapeHtml(String(obj))}</span>`;
+    }
+
+    if (Array.isArray(obj)) {
+        let html = `<details open style="margin-left:${level * 20}px;">`;
+        html += `<summary>Array(${obj.length})</summary>`;
+        obj.forEach((value, i) => {
+            html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
+        });
+        html += `</details>`;
+        return html;
+    }
+
+    const keys = Object.keys(obj);
+    let html = `<details open style="margin-left:${level * 20}px;">`;
+    html += `<summary>Object {${keys.length} keys}</summary>`;
+    keys.forEach((key) => {
+        html += `<div style="margin-left:${(level + 1) * 20}px;">
+                 <strong>${escapeHtml(key)}</strong>: 
+                 ${objectToHTML(obj[key], level + 1)}
+               </div>`;
+    });
+    html += `</details>`;
+    return html;
+}
 
 function escapeHtml(str) {
     return str
