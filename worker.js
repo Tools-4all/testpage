@@ -449,7 +449,7 @@ self.addEventListener("message", (event) => {
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "log", message: serializedArgs });
+                self.postMessage({ type: "log", message: args.join(" ") });
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -636,7 +636,6 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: "Script finished with exit code 0." });
             } catch (e) {
                 customConsole.error(`Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`)
-
                 self.postMessage({ type: "log", message: "Script finished with exit code 1." });
             }
         };
