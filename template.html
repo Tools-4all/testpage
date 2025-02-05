@@ -1383,10 +1383,11 @@ prompt("This is a prompt:");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
-      line.textContent = "[>] " + objectToHTML(obj);
+      line.innerHTML = "[>] " + objectToHTML(obj);
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
+
 
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
@@ -1891,7 +1892,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("1");
+    alert("2");
   </script>
 </body>
 
