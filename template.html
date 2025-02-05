@@ -1383,16 +1383,16 @@ prompt("This is a prompt:");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
 
-      // let processedMessage = message
-      //   .split('\n')
-      //   .map((l, i) => {
-      //     if (i === 0) return l;
-      //     if (l.trim().length > 0 && !/^[>\?!xi]/.test(l.trim()[0])) {
-      //       return "    " + l;
-      //     }
-      //     return l;
-      //   })
-      //   .join('\n');
+      let processedMessage = message
+        .split('\n')
+        .map((l, i) => {
+          if (i === 0) return l;
+          if (l.trim().length > 0 && !/^[>\?!xi]/.test(l.trim()[0])) {
+            return "    " + l;
+          }
+          return l;
+        })
+        .join('\n');
 
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       outputDiv.appendChild(line);
@@ -1877,7 +1877,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("3");
+    alert("1");
   </script>
 </body>
 
