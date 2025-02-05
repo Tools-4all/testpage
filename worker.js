@@ -453,7 +453,7 @@ self.addEventListener("message", (event) => {
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n    ")});
+                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   ")});
             },
             warn: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -466,7 +466,7 @@ self.addEventListener("message", (event) => {
             debug: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n    ${stack.split("\n").join("\n    ")}` });
+                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -541,7 +541,7 @@ self.addEventListener("message", (event) => {
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n    ${stack.split("\n").join("\n    ")}` });
+                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
             },
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
