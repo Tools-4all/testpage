@@ -646,5 +646,6 @@ self.addEventListener("message", (event) => {
             self.postMessage({ type: "error", message: `Execution failed: ${e.message}` });
             self.postMessage({ type: "log", message: "Script finished with exit code 1." });
         }
+        self.close();
     }
 });
