@@ -1383,7 +1383,7 @@ prompt("This is a prompt:");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
-      line.innerHTML = "[>] " + obj;
+      line.innerHTML =  obj;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
