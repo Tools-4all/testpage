@@ -449,7 +449,7 @@ self.addEventListener("message", (event) => {
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "log", message: args.join(" ") });
+                self.postMessage({ type: "log", message: serializedArgs });
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
