@@ -142,7 +142,7 @@ function relativeStack(error) {
     if (!/userCode \(js:\d+\)/.test(last)) {
         const lnMatch = last.match(/js:(\d+)/);
         const ln = lnMatch ? lnMatch[1] : '?';
-        result.push(`    at userCode (js:${ln})`);
+        result.push(`at userCode (js:${ln})`);
     }
 
     return result.join('\n');
