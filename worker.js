@@ -449,7 +449,7 @@ self.addEventListener("message", (event) => {
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "log", message: serializedArgs });
+                self.postMessage({ type: "log", message: indentMessage(serializedArgs)});
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -559,8 +559,6 @@ self.addEventListener("message", (event) => {
                 if (groupLevel > 0) {
                     groupLevel--;
                 }
-                const message = indentMessage("groupEnd");
-                self.postMessage({ type: "log", message });
             },
 
             profile: (label = "default") => {
