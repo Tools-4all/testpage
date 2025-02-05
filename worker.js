@@ -96,7 +96,9 @@ function getStack() {
     if (deduped.length) {
         deduped.pop();
         const lastIndex = deduped.length - 1;
-        deduped[lastIndex].fn = 'userCode';
+        if (deduped[lastIndex]) {
+            deduped[lastIndex].fn
+        }
     }
 
     return deduped
