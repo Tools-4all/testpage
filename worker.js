@@ -369,9 +369,9 @@ function objectToHTML(obj, level = 0) {
       html += `<summary>Array(${obj.length})</summary>`;
       obj.forEach((value, i) => {
         if (typeof value !== "object" || value === null) {
-          html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => <span>${escapeHtml(value)}</span></div>`;
+          html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: <span>${escapeHtml(value)}</span></div>`;
         } else {
-          html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
+          html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: ${objectToHTML(value, level + 1)}</div>`;
         }
       });
       html += `</details>`;
