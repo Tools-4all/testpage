@@ -468,7 +468,7 @@ self.addEventListener("message", (event) => {
             debug: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
+                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`)});
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -519,7 +519,7 @@ self.addEventListener("message", (event) => {
                 } else {
                     countMap[label] = 1;
                 }
-                self.postMessage({ type: "log", message: `${label}: ${countMap[label]}` });
+                self.postMessage({ type: "log", message: indentMessage(`${label}: ${countMap[label]}`)});
             },
             countReset: (label = "default") => {
                 countMap[label] = 0;
@@ -543,17 +543,17 @@ self.addEventListener("message", (event) => {
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
+                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`)});
             },
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = indentMessage(`group: ${serializedArgs}`);
+                const message = indentMessage(`${serializedArgs}`);
                 self.postMessage({ type: "log", message });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = indentMessage(`groupCollapsed: ${serializedArgs}`);
+                const message = indentMessage(`${serializedArgs}`);
                 self.postMessage({ type: "log", message });
                 groupLevel++;
             },
