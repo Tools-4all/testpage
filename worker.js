@@ -532,7 +532,7 @@ self.addEventListener("message", (event) => {
             dir: (obj) => {
                 const htmlRepresentation = objectToHTML(obj, 0);
                 self.postMessage({
-                    type: "log",
+                    type: "dir",
                     message: htmlRepresentation
                 });
             },

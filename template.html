@@ -1350,6 +1350,8 @@ prompt("This is a prompt:");
             appendTable(tab.outputElement, rows, columns);
           } else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tab.outputElement, type, msg);
+          } else if (type === "dir") {
+            appendDir(tab.outputElement, msg);
           }
         };
         w.onerror = (err) => {
@@ -1374,6 +1376,18 @@ prompt("This is a prompt:");
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
+
+    function appendDir(outputDiv, obj) {
+      if (!outputDiv) return;
+      let line = document.createElement("div");
+      line.classList.add("outputContent");
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
+      line.classList.add(styleClass);
+      line.textContent = "[>] " + objectToHTML(obj);
+      outputDiv.appendChild(line);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message) {
@@ -1877,7 +1891,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("23");
+    alert("1");
   </script>
 </body>
 
