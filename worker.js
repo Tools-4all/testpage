@@ -453,7 +453,7 @@ self.addEventListener("message", (event) => {
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "error", message: serializedArgs });
+                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n    ")});
             },
             warn: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
