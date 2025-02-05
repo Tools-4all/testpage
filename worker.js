@@ -349,35 +349,50 @@ class myPrompt {
 
 
 function objectToHTML(obj, level = 0) {
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+  
     if (obj === null) {
-        return `<span style="color:#aaa;">null</span>`;
+      return `<span style="opacity:0.7;">null</span>`;
     }
     if (typeof obj !== "object") {
-        return `<span>${escapeHtml(String(obj))}</span>`;
+      return `<span>${escapeHtml(obj)}</span>`;
     }
-
+  
     if (Array.isArray(obj)) {
-        let html = `<details open style="margin-left:${level * 20}px;">`;
-        html += `<summary>Array(${obj.length})</summary>`;
-        obj.forEach((value, i) => {
-            html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
-        });
-        html += `</details>`;
-        return html;
+      let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
+      html += `<summary>Array(${obj.length})</summary>`;
+      obj.forEach((value, i) => {
+        if (typeof value !== "object" || value === null) {
+          html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => <span>${escapeHtml(value)}</span></div>`;
+        } else {
+          html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
+        }
+      });
+      html += `</details>`;
+      return html;
     }
-
+  
     const keys = Object.keys(obj);
-    let html = `<details open style="margin-left:${level * 20}px;">`;
+    let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
     html += `<summary>Object {${keys.length} keys}</summary>`;
-    keys.forEach((key) => {
-        html += `<div style="margin-left:${(level + 1) * 20}px;">
-                 <strong>${escapeHtml(key)}</strong>: 
-                 ${objectToHTML(obj[key], level + 1)}
-               </div>`;
+    keys.forEach(key => {
+      let value = obj[key];
+      if (typeof value === "object" && value !== null) {
+        html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: ${objectToHTML(value, level + 1)}</div>`;
+      } else {
+        html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: <span>${escapeHtml(value)}</span></div>`;
+      }
     });
     html += `</details>`;
     return html;
-}
+  }
+  
 
 function escapeHtml(str) {
     return str
