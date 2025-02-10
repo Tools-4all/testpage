@@ -142,7 +142,7 @@
     }
 
     #lightMode {
-      margin-left: auto;
+      margin-left: 10px;
       margin-right: 25px;
       margin-top: 1px;
       cursor: pointer;
@@ -422,7 +422,8 @@
       border-bottom: 1px solid;
     }
 
-    .runButton {
+   #runButton {
+      margin-left: auto;
       padding: 6px 12px;
       background-color: #0e639c;
       color: white;
@@ -434,11 +435,11 @@
       align-items: center;
     }
 
-    .runButton:hover {
+   #runButton:hover {
       background-color: #1177bb;
     }
 
-    .runButton i {
+   #runButton i {
       margin-right: 5px;
     }
 
@@ -806,7 +807,7 @@
         width: 200px;
       }
 
-      .runButton {
+     #runButton {
         padding: 6px 10px;
         font-size: 12px;
       }
@@ -847,7 +848,7 @@
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
-      <button id="runButton" class="runButton" onclick="runTab()">
+      <button id="runButton" onclick="runTab()">
         <i class="fas fa-play"></i> Run
       </button>
       <div id="lightMode" onclick="changeToLightMode()">
