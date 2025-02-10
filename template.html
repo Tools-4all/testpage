@@ -1093,15 +1093,13 @@
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
 
-        const MIN_HEIGHT = 150;
-        const MAX_HEIGHT = 800;
+        const MIN_HEIGHT = 150; 
+        const MAX_HEIGHT = 800; 
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
-          let newHeight = startHeight + dy;
-
+          let newHeight = startHeight - dy;
           newHeight = Math.max(MIN_HEIGHT, Math.min(newHeight, MAX_HEIGHT));
-
           outputContainer.style.height = newHeight + 'px';
         }
 
@@ -1113,6 +1111,7 @@
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
+
 
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
@@ -1927,7 +1926,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("3");
   </script>
 </body>
 
