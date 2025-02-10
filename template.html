@@ -1099,8 +1099,8 @@
       });
       const baseGroup = createGroup();
       outputDiv.groupStack = [baseGroup];
-      outputContainer.appendChild(outputDiv);
       outputDiv.appendChild(baseGroup);
+      outputContainer.appendChild(outputDiv);
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
@@ -1901,7 +1901,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("3");
+    alert("2");
   </script>
 </body>
 
