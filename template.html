@@ -1089,9 +1089,8 @@
 
       controlsBar.addEventListener('mousedown', function (e) {
         e.preventDefault();
-        // change cursor to col-resize for the whole document and
 
-        document.body.style.cursor = 'ns-resize';
+        document.body.style.cursor = 'ns-resize !important';
 
         document.addEventListener("mouseup", () => {
           document.body.style.cursor = '';
@@ -1932,7 +1931,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("3");
+    alert("232");
   </script>
 </body>
 
