@@ -1091,7 +1091,11 @@
           selection.addRange(range);
         }
       });
+      const baseGroup = document.createElement("div");
+      outputDiv.groupLevel = 0;
+      outputDiv.groupStack = [baseGroup];
       outputContainer.appendChild(outputDiv);
+      outputContainer.appendChild(baseGroup);
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
@@ -1410,7 +1414,7 @@ prompt("This is a prompt:");
       //   .join('\n');
 
       line.textContent = `[${symbolsMap[type]}] ${message}`;
-      outputDiv.appendChild(line);
+      outputDiv.groupStack[-1].appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
@@ -1892,7 +1896,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("23");
   </script>
 </body>
 
