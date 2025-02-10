@@ -143,7 +143,7 @@
 
     #lightMode {
       margin-left: 10px;
-      margin-right:10px;
+      margin-right: 10px;
       margin-top: 1px;
       cursor: pointer;
     }
@@ -409,7 +409,7 @@
       flex-direction: column;
     }
 
-    .resize{
+    .resize {
       height: 200px !important;
     }
 
@@ -419,14 +419,16 @@
     }
 
     .controls {
-      display: flex;
-      justify-content: flex-end;
+      background-color: #444;
       padding: 8px 12px;
-      border-top: 1px solid;
-      border-bottom: 1px solid;
+      border-top: 1px solid #333;
+      border-bottom: 1px solid #333;
+      cursor: ns-resize;
+      user-select: none;
     }
 
-   #runButton {
+
+    #runButton {
       margin-left: auto;
       margin-top: 2px;
       padding: 6px 12px;
@@ -440,11 +442,11 @@
       align-items: center;
     }
 
-   #runButton:hover {
+    #runButton:hover {
       background-color: #1177bb;
     }
 
-   #runButton i {
+    #runButton i {
       margin-right: 5px;
     }
 
@@ -812,7 +814,7 @@
         width: 200px;
       }
 
-     #runButton {
+      #runButton {
         padding: 6px 10px;
         font-size: 12px;
       }
@@ -1084,7 +1086,32 @@
       controlsBar.classList.add("controls");
       controlsBar.classList.add("theme");
       controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
+      controlsBar.textContent = "Drag to resize";
+      controlsBar.style.cursor = 'ns-resize';
       outputContainer.appendChild(controlsBar);
+
+      controlsBar.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+
+        let startY = e.clientY;
+        let startHeight = outputContainer.offsetHeight;
+
+        function onMouseMove(e) {
+          let dy = e.clientY - startY;
+          let newHeight = startHeight + dy;
+          newHeight = Math.max(newHeight, 100);
+          outputContainer.style.height = newHeight + 'px';
+        }
+
+        function onMouseUp(e) {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
       outputDiv.setAttribute("tabindex", "0");
@@ -1389,7 +1416,7 @@ prompt("This is a prompt:");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
-      line.innerHTML =  obj;
+      line.innerHTML = obj;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
@@ -1898,7 +1925,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("5");
+    alert("232");
   </script>
 </body>
 
