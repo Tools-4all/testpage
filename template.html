@@ -1092,6 +1092,7 @@
 
         document.body.style.cursor = 'ns-resize !important';
         document.querySelectorAll(".monaco-mouse-cursor-text").forEach((el) => {
+          console.log(`changing cursor for ${el}`);
           el.style.cursor = 'ns-resize !important';
         });
 
@@ -1937,7 +1938,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("1");
   </script>
 </body>
 
