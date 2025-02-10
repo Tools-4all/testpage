@@ -1031,6 +1031,12 @@
       }
     }
 
+    function createGroup() {
+      const group = document.createElement("div");
+      group.classList.add("console-group");
+      return group;
+    }
+
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
@@ -1091,8 +1097,7 @@
           selection.addRange(range);
         }
       });
-      const baseGroup = document.createElement("div");
-      outputDiv.groupLevel = 0;
+      const baseGroup = createGroup();
       outputDiv.groupStack = [baseGroup];
       outputContainer.appendChild(outputDiv);
       outputContainer.appendChild(baseGroup);
@@ -1269,7 +1274,7 @@ prompt("This is a prompt:");
     }
     async function handlePrompt(message, tab) {
       return new Promise((resolve) => {
-        let d = tab.outputElement;
+        let d = tab.outputElement.groupStack[tab.outputElement.groupStack.length - 1];
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         let pm = document.createElement("span");
@@ -1387,7 +1392,7 @@ prompt("This is a prompt:");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
-      line.innerHTML =  obj;
+      line.innerHTML = obj;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
@@ -1414,7 +1419,7 @@ prompt("This is a prompt:");
       //   .join('\n');
 
       line.textContent = `[${symbolsMap[type]}] ${message}`;
-      outputDiv.groupStack[outputDiv.groupStack.length -1].appendChild(line);
+      outputDiv.groupStack[outputDiv.groupStack.length - 1].appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
@@ -1896,7 +1901,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("121");
+    alert("2");
   </script>
 </body>
 
