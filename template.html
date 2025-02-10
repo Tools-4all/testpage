@@ -1091,9 +1091,14 @@
         e.preventDefault();
 
         document.body.style.cursor = 'ns-resize !important';
+        document.querySelectorAll(".monaco-mouse-cursor-text").forEach((el) => {
+          el.style.cursor = 'ns-resize !important';
+        });
 
         document.addEventListener("mouseup", () => {
           document.body.style.cursor = '';
+          document.querySelectorAll(".monaco-mouse-cursor-text").forEach((el) => {
+            el.style.cursor = 'text';
         })
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
