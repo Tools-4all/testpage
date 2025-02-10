@@ -1414,7 +1414,7 @@ prompt("This is a prompt:");
       //   .join('\n');
 
       line.textContent = `[${symbolsMap[type]}] ${message}`;
-      outputDiv.groupStack[-1].appendChild(line);
+      outputDiv.groupStack[groupStack.length -1].appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
@@ -1896,7 +1896,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("23");
+    alert("2");
   </script>
 </body>
 
