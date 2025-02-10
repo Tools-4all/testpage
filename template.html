@@ -847,6 +847,9 @@
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
+      <button id="runButton" class="runButton">
+        <i class="fas fa-play"></i> Run
+      </button>
       <div id="lightMode" onclick="changeToLightMode()">
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
@@ -901,6 +904,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
+    let currentTab = null;
     let workerBlobURL = null;
     let activeDropdown = null;
     let spaces = 3;
@@ -1073,10 +1077,6 @@
       controlsBar.classList.add("controls");
       controlsBar.classList.add("theme");
       controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
-      let runButton = document.createElement("button");
-      runButton.classList.add("runButton");
-      runButton.innerHTML = '<i class="fas fa-play"></i> Run';
-      controlsBar.appendChild(runButton);
       outputContainer.appendChild(controlsBar);
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
@@ -1143,9 +1143,6 @@
       tabs.push(tabObj);
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
-      });
-      runButton.addEventListener("click", () => {
-        runTab(id, runButton);
       });
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1242,6 +1239,7 @@ prompt("This is a prompt:");
         newTab.editorAndOutput.classList.add("active");
         activeTabId = tabId;
         updateStatusPosition();
+        currentTab = newTab;
       }
     }
     function closeTab(tabId) {
@@ -1320,9 +1318,10 @@ prompt("This is a prompt:");
         });
       });
     }
-    async function runTab(tabId, btn) {
+    async function runTab() {
+      let btn = document.getElementById("runButton");
       btn.disabled = true;
-      let tab = tabs.find((x) => x.id === tabId);
+      let tab = tabs.find((x) => x.id === currentTab.id);
       if (!tab) {
         btn.disabled = false;
         return;
