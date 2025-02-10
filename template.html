@@ -1089,12 +1089,18 @@
 
       controlsBar.addEventListener('mousedown', function (e) {
         e.preventDefault();
+        // change cursor to col-resize for the whole document and
 
+        document.body.style.cursor = 'ns-resize';
+
+        document.addEventListener("mouseup", () => {
+          document.body.style.cursor = '';
+        })
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
 
         const MIN_HEIGHT = 150; 
-        const MAX_HEIGHT = 800; 
+        const MAX_HEIGHT = 500; 
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
