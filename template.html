@@ -417,7 +417,7 @@
       border: none !important;
     }
 
-    .controls { 
+    .controls {
       background-color: #444;
       padding-top: 4px;
       border-top: 1px solid #333;
@@ -1088,16 +1088,20 @@
       outputContainer.appendChild(controlsBar);
 
       controlsBar.addEventListener('mousedown', function (e) {
-        console.log('mousedown');
         e.preventDefault();
 
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
 
+        const MIN_HEIGHT = 200;
+        const MAX_HEIGHT = 800;
+
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight + dy;
-          newHeight = Math.max(newHeight, 100);
+
+          newHeight = Math.max(MIN_HEIGHT, Math.min(newHeight, MAX_HEIGHT));
+
           outputContainer.style.height = newHeight + 'px';
         }
 
@@ -1923,7 +1927,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("2");
+    alert("1");
   </script>
 </body>
 
