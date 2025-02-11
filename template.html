@@ -1090,15 +1090,22 @@
       controlsBar.addEventListener('mousedown', function (e) {
         e.preventDefault();
 
-        document.body.style.cursor = 'ns-resize !important';
-        document.addEventListener("mouseup", () => {
-          document.body.style.cursor = '';
-        });
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.cursor = 'ns-resize';
+        overlay.style.zIndex = '10000'; 
+        overlay.style.backgroundColor = 'transparent';
+        document.body.appendChild(overlay);
+
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
 
-        const MIN_HEIGHT = 150; 
-        const MAX_HEIGHT = 500; 
+        const MIN_HEIGHT = 150;
+        const MAX_HEIGHT = 500;
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
@@ -1110,11 +1117,13 @@
         function onMouseUp(e) {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
+          overlay.remove();
         }
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
+
 
 
       let outputDiv = document.createElement("div");
