@@ -1110,19 +1110,27 @@
         document.body.appendChild(overlay);
 
         let startY = e.clientY;
+        let parentHeight = outputContainer.parentElement.clientHeight; // גובה הדיב האב
         let startHeight = outputContainer.offsetHeight;
 
-        const MIN_HEIGHT = '20%' // 20% of the viewport height';
-        const MAX_HEIGHT = '60%' // 60% of the viewport height';
+        const MIN_HEIGHT = 20; // 20% מהאב
+        const MAX_HEIGHT = 60; // 60% מהאב
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
-          newHeight = Math.max(MIN_HEIGHT, Math.min(newHeight, MAX_HEIGHT));
-          outputContainer.style.height = newHeight + 'px';
+
+          // חישוב גובה חדש באחוזים מתוך הדיב האב
+          let newHeightPercent = (newHeight / parentHeight) * 100;
+
+          // הגבלת הגובה לערכים המוגדרים
+          newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
+
+          // הגדרת גובה האובייקט באחוזים
+          outputContainer.style.height = newHeightPercent + '%';
         }
 
-        function onMouseUp(e) {
+        function onMouseUp() {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
           overlay.remove();
@@ -1131,6 +1139,7 @@
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
+
 
 
 
@@ -1947,7 +1956,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("11");
+    alert("1");
   </script>
 </body>
 
