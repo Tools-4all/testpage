@@ -142,8 +142,8 @@
     }
 
     #lightMode {
-      margin-left: auto;
-      margin-right: 25px;
+      margin-left: 10px;
+      margin-right: 10px;
       margin-top: 1px;
       cursor: pointer;
     }
@@ -404,9 +404,12 @@
     }
 
     .outputContainer {
-      height: 200px;
       display: flex;
       flex-direction: column;
+    }
+
+    .resize {
+      height: 200px;
     }
 
     .monaco-editor .find-widget.visible .controls {
@@ -415,14 +418,18 @@
     }
 
     .controls {
-      display: flex;
-      justify-content: flex-end;
-      padding: 8px 12px;
-      border-top: 1px solid;
-      border-bottom: 1px solid;
+      background-color: #444;
+      padding-top: 4px;
+      border-top: 1px solid #333;
+      border-bottom: 1px solid #333;
+      cursor: ns-resize;
+      user-select: none;
     }
 
-    .runButton {
+
+    #runButton {
+      margin-left: auto;
+      margin-top: 2px;
       padding: 6px 12px;
       background-color: #0e639c;
       color: white;
@@ -434,11 +441,11 @@
       align-items: center;
     }
 
-    .runButton:hover {
+    #runButton:hover {
       background-color: #1177bb;
     }
 
-    .runButton i {
+    #runButton i {
       margin-right: 5px;
     }
 
@@ -806,7 +813,7 @@
         width: 200px;
       }
 
-      .runButton {
+      #runButton {
         padding: 6px 10px;
         font-size: 12px;
       }
@@ -847,6 +854,9 @@
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
       <div id="redoBtn"><i class="fa-solid fa-rotate-right"></i></div>
+      <button id="runButton" onclick="runTab()">
+        <i class="fas fa-play"></i> Run
+      </button>
       <div id="lightMode" onclick="changeToLightMode()">
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
@@ -901,6 +911,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
+    let currentTab = null;
     let workerBlobURL = null;
     let activeDropdown = null;
     let spaces = 3;
@@ -1069,15 +1080,52 @@
       editorOutputWrapper.appendChild(editorContainer);
       let outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("resize");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
       controlsBar.classList.add("theme");
       controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
-      let runButton = document.createElement("button");
-      runButton.classList.add("runButton");
-      runButton.innerHTML = '<i class="fas fa-play"></i> Run';
-      controlsBar.appendChild(runButton);
       outputContainer.appendChild(controlsBar);
+
+      controlsBar.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.cursor = 'ns-resize';
+        overlay.style.zIndex = '10000';
+        overlay.style.backgroundColor = 'transparent';
+        document.body.appendChild(overlay);
+
+        let startY = e.clientY;
+        let startHeight = outputContainer.offsetHeight;
+
+        const MIN_HEIGHT = 150;
+        const MAX_HEIGHT = 500;
+
+        function onMouseMove(e) {
+          let dy = e.clientY - startY;
+          let newHeight = startHeight - dy;
+          newHeight = Math.max(MIN_HEIGHT, Math.min(newHeight, MAX_HEIGHT));
+          outputContainer.style.height = newHeight + 'px';
+        }
+
+        function onMouseUp(e) {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+          overlay.remove();
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+
+
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
       outputDiv.setAttribute("tabindex", "0");
@@ -1143,9 +1191,6 @@
       tabs.push(tabObj);
       editorInstance.onDidChangeCursorPosition(() => {
         updateStatusPosition();
-      });
-      runButton.addEventListener("click", () => {
-        runTab(id, runButton);
       });
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -1242,6 +1287,7 @@ prompt("This is a prompt:");
         newTab.editorAndOutput.classList.add("active");
         activeTabId = tabId;
         updateStatusPosition();
+        currentTab = newTab;
       }
     }
     function closeTab(tabId) {
@@ -1320,9 +1366,10 @@ prompt("This is a prompt:");
         });
       });
     }
-    async function runTab(tabId, btn) {
+    async function runTab() {
+      let btn = document.getElementById("runButton");
       btn.disabled = true;
-      let tab = tabs.find((x) => x.id === tabId);
+      let tab = tabs.find((x) => x.id === currentTab.id);
       if (!tab) {
         btn.disabled = false;
         return;
@@ -1350,6 +1397,8 @@ prompt("This is a prompt:");
             appendTable(tab.outputElement, rows, columns);
           } else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tab.outputElement, type, msg);
+          } else if (type === "dir") {
+            appendDir(tab.outputElement, msg);
           }
         };
         w.onerror = (err) => {
@@ -1374,17 +1423,44 @@ prompt("This is a prompt:");
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
+
+    function appendDir(outputDiv, obj) {
+      if (!outputDiv) return;
+      let line = document.createElement("div");
+      line.classList.add("outputContent");
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
+      line.classList.add(styleClass);
+      line.innerHTML = obj;
+      outputDiv.appendChild(line);
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
+
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
+
     function appendToOutput(outputDiv, type, message) {
       if (!outputDiv) return;
       let line = document.createElement("div");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
+
+      // let processedMessage = message
+      //   .split('\n')
+      //   .map((l, i) => {
+      //     if (i === 0) return l;
+      //     if (l.trim().length > 0 && !/^[>\?!xi]/.test(l.trim()[0])) {
+      //       return "    " + l;
+      //     }
+      //     return l;
+      //   })
+      //   .join('\n');
+
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       outputDiv.appendChild(line);
       outputDiv.scrollTop = outputDiv.scrollHeight;
     }
+
     function appendTable(outputElement, rows, columns) {
       if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
@@ -1399,6 +1475,9 @@ prompt("This is a prompt:");
       }
       const div = document.createElement("div");
       div.classList.add("outputContent");
+
+      div.style.paddingLeft = "4ch";
+
       const table = document.createElement("table");
       table.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1462,6 +1541,7 @@ prompt("This is a prompt:");
       outputElement.appendChild(div);
       outputElement.scrollTop = outputElement.scrollHeight;
     }
+
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
         return `<span style="opacity:0.7;">null</span>`;
@@ -1859,7 +1939,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("w");
+    alert("1");
   </script>
 </body>
 
