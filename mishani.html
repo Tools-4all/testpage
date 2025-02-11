@@ -1112,8 +1112,8 @@
         let startY = e.clientY;
         let startHeight = outputContainer.offsetHeight;
 
-        const MIN_HEIGHT = 150;
-        const MAX_HEIGHT = 500;
+        const MIN_HEIGHT = '20%' // 20% of the viewport height';
+        const MAX_HEIGHT = '60%' // 60% of the viewport height';
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
@@ -1947,7 +1947,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("10");
+    alert("11");
   </script>
 </body>
 
