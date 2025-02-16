@@ -142,14 +142,14 @@
     }
 
     #lightMode {
-      margin-left: 10px;
-      margin-right: 10px;
-      margin-top: 1px;
+      margin-left: 20px;
+      margin-right: 20px;
       cursor: pointer;
     }
 
     #fullScreenBtn {
       margin-top: 3px;
+      margin-right: 7px;
       font-size: 13px;
       cursor: pointer;
     }
@@ -418,20 +418,18 @@
     }
 
     .controls {
-      background-color: #444;
-      padding-top: 4px;
-      border-top: 1px solid #333;
-      border-bottom: 1px solid #333;
+      padding: 4px;
       cursor: ns-resize;
       user-select: none;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
     }
 
 
     #runButton {
       margin-left: auto;
-      margin-top: 2px;
-      padding: 6px 12px;
-      background-color: #0e639c;
+      padding: 10px 12px;
+      background-color: #46a22a;
       color: white;
       border: none;
       cursor: pointer;
@@ -439,10 +437,11 @@
       font-size: 14px;
       display: flex;
       align-items: center;
+      transition: background-color 0.3s;
     }
 
     #runButton:hover {
-      background-color: #1177bb;
+      background-color: #35851d;
     }
 
     #runButton i {
@@ -748,6 +747,14 @@
       border: 1px solid #c0c0c0;
     }
 
+    .theme.colorf0f0f0 .controls {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526 .controls {
+      background-color: #444;
+    }
+
     .theme.colorffffff .output {
       background-color: #f9f9f9;
       color: #000;
@@ -795,11 +802,17 @@
       font-size: 17px;
       height: 20px;
       width: 20px;
-      padding-top: 1px;
+      padding-top: 2px;
       padding-left: 4px;
     }
 
     @media (max-width: 768px) {
+
+      #lightMode {
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+
       #activityBar {
         width: 40px;
       }
@@ -1097,24 +1110,32 @@
         overlay.style.width = '100%';
         overlay.style.height = '100%';
         overlay.style.cursor = 'ns-resize';
-        overlay.style.zIndex = '10000'; 
+        overlay.style.zIndex = '10000';
         overlay.style.backgroundColor = 'transparent';
         document.body.appendChild(overlay);
 
         let startY = e.clientY;
+        let parentHeight = outputContainer.parentElement.clientHeight;
         let startHeight = outputContainer.offsetHeight;
 
-        const MIN_HEIGHT = 150;
-        const MAX_HEIGHT = 500;
+        const MIN_HEIGHT = 30;
+        const MAX_HEIGHT = 60;
 
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
-          newHeight = Math.max(MIN_HEIGHT, Math.min(newHeight, MAX_HEIGHT));
-          outputContainer.style.height = newHeight + 'px';
+
+
+          let newHeightPercent = (newHeight / parentHeight) * 100;
+
+
+          newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
+
+
+          outputContainer.style.height = newHeightPercent + '%';
         }
 
-        function onMouseUp(e) {
+        function onMouseUp() {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
           overlay.remove();
@@ -1123,6 +1144,7 @@
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
+
 
 
 
@@ -1939,7 +1961,6 @@ prompt("This is a prompt:");
         }
       });
     }
-    alert("232");
   </script>
 </body>
 
