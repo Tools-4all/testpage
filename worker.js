@@ -350,49 +350,49 @@ class myPrompt {
 
 function objectToHTML(obj, level = 0) {
     function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
     }
-  
+
     if (obj === null) {
-      return `<span style="opacity:0.7;">null</span>`;
+        return `<span style="opacity:0.7;">null</span>`;
     }
     if (typeof obj !== "object") {
-      return `<span>${escapeHtml(obj)}</span>`;
+        return `<span>${escapeHtml(obj)}</span>`;
     }
-  
+
     if (Array.isArray(obj)) {
-      let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
-      html += `<summary>Array(${obj.length})</summary>`;
-      obj.forEach((value, i) => {
-        if (typeof value !== "object" || value === null) {
-          html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: <span>${escapeHtml(value)}</span></div>`;
-        } else {
-          html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: ${objectToHTML(value, level + 1)}</div>`;
-        }
-      });
-      html += `</details>`;
-      return html;
+        let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
+        html += `<summary>Array(${obj.length})</summary>`;
+        obj.forEach((value, i) => {
+            if (typeof value !== "object" || value === null) {
+                html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: <span>${escapeHtml(value)}</span></div>`;
+            } else {
+                html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: ${objectToHTML(value, level + 1)}</div>`;
+            }
+        });
+        html += `</details>`;
+        return html;
     }
-  
+
     const keys = Object.keys(obj);
     let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
     html += `<summary>Object {${keys.length} keys}</summary>`;
     keys.forEach(key => {
-      let value = obj[key];
-      if (typeof value === "object" && value !== null) {
-        html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: ${objectToHTML(value, level + 1)}</div>`;
-      } else {
-        html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: <span>${escapeHtml(value)}</span></div>`;
-      }
+        let value = obj[key];
+        if (typeof value === "object" && value !== null) {
+            html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: ${objectToHTML(value, level + 1)}</div>`;
+        } else {
+            html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: <span>${escapeHtml(value)}</span></div>`;
+        }
     });
     html += `</details>`;
     return html;
-  }
-  
+}
+
 
 function escapeHtml(str) {
     return str
@@ -460,17 +460,18 @@ self.addEventListener("message", (event) => {
         const profiles = {};
         const headers = [];
         function indentMessage(message) {
-            if (groupLevel <= 0) return message;
-            return "  ".repeat(groupLevel) + message;
+            return message;
+            // if (groupLevel <= 0) return message;
+            // return "  ".repeat(groupLevel) + message;
         }
         const customConsole = {
             log: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "log", message: indentMessage(serializedArgs)});
+                self.postMessage({ type: "log", message: indentMessage(serializedArgs) });
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   ")});
+                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   ") });
             },
             warn: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -483,7 +484,7 @@ self.addEventListener("message", (event) => {
             debug: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`)});
+                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`) });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -500,7 +501,7 @@ self.addEventListener("message", (event) => {
                     customConsole.log(String(data));
                     return;
                 }
-    
+
                 if (typeof data === "function") {
                     let fnString;
                     try {
@@ -511,7 +512,7 @@ self.addEventListener("message", (event) => {
                     customConsole.log(fnString);
                     return;
                 }
-    
+
                 let clonedData;
                 try {
                     clonedData = cloneForConsoleTable(data);
@@ -519,7 +520,7 @@ self.addEventListener("message", (event) => {
                     customConsole.error(`Error cloning data for table: ${err.message}`);
                     return;
                 }
-    
+
                 let tableModel = buildChromeTableModel(clonedData);
                 self.postMessage({
                     type: "table",
@@ -534,7 +535,7 @@ self.addEventListener("message", (event) => {
                 } else {
                     countMap[label] = 1;
                 }
-                self.postMessage({ type: "log", message: indentMessage(`${label}: ${countMap[label]}`)});
+                self.postMessage({ type: "log", message: indentMessage(`${label}: ${countMap[label]}`) });
             },
             countReset: (label = "default") => {
                 countMap[label] = 0;
@@ -558,25 +559,30 @@ self.addEventListener("message", (event) => {
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`)});
+                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`) });
             },
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const message = indentMessage(`${serializedArgs}`);
-                self.postMessage({ type: "log", message });
+                // Send a message to start a new group (expanded by default)
+                self.postMessage({ type: "group", message, collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const message = indentMessage(`${serializedArgs}`);
-                self.postMessage({ type: "log", message });
+                // Send a message to start a new group (collapsed by default)
+                self.postMessage({ type: "group", message, collapsed: true });
                 groupLevel++;
             },
             groupEnd: () => {
                 if (groupLevel > 0) {
                     groupLevel--;
+                    // Send a message to end the current group
+                    self.postMessage({ type: "groupEnd" });
                 }
             },
+
 
             profile: (label = "default") => {
                 profiles[label] = performance.now();
