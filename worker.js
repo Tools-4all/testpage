@@ -564,21 +564,18 @@ self.addEventListener("message", (event) => {
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const message = indentMessage(`${serializedArgs}`);
-                // Send a message to start a new group (expanded by default)
                 self.postMessage({ type: "group", message, collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const message = indentMessage(`${serializedArgs}`);
-                // Send a message to start a new group (collapsed by default)
                 self.postMessage({ type: "group", message, collapsed: true });
                 groupLevel++;
             },
             groupEnd: () => {
                 if (groupLevel > 0) {
                     groupLevel--;
-                    // Send a message to end the current group
                     self.postMessage({ type: "groupEnd" });
                 }
             },

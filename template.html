@@ -1341,7 +1341,10 @@ prompt("This is a prompt:");
     }
     async function handlePrompt(message, tab) {
       return new Promise((resolve) => {
-        let d = tab.outputElement;
+        let container = tab.outputElement;
+        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+          container = currentTab.groupStack[currentTab.groupStack.length - 1];
+        }
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         let pm = document.createElement("span");
@@ -1367,13 +1370,17 @@ prompt("This is a prompt:");
         });
         pl.appendChild(pm);
         pl.appendChild(inp);
-        d.appendChild(pl);
+        container.appendChild(pl);
         inp.focus();
       });
     }
+
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
-        const d = tab.outputElement;
+        let container = tab.outputElement;
+        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+          container = currentTab.groupStack[currentTab.groupStack.length - 1];
+        }
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         const alertSpan = document.createElement("span");
@@ -1385,17 +1392,18 @@ prompt("This is a prompt:");
         okBtn.style.marginLeft = "10px";
         okBtn.textContent = "OK";
         alertLine.appendChild(okBtn);
-        d.appendChild(alertLine);
+        container.appendChild(alertLine);
         okBtn.focus();
         okBtn.addEventListener("click", () => {
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
-          appendToOutput(d, "info", message);
+          appendToOutput(container, "info", message);
           alertLine.remove();
           resolve();
         });
       });
     }
+
     async function runTab() {
       let btn = document.getElementById("runButton");
       btn.disabled = true;
@@ -1439,21 +1447,29 @@ prompt("This is a prompt:");
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               currentTab.groupStack.pop();
             }
-          } else if (type === "prompt") {
+          }
+
+          else if (type === "prompt") {
             await handlePrompt(msg, tab);
-          } else if (type === "alert") {
+          }
+          else if (type === "alert") {
             await handleAlert(msg, tab);
-          } else if (type === "clear") {
+          }
+          else if (type === "clear") {
             clearConsole(tab.outputElement);
-          } else if (type === "table") {
+          }
+          else if (type === "table") {
             const { rows, columns } = e.data;
             appendTable(tab.outputElement, rows, columns);
-          } else if (["log", "error", "warn", "info"].includes(type)) {
+          }
+          else if (["log", "error", "warn", "info"].includes(type)) {
             appendToOutput(tab.outputElement, type, msg);
-          } else if (type === "dir") {
+          }
+          else if (type === "dir") {
             appendDir(tab.outputElement, msg);
           }
-        };
+        }
+
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
           appendToOutput(tab.outputElement, "log",
@@ -1478,15 +1494,19 @@ prompt("This is a prompt:");
     }
 
     function appendDir(outputDiv, obj) {
-      if (!outputDiv) return;
+      let container = outputDiv;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
       let line = document.createElement("div");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
       line.innerHTML = obj;
-      outputDiv.appendChild(line);
-      outputDiv.scrollTop = outputDiv.scrollHeight;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
     }
+
 
 
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
@@ -1494,37 +1514,34 @@ prompt("This is a prompt:");
     function appendToOutput(outputDiv, type, message) {
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-        // Append inside the top-most open group
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
       let line = document.createElement("div");
       line.classList.add("outputContent");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
-      // Use your existing symbolsMap if needed:
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
 
-
     function appendTable(outputElement, rows, columns) {
-      if (!outputElement) return;
+      let container = outputElement;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
-        appendToOutput(outputElement, "error", "Invalid table data received.");
+        appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
       if (columns.length === 0 || rows.length === 0) {
-        const fallbackMessage = (rows.length === 0)
-          ? "Empty Table" : "No data to display.";
-        appendToOutput(outputElement, "log", fallbackMessage);
+        const fallbackMessage = (rows.length === 0) ? "Empty Table" : "No data to display.";
+        appendToOutput(container, "log", fallbackMessage);
         return;
       }
       const div = document.createElement("div");
       div.classList.add("outputContent");
-
       div.style.paddingLeft = "4ch";
-
       const table = document.createElement("table");
       table.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1585,9 +1602,10 @@ prompt("This is a prompt:");
       });
       table.appendChild(tbody);
       div.appendChild(table);
-      outputElement.appendChild(div);
-      outputElement.scrollTop = outputElement.scrollHeight;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
     }
+
 
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
