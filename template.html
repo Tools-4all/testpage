@@ -1473,7 +1473,7 @@ prompt("This is a prompt:");
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
           appendToOutput(tab.outputElement, "log",
-            "The script has finished running with exit code 1.");
+            "The script has finished running with exit code 1.", true);
         };
         let code = tab.editorInstance.getValue();
         w.postMessage({
@@ -1485,7 +1485,7 @@ prompt("This is a prompt:");
       catch (ex) {
         appendToOutput(tab.outputElement, "error", ex.message);
         appendToOutput(tab.outputElement, "log",
-          "The script has finished running with exit code 1.");
+          "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
     }
@@ -1511,9 +1511,9 @@ prompt("This is a prompt:");
 
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
-    function appendToOutput(outputDiv, type, message) {
+    function appendToOutput(outputDiv, type, message, forceUse = false) {
       let container = outputDiv;
-      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+      if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
       let line = document.createElement("div");
