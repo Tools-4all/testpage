@@ -471,7 +471,7 @@ self.addEventListener("message", (event) => {
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   "), isForce: true });
+                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   "), forceUse: true });
             },
             warn: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
@@ -651,18 +651,18 @@ self.addEventListener("message", (event) => {
                 const wrappedCode = createWrappedCode(userCode);
                 const userFunc = new Function("customConsole", "customPrompt", "customAlert", wrappedCode);
                 userFunc(customConsole, customPrompt, customAlert);
-                self.postMessage({ type: "log", message: "Script finished with exit code 0.", isForce: true });
+                self.postMessage({ type: "log", message: "Script finished with exit code 0.", forceUse: true });
             } catch (e) {
                 customConsole.error(`Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`)
-                self.postMessage({ type: "log", message: "Script finished with exit code 1.", isForce: true });
+                self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
             }
         };
 
         try {
             executeCode(code);
         } catch (e) {
-            self.postMessage({ type: "error", message: `Execution failed: ${e.message}`, isForce: true });
-            self.postMessage({ type: "log", message: "Script finished with exit code 1.", isForce: true });
+            self.postMessage({ type: "error", message: `Execution failed: ${e.message}`, forceUse: true });
+            self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
         }
         self.close();
     }
