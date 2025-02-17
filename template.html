@@ -1435,7 +1435,7 @@ prompt("This is a prompt:");
               details.open = true;
             }
             const summary = document.createElement("summary");
-            summary.textContent = msg; // The group title
+            summary.textContent = msg; 
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
               currentTab.groupStack[currentTab.groupStack.length - 1] :
@@ -1463,7 +1463,8 @@ prompt("This is a prompt:");
             appendTable(tab.outputElement, rows, columns);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
-            appendToOutput(tab.outputElement, type, msg);
+            const isForce = e.data.forceUse;
+            appendToOutput(tab.outputElement, type, msg, isForce);
           }
           else if (type === "dir") {
             appendDir(tab.outputElement, msg);
