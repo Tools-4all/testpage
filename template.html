@@ -1341,14 +1341,12 @@ prompt("This is a prompt:");
     }
     async function handlePrompt(message, tab) {
       return new Promise((resolve) => {
+        // Initially, always show the prompt in the main output container.
         let container = tab.outputElement;
-        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-          container = currentTab.groupStack[currentTab.groupStack.length - 1];
-        }
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
-        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        pl.style.marginLeft = groupLevel ? "20px" : "4px";
+        // Initially no indent when in the main container.
+        pl.style.marginLeft = "0";
         let pm = document.createElement("span");
         pm.textContent = `[?] ${message}`;
         pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
@@ -1360,6 +1358,14 @@ prompt("This is a prompt:");
             let val = inp.value.trim();
             pm.textContent = `[?] ${message} ${val}`;
             inp.remove();
+            // If a group is active, move this prompt element into it.
+            if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+              let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+              newContainer.appendChild(pl);
+              // Indent based on the group level.
+              const groupLevel = currentTab.groupStack.length;
+              pl.style.marginLeft = (groupLevel * 20) + "px";
+            }
             let te = new TextEncoder();
             let encoded = te.encode(val + "\0");
             let respBuffer = new Uint8Array(tab.sharedBuffer, 4);
@@ -1377,17 +1383,13 @@ prompt("This is a prompt:");
       });
     }
 
-
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
+        // Initially, always show the alert in the main output container.
         let container = tab.outputElement;
-        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-          container = currentTab.groupStack[currentTab.groupStack.length - 1];
-        }
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
-        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        alertLine.style.marginLeft = groupLevel ? "20px" : "4px";
+        alertLine.style.marginLeft = "0"; // no indent initially
         const alertSpan = document.createElement("span");
         alertSpan.textContent = `[!] ${message}`;
         alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
@@ -1402,12 +1404,20 @@ prompt("This is a prompt:");
         okBtn.addEventListener("click", () => {
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
+          // After OK is clicked, if a group is active, move the alert element into it.
+          if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+            let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+            newContainer.appendChild(alertLine);
+            const groupLevel = currentTab.groupStack.length;
+            alertLine.style.marginLeft = (groupLevel * 20) + "px";
+          }
           appendToOutput(container, "info", message);
           alertLine.remove();
           resolve();
         });
       });
     }
+
 
 
     async function runTab() {
@@ -1446,7 +1456,7 @@ prompt("This is a prompt:");
               currentTab.groupStack[currentTab.groupStack.length - 1] :
               currentTab.outputElement;
             parentContainer.appendChild(details);
-            const groupLevel = currentTab.groupStack.length; 
+            const groupLevel = currentTab.groupStack.length;
             details.style.marginLeft = groupLevel ? "20px" : "4px";
             currentTab.groupStack.push(details);
           }
