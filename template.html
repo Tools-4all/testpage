@@ -1348,7 +1348,7 @@ prompt("This is a prompt:");
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        pl.style.marginLeft = (groupLevel * 20) + "px";
+        pl.style.marginLeft = "20px"
         let pm = document.createElement("span");
         pm.textContent = `[?] ${message}`;
         pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
@@ -1387,7 +1387,7 @@ prompt("This is a prompt:");
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        alertLine.style.marginLeft = (groupLevel * 20) + "px";
+        alertLine.style.marginLeft = "20px"
         const alertSpan = document.createElement("span");
         alertSpan.textContent = `[!] ${message}`;
         alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
@@ -1447,7 +1447,7 @@ prompt("This is a prompt:");
               currentTab.outputElement;
             parentContainer.appendChild(details);
             const groupLevel = currentTab.groupStack.length; 
-            details.style.marginLeft = (groupLevel * 20) + "px";
+            details.style.marginLeft = "20px"
             currentTab.groupStack.push(details);
           }
           else if (type === "groupEnd") {
@@ -1509,7 +1509,7 @@ prompt("This is a prompt:");
       let line = document.createElement("div");
       line.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      line.style.marginLeft = (groupLevel * 20) + "px";
+      line.style.marginLeft = "20px"
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
       line.innerHTML = obj;
@@ -1530,7 +1530,7 @@ prompt("This is a prompt:");
       let line = document.createElement("div");
       line.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      line.style.marginLeft = (groupLevel * 20) + "px";
+      line.style.marginLeft = "20px"
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
       line.textContent = `[${symbolsMap[type]}] ${message}`;
@@ -1557,7 +1557,7 @@ prompt("This is a prompt:");
       div.classList.add("outputContent");
       // Indent the table container
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      div.style.marginLeft = (groupLevel * 20) + "px";
+      div.style.marginLeft = "20px"
       div.style.paddingLeft = "4ch";
       // ... (build table as before)
       // Append table into div, then into container:
