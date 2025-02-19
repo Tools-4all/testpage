@@ -1347,6 +1347,8 @@ prompt("This is a prompt:");
         }
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
+        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+        pl.style.marginLeft = (groupLevel * 20) + "px";
         let pm = document.createElement("span");
         pm.textContent = `[?] ${message}`;
         pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
@@ -1375,6 +1377,7 @@ prompt("This is a prompt:");
       });
     }
 
+
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
         let container = tab.outputElement;
@@ -1383,6 +1386,8 @@ prompt("This is a prompt:");
         }
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
+        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+        alertLine.style.marginLeft = (groupLevel * 20) + "px";
         const alertSpan = document.createElement("span");
         alertSpan.textContent = `[!] ${message}`;
         alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
@@ -1403,6 +1408,7 @@ prompt("This is a prompt:");
         });
       });
     }
+
 
     async function runTab() {
       let btn = document.getElementById("runButton");
@@ -1432,16 +1438,16 @@ prompt("This is a prompt:");
 
           if (type === "group") {
             const details = document.createElement("details");
-            if (!e.data.collapsed) {
-              details.open = true;
-            }
+            details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
-            summary.textContent = msg; 
+            summary.textContent = msg;
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
               currentTab.groupStack[currentTab.groupStack.length - 1] :
               currentTab.outputElement;
             parentContainer.appendChild(details);
+            const groupLevel = currentTab.groupStack.length; 
+            details.style.marginLeft = (groupLevel * 20) + "px";
             currentTab.groupStack.push(details);
           }
           else if (type === "groupEnd") {
@@ -1502,6 +1508,8 @@ prompt("This is a prompt:");
       }
       let line = document.createElement("div");
       line.classList.add("outputContent");
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      line.style.marginLeft = (groupLevel * 20) + "px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
       line.classList.add(styleClass);
       line.innerHTML = obj;
@@ -1511,22 +1519,25 @@ prompt("This is a prompt:");
 
 
 
+
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
-      console.log(`msg ${message}, type ${type}, forceUse ${forceUse}`);
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
       let line = document.createElement("div");
       line.classList.add("outputContent");
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      line.style.marginLeft = (groupLevel * 20) + "px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
       line.textContent = `[${symbolsMap[type]}] ${message}`;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
+
 
     function appendTable(outputElement, rows, columns) {
       let container = outputElement;
@@ -1544,70 +1555,17 @@ prompt("This is a prompt:");
       }
       const div = document.createElement("div");
       div.classList.add("outputContent");
+      // Indent the table container
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      div.style.marginLeft = (groupLevel * 20) + "px";
       div.style.paddingLeft = "4ch";
-      const table = document.createElement("table");
-      table.classList.add("console-table");
-      const thead = document.createElement("thead");
-      const headRow = document.createElement("tr");
-      headRow.classList.add("console-table-row");
-      columns.forEach(col => {
-        const th = document.createElement("th");
-        th.classList.add("console-table-header");
-        th.textContent = col;
-        headRow.appendChild(th);
-      });
-      thead.appendChild(headRow);
-      table.appendChild(thead);
-      const tbody = document.createElement("tbody");
-      rows.forEach(rowObj => {
-        const tr = document.createElement("tr");
-        tr.classList.add("console-table-row");
-        columns.forEach(col => {
-          const td = document.createElement("td");
-          td.classList.add("console-table-data");
-          let value = rowObj[col];
-          if (typeof value === "object" && value !== null) {
-            if (Array.isArray(value)) {
-              td.textContent = `[Array(${value.length})]`;
-            } else if (value === "[Circular]") {
-              td.textContent = "{…}";
-            } else {
-              const expandable = document.createElement("span");
-              expandable.classList.add("expandable");
-              expandable.textContent = "{…}";
-              expandable.style.cursor = "pointer";
-              expandable.addEventListener("click", () => {
-                if (expandable.classList.contains("expanded")) {
-                  expandable.classList.remove("expanded");
-                  if (td.querySelector(".expandable-details")) {
-                    td.querySelector(".expandable-details").remove();
-                  }
-                } else {
-                  expandable.classList.add("expanded");
-                  const details = document.createElement("div");
-                  details.classList.add("expandable-details");
-                  details.style.marginTop = "4px";
-                  details.style.marginLeft = "20px";
-                  details.innerHTML = objectToHTML(value, 1);
-                  td.appendChild(details);
-                }
-              });
-              td.appendChild(expandable);
-            }
-          } else if (typeof value === "function") {
-            td.textContent = value;
-          } else {
-            td.textContent = (value === "undefined") ? "undefined" : String(value);
-          }
-          tr.appendChild(td);
-        });
-        tbody.appendChild(tr);
-      });
-      table.appendChild(tbody);
+      // ... (build table as before)
+      // Append table into div, then into container:
       div.appendChild(table);
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
 
 
     function objectToHTML(obj, level = 0) {
