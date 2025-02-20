@@ -1539,7 +1539,10 @@ prompt("This is a prompt:");
       }
       let line = document.createElement("div");
       line.classList.add("outputContent");
-      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      if (forceUse) {
+        groupLevel = 0;
+      }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
