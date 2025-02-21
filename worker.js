@@ -675,8 +675,3 @@ self.addEventListener("message", (event) => {
         }
     }
 });
-
-
-self.onerror = (e) => {
-    self.postMessage({ type: "error", message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`, forceUse: true });
-}
