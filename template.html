@@ -1489,8 +1489,10 @@ prompt("This is a prompt:");
 
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
-          appendToOutput(tab.outputElement, "log",
+          if (flexSwitchCheckDefault.checked) {
+            appendToOutput(tab.outputElement, "log",
             "The script has finished running with exit code 1.", true);
+          }
         };
         let code = tab.editorInstance.getValue();
         w.postMessage({
