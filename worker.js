@@ -42,7 +42,7 @@ const wrapperPrefixLines = [
     'var WRAPPER_LINE_COUNT_FOR_ERR = undefined;',
     'var indentMessage = undefined;',
     'var createWrappedCode = undefined;',
-    'const code = undefined;',
+    'var code = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
