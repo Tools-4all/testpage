@@ -651,7 +651,9 @@ self.addEventListener("message", (event) => {
                 const wrappedCode = createWrappedCode(userCode);
                 const userFunc = new Function("customConsole", "customPrompt", "customAlert", wrappedCode);
                 userFunc(customConsole, customPrompt, customAlert);
-                self.postMessage({ type: "log", message: "Script finished with exit code 0.", forceUse: true });
+                if (flexSwitchCheckDefault) {
+                    self.postMessage({ type: "log", message: "Script finished with exit code 0.", forceUse: true });
+                }
             } catch (e) {
                 customConsole.error(`Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`)
                 if (flexSwitchCheckDefault) {
