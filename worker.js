@@ -452,7 +452,7 @@ function objectToString(obj) {
 
 
 self.addEventListener("message", (event) => {
-    const { type, code, sharedBuffer } = event.data;
+    const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
     if (type === "execute") {
         const countMap = {};
         let groupLevel = 0;
@@ -654,7 +654,9 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: "Script finished with exit code 0.", forceUse: true });
             } catch (e) {
                 customConsole.error(`Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`)
-                self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+                if (flexSwitchCheckDefault) {
+                    self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+                }
             }
         };
 
@@ -662,8 +664,12 @@ self.addEventListener("message", (event) => {
             executeCode(code);
         } catch (e) {
             self.postMessage({ type: "error", message: `Execution failed: ${e.message}`, forceUse: true });
-            self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+            if (flexSwitchCheckDefault) {
+                self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+            }
         }
-        self.close();
+        if (flexSwitchCheckDefault) {
+            self.close();
+        }
     }
 });

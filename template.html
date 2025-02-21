@@ -946,6 +946,7 @@
     let lastDropSide = null;
     let darkModeFlag = true;
     const compiler = document.getElementById("compiler");
+    const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -1501,7 +1502,8 @@ prompt("This is a prompt:");
         w.postMessage({
           type: "execute",
           code,
-          sharedBuffer: tab.sharedBuffer
+          sharedBuffer: tab.sharedBuffer,
+          flexSwitchCheckDefault: flexSwitchCheckDefault.checked
         });
       }
       catch (ex) {
