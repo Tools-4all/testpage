@@ -1346,12 +1346,10 @@ prompt("This is a prompt:");
     }
     async function handlePrompt(message, tab) {
       return new Promise((resolve) => {
-        // Initially, always show the prompt in the main output container.
         let container = tab.outputElement;
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
-        // Initially no indent when in the main container.
-        pl.style.marginLeft = "0";
+        pl.style.marginLeft = "4px";
         let pm = document.createElement("span");
         pm.textContent = `[?] ${message}`;
         pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
@@ -1363,11 +1361,9 @@ prompt("This is a prompt:");
             let val = inp.value.trim();
             pm.textContent = `[?] ${message} ${val}`;
             inp.remove();
-            // If a group is active, move this prompt element into it.
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
               newContainer.appendChild(pl);
-              // Indent based on the group level.
               const groupLevel = currentTab.groupStack.length;
               pl.style.marginLeft = (groupLevel * 20) + "px";
             }
@@ -1390,11 +1386,10 @@ prompt("This is a prompt:");
 
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
-        // Initially, always show the alert in the main output container.
         let container = tab.outputElement;
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
-        alertLine.style.marginLeft = "0"; // no indent initially
+        alertLine.style.marginLeft = "4px";
         const alertSpan = document.createElement("span");
         alertSpan.textContent = `[!] ${message}`;
         alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
@@ -1409,7 +1404,6 @@ prompt("This is a prompt:");
         okBtn.addEventListener("click", () => {
           Atomics.store(tab.view, 0, 1);
           Atomics.notify(tab.view, 0);
-          // After OK is clicked, if a group is active, move the alert element into it.
           if (currentTab.groupStack && currentTab.groupStack.length > 0) {
             let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
             newContainer.appendChild(alertLine);
