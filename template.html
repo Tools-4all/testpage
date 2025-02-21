@@ -904,7 +904,6 @@
       </div>
       <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
         <i class="fas fa-cog"></i>
-        <input type="checkbox" id="shutdownWorker" checked="false">
       </div>
     </div>
     <div id="gitPanel" class="sidebar-panel">
@@ -915,6 +914,12 @@
       <div>
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
         <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
+
+        <!-- a bootstrap toggle for terminate worker without waiting for promises / async code that warent awaited  -->
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
+        </div>
       </div>
     </div>
     <div id="mainContainer">
