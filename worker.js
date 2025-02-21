@@ -152,6 +152,104 @@ function relativeStack(error) {
 
 
 
+function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
+    // Handle non-objects
+    if (obj === null) return 'null';
+    if (typeof obj !== 'object' && typeof obj !== 'function') return String(obj);
+  
+    // Prevent circular recursion
+    if (visited.has(obj)) return '[Circular]';
+    visited.add(obj);
+  
+    const lines = [];
+    
+    if (showHeader) {
+      let header;
+      if (Array.isArray(obj)) {
+        // For the array prototype, show its length in the header.
+        if (obj === Array.prototype) {
+          header = `Array(${obj.length})`;
+        } else {
+          header = '[]';
+        }
+      } else if (typeof obj === 'function') {
+        header = 'ƒ ' + (obj.name || 'anonymous') + '()';
+      } else if (obj.constructor === Object) {
+        // Use "Object" instead of "{}" for plain objects.
+        header = 'Object';
+      } else {
+        header = '{}';
+      }
+      lines.push(indent + header);
+    }
+    
+    // Get own property names sorted alphabetically
+    const props = Object.getOwnPropertyNames(obj).sort();
+    for (let prop of props) {
+      let value;
+      try {
+        value = obj[prop];
+      } catch (e) {
+        value = '[Error retrieving property]';
+      }
+  
+      let valueStr;
+      if (typeof value === 'function') {
+        valueStr = 'ƒ ' + (value.name || prop) + '()';
+      } else if (typeof value === 'object' && value !== null) {
+        // For plain objects (like Symbol(Symbol.unscopables)'s value), skip printing the header.
+        if (value.constructor === Object) {
+          valueStr = "\n" + inspect(value, indent + '  ', visited, false);
+        } else {
+          valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+        }
+      } else {
+        valueStr = String(value);
+      }
+      lines.push(indent + prop + ': ' + valueStr);
+    }
+    
+    // Process symbol properties, sorted alphabetically
+    const symbols = Object.getOwnPropertySymbols(obj)
+      .sort((a, b) => a.toString().localeCompare(b.toString()));
+    for (let sym of symbols) {
+      let value;
+      try {
+        value = obj[sym];
+      } catch (e) {
+        value = '[Error retrieving property]';
+      }
+      let valueStr;
+      if (typeof value === 'function') {
+        valueStr = 'ƒ ' + (value.name || sym.toString()) + '()';
+      } else if (typeof value === 'object' && value !== null) {
+        if (value.constructor === Object) {
+          valueStr = "\n" + inspect(value, indent + '  ', visited, false);
+        } else {
+          valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+        }
+      } else {
+        valueStr = String(value);
+      }
+      lines.push(indent + sym.toString() + ': ' + valueStr);
+    }
+    
+    // Now show the prototype chain inline with the label.
+    const proto = Object.getPrototypeOf(obj);
+    if (proto) {
+      // Get the inspection of the prototype and split out the header.
+      const protoStr = inspect(proto, indent + '  ', visited, true).split('\n');
+      const protoHeader = protoStr.shift().trim(); // first line is the header
+      lines.push(indent + '[[Prototype]]: ' + protoHeader);
+      if (protoStr.length > 0) {
+        lines.push(...protoStr);
+      }
+    }
+    
+    return lines.join('\n');
+  }
+
+
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
     if (value === null) return null;
     if (typeof value === "undefined") return "undefined";
