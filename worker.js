@@ -153,11 +153,9 @@ function relativeStack(error) {
 
 
 function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
-    // Handle non-objects
     if (obj === null) return 'null';
     if (typeof obj !== 'object' && typeof obj !== 'function') return String(obj);
   
-    // Prevent circular recursion
     if (visited.has(obj)) return '[Circular]';
     visited.add(obj);
   
@@ -166,7 +164,6 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
     if (showHeader) {
       let header;
       if (Array.isArray(obj)) {
-        // For the array prototype, show its length in the header.
         if (obj === Array.prototype) {
           header = `Array(${obj.length})`;
         } else {
@@ -175,7 +172,6 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
       } else if (typeof obj === 'function') {
         header = 'ƒ ' + (obj.name || 'anonymous') + '()';
       } else if (obj.constructor === Object) {
-        // Use "Object" instead of "{}" for plain objects.
         header = 'Object';
       } else {
         header = '{}';
@@ -183,7 +179,6 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
       lines.push(indent + header);
     }
     
-    // Get own property names sorted alphabetically
     const props = Object.getOwnPropertyNames(obj).sort();
     for (let prop of props) {
       let value;
@@ -197,11 +192,13 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
       if (typeof value === 'function') {
         valueStr = 'ƒ ' + (value.name || prop) + '()';
       } else if (typeof value === 'object' && value !== null) {
-        // For plain objects (like Symbol(Symbol.unscopables)'s value), skip printing the header.
         if (value.constructor === Object) {
           valueStr = "\n" + inspect(value, indent + '  ', visited, false);
         } else {
           valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+        }
+        if (valueStr === '\n[Circular]') {
+          valueStr = '[Circular]';
         }
       } else {
         valueStr = String(value);
@@ -209,7 +206,6 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
       lines.push(indent + prop + ': ' + valueStr);
     }
     
-    // Process symbol properties, sorted alphabetically
     const symbols = Object.getOwnPropertySymbols(obj)
       .sort((a, b) => a.toString().localeCompare(b.toString()));
     for (let sym of symbols) {
@@ -234,10 +230,8 @@ function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
       lines.push(indent + sym.toString() + ': ' + valueStr);
     }
     
-    // Now show the prototype chain inline with the label.
     const proto = Object.getPrototypeOf(obj);
     if (proto) {
-      // Get the inspection of the prototype and split out the header.
       const protoStr = inspect(proto, indent + '  ', visited, true).split('\n');
       const protoHeader = protoStr.shift().trim(); // first line is the header
       lines.push(indent + '[[Prototype]]: ' + protoHeader);
