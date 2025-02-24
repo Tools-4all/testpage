@@ -33,6 +33,7 @@
     }
 
     #start {
+      margin-top: 150px;
       background-color: #007bff;
       color: white;
     }
@@ -83,24 +84,30 @@
 
 <body>
 
-  <h1>Screen Recorder</h1>
+  <div style="margin-top: 150px;">
+    <h1>Screen Recorder</h1>
 
-  <div class="controls">
-    <button id="start">Start</button>
-    <button id="record">Record</button>
-    <button id="stop">Stop</button>
+    <div class="controls">
+      <button id="start">Start</button>
+      <button id="record">Record</button>
+      <button id="stop">Stop</button>
+    </div>
+
+    <p id="timer">00:00</p>
+
+    <div class="preview-container" id="previewContainer">
+      <video id="preview" autoplay muted></video>
+    </div>
+
+    <div class="recorded-container" id="recordedContainer">
+      <video id="video" controls></video>
+    </div>
+
     <button id="download">Download</button>
+
   </div>
 
-  <p id="timer">00:00</p>
 
-  <div class="preview-container" id="previewContainer">
-    <video id="preview" autoplay muted></video>
-  </div>
-
-  <div class="recorded-container" id="recordedContainer">
-    <video id="video" controls></video>
-  </div>
 
   <script>
     let mediaRecorder;
