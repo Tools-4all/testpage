@@ -36,7 +36,7 @@
     #start {
       width: 160px;
       font-size: 30px;
-      margin-top: 75px;
+      margin-top: 150px;
       background-color: #007bff;
       color: white;
     }
@@ -44,29 +44,32 @@
     #record {
       background-color: #28a745;
       color: white;
+      display: none;
     }
 
     #stop {
       background-color: #dc3545;
       color: white;
+      display: none;
     }
 
     #download {
       background-color: #ff9800;
       color: white;
+      display: none;
     }
 
     .preview-container,
     .recorded-container {
-      width: 80%;
-      margin: 20px auto;
       display: none;
       flex-direction: column;
       align-items: center;
+      margin-top: 20px;
     }
 
     video {
-      width: 100%;
+      width: 60%;
+      max-width: 600px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       background: black;
@@ -87,29 +90,23 @@
   <div style="margin-top: 150px;">
     <h1>Screen Recorder</h1>
 
-    <button id="start">Start</button>
-
-    <div class="preview-container" id="previewContainer">
-      <div class="controls">
-        <button id="record">Record</button>
-        <button id="stop">Stop</button>
-      </div>
-
-      <div class="preview-container" id="previewContainer">
-        <video id="preview" autoplay muted></video>
-      </div>
-
-      <p id="timer">00:00</p>
-
+    <div class="controls">
+      <button id="start">Start</button>
+      <button id="record">Record</button>
+      <button id="stop">Stop</button>
     </div>
 
+    <p id="timer">00:00</p>
 
+    <div class="preview-container" id="previewContainer">
+      <video id="preview" autoplay muted></video>
+    </div>
 
     <div class="recorded-container" id="recordedContainer">
       <video id="video" controls></video>
-      <button id="download">Download</button>
     </div>
 
+    <button id="download">Download</button>
 
   </div>
 
@@ -136,6 +133,9 @@
         document.getElementById('preview').srcObject = stream;
         document.getElementById('previewContainer').style.display = 'flex';
 
+        document.getElementById('start').style.display = 'none';
+        document.getElementById('record').style.display = 'inline-block';
+
       } catch (error) {
         console.error('Error selecting screen:', error);
       }
@@ -161,6 +161,7 @@
         document.getElementById('recordedContainer').style.display = 'flex';
 
         document.getElementById('download').href = url;
+        document.getElementById('download').style.display = 'inline-block';
 
         stream.getTracks().forEach(track => track.stop());
         document.getElementById('preview').srcObject = null;
