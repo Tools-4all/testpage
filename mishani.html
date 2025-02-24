@@ -136,9 +136,6 @@
         document.getElementById('preview').srcObject = stream;
         document.getElementById('previewContainer').style.display = 'flex';
 
-        document.getElementById('start').style.display = 'none';
-        document.getElementById('record').style.display = 'inline-block';
-
       } catch (error) {
         console.error('Error selecting screen:', error);
       }
@@ -164,7 +161,6 @@
         document.getElementById('recordedContainer').style.display = 'flex';
 
         document.getElementById('download').href = url;
-        document.getElementById('download').style.display = 'inline-block';
 
         stream.getTracks().forEach(track => track.stop());
         document.getElementById('preview').srcObject = null;
