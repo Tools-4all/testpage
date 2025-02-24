@@ -23,7 +23,7 @@
     }
 
     button {
-      padding: 10px 20px;
+      padding: 10px 15px;
       font-size: 16px;
       border: none;
       cursor: pointer;
@@ -33,38 +33,49 @@
     }
 
     #start {
-      background-color: #28a745;
+      background-color: #007bff;
       color: white;
     }
 
-    #start:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
+    #record {
+      background-color: #28a745;
+      color: white;
+      display: none;
     }
 
     #stop {
       background-color: #dc3545;
       color: white;
+      display: none;
     }
 
-    #stop:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
+    #download {
+      background-color: #ff9800;
+      color: white;
+      display: none;
     }
 
     .preview-container {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
       margin-top: 20px;
     }
 
     video {
-      width: 45%;
+      width: 60%;
       max-width: 600px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       background: black;
+      margin-top: 10px;
+    }
+
+    #timer {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -74,11 +85,15 @@
   <h1>Screen Recorder</h1>
 
   <div class="controls">
-    <button id="start">Start Recording</button>
-    <button id="stop" disabled>Stop Recording</button>
+    <button id="start">Start</button>
+    <button id="record">Record</button>
+    <button id="stop">Stop</button>
+    <button id="download">Download</button>
   </div>
 
-  <div class="preview-container">
+  <p id="timer">00:00</p>
+
+  <div class="preview-container" id="previewContainer">
     <video id="preview" autoplay muted></video>
     <video id="video" controls></video>
   </div>
@@ -86,53 +101,82 @@
   <script>
     let mediaRecorder;
     let recordedChunks = [];
+    let stream;
+    let timerInterval;
+    let seconds = 0;
+
+    function updateTimer() {
+      seconds++;
+      let min = String(Math.floor(seconds / 60)).padStart(2, '0');
+      let sec = String(seconds % 60).padStart(2, '0');
+      document.getElementById('timer').textContent = `${min}:${sec}`;
+    }
 
     document.getElementById('start').addEventListener('click', async () => {
       try {
-        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+        stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
 
-        // Show live preview
         document.getElementById('preview').srcObject = stream;
+        document.getElementById('previewContainer').style.display = 'flex';
 
-        mediaRecorder = new MediaRecorder(stream);
-        recordedChunks = [];
+        document.getElementById('start').style.display = 'none';
+        document.getElementById('record').style.display = 'inline-block';
 
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          document.getElementById('video').src = url;
-
-          // Stop preview when recording ends
-          document.getElementById('preview').srcObject = null;
-
-          // Create download link
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'screen-recording.webm';
-          a.click();
-        };
-
-        mediaRecorder.start();
-        document.getElementById('start').disabled = true;
-        document.getElementById('stop').disabled = false;
       } catch (error) {
-        console.error('Recording error:', error);
+        console.error('Error selecting screen:', error);
       }
+    });
+
+    document.getElementById('record').addEventListener('click', () => {
+      mediaRecorder = new MediaRecorder(stream);
+      recordedChunks = [];
+
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        document.getElementById('video').src = url;
+        document.getElementById('video').style.display = 'block';
+
+        document.getElementById('download').href = url;
+        document.getElementById('download').style.display = 'inline-block';
+
+        stream.getTracks().forEach(track => track.stop());
+        document.getElementById('preview').srcObject = null;
+      };
+
+      mediaRecorder.start();
+      seconds = 0;
+      document.getElementById('timer').style.display = 'block';
+      timerInterval = setInterval(updateTimer, 1000);
+
+      document.getElementById('record').style.display = 'none';
+      document.getElementById('stop').style.display = 'inline-block';
     });
 
     document.getElementById('stop').addEventListener('click', () => {
       mediaRecorder.stop();
-      document.getElementById('start').disabled = false;
-      document.getElementById('stop').disabled = true;
+      clearInterval(timerInterval);
+      document.getElementById('timer').style.display = 'none';
+
+      document.getElementById('stop').style.display = 'none';
+      document.getElementById('download').style.display = 'inline-block';
     });
 
-    alert(5);
+    document.getElementById('download').addEventListener('click', () => {
+      const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'screen-recording.webm';
+      a.click();
+    });
+
   </script>
 
 </body>
