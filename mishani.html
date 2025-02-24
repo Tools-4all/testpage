@@ -16,6 +16,7 @@
 
     h1 {
       color: #333;
+      font-size: 50px;
     }
 
     .controls {
@@ -33,7 +34,9 @@
     }
 
     #start {
-      margin-top: 150px;
+      width: 160px;
+      font-size: 30px;
+      margin-top: 75px;
       background-color: #007bff;
       color: white;
     }
@@ -41,32 +44,29 @@
     #record {
       background-color: #28a745;
       color: white;
-      display: none;
     }
 
     #stop {
       background-color: #dc3545;
       color: white;
-      display: none;
     }
 
     #download {
       background-color: #ff9800;
       color: white;
-      display: none;
     }
 
     .preview-container,
     .recorded-container {
+      width: 80%;
+      margin: 20px auto;
       display: none;
       flex-direction: column;
       align-items: center;
-      margin-top: 20px;
     }
 
     video {
-      width: 60%;
-      max-width: 600px;
+      width: 100%;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
       background: black;
@@ -87,17 +87,23 @@
   <div style="margin-top: 150px;">
     <h1>Screen Recorder</h1>
 
-    <div class="controls">
-      <button id="start">Start</button>
-      <button id="record">Record</button>
-      <button id="stop">Stop</button>
-    </div>
-
-    <p id="timer">00:00</p>
+    <button id="start">Start</button>
 
     <div class="preview-container" id="previewContainer">
-      <video id="preview" autoplay muted></video>
+      <div class="controls">
+        <button id="record">Record</button>
+        <button id="stop">Stop</button>
+      </div>
+
+      <div class="preview-container" id="previewContainer">
+        <video id="preview" autoplay muted></video>
+      </div>
+
+      <p id="timer">00:00</p>
+
     </div>
+
+
 
     <div class="recorded-container" id="recordedContainer">
       <video id="video" controls></video>
