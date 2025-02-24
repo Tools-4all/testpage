@@ -55,7 +55,8 @@
       display: none;
     }
 
-    .preview-container {
+    .preview-container,
+    .recorded-container {
       display: none;
       flex-direction: column;
       align-items: center;
@@ -95,6 +96,9 @@
 
   <div class="preview-container" id="previewContainer">
     <video id="preview" autoplay muted></video>
+  </div>
+
+  <div class="recorded-container" id="recordedContainer">
     <video id="video" controls></video>
   </div>
 
@@ -141,7 +145,10 @@
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
         document.getElementById('video').src = url;
-        document.getElementById('video').style.display = 'block';
+
+        // Hide preview and show recorded video
+        document.getElementById('previewContainer').style.display = 'none';
+        document.getElementById('recordedContainer').style.display = 'flex';
 
         document.getElementById('download').href = url;
         document.getElementById('download').style.display = 'inline-block';
@@ -176,6 +183,7 @@
       a.download = 'screen-recording.webm';
       a.click();
     });
+    alert(6);
 
   </script>
 
