@@ -673,9 +673,9 @@ self.addEventListener("message", (event) => {
         }
         const customConsole = {
             log: (...args) => {
+                let objs = {}
+                let num = 0
                 args.forEach(arg => {
-                    let objs = {}
-                    let num = 1
                     if (["object", "function"].includes(typeof arg) && arg !== null) {
                         objs[num] = [renderObject(arg), true]
                     } else {
