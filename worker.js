@@ -683,7 +683,7 @@ self.addEventListener("message", (event) => {
                     } 
                     num++
                 });
-                self.postMessage({ type: "log", message: indentMessage(serializedArgs) });
+                self.postMessage({ type: "log", message: indentMessage(objs)});
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
