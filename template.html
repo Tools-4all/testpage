@@ -1572,7 +1572,7 @@ prompt("This is a prompt:");
       line.style.marginLeft = groupLevel ? "20px" : "4px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
-      line.innerHTML = `[${symbolsMap[type]}] ${message}`;
+      line.textContent = `[${symbolsMap[type]}] ${message}`;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }

@@ -673,7 +673,16 @@ self.addEventListener("message", (event) => {
         }
         const customConsole = {
             log: (...args) => {
-                const serializedArgs = args.map(arg => renderObject(arg)).join(" ");
+                args.forEach(arg => {
+                    let objs = {}
+                    let num = 1
+                    if (["object", "function"].includes(typeof arg) && arg !== null) {
+                        objs[num] = [renderObject(arg), true]
+                    } else {
+                        objs[num] = [objectToString(arg), false]
+                    } 
+                    num++
+                });
                 self.postMessage({ type: "log", message: indentMessage(serializedArgs) });
             },
             error: (...args) => {
