@@ -806,6 +806,30 @@
       padding-left: 4px;
     }
 
+    .objinsp-summary {
+      cursor: pointer;
+    }
+
+    .objinsp-highlight-key {
+      color: #9cdcfe;
+    }
+
+    .objinsp-highlight-string {
+      color: #ce9178;
+    }
+
+    .objinsp-highlight-number {
+      color: #b5cea8;
+    }
+
+    .objinsp-highlight-primitive {
+      color: #ce9178;
+    }
+
+    .objinsp-highlight-type {
+      color: #4ec9b0;
+    }
+
     @media (max-width: 768px) {
 
       #lightMode {
@@ -1491,7 +1515,7 @@ prompt("This is a prompt:");
           appendToOutput(tab.outputElement, "error", err.message);
           if (flexSwitchCheckDefault.checked) {
             appendToOutput(tab.outputElement, "log",
-            "The script has finished running with exit code 1.", true);
+              "The script has finished running with exit code 1.", true);
           }
         };
         let code = tab.editorInstance.getValue();
