@@ -1575,6 +1575,7 @@ prompt("This is a prompt:");
       if (typeof message === "object") {
         let first = true;
         let actualMsg;
+        console.log("message", message);
         for (let key in message) {
           if (message[key][1]){
             line.innerHTML += `[${symbolsMap[type]}] ${message[key][0]}\n`;
