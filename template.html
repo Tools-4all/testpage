@@ -1565,27 +1565,32 @@ prompt("This is a prompt:");
       }
       let line = document.createElement("div");
       line.classList.add("outputContent");
-      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      let groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       if (forceUse) {
         groupLevel = 0;
       }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
+
       if (typeof message === "object") {
-        let first = true;
-        let actualMsg;
-        console.log("message", message);
+        // message is an object that we constructed (e.g. {0: [htmlString, true], 1: [text, false]})
+        let finalHTML = "";
         for (let key in message) {
-          if (message[key][1]){
-            line.innerHTML += `[${symbolsMap[type]}] ${message[key][0]}\n`;
-          } else {
-            line.textContent += `[${symbolsMap[type]}] ${message[key][0]}\n`;
+          let content = message[key][0];
+          // If it isn’t pre-rendered HTML, escape it:
+          if (!message[key][1]) {
+            content = escapeHtml(content);
           }
-        };
+          // Use <br> for line breaks rather than \n
+          finalHTML += `[${symbolsMap[type]}] ${content}<br>`;
+        }
+        line.innerHTML = finalHTML;
       } else {
-        line.textContent = `[${symbolsMap[type]}] ${message}`;
+        // Otherwise, assume message is already an HTML string
+        line.innerHTML = `[${symbolsMap[type]}] ${message}`;
       }
+
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
