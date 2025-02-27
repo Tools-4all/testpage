@@ -49,6 +49,121 @@ const wrapperPrefixLines = [
 console.log("loaded ferre")
 
 
+function createNodeString(key, value, visited, depth = 0, isPrototype = false) {
+    const indentStyle = '10px';
+    let html = '<div class="objinsp-node" style="margin-left: ' + indentStyle + ';">';
+
+    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+        if (key !== null && key !== undefined) {
+            html += '<span class="objinsp-highlight-key">' + key + ': </span>';
+        }
+        if (typeof value === 'string') {
+            html += '<span class="objinsp-highlight-string">"' + value + '"</span>';
+        } else if (typeof value === 'number') {
+            html += '<span class="objinsp-highlight-number">' + value + '</span>';
+        } else {
+            html += '<span class="objinsp-highlight-primitive">' + String(value) + '</span>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    if (visited.has(value)) {
+        if (key !== null && key !== undefined) {
+            html += '<span class="objinsp-highlight-key">' + key + ': </span>';
+        }
+        html += '[Circular]</div>';
+        return html;
+    }
+
+    visited.add(value);
+
+    html += '<details>';
+    html += '<summary class="objinsp-summary">';
+    if (key !== null && key !== undefined) {
+        html += '<span class="objinsp-highlight-key">' + key + ': </span>';
+    }
+    let headerText;
+    if (typeof value === 'function') {
+        headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
+    } else if (Array.isArray(value)) {
+        headerText = '[]';
+    } else {
+        const objectToString = Object.prototype.toString.call(value);
+        const match = objectToString.match(/^\[object (.+)\]$/);
+        if (match && match[1] !== 'Object') {
+            headerText = match[1];
+        } else if (match[1] === 'Object' && !isPrototype) {
+            headerText = "{}";
+        } else {
+            headerText = 'Object';
+        }
+    }
+    html += '<span class="objinsp-highlight-type">' + headerText + '</span>';
+    html += '</summary>';
+
+    let props = [];
+    try {
+        props = Object.getOwnPropertyNames(value).sort();
+
+    } catch (e) { }
+    props.forEach(function (prop) {
+        try {
+            html += createNodeString(prop, value[prop], visited, depth + 1);
+        } catch (e) {
+            html += '<div class="objinsp-highlight-key" style="margin-left: 10px;">' +
+                prop + ': <span style="color: white">(...)</span></div>';
+        }
+    });
+
+    let symbols = [];
+    try {
+        symbols = Object.getOwnPropertySymbols(value).sort(function (a, b) {
+            return a.toString().localeCompare(b.toString());
+        });
+    } catch (e) { }
+    symbols.forEach(function (sym) {
+        try {
+            html += createNodeString(sym.toString(), value[sym], visited, depth + 1);
+        } catch (e) {
+            html += '<div>' + sym.toString() + ': [Error retrieving property]</div>';
+        }
+    });
+
+    if (typeof value === 'object' && value !== null) {
+        const protoDesc = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
+        if (protoDesc) {
+            if (typeof protoDesc.get === 'function') {
+                html += createNodeString('get __proto__', protoDesc.get, visited, depth + 1);
+            }
+            if (typeof protoDesc.set === 'function') {
+                html += createNodeString('set __proto__', protoDesc.set, visited, depth + 1);
+            }
+        }
+    }
+
+    try {
+        const proto = Object.getPrototypeOf(value);
+        if (proto) {
+            html += createNodeString('[[Prototype]]', proto, visited, depth + 1, true);
+        }
+    } catch (e) {
+        html += '<div class="objinsp-highlight-key" style="margin-left: 10px;">[[Prototype]]: ' +
+            '<span style="color: white">(...)</span></div>';
+    }
+
+    html += '</details>';
+    html += '</div>';
+
+    visited.delete(value);
+    return html;
+}
+
+function renderObject(obj) {
+    const visited = new Set();
+    return createNodeString(null, obj, visited);
+}
+
 const wrapperSuffix = `})();`;
 
 const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
@@ -155,93 +270,93 @@ function relativeStack(error) {
 function inspect(obj, indent = '', visited = new WeakSet(), showHeader = true) {
     if (obj === null) return 'null';
     if (typeof obj !== 'object' && typeof obj !== 'function') return String(obj);
-  
+
     if (visited.has(obj)) return '[Circular]';
     visited.add(obj);
-  
+
     const lines = [];
-    
+
     if (showHeader) {
-      let header;
-      if (Array.isArray(obj)) {
-        if (obj === Array.prototype) {
-          header = `Array(${obj.length})`;
+        let header;
+        if (Array.isArray(obj)) {
+            if (obj === Array.prototype) {
+                header = `Array(${obj.length})`;
+            } else {
+                header = '[]';
+            }
+        } else if (typeof obj === 'function') {
+            header = 'ƒ ' + (obj.name || 'anonymous') + '()';
+        } else if (obj.constructor === Object) {
+            header = 'Object';
         } else {
-          header = '[]';
+            header = '{}';
         }
-      } else if (typeof obj === 'function') {
-        header = 'ƒ ' + (obj.name || 'anonymous') + '()';
-      } else if (obj.constructor === Object) {
-        header = 'Object';
-      } else {
-        header = '{}';
-      }
-      lines.push(indent + header);
+        lines.push(indent + header);
     }
-    
+
     const props = Object.getOwnPropertyNames(obj).sort();
     for (let prop of props) {
-      let value;
-      try {
-        value = obj[prop];
-      } catch (e) {
-        value = '[Error retrieving property]';
-      }
-  
-      let valueStr;
-      if (typeof value === 'function') {
-        valueStr = 'ƒ ' + (value.name || prop) + '()';
-      } else if (typeof value === 'object' && value !== null) {
-        if (value.constructor === Object) {
-          valueStr = "\n" + inspect(value, indent + '  ', visited, false);
+        let value;
+        try {
+            value = obj[prop];
+        } catch (e) {
+            value = '[Error retrieving property]';
+        }
+
+        let valueStr;
+        if (typeof value === 'function') {
+            valueStr = 'ƒ ' + (value.name || prop) + '()';
+        } else if (typeof value === 'object' && value !== null) {
+            if (value.constructor === Object) {
+                valueStr = "\n" + inspect(value, indent + '  ', visited, false);
+            } else {
+                valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+            }
+            if (valueStr === '\n[Circular]') {
+                valueStr = '[Circular]';
+            }
         } else {
-          valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+            valueStr = String(value);
         }
-        if (valueStr === '\n[Circular]') {
-          valueStr = '[Circular]';
-        }
-      } else {
-        valueStr = String(value);
-      }
-      lines.push(indent + prop + ': ' + valueStr);
+        lines.push(indent + prop + ': ' + valueStr);
     }
-    
+
     const symbols = Object.getOwnPropertySymbols(obj)
-      .sort((a, b) => a.toString().localeCompare(b.toString()));
+        .sort((a, b) => a.toString().localeCompare(b.toString()));
     for (let sym of symbols) {
-      let value;
-      try {
-        value = obj[sym];
-      } catch (e) {
-        value = '[Error retrieving property]';
-      }
-      let valueStr;
-      if (typeof value === 'function') {
-        valueStr = 'ƒ ' + (value.name || sym.toString()) + '()';
-      } else if (typeof value === 'object' && value !== null) {
-        if (value.constructor === Object) {
-          valueStr = "\n" + inspect(value, indent + '  ', visited, false);
-        } else {
-          valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+        let value;
+        try {
+            value = obj[sym];
+        } catch (e) {
+            value = '[Error retrieving property]';
         }
-      } else {
-        valueStr = String(value);
-      }
-      lines.push(indent + sym.toString() + ': ' + valueStr);
+        let valueStr;
+        if (typeof value === 'function') {
+            valueStr = 'ƒ ' + (value.name || sym.toString()) + '()';
+        } else if (typeof value === 'object' && value !== null) {
+            if (value.constructor === Object) {
+                valueStr = "\n" + inspect(value, indent + '  ', visited, false);
+            } else {
+                valueStr = "\n" + inspect(value, indent + '  ', visited, true);
+            }
+        } else {
+            valueStr = String(value);
+        }
+        lines.push(indent + sym.toString() + ': ' + valueStr);
     }
-    
+
     const proto = Object.getPrototypeOf(obj);
     if (proto) {
-      const protoStr = inspect(proto, indent + '  ', visited, true).split('\n');
-      const protoHeader = protoStr.shift().trim(); // first line is the header
-      lines.push(indent + '[[Prototype]]: ' + protoHeader);
-      if (protoStr.length > 0) {
-        lines.push(...protoStr);
-      }
+        const protoStr = inspect(proto, indent + '  ', visited, true).split('\n');
+        const protoHeader = protoStr.shift().trim(); // first line is the header
+        lines.push(indent + '[[Prototype]]: ' + protoHeader);
+        if (protoStr.length > 0) {
+            lines.push(...protoStr);
+        }
     }
-    
+
     return lines.join('\n');
-  }
+}
 
 
 function cloneForConsoleTable(value, seen = new WeakMap(), path = "") {
@@ -558,8 +673,17 @@ self.addEventListener("message", (event) => {
         }
         const customConsole = {
             log: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "log", message: indentMessage(serializedArgs) });
+                let objs = {}
+                let num = 0
+                args.forEach(arg => {
+                    if (["object", "function"].includes(typeof arg) && arg !== null) {
+                        objs[num] = [renderObject(arg), true]
+                    } else {
+                        objs[num] = [objectToString(arg), false]
+                    } 
+                    num++
+                });
+                self.postMessage({ type: "log", message: indentMessage(objs)});
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");

@@ -1572,7 +1572,19 @@ prompt("This is a prompt:");
       line.style.marginLeft = groupLevel ? "20px" : "4px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
-      line.textContent = `[${symbolsMap[type]}] ${message}`;
+      if (typeof message === "object") {
+        let first = true;
+        let actualMsg;
+        message.forEach((msg) => {
+          if (msg[1]){
+            line.innerHTML = `[${symbolsMap[type]}] ${msg[0]}`;
+          } else {
+            line.innerText = `[${symbolsMap[type]}] ${msg[0]}`;
+          }
+        });
+      } else {
+        line.textContent = `[${symbolsMap[type]}] ${message}`;
+      }
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
