@@ -1575,13 +1575,13 @@ prompt("This is a prompt:");
       if (typeof message === "object") {
         let first = true;
         let actualMsg;
-        message.forEach((msg) => {
-          if (msg[1]){
-            line.innerHTML += `[${symbolsMap[type]}] ${msg[0]}\n`;
+        for (let key in message) {
+          if (message[key][1]){
+            line.innerHTML += `[${symbolsMap[type]}] ${message[key][0]}\n`;
           } else {
-            line.textContent += `[${symbolsMap[type]}] ${msg[0]}\n`;
+            line.textContent += `[${symbolsMap[type]}] ${message[key][0]}\n`;
           }
-        });
+        };
       } else {
         line.textContent = `[${symbolsMap[type]}] ${message}`;
       }
