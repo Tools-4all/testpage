@@ -1573,7 +1573,7 @@ prompt("This is a prompt:");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
       if (typeof message === "object") {
-        let actualMsg = [];
+        let actualMsg = [`[${symbolsMap[type]}]`];
         for (let key in message) {
           if (message[key][1]) {
             actualMsg.push(`${message[key][0]}`);
@@ -1581,7 +1581,7 @@ prompt("This is a prompt:");
             actualMsg.push(`${escapeHtml(message[key][0])}`);
           }
         };
-        line.innerHTML = " ".join(actualMsg);
+        line.innerHTML = actualMsg.join(" ");
         
       } else {
         line.textContent = `[${symbolsMap[type]}] ${message}`;
