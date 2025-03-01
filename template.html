@@ -1614,12 +1614,69 @@ prompt("This is a prompt:");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       div.style.marginLeft = groupLevel ? "20px" : "4px";
       div.style.paddingLeft = "4ch";
-      // ... (build table as before)
-      // Append table into div, then into container:
+      const table = document.createElement("table");
+      table.classList.add("console-table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.classList.add("console-table-row");
+      columns.forEach(col => {
+        const th = document.createElement("th");
+        th.classList.add("console-table-header");
+        th.textContent = col;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      rows.forEach(rowObj => {
+        const tr = document.createElement("tr");
+        tr.classList.add("console-table-row");
+        columns.forEach(col => {
+          const td = document.createElement("td");
+          td.classList.add("console-table-data");
+          let value = rowObj[col];
+          if (typeof value === "object" && value !== null) {
+            if (Array.isArray(value)) {
+              td.textContent = `[Array(${value.length})]`;
+            } else if (value === "[Circular]") {
+              td.textContent = "{…}";
+            } else {
+              const expandable = document.createElement("span");
+              expandable.classList.add("expandable");
+              expandable.textContent = "{…}";
+              expandable.style.cursor = "pointer";
+              expandable.addEventListener("click", () => {
+                if (expandable.classList.contains("expanded")) {
+                  expandable.classList.remove("expanded");
+                  if (td.querySelector(".expandable-details")) {
+                    td.querySelector(".expandable-details").remove();
+                  }
+                } else {
+                  expandable.classList.add("expanded");
+                  const details = document.createElement("div");
+                  details.classList.add("expandable-details");
+                  details.style.marginTop = "4px";
+                  details.style.marginLeft = "20px";
+                  details.innerHTML = objectToHTML(value, 1);
+                  td.appendChild(details);
+                }
+              });
+              td.appendChild(expandable);
+            }
+          } else if (typeof value === "function") {
+            td.textContent = value;
+          } else {
+            td.textContent = (value === "undefined") ? "undefined" : String(value);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
       div.appendChild(table);
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+    
 
 
 
