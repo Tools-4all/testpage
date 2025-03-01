@@ -1559,36 +1559,51 @@ prompt("This is a prompt:");
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
-      let container = outputDiv;
-      if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
-        container = currentTab.groupStack[currentTab.groupStack.length - 1];
-      }
+      // 1. If you have a grouping stack, pick the right container:
+      let container = (currentTab.groupStack && currentTab.groupStack.length)
+        ? currentTab.groupStack[currentTab.groupStack.length - 1]
+        : outputDiv;
+
+      // 2. Create one "log line" div
       let line = document.createElement("div");
       line.classList.add("outputContent");
-      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      if (forceUse) {
-        groupLevel = 0;
-      }
-      line.style.marginLeft = groupLevel ? "20px" : "4px";
-      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
-      line.classList.add(styleClass);
-      if (typeof message === "object") {
-        let actualMsg = [`[${symbolsMap[type]}]`];
-        for (let key in message) {
-          if (message[key][1]) {
-            actualMsg.push(`${message[key][0]}`);
+      line.style.marginLeft = "4px";
+      // add dark/light class if you want: line.classList.add("dark-log") or similar
+
+      // 3. If message is that object-of-arguments, loop them in order
+      if (typeof message === "object" && message !== null) {
+        let argKeys = Object.keys(message).sort((a, b) => a - b);
+
+        argKeys.forEach(key => {
+          let [val, isHtml] = message[key];
+
+          // We'll put each argument in a <span>, or maybe a <details> if it's complex
+          let span = document.createElement("span");
+
+          if (isHtml) {
+            // If it's the "HTML for an object", we can do:
+            span.innerHTML = val;
+            // or if you want <details> expansion, parse it differently
           } else {
-            actualMsg.push(`${escapeHtml(message[key][0])}`);
+            span.textContent = val;
           }
-        };
-        line.innerHTML = actualMsg.join(" ");
-        
-      } else {
-        line.textContent = `[${symbolsMap[type]}] ${message}`;
+
+          // Add some spacing between arguments
+          span.style.marginRight = "6px";
+
+          line.appendChild(span);
+        });
       }
+      else {
+        // If it's not an object, fallback:
+        line.textContent = `[>] ${message}`;
+      }
+
+      // 4. Append that single line
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
+
 
 
     function appendTable(outputElement, rows, columns) {
