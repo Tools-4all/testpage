@@ -1585,7 +1585,7 @@ prompt("This is a prompt:");
           }
         };
         line.innerHTML = actualMsg.join(" ");
-        
+
       } else {
         line.textContent = `[${symbolsMap[type]}] ${message}`;
       }
@@ -1595,25 +1595,22 @@ prompt("This is a prompt:");
 
 
     function appendTable(outputElement, rows, columns) {
-      let container = outputElement;
-      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-        container = currentTab.groupStack[currentTab.groupStack.length - 1];
-      }
+      if (!outputElement) return;
       if (!Array.isArray(rows) || !Array.isArray(columns)) {
-        appendToOutput(container, "error", "Invalid table data received.");
+        appendToOutput(outputElement, "error", "Invalid table data received.");
         return;
       }
       if (columns.length === 0 || rows.length === 0) {
-        const fallbackMessage = (rows.length === 0) ? "Empty Table" : "No data to display.";
-        appendToOutput(container, "log", fallbackMessage);
+        const fallbackMessage = (rows.length === 0)
+          ? "Empty Table" : "No data to display.";
+        appendToOutput(outputElement, "log", fallbackMessage);
         return;
       }
       const div = document.createElement("div");
       div.classList.add("outputContent");
-      // Indent the table container
-      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      div.style.marginLeft = groupLevel ? "20px" : "4px";
+
       div.style.paddingLeft = "4ch";
+
       const table = document.createElement("table");
       table.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1672,11 +1669,12 @@ prompt("This is a prompt:");
         });
         tbody.appendChild(tr);
       });
+      table.appendChild(tbody);
       div.appendChild(table);
-      container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+      outputElement.appendChild(div);
+      outputElement.scrollTop = outputElement.scrollHeight;
     }
-    
+
 
 
 
