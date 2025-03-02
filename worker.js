@@ -236,10 +236,10 @@ function relativeStack(error) {
             const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
             const finalLine = adj > 0 ? adj : ln;
             if (fn === 'eval' || fn === '<anonymous>') {
-                result.push(`    at userCode (js:${finalLine})`);
+                result.push(`   at userCode (js:${finalLine})`);
                 break;
             } else {
-                result.push(`    at ${fn} (js:${finalLine})`);
+                result.push(`   at ${fn} (js:${finalLine})`);
             }
             continue;
         }
@@ -248,7 +248,7 @@ function relativeStack(error) {
             const ln = parseInt(matchNoFn[2], 10);
             const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
             const finalLine = adj > 0 ? adj : ln;
-            result.push(`    at userCode (js:${finalLine})`);
+            result.push(`   at userCode (js:${finalLine})`);
             break;
         }
     }
@@ -259,7 +259,7 @@ function relativeStack(error) {
     if (!/userCode \(js:\d+\)/.test(last)) {
         const lnMatch = last.match(/js:(\d+)/);
         const ln = lnMatch ? lnMatch[1] : '?';
-        result.push(`    at userCode (js:${ln})`);
+        result.push(`   at userCode (js:${ln})`);
     }
 
     return result.join('\n');
@@ -502,7 +502,6 @@ function buildChromeTableModel(input) {
             };
         }
 
-        // Plain Object: Treat as key-value pairs with (index) and Value
         const columns = ["(index)", "Value"];
         const rows = Object.keys(input).map(key => ({
             "(index)": key,
