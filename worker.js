@@ -217,7 +217,7 @@ function getStack() {
     }
 
     return deduped
-        .map(f => `    at ${f.fn} (js:${f.line})`)
+        .map(f => `at ${f.fn} (js:${f.line})`)
         .join('\n');
 }
 
