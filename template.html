@@ -1537,7 +1537,7 @@ prompt("This is a prompt:");
           }
 
           else if (type === "prompt") {
-            await handlePrompt(msg, e.default, tab);
+            await handlePrompt(msg, e.data.default, tab);
           }
           else if (type === "alert") {
             await handleAlert(msg, tab);
@@ -2194,7 +2194,7 @@ prompt("This is a prompt:");
       });
     }
 
-    alert(2);
+    alert(3);
   </script>
 </body>
 
