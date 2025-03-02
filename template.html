@@ -1400,6 +1400,7 @@ prompt("This is a prompt:");
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
+        inp.style.marginLeft = "10px";
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
