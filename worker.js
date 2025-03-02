@@ -652,8 +652,8 @@ self.addEventListener("message", (event) => {
         };
 
         const customPrompt = (message="", defaultValue=null) => {
-            const promptInstance = new myPrompt(msg);
-            promptInstance.prompt(msg, defaultValue, sharedBuffer);
+            const promptInstance = new myPrompt(message);
+            promptInstance.prompt(message, defaultValue, sharedBuffer);
             return promptInstance.getResponse();
         };
 
