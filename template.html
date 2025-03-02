@@ -1413,13 +1413,15 @@ prompt("This is a prompt:");
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
-            messageDiv.textContent = `${message} ${val}`;
-            inp.remove();
+            // messageDiv.textContent = `${message} ${val}`;
+            // inp.remove();
+            inp.disabled = true;
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
               pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
               newContainer.appendChild(pl);
             }
+            inp.style.height = pl.clientHeight + "px";
             let te = new TextEncoder();
             let encoded = te.encode(val + "\0");
             let respBuffer = new Uint8Array(tab.sharedBuffer, 4);
