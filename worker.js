@@ -667,6 +667,7 @@ function getObjectOrString(...args) {
         }
         num++
     });
+    return objs
 }
 
 
