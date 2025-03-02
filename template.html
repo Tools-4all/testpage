@@ -1377,22 +1377,39 @@ prompt("This is a prompt:");
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         pl.style.marginLeft = "4px";
-        let pm = document.createElement("span");
-        pm.textContent = `[?] ${message}`;
-        pm.classList.add(darkModeFlag ? "dark-prompt" : "light-prompt");
+
+        // Create flex container for symbol and message
+        let flexContainer = document.createElement("div");
+        flexContainer.style.display = "flex";
+        flexContainer.style.alignItems = "flex-start";
+
+        let symbolDiv = document.createElement("div");
+        symbolDiv.textContent = `[?]`;
+        symbolDiv.style.marginRight = "5px";
+        symbolDiv.style.flexShrink = "0";
+
+        let messageDiv = document.createElement("div");
+        messageDiv.textContent = message;
+        messageDiv.style.whiteSpace = "pre-wrap";
+
+        flexContainer.appendChild(symbolDiv);
+        flexContainer.appendChild(messageDiv);
+        pl.appendChild(flexContainer);
+
+        // Create the input field for the prompt response
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
-            pm.textContent = `[?] ${message} ${val}`;
+            // Update the message to include the user response if desired
+            messageDiv.textContent = `${message} ${val}`;
             inp.remove();
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+              pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
               newContainer.appendChild(pl);
-              const groupLevel = currentTab.groupStack.length;
-              pl.style.marginLeft = (groupLevel * 20) + "px";
             }
             let te = new TextEncoder();
             let encoded = te.encode(val + "\0");
@@ -1404,7 +1421,6 @@ prompt("This is a prompt:");
             resolve();
           }
         });
-        pl.appendChild(pm);
         pl.appendChild(inp);
         container.appendChild(pl);
         inp.focus();
@@ -1417,15 +1433,34 @@ prompt("This is a prompt:");
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         alertLine.style.marginLeft = "4px";
-        const alertSpan = document.createElement("span");
-        alertSpan.textContent = `[!] ${message}`;
-        alertSpan.classList.add(darkModeFlag ? "dark-info" : "light-info");
-        alertLine.appendChild(alertSpan);
+
+        // Create flex container for symbol and message
+        let flexContainer = document.createElement("div");
+        flexContainer.style.display = "flex";
+        flexContainer.style.alignItems = "flex-start";
+
+        // The alert symbol; you can hardcode “[!]” or use a symbol map if you add one for alerts.
+        let symbolDiv = document.createElement("div");
+        symbolDiv.textContent = `[!]`;
+        symbolDiv.style.marginRight = "5px";
+        symbolDiv.style.flexShrink = "0";
+
+        // Create the message element
+        let messageDiv = document.createElement("div");
+        messageDiv.textContent = message;
+        messageDiv.style.whiteSpace = "pre-wrap";
+
+        flexContainer.appendChild(symbolDiv);
+        flexContainer.appendChild(messageDiv);
+        alertLine.appendChild(flexContainer);
+
+        // Add the OK button as before
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
         okBtn.style.marginLeft = "10px";
         okBtn.textContent = "OK";
         alertLine.appendChild(okBtn);
+
         container.appendChild(alertLine);
         okBtn.focus();
         okBtn.addEventListener("click", () => {
@@ -1433,16 +1468,17 @@ prompt("This is a prompt:");
           Atomics.notify(tab.view, 0);
           if (currentTab.groupStack && currentTab.groupStack.length > 0) {
             let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+            alertLine.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
             newContainer.appendChild(alertLine);
-            const groupLevel = currentTab.groupStack.length;
-            alertLine.style.marginLeft = (groupLevel * 20) + "px";
           }
+          // Optionally, if you want to also log the alert message using appendToOutput:
           appendToOutput(container, "info", message);
           alertLine.remove();
           resolve();
         });
       });
     }
+
 
 
 
@@ -1575,20 +1611,91 @@ prompt("This is a prompt:");
       line.style.marginLeft = groupLevel ? "20px" : "4px";
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
+
+      // Create a flex container to hold the symbol and message separately
+      let flexContainer = document.createElement("div");
+      flexContainer.style.display = "flex";
+      flexContainer.style.alignItems = "flex-start";
+
+      // Create the symbol element (fixed-width so message lines align)
+      let symbolDiv = document.createElement("div");
+      symbolDiv.textContent = `[${symbolsMap[type]}]`;
+      symbolDiv.style.marginRight = "5px";
+      symbolDiv.style.flexShrink = "0";
+
+      // Create the message element
+      let messageDiv = document.createElement("div");
+      messageDiv.style.whiteSpace = "pre-wrap"; // preserves newlines
       if (typeof message === "object") {
-        let actualMsg = [`[${symbolsMap[type]}]`];
+        let actualMsg = "";
         for (let key in message) {
           if (message[key][1]) {
-            actualMsg.push(`${message[key][0]}`);
+            actualMsg += message[key][0] + " ";
           } else {
-            actualMsg.push(`${escapeHtml(message[key][0])}`);
+            actualMsg += escapeHtml(message[key][0]) + " ";
           }
-        };
-        line.innerHTML = actualMsg.join(" ");
-        
+        }
+        messageDiv.innerHTML = actualMsg.trim();
       } else {
-        line.textContent = `[${symbolsMap[type]}] ${message}`;
+        messageDiv.textContent = message;
       }
+
+      // Append both symbol and message to the flex container
+      flexContainer.appendChild(symbolDiv);
+      flexContainer.appendChild(messageDiv);
+      line.appendChild(flexContainer);
+
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+    function appendToOutput(outputDiv, type, message, forceUse = false) {
+      let container = outputDiv;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
+      let line = document.createElement("div");
+      line.classList.add("outputContent");
+      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      if (forceUse) {
+        groupLevel = 0;
+      }
+      line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
+      line.classList.add(styleClass);
+
+      // Create a flex container to hold the symbol and message separately
+      let flexContainer = document.createElement("div");
+      flexContainer.style.display = "flex";
+      flexContainer.style.alignItems = "flex-start";
+
+      // Create the symbol element (fixed-width so message lines align)
+      let symbolDiv = document.createElement("div");
+      symbolDiv.textContent = `[${symbolsMap[type]}]`;
+      symbolDiv.style.marginRight = "5px";
+      symbolDiv.style.flexShrink = "0";
+
+      // Create the message element
+      let messageDiv = document.createElement("div");
+      messageDiv.style.whiteSpace = "pre-wrap"; // preserves newlines
+      if (typeof message === "object") {
+        let actualMsg = "";
+        for (let key in message) {
+          if (message[key][1]) {
+            actualMsg += message[key][0] + " ";
+          } else {
+            actualMsg += escapeHtml(message[key][0]) + " ";
+          }
+        }
+        messageDiv.innerHTML = actualMsg.trim();
+      } else {
+        messageDiv.textContent = message;
+      }
+
+      // Append both symbol and message to the flex container
+      flexContainer.appendChild(symbolDiv);
+      flexContainer.appendChild(messageDiv);
+      line.appendChild(flexContainer);
+
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
@@ -1677,7 +1784,7 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
-    
+
 
 
 
@@ -2079,7 +2186,7 @@ prompt("This is a prompt:");
       });
     }
 
-    alert(3);
+    alert(4);
   </script>
 </body>
 
