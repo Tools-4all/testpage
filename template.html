@@ -1400,7 +1400,6 @@ prompt("This is a prompt:");
         flexContainer.appendChild(messageDiv);
         pl.appendChild(flexContainer);
 
-        // Create the input field for the prompt response
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
@@ -1411,7 +1410,6 @@ prompt("This is a prompt:");
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
-            // Update the message to include the user response if desired
             messageDiv.textContent = `${message} ${val}`;
             inp.remove();
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
@@ -1430,6 +1428,7 @@ prompt("This is a prompt:");
           }
         });
         pl.appendChild(inp);
+        inp.style.height = pl.clientHeight + "px";
         container.appendChild(pl);
         inp.focus();
       });
@@ -1442,18 +1441,15 @@ prompt("This is a prompt:");
         alertLine.classList.add("prompt-line", "outputContent");
         alertLine.style.marginLeft = "4px";
 
-        // Create flex container for symbol and message
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
 
-        // The alert symbol; you can hardcode “[!]” or use a symbol map if you add one for alerts.
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[!]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
 
-        // Create the message element
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
@@ -1462,7 +1458,6 @@ prompt("This is a prompt:");
         flexContainer.appendChild(messageDiv);
         alertLine.appendChild(flexContainer);
 
-        // Add the OK button as before
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
         okBtn.style.marginLeft = "10px";
@@ -1479,7 +1474,6 @@ prompt("This is a prompt:");
             alertLine.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
             newContainer.appendChild(alertLine);
           }
-          // Optionally, if you want to also log the alert message using appendToOutput:
           appendToOutput(container, "info", message);
           alertLine.remove();
           resolve();
