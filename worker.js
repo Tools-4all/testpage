@@ -656,6 +656,19 @@ function objectToString(obj) {
     return `{${keyValuePairs.join(", ")}}`;
 }
 
+function getObjectOrString(...args) {
+    let objs = {}
+    let num = 0
+    args.forEach(arg => {
+        if (["object", "function"].includes(typeof arg) && arg !== null) {
+            objs[num] = [renderObject(arg), true]
+        } else {
+            objs[num] = [objectToString(arg), false]
+        }
+        num++
+    });
+}
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
@@ -672,17 +685,8 @@ self.addEventListener("message", (event) => {
         }
         const customConsole = {
             log: (...args) => {
-                let objs = {}
-                let num = 0
-                args.forEach(arg => {
-                    if (["object", "function"].includes(typeof arg) && arg !== null) {
-                        objs[num] = [renderObject(arg), true]
-                    } else {
-                        objs[num] = [objectToString(arg), false]
-                    } 
-                    num++
-                });
-                self.postMessage({ type: "log", message: indentMessage(objs)});
+                const objs = getObjectOrString(...args);
+                self.postMessage({ type: "log", message: indentMessage(objs) });
             },
             error: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
