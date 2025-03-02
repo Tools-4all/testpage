@@ -32,7 +32,6 @@ const wrapperPrefixLines = [
     'var myPromptInstance = undefined;',
     'var executeCode = undefined;',
     'var userFunc = undefined;',
-    'var myDir = undefined;',
     'var getStack = undefined;',
     'var relativeStack = undefined;',
     'var objectToString = undefined;',
@@ -40,7 +39,6 @@ const wrapperPrefixLines = [
     'var wrapperSuffix = undefined;',
     'var WRAPPER_LINE_COUNT = undefined;',
     'var WRAPPER_LINE_COUNT_FOR_ERR = undefined;',
-    'var indentMessage = undefined;',
     'var createWrappedCode = undefined;',
     'var code = undefined;',
     '//# sourceURL=1919191.js',
@@ -451,91 +449,6 @@ class myPrompt {
 }
 
 
-function objectToHTML(obj, level = 0) {
-    function escapeHtml(str) {
-        return String(str)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
-    }
-
-    if (obj === null) {
-        return `<span style="opacity:0.7;">null</span>`;
-    }
-    if (typeof obj !== "object") {
-        return `<span>${escapeHtml(obj)}</span>`;
-    }
-
-    if (Array.isArray(obj)) {
-        let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
-        html += `<summary>Array(${obj.length})</summary>`;
-        obj.forEach((value, i) => {
-            if (typeof value !== "object" || value === null) {
-                html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: <span>${escapeHtml(value)}</span></div>`;
-            } else {
-                html += `<div style="margin-left:${(level + 1) * 20}px;">${i}: ${objectToHTML(value, level + 1)}</div>`;
-            }
-        });
-        html += `</details>`;
-        return html;
-    }
-
-    const keys = Object.keys(obj);
-    let html = `<details open style="margin-left:${level * 20}px; line-height:1.2;">`;
-    html += `<summary>Object {${keys.length} keys}</summary>`;
-    keys.forEach(key => {
-        let value = obj[key];
-        if (typeof value === "object" && value !== null) {
-            html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: ${objectToHTML(value, level + 1)}</div>`;
-        } else {
-            html += `<div style="margin-left:${(level + 1) * 20}px;"><strong>${escapeHtml(key)}</strong>: <span>${escapeHtml(value)}</span></div>`;
-        }
-    });
-    html += `</details>`;
-    return html;
-}
-
-
-function escapeHtml(str) {
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-}
-
-
-function myDir(obj, indent = "", first = false) {
-    if (typeof obj !== "object" || obj === null) {
-        return indent + String(obj);
-    }
-    if (Array.isArray(obj)) {
-        let output = indent + "[Array]\n";
-        if (first) {
-            output = "\n" + output;
-            first = false;
-        }
-        for (let i = 0; i < obj.length; i++) {
-            output += indent + "  [" + i + "]:\n" + myDir(obj[i], indent + "    ") + "\n";
-        }
-        return output;
-    } else {
-        let output = indent + "{Object}\n";
-        if (first) {
-            output = "\n" + output;
-            first = false;
-        }
-        for (let key in obj) {
-            if (Object.prototype.hasOwnProperty.call(obj, key)) {
-                output += indent + "  " + key + ":\n" + myDir(obj[key], indent + "    ") + "\n";
-            }
-        }
-        return output;
-    }
-}
-
-
 function objectToString(obj) {
     if (typeof obj !== "object" || obj === null) {
         return String(obj);
@@ -576,15 +489,10 @@ self.addEventListener("message", (event) => {
         const timers = {};
         const profiles = {};
         const headers = [];
-        function indentMessage(message) {
-            return message;
-            // if (groupLevel <= 0) return message;
-            // return "  ".repeat(groupLevel) + message;
-        }
         const customConsole = {
             log: (...args) => {
                 const objs = getObjectOrString(...args);
-                self.postMessage({ type: "log", message: indentMessage(objs) });
+                self.postMessage({ type: "log", message: objs });
             },
             error: (...args) => {
                 const objs = getObjectOrString(...args);
@@ -601,7 +509,7 @@ self.addEventListener("message", (event) => {
             debug: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`) });
+                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -652,7 +560,7 @@ self.addEventListener("message", (event) => {
                 } else {
                     countMap[label] = 1;
                 }
-                self.postMessage({ type: "log", message: indentMessage(`${label}: ${countMap[label]}`) });
+                self.postMessage({ type: "log", message: `${label}: ${countMap[label]}` });
             },
             countReset: (label = "default") => {
                 countMap[label] = 0;
@@ -663,6 +571,7 @@ self.addEventListener("message", (event) => {
                 }
             },
             dir: (obj) => {
+                // need to change getObjectOrString to take an argument isdir to display for example for [] Array(0) instead of [] etc
                 const html = getObjectOrString(obj);
                 self.postMessage({ type: "log", message: html });
             },
@@ -673,17 +582,17 @@ self.addEventListener("message", (event) => {
             trace: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: indentMessage(`${serializedArgs}\n   ${stack.split("\n").join("\n   ")}`) });
+                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
             },
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = indentMessage(`${serializedArgs}`);
+                const message = `${serializedArgs}`;
                 self.postMessage({ type: "group", message, collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = indentMessage(`${serializedArgs}`);
+                const message = `${serializedArgs}`;
                 self.postMessage({ type: "group", message, collapsed: true });
                 groupLevel++;
             },
@@ -697,7 +606,7 @@ self.addEventListener("message", (event) => {
 
             profile: (label = "default") => {
                 profiles[label] = performance.now();
-                const message = indentMessage(`Profile '${objectToString(label)}' started`);
+                const message = `Profile '${objectToString(label)}' started`;
                 self.postMessage({ type: "info", message });
             },
 
@@ -705,10 +614,10 @@ self.addEventListener("message", (event) => {
                 if (profiles[label]) {
                     const duration = performance.now() - profiles[label];
                     delete profiles[label];
-                    const message = indentMessage(`Profile '${objectToString(label)}' finished. Duration: ${duration.toFixed(2)}ms`);
+                    const message = `Profile '${objectToString(label)}' finished. Duration: ${duration.toFixed(2)}ms`;
                     self.postMessage({ type: "info", message });
                 } else {
-                    const message = indentMessage(`No profile '${objectToString(label)}' found`);
+                    const message = `No profile '${objectToString(label)}' found`;
                     self.postMessage({ type: "warn", message });
                 }
             },
@@ -720,11 +629,11 @@ self.addEventListener("message", (event) => {
             timeEnd: (label = "default") => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const message = indentMessage(`${objectToString(label)}: ${duration.toFixed(2)}ms`);
+                    const message = `${objectToString(label)}: ${duration.toFixed(2)}ms`;
                     self.postMessage({ type: "log", message });
                     delete timers[label];
                 } else {
-                    const message = indentMessage(`No timer called '${objectToString(label)}' found`);
+                    const message = `No timer called '${objectToString(label)}' found`;
                     self.postMessage({ type: "error", message });
                 }
             },
@@ -733,10 +642,10 @@ self.addEventListener("message", (event) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
                     const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
-                    const message = indentMessage(`${objectToString(label)}: ${duration.toFixed(2)}ms${extra}`);
+                    const message = `${objectToString(label)}: ${duration.toFixed(2)}ms${extra}`;
                     self.postMessage({ type: "log", message });
                 } else {
-                    const message = indentMessage(`No timer called '${objectToString(label)}' found`);
+                    const message = `No timer called '${objectToString(label)}' found`;
                     self.postMessage({ type: "error", message });
                 }
             }
