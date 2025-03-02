@@ -1381,34 +1381,40 @@ prompt("This is a prompt:");
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         pl.style.marginLeft = "4px";
+        // Use column direction so that the message and input are on separate rows
+        pl.style.display = "flex";
+        pl.style.flexDirection = "column";
 
-        // Create flex container for symbol and message
-        let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        // First row: symbol and message text
+        let msgRow = document.createElement("div");
+        msgRow.style.display = "flex";
+        msgRow.style.alignItems = "flex-start";
 
         let symbolDiv = document.createElement("div");
-        symbolDiv.textContent = `[?]`;
+        symbolDiv.textContent = "[?]";
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
-        messageDiv.style.whiteSpace = "pre-wrap";
+        messageDiv.style.whiteSpace = "pre-wrap"; // preserves newlines
 
-        flexContainer.appendChild(symbolDiv);
-        flexContainer.appendChild(messageDiv);
-        pl.appendChild(flexContainer);
+        msgRow.appendChild(symbolDiv);
+        msgRow.appendChild(messageDiv);
+        pl.appendChild(msgRow);
 
-        // Create the input field for the prompt response
+        // Second row: the input field (indented so it aligns with the message text)
+        let inputRow = document.createElement("div");
+        // Adjust this margin to roughly match the width of your symbol block
+        inputRow.style.marginLeft = "30px";
+
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
-        inp.style.marginLeft = "10px";
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
-            // Update the message to include the user response if desired
+            // Optionally update the message to include the response
             messageDiv.textContent = `${message} ${val}`;
             inp.remove();
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
@@ -1426,11 +1432,14 @@ prompt("This is a prompt:");
             resolve();
           }
         });
-        pl.appendChild(inp);
+        inputRow.appendChild(inp);
+        pl.appendChild(inputRow);
+
         container.appendChild(pl);
         inp.focus();
       });
     }
+
 
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
@@ -1438,33 +1447,37 @@ prompt("This is a prompt:");
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         alertLine.style.marginLeft = "4px";
+        // Use column direction so message and button are separate
+        alertLine.style.display = "flex";
+        alertLine.style.flexDirection = "column";
 
-        // Create flex container for symbol and message
-        let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        // First row: symbol and message text
+        let msgRow = document.createElement("div");
+        msgRow.style.display = "flex";
+        msgRow.style.alignItems = "flex-start";
 
-        // The alert symbol; you can hardcode “[!]” or use a symbol map if you add one for alerts.
         let symbolDiv = document.createElement("div");
-        symbolDiv.textContent = `[!]`;
+        symbolDiv.textContent = "[!]";
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
 
-        // Create the message element
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
 
-        flexContainer.appendChild(symbolDiv);
-        flexContainer.appendChild(messageDiv);
-        alertLine.appendChild(flexContainer);
+        msgRow.appendChild(symbolDiv);
+        msgRow.appendChild(messageDiv);
+        alertLine.appendChild(msgRow);
 
-        // Add the OK button as before
+        // Second row: OK button (indented to match the message)
+        let buttonRow = document.createElement("div");
+        buttonRow.style.marginLeft = "30px"; // adjust based on your symbol width
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
-        okBtn.style.marginLeft = "10px";
+        okBtn.style.marginTop = "5px";
         okBtn.textContent = "OK";
-        alertLine.appendChild(okBtn);
+        buttonRow.appendChild(okBtn);
+        alertLine.appendChild(buttonRow);
 
         container.appendChild(alertLine);
         okBtn.focus();
@@ -1476,13 +1489,14 @@ prompt("This is a prompt:");
             alertLine.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
             newContainer.appendChild(alertLine);
           }
-          // Optionally, if you want to also log the alert message using appendToOutput:
+          // Optionally log the alert message
           appendToOutput(container, "info", message);
           alertLine.remove();
           resolve();
         });
       });
     }
+
 
 
 
