@@ -1,223 +1,207 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Object Inspector with Consistent Indentation</title>
-  <style>
-    /* Unique CSS classes for Object Inspector */
-    .objinsp-body {
-      font-family: Menlo, Monaco, "Courier New", monospace;
-      background-color: #1e1e1e;
-      color: #d4d4d4;
-      padding: 20px;
-    }
-    .objinsp-heading {
-      color: #569cd6;
-    }
-    .objinsp-textarea {
-      width: 100%;
-      max-width: 600px;
-      background: #252526;
-      color: #d4d4d4;
-      border: 1px solid #333;
-      padding: 10px;
-      font-size: 14px;
-    }
-    .objinsp-button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background: #0e639c;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .objinsp-summary {
-      cursor: pointer;
-      user-select: none;
-    }
-    .objinsp-highlight-key {
-      color: #9cdcfe;
-    }
-    .objinsp-highlight-string {
-      color: #ce9178;
-    }
-    .objinsp-highlight-number {
-      color: #b5cea8;
-    }
-    .objinsp-highlight-primitive {
-      color: #ce9178;
-    }
-    .objinsp-highlight-type {
-      color: #4ec9b0;
-    }
-    /* A helper class for generated nodes */
-    .objinsp-node {
-      /* Additional node styling can be added here if needed */
-    }
-    /* Reset default margin and padding for details and summary */
-    details,
-    summary {
-      margin: 0;
-      padding: 0;
-    }
-  </style>
-</head>
-<body class="objinsp-body">
-  <h1 class="objinsp-heading">Object Inspector</h1>
-  <p>Enter a JSON string or JavaScript expression (object, array, number, etc.):</p>
-  <textarea id="objectInput" class="objinsp-textarea" rows="6" placeholder='e.g. { "name": "Alice", "age": 30, "nested": { "x": 10 } }'></textarea>
-  <br>
-  <button id="inspectBtn" class="objinsp-button">Inspect Object</button>
-  <h2 class="objinsp-heading">Result:</h2>
-  <div id="output"></div>
-  <script>
-    function createNode(key, value, visited, depth = 0) {
-      const container = document.createElement('div');
-      container.classList.add('objinsp-node');
-      container.style.marginLeft = (depth * 10) + 'px';
+{% extends 'base_template.html' %}
+{% block content %}
+  {% load static %}
 
-      // Handle primitives
-      if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-        if (key !== null && key !== undefined) {
-          const keySpan = document.createElement('span');
-          keySpan.className = 'objinsp-highlight-key';
-          keySpan.textContent = key + ': ';
-          container.appendChild(keySpan);
+  <head>
+    <title>Voice Recorder</title>
+    <meta name="description" content="Capture stunning voice recordings with crystal-clear audio using our powerful free online voice recorder tool. Perfect for podcasts, meetings, and more. Start recording now and unleash your creativity!" />
+    <link rel="stylesheet" href="{% static 'css/voiceRecorder.css' %}?v=2" />
+    <link rel="stylesheet" href="{% static 'css/page_info.css' %}" />
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+
+  <body>
+    <div id="supportedDiv">
+      <div class="titleDiv">
+        <h1 class="functionTitle">Voice Recorder</h1>
+        <div class="btn-info" id="infoBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+            <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="info-div" id="infoDiv">
+        <h2>User Guide</h2>
+        <p>Our Voice Recorder tool allows you to capture your voice with crystal-clear quality. Ideal for podcasts, recording meetings, or other audio needs, this tool is designed to be user-friendly and efficient.</p>
+        <h3>How to Use:</h3>
+        <ol>
+          <li>
+            <strong>Select Your Microphone</strong> – Click the "Get Started" button to choose the microphone you want to use.
+          </li>
+          <li>
+            <strong>Press Record</strong> – Once your microphone is selected, press the "Record" button to start recording.
+          </li>
+          <li>
+            <strong>Control Your Recording</strong> – Use the on-screen controls to pause, resume, or stop your recording.
+          </li>
+          <li>
+            <strong>Review and Save</strong> – After stopping the recording, preview your audio and download it in the selected format.
+          </li>
+        </ol>
+        <h3>Features:</h3>
+        <p>This tool offers an intuitive interface with easy-to-use controls, including pause/resume functionality, and a live timer to track recording duration. Enjoy high-quality voice capture without any installation or registration.</p>
+      </div>
+
+      <div class="mainDiv">
+        <div id="startDiv">
+          <h2>Record your voice easily & securely</h2>
+          <div style="display: flex; margin-top: 100px; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; font-size: 24px; gap: 10px; margin-right: 60px;">
+              <p>✔ No registration required</p>
+              <p>✔ No software installation needed</p>
+              <p>✔ Completely free & unlimited usage</p>
+            </div>
+            <div style="position: relative; width: 225px;">
+              <button id="start" class="start-button">Get Started ➔</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div id="timerDiv">
+            <span id="blinkingDot" class="blinking-dot" style="display: none;"></span>
+            <i id="pauseIcon" class="fa fa-pause pause-icon"></i>
+            <p id="timer">00:00</p>
+          </div>
+          <button id="pause"><img src="{% static 'site_images/pause.png' %}" alt="Pause Recorder" /></button>
+          <button id="stop">
+            <img id="black-stop" style="display: none;" src="{% static 'site_images/stop.png' %}" alt="Stop Recorder" />
+            <img id="red-stop" src="{% static 'site_images/red-stop.png' %}" alt="Stop Recorder" />
+          </button>
+        </div>
+
+        <div id="outputFormatDiv">
+          <label for="outputFormat">Choose Audio Format:</label>
+          <select id="outputFormat" name="outputFormat">
+            <!-- Dynamic format options will be inserted here -->
+          </select>
+        </div>
+
+        <div class="recorded-container" id="recordedContainer">
+          <p style="font-size: 25px; font-weight: bold;margin-bottom: 5px;">Your recording is ready!</p>
+          <button class="start_over" style="position: absolute; top: 5px; right: 10px;" onclick="startOver()"><i class="fa-solid fa-arrow-rotate-left"></i></button>
+
+          <div class="audio-container">
+            <audio id="audio" controls></audio>
+            <div id="download">
+              <div class="btn-circle-download">
+                <div style="padding-top: 13px;width: 118px;">
+                  <span style="margin-left: 20px;margin-right: 10px; font-size: 20px;font-weight: 500;">Download</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notSupportedDiv">
+      <h1>Sorry, your browser does not support audio recording.</h1>
+      <p>Please use a modern desktop browser to access this feature.</p>
+      <button onclick="window.history.back();">Go Back</button>
+      <a href="{% url 'HomePage' %}"><button>Home</button></a>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init()
+    </script>
+    <script>
+      let mediaRecorder
+      let recordedChunks = []
+      let stream
+      let timerInterval
+      let seconds = 0
+      
+      const audioElement = document.getElementById('audio')
+      const startDiv = document.getElementById('startDiv')
+      const recordedContainer = document.getElementById('recordedContainer')
+      const timer = document.getElementById('timer')
+      let isPaused = false
+      let defRecord = 'Record'
+      
+      async function isDeviceSupported() {
+        const supportsAudioCapture = navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function'
+        const supportsMediaRecorder = typeof MediaRecorder !== 'undefined'
+      
+        const isDesktop = !/Mobi|Android/i.test(navigator.userAgent)
+      
+        return supportsAudioCapture && supportsMediaRecorder && isDesktop
+      }
+      
+      document.addEventListener('DOMContentLoaded', async () => {
+        if (!(await isDeviceSupported())) {
+          document.getElementById('supportedDiv').style.display = 'none'
+          document.getElementById('notSupportedDiv').style.display = 'block'
         }
-        const valSpan = document.createElement('span');
-        if (typeof value === 'string') {
-          valSpan.className = 'objinsp-highlight-string';
-          valSpan.textContent = '"' + value + '"';
-        } else if (typeof value === 'number') {
-          valSpan.className = 'objinsp-highlight-number';
-          valSpan.textContent = String(value);
-        } else {
-          valSpan.className = 'objinsp-highlight-primitive';
-          valSpan.textContent = String(value);
-        }
-        container.appendChild(valSpan);
-        return container;
-      }
-
-      // Check for circular reference in the current recursion chain
-      if (visited.has(value)) {
-        if (key !== null && key !== undefined) {
-          const keySpan = document.createElement('span');
-          keySpan.className = 'objinsp-highlight-key';
-          keySpan.textContent = key + ': ';
-          container.appendChild(keySpan);
-        }
-        const circSpan = document.createElement('span');
-        circSpan.textContent = '[Circular]';
-        container.appendChild(circSpan);
-        return container;
-      }
-
-      // Add the object to the current recursion stack
-      visited.add(value);
-      const details = document.createElement('details');
-      const summary = document.createElement('summary');
-      summary.classList.add('objinsp-summary');
-      if (key !== null && key !== undefined) {
-        const keySpan = document.createElement('span');
-        keySpan.className = 'objinsp-highlight-key';
-        keySpan.textContent = key + ': ';
-        summary.appendChild(keySpan);
-      }
-      let headerText = '';
-      if (typeof value === 'function') {
-        headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
-      } else if (Array.isArray(value)) {
-        headerText = '[]';
-      } else if (value.constructor === Object) {
-        headerText = 'Object';
-      } else {
-        headerText = '{}';
-      }
-      const typeSpan = document.createElement('span');
-      typeSpan.className = 'objinsp-highlight-type';
-      typeSpan.textContent = headerText;
-      summary.appendChild(typeSpan);
-      details.appendChild(summary);
-
-      // Process own string-keyed properties
-      let props = [];
-      try {
-        props = Object.getOwnPropertyNames(value).sort();
-      } catch (e) { }
-      props.forEach(prop => {
+      
+        const supportedAudioFormats = ['audio/webm', 'audio/mp3', 'audio/ogg'] // Adjust to dynamic browser support
+        const outputFormatSelect = document.getElementById('outputFormat')
+      
+        supportedAudioFormats.forEach((format) => {
+          const option = document.createElement('option')
+          option.value = format
+          option.textContent = format.split('/')[1].toUpperCase()
+          outputFormatSelect.appendChild(option)
+        })
+      
+        // Set default format to MP3
+        outputFormatSelect.value = 'audio/mp3'
+      })
+      
+      document.getElementById('start').addEventListener('click', async () => {
         try {
-          details.appendChild(createNode(prop, value[prop], visited, depth + 1));
-        } catch (e) {
-          const errorDiv = document.createElement('div');
-          errorDiv.className = 'objinsp-highlight-key';
-          errorDiv.innerHTML = `${prop}: <span style="color: white">(...)</span>`;
-          errorDiv.style.marginLeft = ((depth) * 10) + 'px';
-          details.appendChild(errorDiv);
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      
+          mediaRecorder = new MediaRecorder(stream)
+          recordedChunks = []
+      
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data)
+            }
+          }
+      
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: outputFormatSelect.value })
+            const url = URL.createObjectURL(blob)
+            audioElement.src = url
+      
+            recordedContainer.style.display = 'flex'
+          }
+      
+          mediaRecorder.start()
+          seconds = 0
+          timerInterval = setInterval(() => {
+            seconds++
+            let min = String(Math.floor(seconds / 60)).padStart(2, '0')
+            let sec = String(seconds % 60).padStart(2, '0')
+            timer.textContent = `${min}:${sec}`
+          }, 1000)
+      
+          startDiv.style.display = 'none'
+        } catch (error) {
+          console.error('Error accessing microphone:', error)
         }
-      });
-
-      // Process symbol-keyed properties
-      let symbols = [];
-      try {
-        symbols = Object.getOwnPropertySymbols(value).sort((a, b) =>
-          a.toString().localeCompare(b.toString())
-        );
-      } catch (e) { }
-      symbols.forEach(sym => {
-        try {
-          details.appendChild(createNode(sym.toString(), value[sym], visited, depth + 1));
-        } catch (e) {
-          const errorDiv = document.createElement('div');
-          errorDiv.textContent = sym.toString() + ': [Error retrieving property]';
-          details.appendChild(errorDiv);
-        }
-      });
-
-      // Process the prototype chain
-      try {
-        const proto = Object.getPrototypeOf(value);
-        if (proto) {
-          details.appendChild(createNode('[[Prototype]]', proto, visited, depth + 1));
-        }
-      } catch (e) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'objinsp-highlight-key';
-        errorDiv.innerHTML = `${prop}: <span style="color: white">(...)</span>`;
-        errorDiv.style.marginLeft = ((depth) * 10) + 'px';
-        details.appendChild(errorDiv);
-      }
-
-      container.appendChild(details);
-
-      // Remove the object from the visited set once done processing it
-      visited.delete(value);
-      return container;
-    }
-
-    function renderInspector(obj) {
-      const visited = new WeakSet();
-      return createNode(null, obj, visited);
-    }
-
-    document.getElementById('inspectBtn').addEventListener('click', function () {
-      const input = document.getElementById('objectInput').value;
-      let obj;
-      try {
-        obj = JSON.parse(input);
-      } catch (e) {
-        try {
-          obj = eval('(' + input + ')');
-        } catch (ex) {
-          alert('Invalid object input.');
-          return;
-        }
-      }
-      const output = document.getElementById('output');
-      output.innerHTML = '';
-      output.appendChild(renderInspector(obj));
-    });
-  </script>
-</body>
-</html>
+      })
+      
+      document.getElementById('stop').addEventListener('click', () => {
+        mediaRecorder.stop()
+        clearInterval(timerInterval)
+        timer.style.display = 'none'
+      })
+      
+      document.getElementById('download').addEventListener('click', () => {
+        const blob = new Blob(recordedChunks, { type: outputFormatSelect.value })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'voice-recording.' + outputFormatSelect.value.split('/')[1]
+        a.click()
+      })
+    </script>
+  </body>
+{% endblock %}
