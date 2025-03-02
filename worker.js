@@ -690,16 +690,16 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: indentMessage(objs) });
             },
             error: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "error", message: serializedArgs.split("\n").join("\n   "), forceUse: true });
+                const objs = getObjectOrString(...args);
+                self.postMessage({ type: "error", message: objs, forceUse: true });
             },
             warn: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "warn", message: serializedArgs });
+                const objs = getObjectOrString(...args);
+                self.postMessage({ type: "warn", message: objs });
             },
             info: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                self.postMessage({ type: "info", message: serializedArgs });
+                const objs = getObjectOrString(...args);
+                self.postMessage({ type: "info", message: objs });
             },
             debug: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
