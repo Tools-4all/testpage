@@ -837,6 +837,12 @@
       color: #d4d4d4;
     }
 
+    .promptInput {
+      border: 1px solid #333;
+      border-radius: 4px;
+      margin-left: 5px;
+    }
+
     @media (max-width: 768px) {
 
       #lightMode {
@@ -1382,7 +1388,6 @@ prompt("This is a prompt:");
         pl.classList.add("prompt-line", "outputContent");
         pl.style.marginLeft = "4px";
 
-        // Create flex container for symbol and message
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
@@ -1403,7 +1408,7 @@ prompt("This is a prompt:");
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
-        inp.style.marginLeft = "10px";
+        inp.classList.add("promptInput");
         if (defaultValue) {
           inp.value = defaultValue;
         }
