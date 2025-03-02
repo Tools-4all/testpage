@@ -428,8 +428,8 @@ class myPrompt {
         this.waiting = false;
     }
 
-    prompt(msg, sharedBuffer) {
-        self.postMessage({ type: "prompt", message: msg });
+    prompt(msg, defaultValue, sharedBuffer) {
+        self.postMessage({ type: "prompt", message: msg, default: defaultValue});
         this.waiting = true;
         const view = new Int32Array(sharedBuffer);
         Atomics.store(view, 0, 0);
@@ -651,9 +651,9 @@ self.addEventListener("message", (event) => {
             }
         };
 
-        const customPrompt = (msg = "") => {
+        const customPrompt = (message="", defaultValue=null) => {
             const promptInstance = new myPrompt(msg);
-            promptInstance.prompt(msg, sharedBuffer);
+            promptInstance.prompt(msg, defaultValue, sharedBuffer);
             return promptInstance.getResponse();
         };
 
