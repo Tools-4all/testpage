@@ -1390,7 +1390,6 @@ prompt("This is a prompt:");
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
-        flexContainer.style.flexWrap = "wrap";
 
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[?]`;
@@ -1400,6 +1399,7 @@ prompt("This is a prompt:");
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
+        messageDiv.style.flexWrap = "wrap";
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1450,7 +1450,6 @@ prompt("This is a prompt:");
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
-        flexContainer.style.flexWrap = "wrap";
 
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[!]`;
@@ -1460,6 +1459,7 @@ prompt("This is a prompt:");
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
+        messageDiv.style.flexWrap = "wrap";
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1606,6 +1606,7 @@ prompt("This is a prompt:");
 
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
+  
     function appendToOutput(outputDiv, type, message, forceUse = false) {
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
@@ -1634,59 +1635,8 @@ prompt("This is a prompt:");
 
       // Create the message element
       let messageDiv = document.createElement("div");
-      messageDiv.style.whiteSpace = "pre-wrap"; // preserves newlines
-      if (typeof message === "object") {
-        let actualMsg = "";
-        for (let key in message) {
-          if (message[key][1]) {
-            actualMsg += message[key][0] + " ";
-          } else {
-            actualMsg += escapeHtml(message[key][0]) + " ";
-          }
-        }
-        messageDiv.innerHTML = actualMsg.trim();
-      } else {
-        messageDiv.textContent = message;
-      }
-
-      // Append both symbol and message to the flex container
-      flexContainer.appendChild(symbolDiv);
-      flexContainer.appendChild(messageDiv);
-      line.appendChild(flexContainer);
-
-      container.appendChild(line);
-      container.scrollTop = container.scrollHeight;
-    }
-    function appendToOutput(outputDiv, type, message, forceUse = false) {
-      let container = outputDiv;
-      if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
-        container = currentTab.groupStack[currentTab.groupStack.length - 1];
-      }
-      let line = document.createElement("div");
-      line.classList.add("outputContent");
-      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      if (forceUse) {
-        groupLevel = 0;
-      }
-      line.style.marginLeft = groupLevel ? "20px" : "4px";
-      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
-      line.classList.add(styleClass);
-
-      // Create a flex container to hold the symbol and message separately
-      let flexContainer = document.createElement("div");
-      flexContainer.style.display = "flex";
-      flexContainer.style.alignItems = "flex-start";
-      flexContainer.style.flexWrap = "wrap";
-
-      // Create the symbol element (fixed-width so message lines align)
-      let symbolDiv = document.createElement("div");
-      symbolDiv.textContent = `[${symbolsMap[type]}]`;
-      symbolDiv.style.marginRight = "5px";
-      symbolDiv.style.flexShrink = "0";
-
-      // Create the message element
-      let messageDiv = document.createElement("div");
-      messageDiv.style.whiteSpace = "pre-wrap"; // preserves newlines
+      messageDiv.style.whiteSpace = "pre-wrap";
+      messageDiv.style.flexWrap = "wrap";
       if (typeof message === "object") {
         let actualMsg = "";
         for (let key in message) {
