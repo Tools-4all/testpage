@@ -1682,7 +1682,6 @@ prompt("This is a prompt:");
       // Indent the table container
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       div.style.marginLeft = groupLevel ? "20px" : "4px";
-      div.style.paddingLeft = "4ch";
       const table = document.createElement("table");
       table.classList.add("console-table");
       const thead = document.createElement("thead");
@@ -1742,6 +1741,8 @@ prompt("This is a prompt:");
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
+      div.appendChild("[>]");
+      table.style.marginLeft = "7px";
       div.appendChild(table);
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
