@@ -1643,35 +1643,16 @@ prompt("This is a prompt:");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
       }
       else if (typeof message === "object") {
-        // Create a <details> element for lazy loading the object's details
-        const detailsElem = document.createElement("details");
-        const summaryElem = document.createElement("summary");
-        // Use a simple summary – for example, the object's type
-        summaryElem.textContent = Object.prototype.toString.call(message);
-        detailsElem.appendChild(summaryElem);
-
-        // Add a toggle listener to load details only once upon expansion
-        detailsElem.addEventListener("toggle", function () {
-          if (detailsElem.open && !detailsElem.dataset.loaded) {
-            let detailedHTML = "";
-            for (let key in message) {
-              if (message[key][1]) {
-                detailedHTML += message[key][0] + " ";
-              } else {
-                detailedHTML += escapeHtml(message[key][0]) + " ";
-              }
-            }
-            const contentDiv = document.createElement("div");
-            contentDiv.innerHTML = detailedHTML.trim();
-            // Append the detailed content below the summary
-            detailsElem.appendChild(contentDiv);
-            detailsElem.dataset.loaded = "true"; // Mark as loaded
+        let actualMsg = "";
+        for (let key in message) {
+          if (message[key][1]) {
+            actualMsg += message[key][0] + " ";
+          } else {
+            actualMsg += escapeHtml(message[key][0]) + " ";
           }
-        });
-
-        messageDiv.appendChild(detailsElem);
-      }
-      else {
+        }
+        messageDiv.innerHTML = actualMsg.trim();
+      } else {
         messageDiv.textContent = message;
       }
 
