@@ -1640,7 +1640,11 @@ prompt("This is a prompt:");
       messageDiv.style.whiteSpace = "pre-wrap";
       messageDiv.style.display = "flex";
       messageDiv.style.flexWrap = "wrap";
-      if (typeof message === "object") {
+      if (type === "error" && forceUse) {
+        const msg = message[0][0];
+        console.log(msg)
+      }
+      else if (typeof message === "object") {
         let actualMsg = "";
         for (let key in message) {
           if (message[key][1]) {

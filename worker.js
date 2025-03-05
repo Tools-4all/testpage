@@ -496,7 +496,7 @@ self.addEventListener("message", (event) => {
             },
             error: (...args) => {
                 const objs = getObjectOrString(...args);
-                self.postMessage({ type: "error", message: objs, forceUse: true });
+                self.postMessage({ type: "error", message: objs, forceUse: false });
             },
             warn: (...args) => {
                 const objs = getObjectOrString(...args);
@@ -678,7 +678,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message: "Script finished with exit code 0.", forceUse: true });
                 }
             } catch (e) {
-                customConsole.error(`Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`)
+                self.postMessage({ type: "error", message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`, forceUse: true });
                 if (flexSwitchCheckDefault) {
                     self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
                 }
