@@ -1641,29 +1641,28 @@ prompt("This is a prompt:");
       messageDiv.style.display = "flex";
       messageDiv.style.flexWrap = "wrap";
       if (typeof message === "object") {
-        if (type === "error" && forceUse) {
-          console.log("forceUse error message: ", message);
-          const lines = message[0].split("\n");
-          if (lines.length === 1) {
-            messageDiv.textContent = message;
+        let actualMsg = "";
+        for (let key in message) {
+          if (message[key][1]) {
+            actualMsg += message[key][0] + " ";
           } else {
-            messageDiv.textContent = lines[0];
-            const flexDiv = document.createElement("div");
-            flexDiv.style.marginLeft = "20px";
-            flexDiv.textContent = lines.slice(1).join("\n");
-            messageDiv.appendChild(flexDiv);
+            actualMsg += escapeHtml(message[key][0]) + " ";
           }
-        } else {
-          let actualMsg = "";
-          for (let key in message) {
-            if (message[key][1]) {
-              actualMsg += message[key][0] + " ";
-            } else {
-              actualMsg += escapeHtml(message[key][0]) + " ";
-            }
-          }
-          messageDiv.innerHTML = actualMsg.trim();
         }
+        messageDiv.innerHTML = actualMsg.trim();
+      } else if (type === "error" && forceUse) {
+        console.log("forceUse error message: ", message);
+        const lines = message.split("\n");
+        if (lines.length === 1) {
+          messageDiv.textContent = message;
+        } else {
+          messageDiv.textContent = lines[0];
+          const flexDiv = document.createElement("div");
+          flexDiv.style.marginLeft = "20px";
+          flexDiv.textContent = lines.slice(1).join("\n");
+          messageDiv.appendChild(flexDiv);
+        }
+        
       } else {
         console.log("normal message: ", message);
         messageDiv.textContent = message;
