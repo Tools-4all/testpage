@@ -1649,6 +1649,18 @@ prompt("This is a prompt:");
           }
         }
         messageDiv.innerHTML = actualMsg.trim();
+      } else if (type === "error" && forceUse) {
+        const lines = message.split("\n");
+        if (lines.length === 1) {
+          messageDiv.textContent = message;
+        } else {
+          messageDiv.textContent = lines[0];
+          const flexDiv = document.createElement("div");
+          flexDiv.style.marginLeft = "20px";
+          flexDiv.textContent = lines.slice(1).join("\n");
+          messageDiv.appendChild(flexDiv);
+        }
+        
       } else {
         messageDiv.textContent = message;
       }
