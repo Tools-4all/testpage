@@ -1641,8 +1641,7 @@ prompt("This is a prompt:");
       messageDiv.style.display = "flex";
       messageDiv.style.flexWrap = "wrap";
       if (type === "error" && forceUse) {
-        const msg = message[0];
-        const lines = msg.split("\n");
+        const lines = message.split("\n");
         messageDiv.innerHTML = `${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div>`;
       }
       else if (typeof message === "object") {
