@@ -1651,6 +1651,7 @@ prompt("This is a prompt:");
         }
         messageDiv.innerHTML = actualMsg.trim();
       } else if (type === "error" && forceUse) {
+        console.log("forceUse error message: ", message);
         const lines = message.split("\n");
         if (lines.length === 1) {
           messageDiv.textContent = message;
@@ -1663,6 +1664,7 @@ prompt("This is a prompt:");
         }
         
       } else {
+        console.log("normal message: ", message);
         messageDiv.textContent = message;
       }
 
