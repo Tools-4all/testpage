@@ -1643,7 +1643,7 @@ prompt("This is a prompt:");
       if (typeof message === "object") {
         if (type === "error" && forceUse) {
           console.log("forceUse error message: ", message);
-          const lines = message.split("\n");
+          const lines = message[0].split("\n");
           if (lines.length === 1) {
             messageDiv.textContent = message;
           } else {
