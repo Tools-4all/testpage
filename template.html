@@ -1609,6 +1609,7 @@ prompt("This is a prompt:");
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
+      console.log(`received message: ${message}, type: ${type}, forceUse: ${forceUse}`);
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
