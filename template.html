@@ -840,7 +840,6 @@
 
     .objinsp-highlight-type {
       color: #4ec9b0;
-      margin-left: 7px;
     }
 
     .objinsp-node {
@@ -1714,7 +1713,6 @@ prompt("This is a prompt:");
           if (message[key][1]) {
             subMsgDiv = lazyRenderTreeNode(null, message[key][0])
             subMsgDiv.style.marginRight = "5px";
-            subMsgDiv.style.marginLeft = "0px"
             messageDiv.appendChild(subMsgDiv);
           } else {
             subMsgDiv = document.createElement("div");
