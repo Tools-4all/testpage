@@ -1620,14 +1620,14 @@ prompt("This is a prompt:");
         const div = document.createElement('div');
         let content = '';
         if (typeof tree === 'string') {
-          content = '<span class="objinsp-highlight-string">' + tree + '</span>';
+          content = '<span class="objinsp objinsp-highlight-string">' + tree + '</span>';
         } else if (typeof tree === 'number') {
-          content = '<span class="objinsp-highlight-number">' + tree + '</span>';
+          content = '<span class="objinsp objinsp-highlight-number">' + tree + '</span>';
         } else {
-          content = '<span class="objinsp-highlight-primitive">' + tree + '</span>';
+          content = '<span class="objinsp objinsp-highlight-primitive">' + tree + '</span>';
         }
         if (key !== null && key !== undefined) {
-          div.innerHTML = '<span class="objinsp-highlight-key">' + key + ': </span>' + content;
+          div.innerHTML = '<span class="objinsp objinsp-highlight-key">' + key + ': </span>' + content;
         } else {
           div.innerHTML = content;
         }
@@ -1653,14 +1653,14 @@ prompt("This is a prompt:");
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
-      summaryEl.className = 'objinsp-summary';
-      summaryEl.innerHTML = '<span class="objinsp-highlight-type">' + summaryText + '</span>';
+      summaryEl.className = 'objinsp objinsp-summary';
+      summaryEl.innerHTML = '<span class="objinsp objinsp-highlight-type">' + summaryText + '</span>';
       detailsEl.appendChild(summaryEl);
 
       detailsEl.addEventListener('toggle', function () {
         if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
           const container = document.createElement('div');
-          container.className = 'objinsp-node';
+          container.className = 'objinsp objinsp-node';
           const childKeys = Object.keys(childrenTree);
           childKeys.forEach(function (childKey) {
             const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
