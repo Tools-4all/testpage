@@ -346,8 +346,12 @@
       cursor: pointer;
     }
 
-    .tab:hover:not(.active) {
+    .tab:hover:not(.active, .theme.colorffffff .tab) {
       background-color: rgba(255, 255, 255, 0.1)!important;
+    }
+
+    .tab:hover:not(.active, .theme.color1e1e1e .tab) {
+      background-color: rgba(0, 0, 0, 0.1)!important;
     }
 
     .tab-title-edit {
