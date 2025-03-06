@@ -157,6 +157,128 @@ function createNodeString(key, value, visited, depth = 0, isPrototype = false) {
     return html;
 }
 
+function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
+    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+        let rep;
+        if (typeof value === 'string') {
+            rep = '"' + value + '"';
+        } else {
+            rep = value;
+        }
+        if (key !== null && key !== undefined) {
+            let obj = {};
+            obj[key] = rep;
+            return obj;
+        } else {
+            return rep;
+        }
+    }
+    if (visited.has(value)) {
+        if (key !== null && key !== undefined) {
+            let obj = {};
+            obj[key] = "[Circular]";
+            return obj;
+        } else {
+            return "[Circular]";
+        }
+    }
+    visited.add(value);
+
+    let headerText;
+    if (typeof value === 'function') {
+        headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
+    } else if (Array.isArray(value)) {
+        if (isPrototype) {
+            headerText = "Array(" + (value.length || 0) + ")";
+        } else {
+            headerText = "[]";
+        }
+    } else {
+        const objectToString = Object.prototype.toString.call(value);
+        const match = objectToString.match(/^\[object (.+)\]$/);
+        if (match && match[1] !== 'Object') {
+            headerText = match[1];
+        } else if (match && match[1] === 'Object' && !isPrototype) {
+            headerText = "{}";
+        } else {
+            headerText = "Object";
+        }
+    }
+
+    let children = {};
+
+    let props = [];
+    try {
+        props = Object.getOwnPropertyNames(value);
+    } catch (e) { }
+    props.forEach(function (prop) {
+        try {
+            const child = createNodeObject(prop, value[prop], visited, depth + 1, false);
+            for (let k in child) {
+                children[k] = child[k];
+            }
+        } catch (e) {
+            children[prop] = "(...)";
+        }
+    });
+
+    let symbols = [];
+    try {
+        symbols = Object.getOwnPropertySymbols(value);
+    } catch (e) { }
+    symbols.forEach(function (sym) {
+        try {
+            const child = createNodeObject(sym.toString(), value[sym], visited, depth + 1, false);
+            for (let k in child) {
+                children[k] = child[k];
+            }
+        } catch (e) {
+            children[sym.toString()] = "[Error retrieving property]";
+        }
+    });
+
+    if (typeof value === 'object' && value !== null) {
+        const protoDesc = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
+        if (protoDesc) {
+            if (typeof protoDesc.get === 'function') {
+                const child = createNodeObject('get __proto__', protoDesc.get, visited, depth + 1, false);
+                for (let k in child) {
+                    children[k] = child[k];
+                }
+            }
+            if (typeof protoDesc.set === 'function') {
+                const child = createNodeObject('set __proto__', protoDesc.set, visited, depth + 1, false);
+                for (let k in child) {
+                    children[k] = child[k];
+                }
+            }
+        }
+    }
+
+    try {
+        const proto = Object.getPrototypeOf(value);
+        if (proto) {
+            const child = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
+            for (let k in child) {
+                children[k] = child[k];
+            }
+        }
+    } catch (e) {
+        children['[[Prototype]]'] = "(...)";
+    }
+
+    let node = {};
+    if (key !== null && key !== undefined) {
+        const combinedKey = key + ': ' + headerText;
+        node[combinedKey] = children;
+    } else {
+        node[headerText] = children;
+    }
+
+    visited.delete(value);
+    return node;
+}
+
 function renderObject(obj) {
     const visited = new Set();
     return createNodeString(null, obj, visited);
@@ -429,7 +551,7 @@ class myPrompt {
     }
 
     prompt(msg, defaultValue, sharedBuffer) {
-        self.postMessage({ type: "prompt", message: msg, default: defaultValue});
+        self.postMessage({ type: "prompt", message: msg, default: defaultValue });
         this.waiting = true;
         const view = new Int32Array(sharedBuffer);
         Atomics.store(view, 0, 0);
@@ -471,7 +593,7 @@ function getObjectOrString(...args) {
     let num = 0
     args.forEach(arg => {
         if (["object", "function"].includes(typeof arg) && arg !== null) {
-            objs[num] = [renderObject(arg), true]
+            objs[num] = [createNodeObject(arg), true]
         } else {
             objs[num] = [objectToString(arg), false]
         }
@@ -651,7 +773,7 @@ self.addEventListener("message", (event) => {
             }
         };
 
-        const customPrompt = (message="", defaultValue=null) => {
+        const customPrompt = (message = "", defaultValue = null) => {
             const promptInstance = new myPrompt(message);
             promptInstance.prompt(message, defaultValue, sharedBuffer);
             return promptInstance.getResponse();

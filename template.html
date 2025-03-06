@@ -1604,6 +1604,65 @@ prompt("This is a prompt:");
     }
 
 
+    function lazyRenderTreeNode(key, tree) {
+      if (typeof tree !== 'object' || tree === null) {
+        const div = document.createElement('div');
+        let content = '';
+        if (typeof tree === 'string') {
+          content = '<span class="objinsp-highlight-string">' + tree + '</span>';
+        } else if (typeof tree === 'number') {
+          content = '<span class="objinsp-highlight-number">' + tree + '</span>';
+        } else {
+          content = '<span class="objinsp-highlight-primitive">' + tree + '</span>';
+        }
+        if (key !== null && key !== undefined) {
+          div.innerHTML = '<span class="objinsp-highlight-key">' + key + ': </span>' + content;
+        } else {
+          div.innerHTML = content;
+        }
+        return div;
+      }
+
+      let summaryText = "";
+      let childrenTree = null;
+      if (key !== null) {
+        summaryText = key;
+        childrenTree = tree;
+      } else {
+        const keys = Object.keys(tree);
+        if (keys.length > 0) {
+          summaryText = keys[0];
+          childrenTree = tree[keys[0]];
+        } else {
+          summaryText = "{}";
+          childrenTree = {};
+        }
+      }
+
+      const detailsEl = document.createElement('details');
+      detailsEl.setAttribute('data-loaded', 'false');
+      const summaryEl = document.createElement('summary');
+      summaryEl.className = 'objinsp-summary';
+      summaryEl.innerHTML = '<span class="objinsp-highlight-type">' + summaryText + '</span>';
+      detailsEl.appendChild(summaryEl);
+
+      detailsEl.addEventListener('toggle', function () {
+        if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
+          const container = document.createElement('div');
+          container.className = 'objinsp-node';
+          const childKeys = Object.keys(childrenTree);
+          childKeys.forEach(function (childKey) {
+            const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
+            container.appendChild(childNode);
+          });
+          detailsEl.appendChild(container);
+          detailsEl.setAttribute('data-loaded', 'true');
+        }
+      });
+      return detailsEl;
+    }
+
+
 
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
@@ -1648,7 +1707,7 @@ prompt("This is a prompt:");
           if (message[key][1]) {
             actualMsg += message[key][0] + " ";
           } else {
-            actualMsg += escapeHtml(message[key][0]) + " ";
+            actualMsg += escapeHtml(lazyRenderTreeNode(message[key][0])) + " ";
           }
         }
         messageDiv.innerHTML = actualMsg.trim();
