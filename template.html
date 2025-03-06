@@ -1620,7 +1620,7 @@ prompt("This is a prompt:");
         } else {
           div.innerHTML = content;
         }
-        return div;
+        return JSON.stringify(div.outerHTML);
       }
 
       let summaryText = "";
@@ -1659,7 +1659,7 @@ prompt("This is a prompt:");
           detailsEl.setAttribute('data-loaded', 'true');
         }
       });
-      return detailsEl;
+      return JSON.stringify(detailsEl.outerHTML);
     }
 
 
