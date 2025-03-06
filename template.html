@@ -1710,11 +1710,11 @@ prompt("This is a prompt:");
         for (let key in message) {
           if (message[key][1]) {
             subMsgDiv = lazyRenderTreeNode(null, message[key][0])
-            subMsgDiv.style.marginRight = "5px";
+            subMsgDiv.style.marginRight = "10px";
             messageDiv.appendChild(subMsgDiv);
           } else {
             subMsgDiv = document.createElement("div");
-            subMsgDiv.style.marginRight = "5px";
+            subMsgDiv.style.marginRight = "10px";
             subMsgDiv.innerText = escapeHtml(message[key][0]);
             messageDiv.appendChild(subMsgDiv);
           }
