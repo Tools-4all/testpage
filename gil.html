@@ -1152,7 +1152,7 @@
       tabs.splice(newI, 0, removed);
       let b = document.getElementById("tabBar");
       tabs.forEach((x) => {
-        b.insertBefore(x.tabElement, document.getElementById("addTabButton"));
+        b.appendChild(x.tabElement);
       });
     }
     function createTab(desiredName = null, content = null) {
