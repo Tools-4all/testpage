@@ -1283,6 +1283,7 @@
         smoothScrolling: true,
         breadcrumbs: { enabled: true }
       });
+      editorInstance.getModel().onDidChangeOptions((e) => console.log(e))
       let tabObj = {
         id,
         name,
