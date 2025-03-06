@@ -1286,8 +1286,9 @@
         breadcrumbs: { enabled: true }
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
-        if (e.tabSize) {
-          tabSizeInput.value = e.tabSize;
+        const tabSizeNum = editor.getModel().getOptions().tabSize
+        if (tabSizeNum) {
+          tabSizeInput.value = tabSizeNum;
           tabSizeInput.dispatchEvent(new Event("input"));
         }
       });
