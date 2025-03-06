@@ -1660,7 +1660,7 @@ prompt("This is a prompt:");
       detailsEl.addEventListener('toggle', function () {
         if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
           const container = document.createElement('div');
-          container.className = 'objinsp objinsp-node';
+          container.className = 'objinsp-node';
           const childKeys = Object.keys(childrenTree);
           childKeys.forEach(function (childKey) {
             const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
