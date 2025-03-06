@@ -1708,8 +1708,8 @@ prompt("This is a prompt:");
           if (message[key][1]) {
             console.log(message)
             console.log(message[key][0])
-            console.log(lazyRenderTreeNode(message[key][0]))
-            actualMsg += JSON.stringify(lazyRenderTreeNode(message[key][0]).outerHTML) + " ";
+            console.log(lazyRenderTreeNode(null, message[key][0]))
+            actualMsg += JSON.stringify(lazyRenderTreeNode(null, message[key][0]).outerHTML) + " ";
           } else {
             actualMsg += escapeHtml(message[key][0]) + " ";
           }
