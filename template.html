@@ -351,16 +351,16 @@
       visibility: visible;
     }
 
-    .tab.active .close{
+    .tab.active .close {
       visibility: visible;
     }
 
     .tab:hover:not(.active, .theme.colorffffff .tab) {
-      background-color: rgba(255, 255, 255, 0.1)!important;
+      background-color: rgba(255, 255, 255, 0.1) !important;
     }
 
     .tab:hover:not(.active, .theme.color1e1e1e .tab) {
-      background-color: rgba(0, 0, 0, 0.1)!important;
+      background-color: rgba(0, 0, 0, 0.1) !important;
     }
 
     .tab-title-edit {
@@ -407,6 +407,7 @@
 
     .editor-and-output.active {
       display: flex;
+      margin-top: -1px
     }
 
     .editorContainer {
@@ -611,6 +612,9 @@
     .theme.color1e1e1e .tab.active {
       background-color: #1c1c1c;
       border-top: 1px solid #007acc !important;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -1px;
+      z-index: 2;
     }
 
     .theme.color1e1e1e #statusBar {
@@ -1652,7 +1656,7 @@ prompt("This is a prompt:");
           content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
         }
         if (key !== null && key !== undefined) {
-          
+
           div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
         } else {
           div.innerHTML = content;
