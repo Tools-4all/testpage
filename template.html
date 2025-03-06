@@ -307,7 +307,9 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow: hidden;
+      /* need to fix the + moving to the side chen */
+      /* overflow: hidden; */ 
+      overflow: visible;
     }
 
     #tabBar:hover {
@@ -619,10 +621,6 @@
       border-top-right-radius: 3px;
     }
 
-    #tabBar {
-      overflow: visible;
-      /* allow the active tab to extend outside */
-    }
 
 
     .theme.color1e1e1e #statusBar {
