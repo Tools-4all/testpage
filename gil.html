@@ -1250,8 +1250,7 @@
       outputContainer.appendChild(outputDiv);
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
-      let addTabBtn = document.getElementById("addTabButton");
-      tabBar.insertBefore(tabEl, addTabBtn);
+      tabBar.appendChild(tabEl);
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
