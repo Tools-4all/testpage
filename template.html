@@ -589,7 +589,6 @@
       margin-right: 10px;
     }
 
-    .theme.color1e1e1e {}
 
     .theme.color1e1e1e .tab {
       background-color: #2c2c2c;
@@ -996,6 +995,7 @@
     let draggedTabId = null;
     let lastDropSide = null;
     let darkModeFlag = true;
+    let nextWorker;
     const compiler = document.getElementById("compiler");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     if (window.innerWidth < 768) {
@@ -1524,7 +1524,13 @@ prompt("This is a prompt:");
         }
         await cacheWorkerCode();
         tab.groupStack = [];
-        let w = new Worker(workerBlobURL);
+        let w;
+        if (!nextWorker) {
+          w = new Worker(workerPath);
+        } else {
+          w = nextWorker;
+          nextWorker = null;
+        }
         tab.worker = w;
         w.onmessage = async (e) => {
           let type = e.data.type;
@@ -1597,6 +1603,7 @@ prompt("This is a prompt:");
           "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
+      nextWorker = new Worker(workerPath);
     }
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
@@ -2233,6 +2240,11 @@ prompt("This is a prompt:");
         }
       });
     }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      await cacheWorkerCode();
+      nextWorker = new Worker(workerBlobURL);
+    });
 
     alert(1);
   </script>
