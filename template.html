@@ -1016,6 +1016,8 @@
     let lastDropSide = null;
     let darkModeFlag = true;
     let nextWorker;
+    let tabSizeInput = document.getElementById("tabSizeInput");
+    let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     if (window.innerWidth < 768) {
@@ -1283,7 +1285,12 @@
         smoothScrolling: true,
         breadcrumbs: { enabled: true }
       });
-      editorInstance.getModel().onDidChangeOptions((e) => console.log(e))
+      editorInstance.getModel().onDidChangeOptions((e) => {
+        if (e.tabSize) {
+          tabSizeInput.value = e.tabSize;
+          tabSizeDisplay.dispatchEvent(new Event("input"));
+        }
+      });
       let tabObj = {
         id,
         name,
@@ -2014,8 +2021,6 @@ prompt("This is a prompt:");
         }
       });
     });
-    let tabSizeInput = document.getElementById("tabSizeInput");
-    let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     tabSizeInput.addEventListener("input", () => {
       spaces = parseInt(tabSizeInput.value, 10);
       tabSizeDisplay.textContent = spaces;
