@@ -1628,7 +1628,7 @@ prompt("This is a prompt:");
         }
         if (key !== null && key !== undefined) {
           
-          div.innerHTML = '<div class="objinsp"><span class="objinsp-highlight-key">' + key + ': </span>' + content + '</div>';
+          div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
         } else {
           div.innerHTML = content;
         }
