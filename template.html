@@ -1620,7 +1620,7 @@ prompt("This is a prompt:");
         } else {
           div.innerHTML = content;
         }
-        return JSON.stringify(div.innerHTML);
+        return div;
       }
 
       let summaryText = "";
@@ -1659,7 +1659,7 @@ prompt("This is a prompt:");
           detailsEl.setAttribute('data-loaded', 'true');
         }
       });
-      return JSON.stringify(detailsElinnerHTML);
+      return detailsEl;
     }
 
 
@@ -1705,7 +1705,7 @@ prompt("This is a prompt:");
         let actualMsg = "";
         for (let key in message) {
           if (message[key][1]) {
-            actualMsg += lazyRenderTreeNode(message[key][0]) + " ";
+            actualMsg += JSON.stringify(lazyRenderTreeNode(message[key][0]).outerHTML) + " ";
           } else {
             actualMsg += escapeHtml(message[key][0]) + " ";
           }
