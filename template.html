@@ -1286,7 +1286,7 @@
         breadcrumbs: { enabled: true }
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
-        const tabSizeNum = editor.getModel().getOptions().tabSize
+        const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
           tabSizeInput.value = tabSizeNum;
           tabSizeInput.dispatchEvent(new Event("input"));
