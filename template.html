@@ -1705,9 +1705,9 @@ prompt("This is a prompt:");
         let actualMsg = "";
         for (let key in message) {
           if (message[key][1]) {
-            actualMsg += message[key][0] + " ";
+            actualMsg += lazyRenderTreeNode(message[key][0]) + " ";
           } else {
-            actualMsg += escapeHtml(lazyRenderTreeNode(message[key][0])) + " ";
+            actualMsg += escapeHtml(message[key][0]) + " ";
           }
         }
         messageDiv.innerHTML = actualMsg.trim();
