@@ -1605,7 +1605,6 @@ prompt("This is a prompt:");
 
 
     function lazyRenderTreeNode(key, tree) {
-      console.log(key, tree)
       if (typeof tree !== 'object' || tree === null) {
         const div = document.createElement('div');
         let content = '';
@@ -1706,10 +1705,7 @@ prompt("This is a prompt:");
         let actualMsg = "";
         for (let key in message) {
           if (message[key][1]) {
-            console.log(message)
-            console.log(message[key][0])
-            console.log(lazyRenderTreeNode(null, message[key][0]))
-            actualMsg += JSON.stringify(lazyRenderTreeNode(null, message[key][0]).outerHTML) + " ";
+            messageDiv.appendChild(lazyRenderTreeNode(null, message[key][0]))
           } else {
             actualMsg += escapeHtml(message[key][0]) + " ";
           }
