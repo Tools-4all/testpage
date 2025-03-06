@@ -1620,11 +1620,11 @@ prompt("This is a prompt:");
         const div = document.createElement('div');
         let content = '';
         if (typeof tree === 'string') {
-          content = '<span class="objinsp objinsp-highlight-string">' + tree + '</span>';
+          content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`;
         } else if (typeof tree === 'number') {
-          content = '<span class="objinsp objinsp-highlight-number">' + tree + '</span>';
+          content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
         } else {
-          content = '<span class="objinsp objinsp-highlight-primitive">' + tree + '</span>';
+          content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
         }
         if (key !== null && key !== undefined) {
           
@@ -1655,7 +1655,7 @@ prompt("This is a prompt:");
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
       summaryEl.className = 'objinsp objinsp-summary';
-      summaryEl.innerHTML = '<span class="objinsp objinsp-highlight-type">' + summaryText + '</span>';
+      summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
       detailsEl.appendChild(summaryEl);
 
       detailsEl.addEventListener('toggle', function () {
