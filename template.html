@@ -1288,7 +1288,7 @@
       editorInstance.getModel().onDidChangeOptions((e) => {
         if (e.tabSize) {
           tabSizeInput.value = e.tabSize;
-          tabSizeDisplay.dispatchEvent(new Event("input"));
+          tabSizeInput.dispatchEvent(new Event("input"));
         }
       });
       let tabObj = {
