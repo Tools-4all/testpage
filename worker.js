@@ -593,7 +593,7 @@ function getObjectOrString(...args) {
     let num = 0
     args.forEach(arg => {
         if (["object", "function"].includes(typeof arg) && arg !== null) {
-            objs[num] = [createNodeObject(arg), true]
+            objs[num] = [createNodeObject(null, arg, new Set()), true]
         } else {
             objs[num] = [objectToString(arg), false]
         }
