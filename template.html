@@ -1605,6 +1605,7 @@ prompt("This is a prompt:");
 
 
     function lazyRenderTreeNode(key, tree) {
+      console.log(key, tree)
       if (typeof tree !== 'object' || tree === null) {
         const div = document.createElement('div');
         let content = '';
