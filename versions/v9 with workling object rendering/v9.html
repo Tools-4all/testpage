@@ -21,7 +21,6 @@
       position: relative;
       font-family: 'Fira Code', monospace;
       display: flex;
-      background-color: #1e1e1e;
       width: 60%;
       height: 500px;
       margin: 100px auto;
@@ -307,7 +306,7 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow: hidden;
+      overflow: hidden; 
     }
 
     #tabBar:hover {
@@ -317,7 +316,7 @@
     }
 
     #tabBar::-webkit-scrollbar {
-      height: 3px;
+      height: 4px;
     }
 
     #tabBar::-webkit-scrollbar-thumb {
@@ -344,6 +343,23 @@
     .tab .close {
       font-size: 12px;
       cursor: pointer;
+      visibility: hidden
+    }
+
+    .tab:hover .close {
+      visibility: visible;
+    }
+
+    .tab.active .close {
+      visibility: visible;
+    }
+
+    .tab:hover:not(.active, .theme.colorffffff .tab) {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .tab:hover:not(.active, .theme.color1e1e1e .tab) {
+      background-color: rgba(0, 0, 0, 0.1) !important;
     }
 
     .tab-title-edit {
@@ -359,13 +375,13 @@
 
     #addTabButton {
       background: none;
-      color: #c5c5c5;
-      font-size: 18px;
-      cursor: pointer;
-      margin-left: auto;
-      margin-right: 5px;
-      flex-shrink: 0;
-      transition: color 0.2s;
+    color: #c5c5c5;
+    font-size: 17px;
+    cursor: pointer;
+    margin-left: 20px;
+    margin-top: -1px;
+    flex-shrink: 0;
+    transition: color 0.2s;
     }
 
     #addTabButton:hover {
@@ -390,6 +406,7 @@
 
     .editor-and-output.active {
       display: flex;
+      margin-top: -1px
     }
 
     .editorContainer {
@@ -409,7 +426,7 @@
     }
 
     .resize {
-      height: 200px;
+      height: 30%;
     }
 
     .monaco-editor .find-widget.visible .controls {
@@ -585,7 +602,6 @@
       margin-right: 10px;
     }
 
-    .theme.color1e1e1e {}
 
     .theme.color1e1e1e .tab {
       background-color: #2c2c2c;
@@ -594,8 +610,16 @@
 
     .theme.color1e1e1e .tab.active {
       background-color: #1c1c1c;
-      border-top: 1px solid #007acc !important;
     }
+
+    .tab.active {
+      border-top: 1px solid #007acc !important;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -2px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+
 
     .theme.color1e1e1e #statusBar {
       background-color: #2c2c2c;
@@ -816,10 +840,12 @@
 
     .objinsp-summary {
       cursor: pointer;
+      color: #d4d4d4;
     }
 
     .objinsp-highlight-key {
       color: #9cdcfe;
+      margin-left: 10px;
     }
 
     .objinsp-highlight-string {
@@ -840,6 +866,15 @@
 
     .objinsp-node {
       color: #d4d4d4;
+      margin-left: 10px;
+    }
+
+    .objinsp-dark:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .objinsp:hover {
+      background-color: rgba(255, 255, 255, 0.04);
     }
 
     @media (max-width: 768px) {
@@ -914,6 +949,7 @@
       <button id="runButton" onclick="runTab()">
         <i class="fas fa-play"></i> Run
       </button>
+      <div id="addTabButton"><i class="fas fa-plus"></i></div>
       <div id="lightMode" onclick="changeToLightMode()">
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
@@ -957,9 +993,7 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar" class="theme color252526">
-        <div id="addTabButton"><i class="fas fa-plus"></i></div>
-      </div>
+        <div id="tabBar" class="theme color252526"></div>
       <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
@@ -981,6 +1015,9 @@
     let draggedTabId = null;
     let lastDropSide = null;
     let darkModeFlag = true;
+    let nextWorker;
+    let tabSizeInput = document.getElementById("tabSizeInput");
+    let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     if (window.innerWidth < 768) {
@@ -1102,6 +1139,7 @@
           });
         });
       }
+      updateUndoRedoButtons();
     }
 
 
@@ -1115,7 +1153,7 @@
       tabs.splice(newI, 0, removed);
       let b = document.getElementById("tabBar");
       tabs.forEach((x) => {
-        b.insertBefore(x.tabElement, document.getElementById("addTabButton"));
+        b.appendChild(x.tabElement);
       });
     }
     function createTab(desiredName = null, content = null) {
@@ -1214,7 +1252,7 @@
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
-      tabBar.insertBefore(tabEl, addTabBtn);
+      tabBar.appendChild(tabEl);
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
@@ -1245,7 +1283,15 @@
         formatOnPaste: true,
         suggestOnTriggerCharacters: true,
         smoothScrolling: true,
-        breadcrumbs: { enabled: true }
+        breadcrumbs: { enabled: true },
+        fixedOverflowWidgets: true,
+      });
+      editorInstance.getModel().onDidChangeOptions((e) => {
+        const tabSizeNum = editorInstance.getModel().getOptions().tabSize
+        if (tabSizeNum) {
+          tabSizeInput.value = tabSizeNum;
+          tabSizeInput.dispatchEvent(new Event("input"));
+        }
       });
       let tabObj = {
         id,
@@ -1509,7 +1555,13 @@ prompt("This is a prompt:");
         }
         await cacheWorkerCode();
         tab.groupStack = [];
-        let w = new Worker(workerBlobURL);
+        let w;
+        if (!nextWorker) {
+          w = new Worker(workerPath);
+        } else {
+          w = nextWorker;
+          nextWorker = null;
+        }
         tab.worker = w;
         w.onmessage = async (e) => {
           let type = e.data.type;
@@ -1582,6 +1634,7 @@ prompt("This is a prompt:");
           "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
+      nextWorker = new Worker(workerPath);
     }
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
@@ -1601,6 +1654,66 @@ prompt("This is a prompt:");
       line.innerHTML = obj;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
+    }
+
+
+    function lazyRenderTreeNode(key, tree) {
+      if (typeof tree !== 'object' || tree === null) {
+        const div = document.createElement('div');
+        let content = '';
+        if (typeof tree === 'string') {
+          content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`;
+        } else if (typeof tree === 'number') {
+          content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
+        } else {
+          content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
+        }
+        if (key !== null && key !== undefined) {
+
+          div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
+        } else {
+          div.innerHTML = content;
+        }
+        return div;
+      }
+
+      let summaryText = "";
+      let childrenTree = null;
+      if (key !== null) {
+        summaryText = key;
+        childrenTree = tree;
+      } else {
+        const keys = Object.keys(tree);
+        if (keys.length > 0) {
+          summaryText = keys[0];
+          childrenTree = tree[keys[0]];
+        } else {
+          summaryText = "{}";
+          childrenTree = {};
+        }
+      }
+
+      const detailsEl = document.createElement('details');
+      detailsEl.setAttribute('data-loaded', 'false');
+      const summaryEl = document.createElement('summary');
+      summaryEl.className = 'objinsp objinsp-summary';
+      summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
+      detailsEl.appendChild(summaryEl);
+
+      detailsEl.addEventListener('toggle', function () {
+        if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
+          const container = document.createElement('div');
+          container.className = 'objinsp-node';
+          const childKeys = Object.keys(childrenTree);
+          childKeys.forEach(function (childKey) {
+            const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
+            container.appendChild(childNode);
+          });
+          detailsEl.appendChild(container);
+          detailsEl.setAttribute('data-loaded', 'true');
+        }
+      });
+      return detailsEl;
     }
 
 
@@ -1644,14 +1757,19 @@ prompt("This is a prompt:");
       }
       else if (typeof message === "object") {
         let actualMsg = "";
+        let subMsgDiv
         for (let key in message) {
           if (message[key][1]) {
-            actualMsg += message[key][0] + " ";
+            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
+            subMsgDiv.style.marginRight = "15px";
+            messageDiv.appendChild(subMsgDiv);
           } else {
-            actualMsg += escapeHtml(message[key][0]) + " ";
+            subMsgDiv = document.createElement("div");
+            subMsgDiv.style.marginRight = "15px";
+            subMsgDiv.innerText = escapeHtml(message[key][0]);
+            messageDiv.appendChild(subMsgDiv);
           }
         }
-        messageDiv.innerHTML = actualMsg.trim();
       } else {
         messageDiv.textContent = message;
       }
@@ -1905,8 +2023,6 @@ prompt("This is a prompt:");
         }
       });
     });
-    let tabSizeInput = document.getElementById("tabSizeInput");
-    let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     tabSizeInput.addEventListener("input", () => {
       spaces = parseInt(tabSizeInput.value, 10);
       tabSizeDisplay.textContent = spaces;
@@ -2154,7 +2270,12 @@ prompt("This is a prompt:");
       });
     }
 
-    alert(1);
+    document.addEventListener("DOMContentLoaded", async function () {
+      await cacheWorkerCode();
+      nextWorker = new Worker(workerBlobURL);
+    });
+
+    alert(2);
   </script>
 </body>
 

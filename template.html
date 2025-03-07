@@ -1601,6 +1601,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
+            console.log(`Table: ${e.data}`);
             const { rows, columns } = e.data;
             appendTable(tab.outputElement, rows, columns);
           }
