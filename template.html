@@ -1796,6 +1796,7 @@ prompt("This is a prompt:");
         tableData["(index)"].length === 0
       ) {
         appendToOutput(container, "error", "Invalid table data received.");
+        console.log("Invalid table data received:", tableInfo);
         return;
       }
 
