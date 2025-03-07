@@ -1285,7 +1285,8 @@
         formatOnPaste: true,
         suggestOnTriggerCharacters: true,
         smoothScrolling: true,
-        breadcrumbs: { enabled: true }
+        breadcrumbs: { enabled: true },
+        fixedOverflowWidgets: true,
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
