@@ -307,30 +307,24 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      /* overflow: hidden;  */
+      overflow: hidden; 
     }
 
-    #tabBar:hover #tabBar::-webkit-scrollbar {
-      visibility: visible;
-    }
-
-    #tabBar #tabBar::-webkit-scrollbar {
-      visibility: hidden;
-    }
-
-    /* #tabBar:hover {
+    #tabBar:hover {
       overflow-x: auto;
       overflow-y: hidden;
       transition: overflow 0.3s;
-    } */
+    }
 
     #tabBar::-webkit-scrollbar {
       height: 3px;
+      visibility: hidden;
     }
 
     #tabBar::-webkit-scrollbar-thumb {
       background-color: #007acc;
       border-radius: 10px;
+      visibility: visible;
     }
 
     .tab {
