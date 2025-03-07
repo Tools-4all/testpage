@@ -201,153 +201,118 @@ function formatValue(value) {
 
 
 function buildTableData(input) {
-    // Special handling for Map:
-    if (input instanceof Map) {
-      return {
-        tableData: {
-          "(index)": ["size"],
-          "Values": [String(input.size)]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
-    }
-    
-    // Special handling for Set:
-    if (input instanceof Set) {
-      return {
-        tableData: {
-          "(index)": ["size"],
-          "Values": [String(input.size)]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
-    }
-    
-    // Special handling for Date:
-    if (input instanceof Date) {
-      return {
-        tableData: {
-          "(index)": ["time", "ISO", "Locale"],
-          "Values": [input.getTime(), input.toISOString(), input.toLocaleString()]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
-    }
-    
-    // Special handling for RegExp:
-    if (input instanceof RegExp) {
-      return {
-        tableData: {
-          "(index)": [
-            "lastIndex", "dotAll", "flags", "global", "hasIndices", 
-            "ignoreCase", "multiline", "source", "sticky", "unicode", "unicodeSets"
-          ],
-          "Values": [
-            input.lastIndex, input.dotAll, input.flags, input.global, input.hasIndices,
-            input.ignoreCase, input.multiline, input.source, input.sticky, input.unicode, input.unicodeSets
-          ]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
-    }
-    
-    // For functions, you might decide to just return their string representation.
-    if (typeof input === "function") {
-      return {
-        tableData: {
-          "(index)": ["(value)"],
-          "Values": ["ƒ " + (input.name || "anonymous") + "()"]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
-    }
-    
-    // Otherwise, use your existing logic for plain objects and arrays.
     let rowLabels = [];
     let rowData = [];
     let columnsSet = new Set();
     let isInputArray = Array.isArray(input);
-    
+
+    // Fallback for primitives
     if (!isInputArray && (typeof input !== "object" || input === null)) {
-      rowLabels.push("(value)");
-      return {
-        tableData: {
-          "(index)": rowLabels,
-          "Values": [formatValue(input)]
-        },
-        headerOrder: ["(index)", "Values"]
-      };
+        rowLabels.push("(value)");
+        return {
+            tableData: {
+                "(index)": rowLabels,
+                "Values": [formatValue(input)]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
     }
-    
+
     if (isInputArray) {
-      input.forEach((element, index) => {
-        rowLabels.push(index);
-        rowData.push(element);
-        if (element !== null && typeof element === "object") {
-          Object.keys(element).forEach(key => columnsSet.add(key));
-        } else {
-          columnsSet.add("Values");
-        }
-      });
+        input.forEach((element, index) => {
+            rowLabels.push(index);
+            rowData.push(element);
+            if (element !== null && typeof element === "object") {
+                // Use Object.keys for string keys
+                Object.keys(element).forEach(key => columnsSet.add(key));
+                // And also get symbol keys
+                Object.getOwnPropertySymbols(element).forEach(sym => {
+                    columnsSet.add(sym.toString());
+                });
+            } else {
+                columnsSet.add("Values");
+            }
+        });
     } else {
-      Object.keys(input).forEach(key => {
-        rowLabels.push(key);
-        rowData.push(input[key]);
-        if (input[key] !== null && typeof input[key] === "object") {
-          Object.keys(input[key]).forEach(key2 => columnsSet.add(key2));
-        } else {
-          columnsSet.add("Values");
-        }
-      });
+        // Process string keys
+        Object.keys(input).forEach(key => {
+            rowLabels.push(key);
+            rowData.push(input[key]);
+            if (input[key] !== null && typeof input[key] === "object") {
+                Object.keys(input[key]).forEach(key2 => columnsSet.add(key2));
+                Object.getOwnPropertySymbols(input[key]).forEach(sym => {
+                    columnsSet.add(sym.toString());
+                });
+            } else {
+                columnsSet.add("Values");
+            }
+        });
+        // Process symbol keys from the input object itself
+        Object.getOwnPropertySymbols(input).forEach(sym => {
+            const symStr = sym.toString();
+            rowLabels.push(symStr);
+            rowData.push(input[sym]);
+            if (input[sym] !== null && typeof input[sym] === "object") {
+                Object.keys(input[sym]).forEach(key2 => columnsSet.add(key2));
+                Object.getOwnPropertySymbols(input[sym]).forEach(s => {
+                    columnsSet.add(s.toString());
+                });
+            } else {
+                columnsSet.add("Values");
+            }
+        });
     }
-    
+
     let numericKeys = [];
     let nonNumericKeys = [];
+
     columnsSet.forEach(key => {
-      if (!isNaN(Number(key)) && key.trim() !== "") {
-        numericKeys.push(key);
-      } else {
-        nonNumericKeys.push(key);
-      }
+        if (!isNaN(Number(key)) && key.trim() !== "") {
+            numericKeys.push(key);
+        } else {
+            nonNumericKeys.push(key);
+        }
     });
     numericKeys.sort((a, b) => Number(a) - Number(b));
+
     let headerOrder = ["(index)"].concat(nonNumericKeys.filter(k => k !== "(index)"), numericKeys);
-    
+
     let tableData = {};
     tableData["(index)"] = rowLabels;
     headerOrder.slice(1).forEach(col => {
-      tableData[col] = [];
+        tableData[col] = [];
     });
-    
+
     for (let i = 0; i < rowData.length; i++) {
-      let row = rowData[i];
-      headerOrder.slice(1).forEach(col => {
-        if (row !== null && typeof row === "object") {
-          if (Array.isArray(row)) {
-            if (row.hasOwnProperty(col)) {
-              tableData[col][i] = (row[col] !== null && typeof row[col] === "object")
-                ? "{...}"
-                : formatValue(row[col]);
+        let row = rowData[i];
+        headerOrder.slice(1).forEach(col => {
+            if (row !== null && typeof row === "object") {
+                if (Array.isArray(row)) {
+                    if (row.hasOwnProperty(col)) {
+                        tableData[col][i] = (row[col] !== null && typeof row[col] === "object")
+                            ? "{...}"
+                            : formatValue(row[col]);
+                    } else {
+                        tableData[col][i] = "";
+                    }
+                } else {
+                    if (row.hasOwnProperty(col)) {
+                        tableData[col][i] = (row[col] !== null && typeof row[col] === "object")
+                            ? "{...}"
+                            : formatValue(row[col]);
+                    } else {
+                        tableData[col][i] = "";
+                    }
+                }
             } else {
-              tableData[col][i] = "";
+                tableData[col][i] = (col === "Values") ? formatValue(row) : "";
             }
-          } else {
-            if (row.hasOwnProperty(col)) {
-              tableData[col][i] = (row[col] !== null && typeof row[col] === "object")
-                ? "{...}"
-                : formatValue(row[col]);
-            } else {
-              tableData[col][i] = "";
-            }
-          }
-        } else {
-          tableData[col][i] = (col === "Values") ? formatValue(row) : "";
-        }
-      });
+        });
     }
     return { tableData, headerOrder };
-  }
-  
+}
+
+
 
 
 const wrapperSuffix = `})();`;
