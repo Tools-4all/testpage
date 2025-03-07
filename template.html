@@ -1785,8 +1785,8 @@ prompt("This is a prompt:");
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
 
-      // Extract tableData and headerOrder safely, using defaults if not provided.
-      const tableData = tableInfo.tableData || {};
+      // Use the correct property names based on your message:
+      const tableData = tableInfo.table || {};
       const headerOrder = tableInfo.headerOrder || [];
 
       // Validate that tableData["(index)"] exists and is an array, and headerOrder is not empty.
@@ -1825,8 +1825,8 @@ prompt("This is a prompt:");
         headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
-          let value = tableData[col] && tableData[col][i];
 
+          let value = tableData[col] && tableData[col][i];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
               td.textContent = `[Array(${value.length})]`;
@@ -1875,6 +1875,9 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
+
+
 
 
     function objectToHTML(obj, level = 0) {
@@ -2278,7 +2281,7 @@ prompt("This is a prompt:");
       nextWorker = new Worker(workerBlobURL);
     });
 
-    alert(32);
+    alert(2);
   </script>
 </body>
 
