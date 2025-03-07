@@ -498,14 +498,14 @@ self.addEventListener("message", (event) => {
                     typeof data === "string" ||
                     typeof data === "boolean" ||
                     typeof data === "bigint" ||
-                    typeof data === "symbol"
+                    typeof data === "symbol" ||
+                    typeof data === "function"
                 ) {
                     customConsole.log(String(data));
                     return;
                 }
-
                 const tableData = buildTableData(data);
-                console.log("from worker", tableData)
+                console.log("from worker", tableData);
                 self.postMessage({
                     type: "table",
                     table: tableData,
