@@ -311,16 +311,20 @@
       overflow-y: hidden;
     }
 
-    #tabBar:hover #tabBar::-webkit-scrollbar{
-      visibility: visible;
-    }
-
     #tabBar::-webkit-scrollbar {
       height: 3px;
-      visibility: hidden;
+      /* visibility: hidden; */
+      background-color: transparent;
     }
 
-    #tabBar::-webkit-scrollbar-thumb {
+    #tabBar:hover #tabBar::-webkit-scrollbar{
+      /* visibility: visible; */
+      background-color: #007acc;
+    }
+
+   
+
+    /* #tabBar::-webkit-scrollbar-thumb {
       background-color: #007acc;
       border-radius: 10px;
       visibility: hidden;
@@ -328,7 +332,7 @@
 
     #tabBar:hover ::-webkit-scrollbar-thumb {
       visibility: visible;
-    }
+    } */
 
     .tab {
       margin-right: 2px;
