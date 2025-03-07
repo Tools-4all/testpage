@@ -1785,10 +1785,16 @@ prompt("This is a prompt:");
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
 
-      const tableData = tableInfo.table || {};
-      const headerOrder = tableInfo.headerOrder || [];
+      // Extract tableData and headerOrder from tableInfo.table
+      const { tableData, headerOrder } = tableInfo.table || {};
 
-      if (!Array.isArray(tableData["(index)"]) || headerOrder.length === 0 || tableData["(index)"].length === 0) {
+      // Validate that tableData["(index)"] exists and is an array, and headerOrder is not empty.
+      if (
+        !tableData ||
+        !Array.isArray(tableData["(index)"]) ||
+        headerOrder.length === 0 ||
+        tableData["(index)"].length === 0
+      ) {
         appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
@@ -1802,6 +1808,7 @@ prompt("This is a prompt:");
       const table = document.createElement("table");
       table.classList.add("console-table");
 
+      // Create header row from headerOrder
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1814,6 +1821,7 @@ prompt("This is a prompt:");
       thead.appendChild(headRow);
       table.appendChild(thead);
 
+      // Create table rows based on rowCount.
       const tbody = document.createElement("tbody");
       for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
@@ -1821,8 +1829,8 @@ prompt("This is a prompt:");
         headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
-
           let value = tableData[col] && tableData[col][i];
+
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
               td.textContent = `[Array(${value.length})]`;
@@ -1860,6 +1868,8 @@ prompt("This is a prompt:");
         tbody.appendChild(tr);
       }
       table.appendChild(tbody);
+
+      // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
       symbolDiv.innerHTML = "[>]";
       table.style.marginLeft = "7px";
@@ -1869,6 +1879,9 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
+
+
 
 
     function objectToHTML(obj, level = 0) {
