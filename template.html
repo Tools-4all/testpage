@@ -307,7 +307,15 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow: hidden; 
+      /* overflow: hidden;  */
+    }
+
+    #tabBar:hover #tabBar::-webkit-scrollbar {
+      visibility: visible;
+    }
+
+    #tabBar #tabBar::-webkit-scrollbar {
+      visibility: hidden;
     }
 
     #tabBar:hover {
@@ -321,7 +329,7 @@
     }
 
     #tabBar::-webkit-scrollbar-thumb {
-      background-color: #000000;
+      background-color: #007acc;
       border-radius: 10px;
     }
 
