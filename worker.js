@@ -505,6 +505,7 @@ self.addEventListener("message", (event) => {
                 }
 
                 const tableData = buildTableData(data);
+                console.log("from worker", tableData)
                 self.postMessage({
                     type: "table",
                     table: tableData,
