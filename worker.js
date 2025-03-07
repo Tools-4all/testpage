@@ -199,33 +199,92 @@ function formatValue(value) {
     return value.toString();
 }
 
-
 function buildTableData(input) {
-    let rowLabels = [];
-    let rowData = [];
-    let columnsSet = new Set();
-    let isInputArray = Array.isArray(input);
-
-    // Fallback for primitives
-    if (!isInputArray && (typeof input !== "object" || input === null)) {
-        rowLabels.push("(value)");
+    // Special handling for Map:
+    if (input instanceof Map) {
         return {
             tableData: {
-                "(index)": rowLabels,
+                "(index)": ["size"],
+                "Values": [String(input.size)]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
+    }
+
+    // Special handling for Set:
+    if (input instanceof Set) {
+        return {
+            tableData: {
+                "(index)": ["size"],
+                "Values": [String(input.size)]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
+    }
+
+    // Special handling for Date:
+    if (input instanceof Date) {
+        return {
+            tableData: {
+                "(index)": ["time", "ISO", "Locale"],
+                "Values": [input.getTime(), input.toISOString(), input.toLocaleString()]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
+    }
+
+    // Special handling for RegExp:
+    if (input instanceof RegExp) {
+        return {
+            tableData: {
+                "(index)": [
+                    "lastIndex", "dotAll", "flags", "global", "hasIndices",
+                    "ignoreCase", "multiline", "source", "sticky", "unicode", "unicodeSets"
+                ],
+                "Values": [
+                    input.lastIndex, input.dotAll, input.flags, input.global, input.hasIndices,
+                    input.ignoreCase, input.multiline, input.source, input.sticky, input.unicode, input.unicodeSets
+                ]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
+    }
+
+    // Special handling for functions:
+    if (typeof input === "function") {
+        return {
+            tableData: {
+                "(index)": ["(value)"],
+                "Values": ["ƒ " + (input.name || "anonymous") + "()"]
+            },
+            headerOrder: ["(index)", "Values"]
+        };
+    }
+
+    // For primitives that are not objects/arrays:
+    let isInputArray = Array.isArray(input);
+    if (!isInputArray && (typeof input !== "object" || input === null)) {
+        return {
+            tableData: {
+                "(index)": ["(value)"],
                 "Values": [formatValue(input)]
             },
             headerOrder: ["(index)", "Values"]
         };
     }
 
+    // Process plain objects or arrays
+    let rowLabels = [];
+    let rowData = [];
+    let columnsSet = new Set();
+
     if (isInputArray) {
+        // For arrays, iterate over each element
         input.forEach((element, index) => {
             rowLabels.push(index);
             rowData.push(element);
             if (element !== null && typeof element === "object") {
-                // Use Object.keys for string keys
                 Object.keys(element).forEach(key => columnsSet.add(key));
-                // And also get symbol keys
                 Object.getOwnPropertySymbols(element).forEach(sym => {
                     columnsSet.add(sym.toString());
                 });
@@ -234,7 +293,8 @@ function buildTableData(input) {
             }
         });
     } else {
-        // Process string keys
+        // For plain objects, include both string and symbol keys
+        // First, process string keys.
         Object.keys(input).forEach(key => {
             rowLabels.push(key);
             rowData.push(input[key]);
@@ -247,7 +307,7 @@ function buildTableData(input) {
                 columnsSet.add("Values");
             }
         });
-        // Process symbol keys from the input object itself
+        // Then, process symbol keys.
         Object.getOwnPropertySymbols(input).forEach(sym => {
             const symStr = sym.toString();
             rowLabels.push(symStr);
@@ -263,9 +323,9 @@ function buildTableData(input) {
         });
     }
 
+    // Separate numeric and non-numeric keys from the collected columns.
     let numericKeys = [];
     let nonNumericKeys = [];
-
     columnsSet.forEach(key => {
         if (!isNaN(Number(key)) && key.trim() !== "") {
             numericKeys.push(key);
@@ -274,9 +334,10 @@ function buildTableData(input) {
         }
     });
     numericKeys.sort((a, b) => Number(a) - Number(b));
-
+    // For header order, always put "(index)" first.
     let headerOrder = ["(index)"].concat(nonNumericKeys.filter(k => k !== "(index)"), numericKeys);
 
+    // Build tableData rows.
     let tableData = {};
     tableData["(index)"] = rowLabels;
     headerOrder.slice(1).forEach(col => {
@@ -309,8 +370,10 @@ function buildTableData(input) {
             }
         });
     }
+
     return { tableData, headerOrder };
 }
+
 
 
 
