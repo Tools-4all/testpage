@@ -1785,10 +1785,29 @@ prompt("This is a prompt:");
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
 
-      // Extract tableData and headerOrder from tableInfo.table
-      const { tableData, headerOrder } = tableInfo.table || {};
+      // Determine the structure of the received table data.
+      let tableData, headerOrder;
+      if (
+        tableInfo.table &&
+        typeof tableInfo.table === "object" &&
+        "tableData" in tableInfo.table &&
+        "headerOrder" in tableInfo.table
+      ) {
+        // When buildTableData returns an object with tableData and headerOrder.
+        tableData = tableInfo.table.tableData;
+        headerOrder = tableInfo.table.headerOrder;
+      } else if (tableInfo.table && typeof tableInfo.table === "object") {
+        // Fallback: when tableInfo.table is already the table data.
+        tableData = tableInfo.table;
+        // Use the keys of tableData as header order; ensure "(index)" is first.
+        headerOrder = Object.keys(tableData);
+        headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
+      } else {
+        appendToOutput(container, "error", "Invalid table data received.");
+        return;
+      }
 
-      // Validate that tableData["(index)"] exists and is an array, and headerOrder is not empty.
+      // Validate the extracted tableData and headerOrder.
       if (
         !tableData ||
         !Array.isArray(tableData["(index)"]) ||
@@ -1796,7 +1815,6 @@ prompt("This is a prompt:");
         tableData["(index)"].length === 0
       ) {
         appendToOutput(container, "error", "Invalid table data received.");
-        console.log("Invalid table data received:", tableInfo);
         return;
       }
 
@@ -1809,7 +1827,7 @@ prompt("This is a prompt:");
       const table = document.createElement("table");
       table.classList.add("console-table");
 
-      // Create header row from headerOrder
+      // Create header row from headerOrder.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1830,8 +1848,8 @@ prompt("This is a prompt:");
         headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
-          let value = tableData[col] && tableData[col][i];
 
+          let value = tableData[col] && tableData[col][i];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
               td.textContent = `[Array(${value.length})]`;
@@ -1880,6 +1898,7 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
 
 
 
