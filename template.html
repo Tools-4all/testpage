@@ -307,28 +307,23 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow-x: auto;
-      /* always allow horizontal scrolling */
-      overflow-y: hidden;
-      scrollbar-gutter: stable;
-      /* reserve space for the scrollbar */
+      overflow: hidden; 
     }
 
-    /* For WebKit-based browsers */
+    #tabBar:hover {
+      overflow-x: auto;
+      overflow-y: hidden;
+      transition: overflow 0.3s;
+    }
+
     #tabBar::-webkit-scrollbar {
-      height: 4px;
+      height: 3px;
     }
 
     #tabBar::-webkit-scrollbar-thumb {
-      background-color: transparent;
-      border-radius: 10px;
-      transition: background-color 0.3s;
-    }
-
-    #tabBar:hover::-webkit-scrollbar-thumb {
       background-color: #007acc;
+      border-radius: 10px;
     }
-
 
     .tab {
       margin-right: 2px;
@@ -2282,7 +2277,7 @@ prompt("This is a prompt:");
       nextWorker = new Worker(workerBlobURL);
     });
 
-    alert(2);
+    alert(1);
   </script>
 </body>
 
