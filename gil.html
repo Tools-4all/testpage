@@ -519,6 +519,7 @@ recordButton.addEventListener("click", async () => {
       audio.currentTime = 0;
       isPlaying = false;
       playPauseButton.innerHTML = '<i class="fa-solid fa-play"></i>';
+      playPauseButton.style.paddingLeft = "9px";
       drawPlaybackCanvas(0);
       updateTimestamp(0, totalDuration);
     };
@@ -617,7 +618,7 @@ playPauseButton.addEventListener("click", () => {
       audio.play().catch(err => console.error("Playback error:", err));
       isPlaying = true;
       playPauseButton.innerHTML = '<i class="fa-solid fa-pause"></i>';
-      playPauseButton.style.paddingLeft = "3px";
+      playPauseButton.style.paddingLeft = "0px";
       requestAnimationFrame(updatePlayback);
     } else if (audio) {
       audio.pause();
@@ -857,8 +858,6 @@ function show_anim() {
     resetReq = false;
   }, 2500);
 }
-
-alert("Important: This advanced Voice Recorder tool is optimized for desktop use and may not be fully supported on all devices. For the best performance, please use a modern desktop browser.");
 
   </script>
   <script src="{% static 'js/page_info.js' %}"></script>
