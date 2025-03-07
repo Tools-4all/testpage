@@ -1804,6 +1804,7 @@ prompt("This is a prompt:");
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
         appendToOutput(container, "error", "Invalid table data received.");
+        console.log("Invalid table data received:", tableInfo);
         return;
       }
 
