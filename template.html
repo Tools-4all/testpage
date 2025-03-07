@@ -311,27 +311,24 @@
   overflow-y: hidden;
 }
 
+/* Define the scrollbar dimensions */
 #tabBar::-webkit-scrollbar {
   height: 3px;  
-  visibility: hidden;
 }
 
-#tabBar:hover::-webkit-scrollbar {
-  visibility: visible;
+/* Style the scrollbar thumb with initial opacity 0 (hidden) */
+#tabBar::-webkit-scrollbar-thumb {
+  background-color: #333; /* change this color to whatever you prefer */
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
+/* On hover, show the scrollbar thumb */
+#tabBar:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}
 
-   
-
-    #tabBar::-webkit-scrollbar-thumb {
-      background-color: #007acc;
-      border-radius: 10px;
-      visibility: hidden;
-    }
-
-    #tabBar:hover ::-webkit-scrollbar-thumb {
-      visibility: visible;
-    }
 
     .tab {
       margin-right: 2px;
