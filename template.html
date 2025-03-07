@@ -1803,7 +1803,7 @@ prompt("This is a prompt:");
         headerOrder = Object.keys(tableData);
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
-        appendToOutput(container, "log", "")
+        appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
 
@@ -1814,7 +1814,7 @@ prompt("This is a prompt:");
         headerOrder.length === 0 ||
         tableData["(index)"].length === 0
       ) {
-        appendToOutput(container, "error", "Invalid table data received.");
+        appendToOutput(container, "log", "");
         return;
       }
 
