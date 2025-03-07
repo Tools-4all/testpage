@@ -427,7 +427,7 @@
     }
 
     .resize {
-      height: 200px;
+      height: 30%;
     }
 
     .monaco-editor .find-widget.visible .controls {
@@ -1018,7 +1018,6 @@
     let lastDropSide = null;
     let darkModeFlag = true;
     let nextWorker;
-    let firstResize = true;
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
@@ -1371,10 +1370,6 @@ prompt("This is a prompt:");
       }
       switchTab(id);
       return id;
-      if (firstResize) {
-        firstResize = false;
-        controlsBar.dispatchEvent(new MouseEvent('mousedown'));
-      } 
     }
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
