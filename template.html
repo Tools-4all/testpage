@@ -306,7 +306,7 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow: hidden; 
+      overflow: hidden;
     }
 
     #tabBar:hover {
@@ -375,13 +375,13 @@
 
     #addTabButton {
       background: none;
-    color: #c5c5c5;
-    font-size: 17px;
-    cursor: pointer;
-    margin-left: 20px;
-    margin-top: -1px;
-    flex-shrink: 0;
-    transition: color 0.2s;
+      color: #c5c5c5;
+      font-size: 17px;
+      cursor: pointer;
+      margin-left: 20px;
+      margin-top: -1px;
+      flex-shrink: 0;
+      transition: color 0.2s;
     }
 
     #addTabButton:hover {
@@ -993,7 +993,7 @@
       </div>
     </div>
     <div id="mainContainer">
-        <div id="tabBar" class="theme color252526"></div>
+      <div id="tabBar" class="theme color252526"></div>
       <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
@@ -1601,9 +1601,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
-            console.log(`Table: ${JSON.stringify(e.data)}`);
-            const { rows, columns } = e.data;
-            appendTable(tab.outputElement, rows, columns);
+            appendTable(tab.outputElement, e.data);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
             const isForce = e.data.forceUse;
@@ -1736,18 +1734,15 @@ prompt("This is a prompt:");
       let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(styleClass);
 
-      // Create a flex container to hold the symbol and message separately
       let flexContainer = document.createElement("div");
       flexContainer.style.display = "flex";
       flexContainer.style.alignItems = "flex-start";
 
-      // Create the symbol element (fixed-width so message lines align)
       let symbolDiv = document.createElement("div");
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
       symbolDiv.style.marginRight = "5px";
       symbolDiv.style.flexShrink = "0";
 
-      // Create the message element
       let messageDiv = document.createElement("div");
       messageDiv.style.whiteSpace = "pre-wrap";
       messageDiv.style.display = "flex";
@@ -1784,31 +1779,31 @@ prompt("This is a prompt:");
     }
 
 
-    function appendTable(outputElement, rows, columns) {
+    function appendTable(outputElement, tableInfo) {
       let container = outputElement;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
-      if (!Array.isArray(rows) || !Array.isArray(columns)) {
+
+      const { tableData, headerOrder } = tableInfo;
+      if (!Array.isArray(tableData["(index)"]) || headerOrder.length === 0 || tableData["(index)"].length === 0) {
         appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
-      if (columns.length === 0 || rows.length === 0) {
-        const fallbackMessage = (rows.length === 0) ? "Empty Table" : "No data to display.";
-        appendToOutput(container, "log", fallbackMessage);
-        return;
-      }
+
+      const rowCount = tableData["(index)"].length;
       const div = document.createElement("div");
       div.classList.add("outputContent");
-      // Indent the table container
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       div.style.marginLeft = groupLevel ? "20px" : "4px";
+
       const table = document.createElement("table");
       table.classList.add("console-table");
+
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
-      columns.forEach(col => {
+      headerOrder.forEach(col => {
         const th = document.createElement("th");
         th.classList.add("console-table-header");
         th.textContent = col;
@@ -1816,14 +1811,16 @@ prompt("This is a prompt:");
       });
       thead.appendChild(headRow);
       table.appendChild(thead);
+
       const tbody = document.createElement("tbody");
-      rows.forEach(rowObj => {
+      for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
         tr.classList.add("console-table-row");
-        columns.forEach(col => {
+        headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
-          let value = rowObj[col];
+
+          let value = tableData[col] && tableData[col][i];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
               td.textContent = `[Array(${value.length})]`;
@@ -1860,7 +1857,7 @@ prompt("This is a prompt:");
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
-      });
+      }
       table.appendChild(tbody);
       const symbolDiv = document.createElement("div");
       symbolDiv.innerHTML = "[>]";
@@ -1871,6 +1868,7 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
 
 
 
