@@ -993,10 +993,12 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar" class="theme color252526">
-        <div id="addTabButton"><i class="fas fa-plus"></i></div>
+      <div>
+        <div id="tabsContainer"></div>
+        <div id="tabBar" class="theme color252526">
+          <div id="addTabButton"><i class="fas fa-plus"></i></div>
+        </div>
       </div>
-      <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
         <div class="status-item">UTF-8</div>
@@ -1155,7 +1157,7 @@
       tabs.splice(newI, 0, removed);
       let b = document.getElementById("tabBar");
       tabs.forEach((x) => {
-        b.insertBefore(x.tabElement, document.getElementById("addTabButton"));
+        b.appendChild(x.tabElement);
       });
     }
     function createTab(desiredName = null, content = null) {
@@ -1254,7 +1256,7 @@
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
-      tabBar.insertBefore(tabEl, addTabBtn);
+      tabBar.appendChild(tabEl);
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
