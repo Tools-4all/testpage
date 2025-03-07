@@ -357,12 +357,15 @@
 
     let audioContext, analyser;
     let mimeType = '';
-    if (MediaRecorder.isTypeSupported('audio/webm')) {
+    if (MediaRecorder.isTypeSupported('audio/mp4')) {
+      mimeType = 'audio/mp4';
+    } else if (MediaRecorder.isTypeSupported('audio/webm')) {
       mimeType = 'audio/webm';
     } else if (MediaRecorder.isTypeSupported('audio/ogg; codecs=opus')) {
       mimeType = 'audio/ogg; codecs=opus';
+    } else {
+      alert('No supported MIME type available for recording.');
     }
-
 
     function resizeCanvas() {
       waveformCanvas.width = waveformCanvas.clientWidth;
@@ -496,7 +499,9 @@
         return;
       }
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const source = audioContext.createMediaStreamSource(stream);
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
       analyser = audioContext.createAnalyser();
       analyser.fftSize = 2048;
       source.connect(analyser);
