@@ -308,7 +308,7 @@
       height: 36px;
       flex-shrink: 0;
       overflow-x: auto; 
-      overflow: hidden;
+      overflow-y: hidden;
     }
 
     #tabBar:hover #tabBar::-webkit-scrollbar{
@@ -320,9 +320,13 @@
       visibility: hidden;
     }
 
-    #tabBar::-webkit-scrollbar-thumb {
+    #tabBar ::-webkit-scrollbar-thumb {
       background-color: #007acc;
       border-radius: 10px;
+      visibility: hidden;
+    }
+
+    #tabBar:hover ::-webkit-scrollbar-thumb {
       visibility: visible;
     }
 
