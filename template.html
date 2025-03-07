@@ -308,28 +308,27 @@
       height: 36px;
       flex-shrink: 0;
       overflow-x: auto;
+      /* always allow horizontal scrolling */
       overflow-y: hidden;
+      scrollbar-gutter: stable;
+      /* reserves space for the scrollbar */
     }
 
-    /* Define the scrollbar dimensions */
+    #tabBar:hover {
+      overflow-x: auto;
+      overflow-y: hidden;
+      transition: overflow 0.3s;
+    }
+
     #tabBar::-webkit-scrollbar {
       height: 3px;
+      opacity: 0%;
     }
 
-    /* Style the scrollbar thumb with initial opacity 0 */
     #tabBar::-webkit-scrollbar-thumb {
       background-color: #007acc;
-      border-radius: 3px;
-      opacity: 0;
-      transition: opacity 0.3s;
+      border-radius: 10px;
     }
-
-    /* When hovering over #tabBar, show the scrollbar thumb */
-    #tabBar:hover::-webkit-scrollbar-thumb {
-      opacity: 1;
-    }
-
-
 
     .tab {
       margin-right: 2px;
