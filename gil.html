@@ -617,11 +617,13 @@ playPauseButton.addEventListener("click", () => {
       audio.play().catch(err => console.error("Playback error:", err));
       isPlaying = true;
       playPauseButton.innerHTML = '<i class="fa-solid fa-pause"></i>';
+      playPauseButton.style.paddingLeft = "7px";
       requestAnimationFrame(updatePlayback);
     } else if (audio) {
       audio.pause();
       isPlaying = false;
       playPauseButton.innerHTML = '<i class="fa-solid fa-play"></i>';
+      playPauseButton.style.paddingLeft = "9px";
     } else {
       // Fallback: if no audio exists yet.
       // Optionally add logic to handle this case.
