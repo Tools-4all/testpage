@@ -11,6 +11,401 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
 
+  <style>
+    .voice_recorder_container {
+    position: relative;
+    margin: 50px auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 750px;
+    width: 100%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+#microphone {
+    font-size: 50px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+}
+
+#chooseMicModal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    justify-content: center;
+    align-items: center;
+}
+
+#chooseMicModal .modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    width: 400px;
+    max-width: 90%;
+}
+
+#chooseMicModal select {
+    width: 95%;
+    padding: 10px;
+    margin: 15px auto;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 2px solid #ccc;
+}
+
+#chooseMicModal button {
+    flex: 1;
+    padding: 5px;
+    margin: 0 5px;
+    font-size: 20px;
+    border: 2px solid transparent;
+    background-color: #cacaca;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: border 0.3s ease-in-out;
+}
+
+#chooseMicModal button:hover {
+    border: 2px solid black;
+}
+
+#chooseMicModal .button-container {
+    display: flex;
+    justify-content: center;
+}
+
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#recordButton,
+#reRecordButton {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 88px;
+    font-size: 13px;
+    padding: 10px;
+    background-color: #ed2f2f;
+    color: white;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+#recordButton:hover {
+    background-color: #dc1616;
+}
+
+#recordButton:disabled,
+#reRecordButton:disabled,
+#playPauseButton:disabled,
+#pauseRecordButton:disabled,
+#stopButton:disabled {
+    background-color: black;
+    cursor: not-allowed;
+}
+
+#recordButton img {
+    width: 17px;
+    height: 17px;
+}
+
+#pauseIcon {
+    display: none;
+    font-size: 19px;
+    color: rgb(220, 22, 22);
+}
+
+#reRecordButton {
+    margin-left: 10px;
+    width: auto;
+}
+
+#playPauseButton,
+#pauseRecordButton,
+#stopButton {
+    background-color: #ed2f2f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    margin-left: 10px;
+    width: 41px;
+    height: 41px;
+    border-radius: 50%;
+    color: white;
+    border: none;
+}
+
+#playPauseButton {
+    border-radius: 10px;
+    padding-left: 0px;
+}
+
+#waveformCanvas {
+    width: 100%;
+    height: 150px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+#timestamp {
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.download-section {
+    margin-top: 15px;
+}
+
+#tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 2px 5px;
+    font-size: 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    display: none;
+}
+
+.blinking-dot {
+    display: none;
+    margin-bottom: 2px;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+#downloadFormat {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    width: 150px;
+    height: 55px;
+    font-size: 18px !important;
+    line-height: 55px !important;
+    text-align: center !important;
+    text-align-last: center !important;
+    margin: 0;
+    padding: 0 10px;
+    border: none;
+    border-right: 1px dashed #444;
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
+    background-color: transparent;
+    color: black !important;
+    background-image: none !important;
+    display: inline-block;
+}
+
+#downloadFormat:focus {
+    outline: none;
+}
+
+:root {
+    --base: #f0f0f0;
+    --hover: #d3d3d3;
+    --active: #bfbfbf;
+    --text: #333333;
+}
+
+.btn-circle-download {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    height: 55px;
+    width: 230px;
+    margin: auto;
+    border-radius: 24px;
+    background: var(--base);
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    padding: 0 10px;
+    padding-left: 0;
+    text-align: left;
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+
+.btn-circle-download:after {
+    content: "";
+    position: relative;
+    display: block;
+    width: 200%;
+    height: 100%;
+    transform: translateX(-100%);
+}
+
+.btn-circle-download svg {
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+.btn-circle-download svg#border {
+    position: absolute;
+    top: 4px;
+    left: 166px;
+    stroke: none;
+    stroke-dasharray: 144;
+    stroke-dashoffset: 144;
+    transition: all 0.9s linear;
+}
+
+.btn-circle-download svg#arrow {
+    top: 14px;
+    left: 17px;
+    stroke: var(--text);
+    transition: all 0.2s ease;
+}
+
+.btn-circle-download svg#check {
+    position: absolute;
+    top: 20px;
+    left: 178px;
+    stroke: var(--text);
+    transform: scale(0);
+}
+
+.btn-circle-download:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.btn-circle-download:hover #arrow path,
+.btn-circle-download:hover #arrow polyline {
+    stroke: var(--text);
+}
+
+.btn-circle-download.load {
+    background: var(--hover);
+    color: var(--text);
+}
+
+.btn-circle-download.load #arrow path,
+.btn-circle-download.load #arrow polyline {
+    stroke: var(--text);
+}
+
+.btn-circle-download.load #border {
+    stroke: var(--text);
+    stroke-dasharray: 144;
+    stroke-dashoffset: 0;
+}
+
+.btn-circle-download.done {
+    background: var(--active);
+    animation: rubberBand 0.8s;
+    color: var(--text);
+}
+
+.btn-circle-download.done #border,
+.btn-circle-download.done #arrow {
+    display: none;
+}
+
+.btn-circle-download.done #check {
+    transform: scale(1);
+    transition: all 0.2s ease;
+    transition-delay: 0.2s;
+}
+
+
+
+@keyframes rubberBand {
+    from {
+        transform: scale3d(1, 1, 1);
+    }
+
+    30% {
+        transform: scale3d(1.15, 0.75, 1);
+    }
+
+    40% {
+        transform: scale3d(0.75, 1.15, 1);
+    }
+
+    50% {
+        transform: scale3d(1.10, 0.85, 1);
+    }
+
+    65% {
+        transform: scale3d(0.95, 1.05, 1);
+    }
+
+    75% {
+        transform: scale3d(1.05, 0.95, 1);
+    }
+
+    to {
+        transform: scale3d(1, 1, 1);
+    }
+}
+
+@media (max-width: 890px) {
+    #recordButton {
+        font-size: 12px;
+        width: 80px;
+        padding: 8px 7px;
+    }
+
+    #pauseRecordButton,
+    #stopButton {
+        /* display: none; */
+        width: 38px;
+        height: 38px;
+        font-size: 20px;
+    }
+
+    #playPauseButton {
+        -webkit-appearance: none;
+        appearance: none;
+        padding: 0;
+    }
+
+    .voice_recorder_container {
+        width: 95%;
+    }
+}
+  </style>
+
 </head>
 
 <body>
@@ -618,13 +1013,11 @@ playPauseButton.addEventListener("click", () => {
       audio.play().catch(err => console.error("Playback error:", err));
       isPlaying = true;
       playPauseButton.innerHTML = '<i class="fa-solid fa-pause"></i>';
-      playPauseButton.style.paddingLeft = "0px";
       requestAnimationFrame(updatePlayback);
     } else if (audio) {
       audio.pause();
       isPlaying = false;
       playPauseButton.innerHTML = '<i class="fa-solid fa-play"></i>';
-      playPauseButton.style.paddingLeft = "9px";
     } else {
       // Fallback: if no audio exists yet.
       // Optionally add logic to handle this case.
