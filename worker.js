@@ -502,7 +502,8 @@ self.addEventListener("message", (event) => {
                     customConsole.log(String(data));
                     return;
                 } else if (typeof data === "symbol" || typeof data === "function") {
-                    getObjectOrString(data);
+                    customConsole.log(data);
+                    return;
                 }
                 const tableData = buildTableData(data);
                 console.log("from worker", tableData);
