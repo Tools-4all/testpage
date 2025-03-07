@@ -497,12 +497,12 @@ self.addEventListener("message", (event) => {
                     typeof data === "number" ||
                     typeof data === "string" ||
                     typeof data === "boolean" ||
-                    typeof data === "bigint" ||
-                    typeof data === "symbol" ||
-                    typeof data === "function"
+                    typeof data === "bigint"
                 ) {
                     customConsole.log(String(data));
                     return;
+                } else if (typeof data === "symbol" || typeof data === "function") {
+                    getObjectOrString(data);
                 }
                 const tableData = buildTableData(data);
                 console.log("from worker", tableData);
