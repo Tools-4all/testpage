@@ -307,13 +307,12 @@
       align-items: center;
       height: 36px;
       flex-shrink: 0;
-      overflow: hidden; 
+      overflow-x: auto; 
+      overflow: hidden;
     }
 
-    #tabBar:hover {
-      overflow-x: auto;
-      overflow-y: hidden;
-      transition: overflow 0.3s;
+    #tabBar:hover #tabBar::-webkit-scrollbar{
+      visibility: visible;
     }
 
     #tabBar::-webkit-scrollbar {
