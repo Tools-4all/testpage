@@ -1601,7 +1601,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
-            console.log(`Table: ${e.data.tableData}`);
+            console.log(`Table: ${JSON.stringify(e.data)}`);
             const { rows, columns } = e.data;
             appendTable(tab.outputElement, rows, columns);
           }
@@ -2276,7 +2276,7 @@ prompt("This is a prompt:");
       nextWorker = new Worker(workerBlobURL);
     });
 
-    alert(1);
+    alert(2);
   </script>
 </body>
 
