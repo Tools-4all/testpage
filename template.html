@@ -311,24 +311,24 @@
       /* always allow horizontal scrolling */
       overflow-y: hidden;
       scrollbar-gutter: stable;
-      /* reserves space for the scrollbar */
+      /* reserve space for the scrollbar */
     }
 
-    #tabBar:hover {
-      overflow-x: auto;
-      overflow-y: hidden;
-      transition: overflow 0.3s;
-    }
-
+    /* For WebKit-based browsers */
     #tabBar::-webkit-scrollbar {
-      height: 3px;
-      opacity: 0%;
+      height: 8px;
     }
 
     #tabBar::-webkit-scrollbar-thumb {
-      background-color: #007acc;
+      background-color: transparent;
       border-radius: 10px;
+      transition: background-color 0.3s;
     }
+
+    #tabBar:hover::-webkit-scrollbar-thumb {
+      background-color: #007acc;
+    }
+
 
     .tab {
       margin-right: 2px;
@@ -2282,7 +2282,7 @@ prompt("This is a prompt:");
       nextWorker = new Worker(workerBlobURL);
     });
 
-    alert(1);
+    alert(2);
   </script>
 </body>
 
