@@ -175,12 +175,6 @@
       position: relative;
     }
 
-    /* #activityBar .icon:hover,
-    #activityBar .icon.active {
-      background-color: #3c3c3c;
-      color: #fff;
-    } */
-
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
@@ -442,7 +436,6 @@
       border-bottom: 1px solid;
     }
 
-
     #runButton {
       margin-left: auto;
       padding: 10px 12px;
@@ -617,14 +610,13 @@
       margin-right: 10px;
     }
 
-
     .theme.color1e1e1e .tab {
       background-color: #2c2c2c;
       color: #ffffff;
     }
 
     .theme.color1e1e1e .tab.active {
-      background-color: #1c1c1c;
+      background-color: #1c1e1e;
     }
 
     .tab.active {
@@ -634,7 +626,6 @@
       border-top-left-radius: 3px;
       border-top-right-radius: 3px;
     }
-
 
     .theme.color1e1e1e #statusBar {
       background-color: #2c2c2c;
@@ -677,172 +668,6 @@
     .theme.color1e1e1e .console-table td,
     .theme.color1e1e1e .console-table th {
       color: #d4d4d4;
-    }
-
-    .dark-log {
-      color: #BBBBBB !important;
-    }
-
-    .dark-error {
-      color: #FF6666 !important;
-    }
-
-    .dark-warn {
-      color: #FFFF66 !important;
-    }
-
-    .dark-info {
-      color: #74cbfb !important;
-    }
-
-    .dark-prompt {
-      color: #99FF99 !important;
-    }
-
-    .theme.colorffffff .tab {
-      background-color: #e0e0e0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .tab {
-      background-color: #e0e0e0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .tab.active {
-      background-color: #d0d0d0;
-      border-top: 1px solid #007acc !important;
-    }
-
-    .theme.colorffffff #statusBar {
-      background-color: #ecebeb;
-      color: #000000;
-      border-color: #c0c0c0 !important;
-    }
-
-    .theme.colorf0f0f0.vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
-      background-color: #c0c0c0;
-      color: black;
-    }
-
-    #tabBar.theme.colorf0f0f0 #addTabButton {
-      color: #636262 !important;
-    }
-
-
-    #tabBar.theme.colorf0f0f0 #addTabButton:hover {
-      color: #000000 !important;
-    }
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
-
-    .theme.color252526.output::-webkit-scrollbar-corner {
-      background: #252526;
-    }
-
-    .theme.colorf0f0f0.output::-webkit-scrollbar-corner {
-      background: #f0f0f0;
-    }
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
-
-
-    #activityBar.theme.colorf0f0f0 .icon {
-      color: #9b9a9a !important;
-    }
-
-    #activityBar.theme.colorf0f0f0 .icon:hover,
-    #activityBar.theme.colorf0f0f0 .icon.active {
-      background-color: rgb(183, 182, 182);
-      color: #eae8e8 !important;
-    }
-
-    #activityBar.theme.colorf0f0f0 .icon:hover:after {
-      background: #acabab;
-    }
-
-    .theme.colorf0f0f0 #activityBar .icon {
-      color: #9b9a9a !important;
-    }
-
-    .theme.colorffffff .sidebar-panel.active {
-      background-color: #eeeeee;
-      color: #000000;
-      border-color: #c0c0c0 !important;
-    }
-
-    .theme.colorffffff .sidebar-panel.active #gitUrl {
-      background-color: #f9f9f9;
-      border-color: #c0c0c0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .sidebar-panel.active .vs-range {
-      background-color: #f9f9f9;
-      border: 1px solid #c0c0c0;
-    }
-
-    .theme.colorf0f0f0 .controls {
-      background-color: #c0c0c0;
-    }
-
-    .theme.color252526 .controls {
-      background-color: #444;
-    }
-
-    .theme.colorffffff .output {
-      background-color: #f9f9f9;
-      color: #000;
-    }
-
-    .theme.colorffffff .console-table thead {
-      background-color: #dddddd;
-      color: #000000;
-    }
-
-    .theme.colorffffff .console-table td,
-    .theme.colorffffff .console-table th {
-      color: #333333;
-    }
-
-    .light-log {
-      color: #444444 !important;
-    }
-
-    .light-error {
-      color: #cc0000 !important;
-    }
-
-    .light-warn {
-      color: #cc9a00 !important;
-    }
-
-    .light-info {
-      color: #0066cc !important;
-    }
-
-    .light-prompt {
-      color: #008000 !important;
-    }
-
-    .theme.color1e1e1e .prompt-line input {
-      color: #ffffff;
-    }
-
-    .theme.colorffffff .prompt-line input {
-      color: #000000;
     }
 
     #moon {
@@ -940,6 +765,47 @@
     .lightMode {}
 
     .darkMode {}
+
+    /* New unified output styling based on parent container mode */
+    .outputContainer.darkMode .log {
+      color: #d4d4d4;
+    }
+
+    .outputContainer.darkMode .error {
+      color: #FF6666;
+    }
+
+    .outputContainer.darkMode .warn {
+      color: #FFFF66;
+    }
+
+    .outputContainer.darkMode .info {
+      color: #74cbfb;
+    }
+
+    .outputContainer.darkMode .prompt {
+      color: #99FF99;
+    }
+
+    .outputContainer.lightMode .log {
+      color: #444444;
+    }
+
+    .outputContainer.lightMode .error {
+      color: #cc0000;
+    }
+
+    .outputContainer.lightMode .warn {
+      color: #cc9a00;
+    }
+
+    .outputContainer.lightMode .info {
+      color: #0066cc;
+    }
+
+    .outputContainer.lightMode .prompt {
+      color: #008000;
+    }
   </style>
 </head>
 
@@ -1070,105 +936,31 @@
         }
       }
     });
-    const themeMapDark = {
-      "color252526": "colorf0f0f0",
-      "color1e1e1e": "colorffffff"
-    };
-    const themeMapLight = {
-      "colorf0f0f0": "color252526",
-      "colorffffff": "color1e1e1e"
-    };
+
+    // Simplified theme switching: only toggle the output container classes and Monaco theme.
     const lightModeDiv = document.getElementById("lightMode");
     const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
         document.querySelectorAll(".outputContainer").forEach((element) => {
+          element.classList.remove("darkMode");
           element.classList.add("lightMode");
-          element.classList.remove("darkMode")
         });
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon" id="moon"></i>';
         darkModeFlag = false;
-        document.querySelectorAll(".theme").forEach((element) => {
-          element.classList.forEach((cls) => {
-            if (themeMapDark[cls]) {
-              element.classList.remove(cls);
-              element.classList.add(themeMapDark[cls]);
-            }
-          });
-        });
         monaco.editor.setTheme("vs-light");
-
-        // Reassign log classes for ALL existing tabs:
-        tabs.forEach(tab => {
-          let lines = tab.outputElement.querySelectorAll(".outputContent");
-          lines.forEach(line => {
-            if (line.classList.contains("dark-log")) {
-              line.classList.remove("dark-log");
-              line.classList.add("light-log");
-            } else if (line.classList.contains("dark-error")) {
-              line.classList.remove("dark-error");
-              line.classList.add("light-error");
-            } else if (line.classList.contains("dark-warn")) {
-              line.classList.remove("dark-warn");
-              line.classList.add("light-warn");
-            } else if (line.classList.contains("dark-info")) {
-              line.classList.remove("dark-info");
-              line.classList.add("light-info");
-            }
-            let promptSpan = line.querySelector(".dark-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("dark-prompt");
-              promptSpan.classList.add("light-prompt");
-            }
-          });
-        });
-
       } else {
         document.querySelectorAll(".outputContainer").forEach((element) => {
           element.classList.remove("lightMode");
-          element.classList.add("darkMode")
+          element.classList.add("darkMode");
         });
         lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
-        document.querySelectorAll(".theme").forEach((element) => {
-          element.classList.forEach((cls) => {
-            if (themeMapLight[cls]) {
-              element.classList.remove(cls);
-              element.classList.add(themeMapLight[cls]);
-            }
-          });
-        });
         monaco.editor.setTheme("custom-dark");
-
-        // Reassign log classes for ALL existing tabs:
-        tabs.forEach(tab => {
-          let lines = tab.outputElement.querySelectorAll(".outputContent");
-          lines.forEach(line => {
-            if (line.classList.contains("light-log")) {
-              line.classList.remove("light-log");
-              line.classList.add("dark-log");
-            } else if (line.classList.contains("light-error")) {
-              line.classList.remove("light-error");
-              line.classList.add("dark-error");
-            } else if (line.classList.contains("light-warn")) {
-              line.classList.remove("light-warn");
-              line.classList.add("dark-warn");
-            } else if (line.classList.contains("light-info")) {
-              line.classList.remove("light-info");
-              line.classList.add("dark-info");
-            }
-            let promptSpan = line.querySelector(".light-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("light-prompt");
-              promptSpan.classList.add("dark-prompt");
-            }
-          });
-        });
       }
       updateUndoRedoButtons();
     }
-
 
     function reorderTabsByTab(dId, tId, side) {
       let dIndex = tabs.findIndex((x) => x.id === dId);
@@ -1217,7 +1009,6 @@
 
       controlsBar.addEventListener('mousedown', function (e) {
         e.preventDefault();
-
         const overlay = document.createElement('div');
         overlay.style.position = 'fixed';
         overlay.style.top = '0';
@@ -1228,40 +1019,26 @@
         overlay.style.zIndex = '10000';
         overlay.style.backgroundColor = 'transparent';
         document.body.appendChild(overlay);
-
         let startY = e.clientY;
         let parentHeight = outputContainer.parentElement.clientHeight;
         let startHeight = outputContainer.offsetHeight;
-
         const MIN_HEIGHT = 30;
         const MAX_HEIGHT = 60;
-
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
-
-
           let newHeightPercent = (newHeight / parentHeight) * 100;
-
-
           newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
-
-
           outputContainer.style.height = newHeightPercent + '%';
         }
-
         function onMouseUp() {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
           overlay.remove();
         }
-
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
-
-
-
 
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
@@ -1460,26 +1237,21 @@ prompt("This is a prompt:");
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         pl.style.marginLeft = "4px";
-
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
-
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[?]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
-
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
         messageDiv.style.display = "flex";
         messageDiv.style.flexWrap = "wrap";
-
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
         pl.appendChild(flexContainer);
-
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
@@ -1521,32 +1293,26 @@ prompt("This is a prompt:");
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         alertLine.style.marginLeft = "4px";
-
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
-
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[!]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
-
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
         messageDiv.style.display = "flex";
         messageDiv.style.flexWrap = "wrap";
-
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
         alertLine.appendChild(flexContainer);
-
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
         okBtn.style.marginLeft = "10px";
         okBtn.textContent = "OK";
         alertLine.appendChild(okBtn);
-
         container.appendChild(alertLine);
         okBtn.focus();
         okBtn.addEventListener("click", () => {
@@ -1563,9 +1329,6 @@ prompt("This is a prompt:");
         });
       });
     }
-
-
-
 
     async function runTab() {
       let btn = document.getElementById("runButton");
@@ -1594,11 +1357,9 @@ prompt("This is a prompt:");
         w.onmessage = async (e) => {
           let type = e.data.type;
           let msg = e.data.message;
-
           if (!currentTab.groupStack) {
             currentTab.groupStack = [];
           }
-
           if (type === "group") {
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
@@ -1612,39 +1373,29 @@ prompt("This is a prompt:");
             const groupLevel = currentTab.groupStack.length;
             details.style.marginLeft = groupLevel ? "20px" : "4px";
             currentTab.groupStack.push(details);
-          }
-          else if (type === "groupEnd") {
+          } else if (type === "groupEnd") {
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               currentTab.groupStack.pop();
             }
-          }
-
-          else if (type === "prompt") {
+          } else if (type === "prompt") {
             await handlePrompt(msg, e.data.default, tab);
-          }
-          else if (type === "alert") {
+          } else if (type === "alert") {
             await handleAlert(msg, tab);
-          }
-          else if (type === "clear") {
+          } else if (type === "clear") {
             clearConsole(tab.outputElement);
-          }
-          else if (type === "table") {
+          } else if (type === "table") {
             appendTable(tab.outputElement, e.data);
-          }
-          else if (["log", "error", "warn", "info"].includes(type)) {
+          } else if (["log", "error", "warn", "info"].includes(type)) {
             const isForce = e.data.forceUse;
             appendToOutput(tab.outputElement, type, msg, isForce);
-          }
-          else if (type === "dir") {
+          } else if (type === "dir") {
             appendDir(tab.outputElement, msg);
           }
         }
-
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
           if (flexSwitchCheckDefault.checked) {
-            appendToOutput(tab.outputElement, "log",
-              "The script has finished running with exit code 1.", true);
+            appendToOutput(tab.outputElement, "log", "The script has finished running with exit code 1.", true);
           }
         };
         let code = tab.editorInstance.getValue();
@@ -1654,11 +1405,9 @@ prompt("This is a prompt:");
           sharedBuffer: tab.sharedBuffer,
           flexSwitchCheckDefault: flexSwitchCheckDefault.checked
         });
-      }
-      catch (ex) {
+      } catch (ex) {
         appendToOutput(tab.outputElement, "error", ex.message);
-        appendToOutput(tab.outputElement, "log",
-          "The script has finished running with exit code 1.", true);
+        appendToOutput(tab.outputElement, "log", "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
       nextWorker = new Worker(workerPath);
@@ -1666,7 +1415,6 @@ prompt("This is a prompt:");
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
     }
-
     function appendDir(outputDiv, obj) {
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
@@ -1676,14 +1424,11 @@ prompt("This is a prompt:");
       line.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       line.style.marginLeft = groupLevel ? "20px" : "4px";
-      let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
-      line.classList.add(styleClass);
+      line.classList.add("log");
       line.innerHTML = obj;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
-
-
     function lazyRenderTreeNode(key, tree) {
       if (typeof tree !== 'object' || tree === null) {
         const div = document.createElement('div');
@@ -1696,14 +1441,12 @@ prompt("This is a prompt:");
           content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
         }
         if (key !== null && key !== undefined) {
-
           div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
         } else {
           div.innerHTML = content;
         }
         return div;
       }
-
       let summaryText = "";
       let childrenTree = null;
       if (key !== null) {
@@ -1719,14 +1462,12 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
       summaryEl.className = 'objinsp objinsp-summary';
       summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
       detailsEl.appendChild(summaryEl);
-
       detailsEl.addEventListener('toggle', function () {
         if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
           const container = document.createElement('div');
@@ -1742,9 +1483,6 @@ prompt("This is a prompt:");
       });
       return detailsEl;
     }
-
-
-
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
@@ -1759,18 +1497,14 @@ prompt("This is a prompt:");
         groupLevel = 0;
       }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
-      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
-      line.classList.add(styleClass);
-
+      line.classList.add(type);
       let flexContainer = document.createElement("div");
       flexContainer.style.display = "flex";
       flexContainer.style.alignItems = "flex-start";
-
       let symbolDiv = document.createElement("div");
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
       symbolDiv.style.marginRight = "5px";
       symbolDiv.style.flexShrink = "0";
-
       let messageDiv = document.createElement("div");
       messageDiv.style.whiteSpace = "pre-wrap";
       messageDiv.style.display = "flex";
@@ -1778,10 +1512,8 @@ prompt("This is a prompt:");
       if (type === "error" && forceUse) {
         const lines = message.split("\n");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
-      }
-      else if (typeof message === "object") {
-        let actualMsg = "";
-        let subMsgDiv
+      } else if (typeof message === "object") {
+        let subMsgDiv;
         for (let key in message) {
           if (message[key][1]) {
             subMsgDiv = lazyRenderTreeNode(null, message[key][0])
@@ -1797,23 +1529,17 @@ prompt("This is a prompt:");
       } else {
         messageDiv.textContent = message;
       }
-
       flexContainer.appendChild(symbolDiv);
       flexContainer.appendChild(messageDiv);
       line.appendChild(flexContainer);
-
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
-
-
     function appendTable(outputElement, tableInfo) {
       let container = outputElement;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
-
-      // Determine the structure of the received table data.
       let tableData, headerOrder;
       if (
         tableInfo.table &&
@@ -1821,21 +1547,16 @@ prompt("This is a prompt:");
         "tableData" in tableInfo.table &&
         "headerOrder" in tableInfo.table
       ) {
-        // When buildTableData returns an object with tableData and headerOrder.
         tableData = tableInfo.table.tableData;
         headerOrder = tableInfo.table.headerOrder;
       } else if (tableInfo.table && typeof tableInfo.table === "object") {
-        // Fallback: when tableInfo.table is already the table data.
         tableData = tableInfo.table;
-        // Use the keys of tableData as header order; ensure "(index)" is first.
         headerOrder = Object.keys(tableData);
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
         appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
-
-      // Validate the extracted tableData and headerOrder.
       if (
         !tableData ||
         !Array.isArray(tableData["(index)"]) ||
@@ -1845,17 +1566,13 @@ prompt("This is a prompt:");
         appendToOutput(container, "log", "");
         return;
       }
-
       const rowCount = tableData["(index)"].length;
       const div = document.createElement("div");
       div.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       div.style.marginLeft = groupLevel ? "20px" : "4px";
-
       const table = document.createElement("table");
       table.classList.add("console-table");
-
-      // Create header row from headerOrder.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1867,8 +1584,6 @@ prompt("This is a prompt:");
       });
       thead.appendChild(headRow);
       table.appendChild(thead);
-
-      // Create table rows based on rowCount.
       const tbody = document.createElement("tbody");
       for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
@@ -1876,7 +1591,6 @@ prompt("This is a prompt:");
         headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
-
           let value = tableData[col] && tableData[col][i];
           if (typeof value === "object" && value !== null) {
             if (Array.isArray(value)) {
@@ -1915,8 +1629,6 @@ prompt("This is a prompt:");
         tbody.appendChild(tr);
       }
       table.appendChild(tbody);
-
-      // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
       symbolDiv.innerHTML = "[>]";
       table.style.marginLeft = "7px";
@@ -1926,12 +1638,6 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
-
-
-
-
-
-
     function objectToHTML(obj, level = 0) {
       if (obj === null) {
         return `<span style="opacity:0.7;">null</span>`;
@@ -2327,13 +2033,10 @@ prompt("This is a prompt:");
         }
       });
     }
-
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
     });
-
-    alert(2);
   </script>
 </body>
 
