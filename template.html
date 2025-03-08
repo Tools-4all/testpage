@@ -591,7 +591,11 @@
       vertical-align: top;
     }
 
-    .console-table-row:hover {
+    .outputContainer:not(.lightMode) .console-table-row:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .outputContainer:not(.darkMode) .console-table-row:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
 
@@ -924,6 +928,9 @@
         padding-right: 50px;
       }
     }
+
+    .lightMode{}
+    .darkMode{}
   </style>
 </head>
 
@@ -1067,6 +1074,10 @@
 
     function changeToLightMode() {
       if (darkModeFlag) {
+        document.querySelectorAll(".outputContainer").forEach((element) => {
+          element.classList.add("lightMode");
+          element.classList.remove("darkMode")
+        });
         lightModeDiv.innerHTML = '<i class="fa-regular fa-moon" id="moon"></i>';
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
@@ -1105,6 +1116,10 @@
         });
 
       } else {
+        document.querySelectorAll(".outputContainer").forEach((element) => {
+          element.classList.remove("lightMode");
+          element.classList.add("darkMode")
+        });
         lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         document.querySelectorAll(".theme").forEach((element) => {
@@ -1184,6 +1199,7 @@
       let outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
       outputContainer.classList.add("resize");
+      outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
       controlsBar.classList.add("theme");
