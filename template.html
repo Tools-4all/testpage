@@ -391,6 +391,8 @@
     }
 
     #addTabButton_media {
+      font-size: 25px;
+      margin-left: 0px;
       display: none;
     }
 
@@ -1307,6 +1309,7 @@
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
       let addTabBtn = document.getElementById("addTabButton");
+      let addTabBtn_media = document.getElementById("addTabButton_media");
       tabBar.appendChild(tabEl);
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
@@ -2045,7 +2048,10 @@ prompt("This is a prompt:");
           `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
-    document.getElementById("addTabButton").addEventListener("click", () => {
+    addTabBtn.addEventListener("click", () => {
+      createTab();
+    });
+    addTabBtn_media.addEventListener("click", () => {
       createTab();
     });
     document.getElementById("tabBar").addEventListener("click", (e) => {
