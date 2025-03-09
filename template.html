@@ -120,6 +120,20 @@
       min-width: 120px;
     }
 
+    .outputContainer:not(.lightMode) .vs-navbar {
+      background-color: #252526;
+      color: #cccccc;
+      border-color: #333 !important;
+      border-bottom-color: #333;
+    }
+
+    .outputContainer:not(.darkMode) .vs-navbar {
+      background-color: #f0f0f0;
+      color: #131313;
+      border-color: #c0c0c0 !important;
+      border-bottom-color: #c0c0c0;
+    }
+
     .vs-navbar-dropdown.active {
       display: block;
     }
@@ -955,6 +969,7 @@
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
+    <!-- <div class="vs-navbar theme color252526"> -->
     <div class="vs-navbar theme color252526">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
