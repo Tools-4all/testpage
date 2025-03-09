@@ -48,30 +48,20 @@ console.log("loaded ferre")
 
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
+    // Base case for primitives.
     if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-        let rep;
-        if (typeof value === 'string') {
-            rep = '"' + value + '"';
-        } else {
-            rep = value;
-        }
+        let rep = (typeof value === 'string') ? '"' + value + '"' : value;
         if (key !== null && key !== undefined) {
             let obj = {};
             obj[key] = rep;
             return obj;
-        } else {
-            return rep;
         }
+        return rep;
     }
 
+    // Avoid circular references.
     if (visited.has(value)) {
-        if (key !== null && key !== undefined) {
-            let obj = {};
-            obj[key] = "[Circular]";
-            return obj;
-        } else {
-            return "[Circular]";
-        }
+        return key !== null && key !== undefined ? { [key]: "[Circular]" } : "[Circular]";
     }
     visited.add(value);
 
@@ -79,96 +69,116 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        if (isPrototype) {
-            headerText = "Array(" + (value.length || 0) + ")";
-        } else {
-            headerText = "[]";
-        }
+        headerText = isPrototype ? "Array(" + value.length + ")" : "[]";
+    } else if (value instanceof Map) {
+        headerText = "Map(" + value.size + ")";
+    } else if (value instanceof Set) {
+        headerText = "Set(" + value.size + ")";
+    } else if (value instanceof WeakMap) {
+        headerText = "WeakMap";
+    } else if (value instanceof WeakSet) {
+        headerText = "WeakSet";
+    } else if (value instanceof Promise) {
+        headerText = "Promise";
+    } else if (ArrayBuffer.isView(value)) { // Handles TypedArrays.
+        headerText = value.constructor.name;
     } else {
         const objectToString = Object.prototype.toString.call(value);
         const match = objectToString.match(/^\[object (.+)\]$/);
         if (match && match[1] !== 'Object') {
             headerText = match[1];
-        } else if (match && match[1] === 'Object' && !isPrototype) {
-            headerText = "{}";
         } else {
-            headerText = "Object";
+            headerText = (match && match[1] === 'Object' && !isPrototype) ? "{}" : "Object";
         }
     }
 
     let children = {};
 
-    let props = [];
-    try {
-        props = Object.getOwnPropertyNames(value);
-    } catch (e) { }
-
-    props.forEach(function (prop) {
-        if (prop === "arguments") {
+    // Special handling for Maps.
+    if (value instanceof Map) {
+        value.forEach((v, k) => {
+            const keyStr = `Key: ${k}`;
+            children[keyStr] = createNodeObject(null, v, visited, depth + 1, false);
+        });
+    }
+    // Special handling for Sets.
+    else if (value instanceof Set) {
+        let index = 0;
+        value.forEach((v) => {
+            const keyStr = `Value ${index++}`;
+            children[keyStr] = createNodeObject(null, v, visited, depth + 1, false);
+        });
+    }
+    // Special handling for TypedArrays.
+    else if (ArrayBuffer.isView(value)) {
+        // Display the view as an array of its elements.
+        for (let i = 0; i < value.length; i++) {
+            children[i] = createNodeObject(null, value[i], visited, depth + 1, false);
+        }
+        // Add extra properties similar to DevTools.
+        children["buffer"] = createNodeObject("buffer", value.buffer, visited, depth + 1, false);
+        children["byteOffset"] = value.byteOffset;
+        children["byteLength"] = value.byteLength;
+        children["length"] = value.length;
+        // Display the toStringTag symbol value.
+        children[Symbol.toStringTag.toString()] = value[Symbol.toStringTag];
+    }
+    // Special handling for Promise.
+    else if (value instanceof Promise) {
+        // Since Promise internal state isn't accessible,
+        // you might use an instrumented promise or simply note that it is pending.
+        children["[[PromiseState]]"] = "(state not accessible)";
+        children["[[PromiseResult]]"] = "(result not accessible)";
+    }
+    else {
+        // Standard object: enumerate own properties.
+        let props = [];
+        try {
+            props = Object.getOwnPropertyNames(value);
+        } catch (e) { }
+        props.forEach(function (prop) {
             try {
-                const argVal = value[prop];
-                const child = createNodeObject(prop, argVal, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
-            } catch (e) {
-                children[prop] = "[Arguments not accessible]";
-            }
-        } else {
-            try {
-                const child = createNodeObject(prop, value[prop], visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
+                children[prop] = createNodeObject(prop, value[prop], visited, depth + 1, false);
             } catch (e) {
                 children[prop] = "(...)";
             }
-        }
-    });
+        });
 
-    let symbols = [];
-    try {
-        symbols = Object.getOwnPropertySymbols(value);
-    } catch (e) { }
-    symbols.forEach(function (sym) {
+        // Also enumerate symbol properties.
+        let symbols = [];
         try {
-            const child = createNodeObject(sym.toString(), value[sym], visited, depth + 1, false);
-            for (let k in child) {
-                children[k] = child[k];
+            symbols = Object.getOwnPropertySymbols(value);
+        } catch (e) { }
+        symbols.forEach(function (sym) {
+            try {
+                children[sym.toString()] = createNodeObject(sym.toString(), value[sym], visited, depth + 1, false);
+            } catch (e) {
+                children[sym.toString()] = "[Error retrieving property]";
+            }
+        });
+    }
+
+    // Add prototype info if available.
+    if (typeof value === 'object' && value !== null) {
+        try {
+            const proto = Object.getPrototypeOf(value);
+            if (proto) {
+                const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
+                // Merge prototype properties.
+                Object.assign(children, protoNode);
             }
         } catch (e) {
-            children[sym.toString()] = "[Error retrieving property]";
-        }
-    });
-
-    if (isPrototype && typeof value === 'object' && value !== null) {
-        const protoDesc = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
-        if (protoDesc) {
-            if (typeof protoDesc.get === 'function') {
-                const child = createNodeObject('get __proto__', protoDesc.get, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
-            }
-            if (typeof protoDesc.set === 'function') {
-                const child = createNodeObject('set __proto__', protoDesc.set, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
-            }
+            children['[[Prototype]]'] = "(...)";
         }
     }
 
-    try {
-        const proto = Object.getPrototypeOf(value);
-        if (proto) {
-            const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
-            for (let k in protoNode) {
-                children[k] = protoNode[k];
-            }
+    // For functions, also list the 'arguments' property if present.
+    if (typeof value === 'function' && value.hasOwnProperty('arguments')) {
+        try {
+            children["arguments"] = createNodeObject("arguments", value.arguments, visited, depth + 1, false);
+        } catch (e) {
+            children["arguments"] = "[Arguments not accessible]";
         }
-    } catch (e) {
-        children['[[Prototype]]'] = "(...)";
     }
 
     let node = {};
@@ -182,6 +192,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     visited.delete(value);
     return node;
 }
+
 
 function renderObject(obj) {
     const visited = new Set();
