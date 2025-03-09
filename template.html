@@ -1,52 +1,22 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Multi-Tab Sandboxed JS Compiler</title>
-  <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
+  <link rel="stylesheet" data-name="vs/editor/editor.main"
+    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* -------------------------------
-       Theme variables
-       ------------------------------- */
-    /* Default (dark) theme */
-    :root {
-      --bg-primary: #1e1e1e;
-      --text-primary: #d4d4d4;
-      --bg-secondary: #252526;
-      --text-secondary: #cccccc;
-      --border-secondary: #333;
-      --nav-bg: #252526;
-      --nav-text: #cccccc;
-      --button-bg: #46a22a;
-      --button-bg-hover: #35851d;
-      /* Additional colors for scrollbars, prompts, etc. can be added here */
-    }
-    /* Light theme overrides – these only take effect when .lightTheme is on the top-level container */
-    .lightTheme {
-      --bg-primary: #ffffff;
-      --text-primary: #000;
-      --bg-secondary: #f0f0f0;
-      --text-secondary: #131313;
-      --border-secondary: #c0c0c0;
-      --nav-bg: #f0f0f0;
-      --nav-text: #131313;
-      /* Button colors may remain the same or be adjusted as desired */
-      --button-bg: #46a22a;
-      --button-bg-hover: #35851d;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    /* -------------------------------
-       Base Reset
-       ------------------------------- */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* -------------------------------
-       Main Container
-       ------------------------------- */
     #compiler {
       position: relative;
       font-family: 'Fira Code', monospace;
@@ -54,14 +24,37 @@
       width: 60%;
       height: 500px;
       margin: 100px auto;
-      color: var(--text-primary);
-      background-color: var(--bg-primary);
+      color: #d4d4d4;
       overflow: hidden;
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
-    /* -------------------------------
-       Navbar and Logo
-       ------------------------------- */
+
+    .theme {}
+
+    .color1e1e1e {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+
+    .color252526 {
+      background-color: #252526;
+      color: #cccccc;
+      border-color: #333 !important;
+      border-bottom-color: #333;
+    }
+
+    .colorffffff {
+      background-color: #ffffff;
+      color: #000;
+    }
+
+    .colorf0f0f0 {
+      background-color: #f0f0f0;
+      color: #131313;
+      border-color: #c0c0c0 !important;
+      border-bottom-color: #c0c0c0;
+    }
+
     .vs-logo {
       position: absolute;
       top: 0;
@@ -73,6 +66,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .vs-logo img {
       height: 25px;
       width: 25px;
@@ -82,75 +76,95 @@
       user-select: none;
       -webkit-user-drag: none;
     }
+
     .vs-navbar {
       font-family: 'Fira Code', monospace;
       font-size: 14px;
       display: flex;
       padding: 5px 10px;
-      padding-left: 40px;
-      height: 30px;
-      border-bottom: 1px solid var(--border-secondary);
-      background-color: var(--nav-bg);
-      color: var(--nav-text);
+      padding-right: 5px;
+      border-bottom: 1px solid;
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       z-index: 1000;
+      padding-left: 40px;
+      height: 30px;
     }
+
     .vs-navbar-item {
       margin-right: 10px;
       margin-top: 1px;
       position: relative;
       cursor: pointer;
       padding: 5px;
+      padding-top: 1px;
       font-size: 12px;
       border-radius: 5px;
     }
-    .vs-navbar-item:hover { background-color: rgba(148,146,146,0.23); }
+
+    .vs-navbar-item:hover {
+      background-color: #9492923b;
+    }
+
     .vs-navbar-dropdown {
       display: none;
       position: absolute;
       top: 100%;
       left: 0;
-      border: 1px solid var(--border-secondary);
+      border: 1px solid #252526;
       border-radius: 4px;
       overflow: hidden;
       z-index: 1000;
       min-width: 120px;
-      background-color: var(--nav-bg);
-      color: var(--nav-text);
     }
-    .vs-navbar-dropdown.active { display: block; }
+
+    .vs-navbar-dropdown.active {
+      display: block;
+    }
+
     .vs-navbar-dropdown-item {
       padding: 8px 12px;
       cursor: pointer;
       white-space: nowrap;
     }
+
     .vs-navbar-dropdown-item:hover {
       background-color: #444;
-      color: #fff;
+      color: #ffffff;
     }
-    #lightMode, #fullScreenBtn {
-      cursor: pointer;
-      margin: 0 20px;
-    }
-    #fullScreenBtn { margin-top: 3px; margin-right: 7px; font-size: 13px; }
 
-    /* -------------------------------
-       Activity Bar and Sidebar
-       ------------------------------- */
+    .vs-navbar-dropdown-item.disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    #lightMode {
+      margin-left: 20px;
+      margin-right: 20px;
+      cursor: pointer;
+    }
+
+    #fullScreenBtn {
+      margin-top: 3px;
+      margin-right: 7px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
     #activityBar {
       width: 50px;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding-top: 10px;
-      border-right: 1px solid var(--border-secondary);
+      border-right: 1px solid #333;
       transition: width 0.3s ease;
       flex-shrink: 0;
       margin-top: 30px;
     }
+
     #activityBar .icon {
       padding: 12px 0;
       cursor: pointer;
@@ -160,6 +174,13 @@
       font-size: 20px;
       position: relative;
     }
+
+    /* #activityBar .icon:hover,
+    #activityBar .icon.active {
+      background-color: #3c3c3c;
+      color: #fff;
+    } */
+
     #activityBar .icon:hover:after {
       content: attr(data-label);
       position: absolute;
@@ -173,18 +194,22 @@
       white-space: nowrap;
       z-index: 9;
     }
+
     .sidebar-panel {
       width: 250px;
-      background-color: var(--bg-primary);
-      border-right: 1px solid var(--border-secondary);
+      background-color: #1e1e1e;
+      border-right: 1px solid #333;
       overflow-y: auto;
       padding: 10px;
       display: none;
       flex-shrink: 0;
       margin-top: 30px;
-      color: var(--text-primary);
     }
-    .sidebar-panel.active { display: block; }
+
+    .sidebar-panel.active {
+      display: block;
+    }
+
     #gitUrl {
       width: 100%;
       padding: 8px 10px;
@@ -192,13 +217,17 @@
       background-color: #2d2d2d;
       border: 1px solid #3c3c3c;
       border-radius: 4px;
-      color: var(--text-primary);
+      color: #d4d4d4;
       font-family: 'Fira Code', monospace;
       font-size: 14px;
       outline: none;
       transition: border-color 0.2s;
     }
-    #gitUrl:focus { border-color: #007acc; }
+
+    #gitUrl:focus {
+      border-color: #007acc;
+    }
+
     #loadGitButton {
       width: 100%;
       padding: 8px 10px;
@@ -211,8 +240,15 @@
       cursor: pointer;
       transition: background-color 0.2s;
     }
-    #loadGitButton:hover { background-color: #005f99; }
-    #tabSizeInput { width: 100%; }
+
+    #loadGitButton:hover {
+      background-color: #005f99;
+    }
+
+    #tabSizeInput {
+      width: 100%;
+    }
+
     .vs-range {
       -webkit-appearance: none;
       appearance: none;
@@ -223,24 +259,39 @@
       border-radius: 3px;
       cursor: pointer;
     }
-    .vs-range::-webkit-slider-thumb,
-    .vs-range::-moz-range-thumb {
+
+    .vs-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
       width: 14px;
       height: 14px;
       background: #007acc;
       border-radius: 50%;
       border: 2px solid #444;
-      box-shadow: 0 0 2px rgba(0,0,0,0.2);
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
-    .vs-range::-webkit-slider-thumb:hover,
-    .vs-range::-moz-range-thumb:hover { background: #119eff; }
-    .vs-range::-webkit-slider-thumb:active,
-    .vs-range::-moz-range-thumb:active { background: #0067a8; }
 
-    /* -------------------------------
-       Main Editor Area
-       ------------------------------- */
+    .vs-range::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #007acc;
+      border: 2px solid #444;
+      border-radius: 50%;
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+    }
+
+    .vs-range::-webkit-slider-thumb:hover,
+    .vs-range::-moz-range-thumb:hover {
+      background: #119eff;
+    }
+
+    .vs-range::-webkit-slider-thumb:active,
+    .vs-range::-moz-range-thumb:active {
+      background: #0067a8;
+    }
+
     #mainContainer {
       display: flex;
       flex-direction: column;
@@ -248,21 +299,31 @@
       margin-top: 30px;
       overflow: hidden;
     }
+
     #tabBar {
-      border-bottom: 1px solid var(--border-secondary);
+      border-bottom: 1px solid #333;
       display: flex;
       align-items: center;
       height: 36px;
       flex-shrink: 0;
       overflow: hidden;
     }
+
     #tabBar:hover {
       overflow-x: auto;
       overflow-y: hidden;
       transition: overflow 0.3s;
     }
-    #tabBar::-webkit-scrollbar { height: 4px; }
-    #tabBar::-webkit-scrollbar-thumb { background-color: #007acc; border-radius: 10px; }
+
+    #tabBar::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    #tabBar::-webkit-scrollbar-thumb {
+      background-color: #007acc;
+      border-radius: 10px;
+    }
+
     .tab {
       margin-right: 2px;
       margin-top: 3px;
@@ -273,13 +334,34 @@
       align-items: center;
       user-select: none;
       -webkit-user-drag: element;
-      background-color: var(--bg-secondary);
-      color: var(--nav-text);
     }
-    .tab .tab-title { margin-right: 15px; }
-    .tab .close { font-size: 12px; cursor: pointer; visibility: hidden; }
-    .tab:hover .close, .tab.active .close { visibility: visible; }
-    .tab:hover:not(.active) { background-color: rgba(255,255,255,0.1); }
+
+    .tab .tab-title {
+      margin-right: 15px;
+    }
+
+    .tab .close {
+      font-size: 12px;
+      cursor: pointer;
+      visibility: hidden
+    }
+
+    .tab:hover .close {
+      visibility: visible;
+    }
+
+    .tab.active .close {
+      visibility: visible;
+    }
+
+    .tab:hover:not(.active, .theme.colorffffff .tab) {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .tab:hover:not(.active, .theme.color1e1e1e .tab) {
+      background-color: rgba(0, 0, 0, 0.1) !important;
+    }
+
     .tab-title-edit {
       background: #555;
       border: 1px solid #666;
@@ -290,6 +372,7 @@
       font-family: inherit;
       outline: none;
     }
+
     #addTabButton {
       background: none;
       color: #c5c5c5;
@@ -300,33 +383,70 @@
       flex-shrink: 0;
       transition: color 0.2s;
     }
-    #addTabButton:hover { color: #fff; }
-    #tabsContainer { position: relative; flex: 1; overflow: hidden; }
+
+    #addTabButton:hover {
+      color: #fff;
+    }
+
+    #tabsContainer {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
     .editor-and-output {
       display: none;
       flex-direction: column;
       position: absolute;
-      top: 0; bottom: 0; left: 0; right: 0;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
     }
-    .editor-and-output.active { display: flex; margin-top: -1px; }
-    .editorContainer { flex: 1; position: relative; min-height: 0; }
-    .monaco-editor { width: 100%; height: 100%; }
+
+    .editor-and-output.active {
+      display: flex;
+      margin-top: -1px
+    }
+
+    .editorContainer {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+    }
+
+    .monaco-editor {
+      width: 100%;
+      height: 100%;
+    }
+
     .outputContainer {
       display: flex;
       flex-direction: column;
     }
-    .resize { height: 30%; }
+
+    .resize {
+      height: 30%;
+    }
+
+    .monaco-editor .find-widget.visible .controls {
+      padding: 0px !important;
+      border: none !important;
+    }
+
     .controls {
       padding: 4px;
       cursor: ns-resize;
       user-select: none;
-      border-top: 1px solid var(--border-secondary);
-      border-bottom: 1px solid var(--border-secondary);
+      border-top: 1px solid;
+      border-bottom: 1px solid;
     }
+
+
     #runButton {
       margin-left: auto;
       padding: 10px 12px;
-      background-color: var(--button-bg);
+      background-color: #46a22a;
       color: white;
       border: none;
       cursor: pointer;
@@ -336,8 +456,15 @@
       align-items: center;
       transition: background-color 0.3s;
     }
-    #runButton:hover { background-color: var(--button-bg-hover); }
-    #runButton i { margin-right: 5px; }
+
+    #runButton:hover {
+      background-color: #35851d;
+    }
+
+    #runButton i {
+      margin-right: 5px;
+    }
+
     .output {
       flex: 1;
       padding: 10px;
@@ -345,23 +472,54 @@
       font-family: 'Fira Code', monospace;
       font-size: 14px;
       white-space: pre-wrap;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
       overflow: hidden;
     }
-    .output:hover { overflow: auto; transition: overflow 0.3s; }
-    .output::-webkit-scrollbar { width: 8px; }
-    .output::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-    .output::-webkit-scrollbar-thumb:hover { background: #555; }
-    .output::-webkit-scrollbar-horizontal { height: 8px; }
-    .outputContent { margin-top: 2px; display: flex; flex-grow: 1; flex-shrink: 0; }
-    .prompt-line { display: flex; align-items: center; font-size: 14px; }
-    .prompt-line span { margin-right: 5px; white-space: pre; }
+
+    .output:hover {
+      overflow: auto;
+      transition: overflow 0.3s;
+    }
+
+    .output::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .output::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    .output::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    .output::-webkit-scrollbar-horizontal {
+      height: 8px;
+    }
+
+    .outputContent {
+      margin-top: 2px;
+      display: flex;
+      flex-grow: 1;
+      flex-shrink: 0;
+    }
+
+    .prompt-line {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .prompt-line span {
+      margin-right: 5px;
+      white-space: pre;
+    }
+
     .promptInput {
       flex: 1;
       padding: 0;
       margin: 0;
-      border: 1px solid var(--border-secondary);
+      border: none;
       outline: none;
       background: transparent;
       font-family: 'Fira Code', monospace;
@@ -370,23 +528,33 @@
       margin-left: 10px;
       padding-left: 5px;
       padding-right: 5px;
+      border: 1px solid #333;
       border-radius: 4px;
     }
+
     #statusBar {
       height: 24px;
-      border-top: 1px solid var(--border-secondary);
+      border-top: 1px solid #333;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 10px;
       font-size: 12px;
       flex-shrink: 0;
-      background-color: var(--bg-secondary);
-      color: var(--nav-text);
     }
-    .status-item { margin-right: 10px; }
-    .tab-drop-left { box-shadow: inset 4px 0 0 0 #007acc; }
-    .tab-drop-right { box-shadow: inset -4px 0 0 0 #007acc; }
+
+    .status-item {
+      margin-right: 10px;
+    }
+
+    .tab-drop-left {
+      box-shadow: inset 4px 0 0 0 #007acc;
+    }
+
+    .tab-drop-right {
+      box-shadow: inset -4px 0 0 0 #007acc;
+    }
+
     .vs-button {
       background-color: #0e639c;
       color: #ffffff;
@@ -397,42 +565,286 @@
       font-size: 14px;
       cursor: pointer;
     }
-    .vs-button:hover { background-color: #1177bb; }
+
+    .vs-button:hover {
+      background-color: #1177bb;
+    }
+
     .console-table {
       border-collapse: collapse;
       font-size: 14px;
       margin-top: 4px;
+      width: auto;
       width: 100%;
       max-width: 1200px;
       line-break: anywhere;
     }
-    .console-table thead { font-weight: bold; }
+
+    q .console-table thead {
+      font-weight: bold;
+    }
+
     .console-table th,
     .console-table td {
-      border: 1px solid var(--border-secondary);
+      border: 1px solid #333;
       padding: 4px 8px;
       vertical-align: top;
     }
-    .outputContainer .console-table thead .console-table-header:hover,
-    .outputContainer .console-table tbody .console-table-row:hover {
-      background-color: rgba(255,255,255,0.1);
+
+    .outputContainer:not(.lightMode) .console-table thead .console-table-header:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
+
+    .outputContainer:not(.darkMode) .console-table thead .console-table-header:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .outputContainer:not(.lightMode) .console-table tbody .console-table-row:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .outputContainer:not(.darkMode) .console-table tbody .console-table-row:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
     #undoBtn,
-    #redoBtn { margin-top: 3px; font-size: 11px; }
-    #undoBtn { margin-right: 10px; }
-    /* -------------------------------
-       Log / Output styling – unified per container mode
-       ------------------------------- */
-    /* In .outputContainer the actual line (which has classes “log”, “error”, “warn”, “info”, “prompt”) 
-       will be styled by virtue of being inside a container that inherits the overall text color.
-       (Additional emphasis such as red for errors may be done here if desired.) */
-    .outputContainer .error { color: #FF6666; }
-    .outputContainer .warn { color: #FFFF66; }
-    .outputContainer .info { color: #74cbfb; }
-    .outputContainer .prompt { color: #99FF99; }
-    /* -------------------------------
-       Miscellaneous
-       ------------------------------- */
+    #redoBtn {
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    #undoBtn {
+      margin-right: 10px;
+    }
+
+
+    .theme.color1e1e1e .tab {
+      background-color: #2c2c2c;
+      color: #ffffff;
+    }
+
+    .theme.color1e1e1e .tab.active {
+      background-color: #1c1c1c;
+    }
+
+    .tab.active {
+      border-top: 1px solid #007acc !important;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -2px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+
+
+    .theme.color1e1e1e #statusBar {
+      background-color: #2c2c2c;
+      color: #cccccc;
+    }
+
+    #activityBar.theme.color252526 .icon:hover,
+    #activityBar.theme.color252526 .icon.active {
+      background-color: #3c3c3c;
+      color: #fff;
+    }
+
+    .theme.color1e1e1e .sidebar-panel.active {
+      background-color: #2b2b2b;
+      color: #ffffff;
+      border-color: #3c3c3c !important;
+    }
+
+    .theme.color1e1e1e .sidebar-panel.active #gitUrl {
+      background-color: #3c3c3c;
+      border-color: #4c4c4c;
+      color: #ffffff;
+    }
+
+    .theme.color1e1e1e .sidebar-panel.active .vs-range {
+      background-color: #3c3c3c;
+      border: 1px solid #4c4c4c;
+    }
+
+    .theme.color1e1e1e .output {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+
+    .theme.color1e1e1e .console-table thead {
+      background-color: #3c3c3c;
+      color: #ffffff;
+    }
+
+    .theme.color1e1e1e .console-table td,
+    .theme.color1e1e1e .console-table th {
+      color: #d4d4d4;
+    }
+
+    .dark-log {
+      color: #BBBBBB !important;
+    }
+
+    .dark-error {
+      color: #FF6666 !important;
+    }
+
+    .dark-warn {
+      color: #FFFF66 !important;
+    }
+
+    .dark-info {
+      color: #74cbfb !important;
+    }
+
+    .dark-prompt {
+      color: #99FF99 !important;
+    }
+
+    .theme.colorffffff .tab {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
+    .theme.colorffffff .tab {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
+    .theme.colorffffff .tab.active {
+      background-color: #d0d0d0;
+      border-top: 1px solid #007acc !important;
+    }
+
+    .theme.colorffffff #statusBar {
+      background-color: #ecebeb;
+      color: #000000;
+      border-color: #c0c0c0 !important;
+    }
+
+    .theme.colorf0f0f0.vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
+      background-color: #c0c0c0;
+      color: black;
+    }
+
+    #tabBar.theme.colorf0f0f0 #addTabButton {
+      color: #636262 !important;
+    }
+
+
+    #tabBar.theme.colorf0f0f0 #addTabButton:hover {
+      color: #000000 !important;
+    }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526.output::-webkit-scrollbar-corner {
+      background: #252526;
+    }
+
+    .theme.colorf0f0f0.output::-webkit-scrollbar-corner {
+      background: #f0f0f0;
+    }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+
+    #activityBar.theme.colorf0f0f0 .icon {
+      color: #9b9a9a !important;
+    }
+
+    #activityBar.theme.colorf0f0f0 .icon:hover,
+    #activityBar.theme.colorf0f0f0 .icon.active {
+      background-color: rgb(183, 182, 182);
+      color: #eae8e8 !important;
+    }
+
+    #activityBar.theme.colorf0f0f0 .icon:hover:after {
+      background: #acabab;
+    }
+
+    .theme.colorf0f0f0 #activityBar .icon {
+      color: #9b9a9a !important;
+    }
+
+    .theme.colorffffff .sidebar-panel.active {
+      background-color: #eeeeee;
+      color: #000000;
+      border-color: #c0c0c0 !important;
+    }
+
+    .theme.colorffffff .sidebar-panel.active #gitUrl {
+      background-color: #f9f9f9;
+      border-color: #c0c0c0;
+      color: #000000;
+    }
+
+    .theme.colorffffff .sidebar-panel.active .vs-range {
+      background-color: #f9f9f9;
+      border: 1px solid #c0c0c0;
+    }
+
+    .theme.colorf0f0f0 .controls {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526 .controls {
+      background-color: #444;
+    }
+
+    .theme.colorffffff .output {
+      background-color: #f9f9f9;
+      color: #000;
+    }
+
+    .theme.colorffffff .console-table thead {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    .theme.colorffffff .console-table td,
+    .theme.colorffffff .console-table th {
+      color: #333333;
+    }
+
+    .light-log {
+      color: #444444 !important;
+    }
+
+    .light-error {
+      color: #cc0000 !important;
+    }
+
+    .light-warn {
+      color: #cc9a00 !important;
+    }
+
+    .light-info {
+      color: #0066cc !important;
+    }
+
+    .light-prompt {
+      color: #008000 !important;
+    }
+
+    .theme.color1e1e1e .prompt-line input {
+      color: #ffffff;
+    }
+
+    .theme.colorffffff .prompt-line input {
+      color: #000000;
+    }
+
     #moon {
       font-size: 17px;
       height: 20px;
@@ -440,52 +852,115 @@
       padding-top: 2px;
       padding-left: 4px;
     }
-    .objinsp-summary { cursor: pointer; color: var(--text-primary); }
-    .objinsp-highlight-key { color: #9cdcfe; margin-left: 10px; }
-    .objinsp-highlight-string { color: #ce9178; }
-    .objinsp-highlight-number { color: #b5cea8; }
-    .objinsp-highlight-primitive { color: #ce9178; }
-    .objinsp-highlight-type { color: #4ec9b0; }
-    .objinsp-node { color: var(--text-primary); margin-left: 10px; }
-    .objinsp-dark:hover { background-color: rgba(0, 0, 0, 0.04); }
-    .objinsp:hover { background-color: rgba(255, 255, 255, 0.04); }
-    /* -------------------------------
-       Responsive
-       ------------------------------- */
+
+    .objinsp-summary {
+      cursor: pointer;
+      color: #d4d4d4;
+    }
+
+    .objinsp-highlight-key {
+      color: #9cdcfe;
+      margin-left: 10px;
+    }
+
+    .objinsp-highlight-string {
+      color: #ce9178;
+    }
+
+    .objinsp-highlight-number {
+      color: #b5cea8;
+    }
+
+    .objinsp-highlight-primitive {
+      color: #ce9178;
+    }
+
+    .objinsp-highlight-type {
+      color: #4ec9b0;
+    }
+
+    .objinsp-node {
+      color: #d4d4d4;
+      margin-left: 10px;
+    }
+
+    .objinsp-dark:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .objinsp:hover {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
     @media (max-width: 768px) {
-      #lightMode { margin: 0 10px; }
-      #activityBar { width: 40px; }
-      #activityBar .icon { font-size: 18px; padding: 10px 0; }
-      .sidebar-panel { width: 200px; }
-      #runButton { padding: 6px 10px; font-size: 12px; }
-      #statusBar { left: 50px; }
-      .iPadShowKeyboard { display: none !important; }
-      #activityBar .icon:hover:after { display: none; }
+
+      #lightMode {
+        margin-left: 10px;
+        margin-right: 10px;
+      }
+
+      #activityBar {
+        width: 40px;
+      }
+
+      #activityBar .icon {
+        font-size: 18px;
+        padding: 10px 0;
+      }
+
+      .sidebar-panel {
+        width: 200px;
+      }
+
+      #runButton {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+
+      #statusBar {
+        left: 50px;
+      }
+
+      .iPadShowKeyboard {
+        display: none !important;
+      }
+
+      #activityBar .icon:hover:after {
+        display: none;
+      }
     }
+
     @media (max-width: 675px) {
-      .sidebar-panel { width: 100%; padding-right: 50px; }
+      .sidebar-panel {
+        width: 100%;
+        padding-right: 50px;
+      }
     }
+
+    .lightMode {}
+
+    .darkMode {}
   </style>
 </head>
+
 <body>
-  <!-- Note: The #compiler element now carries the theme class. Initially darkTheme is used. -->
-  <div id="compiler" class="theme darkTheme">
+  <div id="compiler" class="theme color1e1e1e">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
-    <div class="vs-navbar">
+    <div class="vs-navbar theme color252526">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
-        <div class="vs-navbar-dropdown" id="fileDropdown">
+        <div class="theme color252526 vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
           <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
-        <div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item"></div>
-          <div class="vs-navbar-dropdown-item"></div>
+        <div class="theme color252526 vs-navbar-dropdown" id="editDropdown">
+          <div class="vs-navbar-dropdown-item"> </div>
+          <div class="vs-navbar-dropdown-item"> </div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -494,9 +969,8 @@
         <i class="fas fa-play"></i> Run
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
-      <div id="lightMode" onclick="toggleTheme()">
-        <!-- Initially showing a sun icon in dark mode -->
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div id="lightMode" onclick="changeToLightMode()">
+        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
           <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
@@ -512,7 +986,7 @@
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-    <div id="activityBar">
+    <div id="activityBar" class="theme color252526">
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
       </div>
@@ -538,7 +1012,7 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar"></div>
+      <div id="tabBar" class="theme color252526"></div>
       <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
@@ -558,14 +1032,13 @@
     let tabs = [];
     let activeTabId = null;
     let draggedTabId = null;
-    // We'll now use a simple boolean to track dark vs light.
-    let darkTheme = true;
+    let lastDropSide = null;
+    let darkModeFlag = true;
     let nextWorker;
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
-
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -597,34 +1070,123 @@
         }
       }
     });
-    // Simply toggle the theme by switching the top-level class and setting Monaco’s theme.
-    function toggleTheme() {
-      if (darkTheme) {
-        compiler.classList.remove("darkTheme");
-        compiler.classList.add("lightTheme");
+    const themeMapDark = {
+      "color252526": "colorf0f0f0",
+      "color1e1e1e": "colorffffff"
+    };
+    const themeMapLight = {
+      "colorf0f0f0": "color252526",
+      "colorffffff": "color1e1e1e"
+    };
+    const lightModeDiv = document.getElementById("lightMode");
+    const sunSvg = lightModeDiv.innerHTML;
+
+    function changeToLightMode() {
+      if (darkModeFlag) {
+        document.querySelectorAll(".outputContainer").forEach((element) => {
+          element.classList.add("lightMode");
+          element.classList.remove("darkMode")
+        });
+        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon" id="moon"></i>';
+        darkModeFlag = false;
+        document.querySelectorAll(".theme").forEach((element) => {
+          element.classList.forEach((cls) => {
+            if (themeMapDark[cls]) {
+              element.classList.remove(cls);
+              element.classList.add(themeMapDark[cls]);
+            }
+          });
+        });
         monaco.editor.setTheme("vs-light");
-        darkTheme = false;
+
+        // Reassign log classes for ALL existing tabs:
+        tabs.forEach(tab => {
+          let lines = tab.outputElement.querySelectorAll(".outputContent");
+          lines.forEach(line => {
+            if (line.classList.contains("dark-log")) {
+              line.classList.remove("dark-log");
+              line.classList.add("light-log");
+            } else if (line.classList.contains("dark-error")) {
+              line.classList.remove("dark-error");
+              line.classList.add("light-error");
+            } else if (line.classList.contains("dark-warn")) {
+              line.classList.remove("dark-warn");
+              line.classList.add("light-warn");
+            } else if (line.classList.contains("dark-info")) {
+              line.classList.remove("dark-info");
+              line.classList.add("light-info");
+            }
+            let promptSpan = line.querySelector(".dark-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("dark-prompt");
+              promptSpan.classList.add("light-prompt");
+            }
+          });
+        });
+
       } else {
-        compiler.classList.remove("lightTheme");
-        compiler.classList.add("darkTheme");
+        document.querySelectorAll(".outputContainer").forEach((element) => {
+          element.classList.remove("lightMode");
+          element.classList.add("darkMode")
+        });
+        lightModeDiv.innerHTML = sunSvg;
+        darkModeFlag = true;
+        document.querySelectorAll(".theme").forEach((element) => {
+          element.classList.forEach((cls) => {
+            if (themeMapLight[cls]) {
+              element.classList.remove(cls);
+              element.classList.add(themeMapLight[cls]);
+            }
+          });
+        });
         monaco.editor.setTheme("custom-dark");
-        darkTheme = true;
+
+        // Reassign log classes for ALL existing tabs:
+        tabs.forEach(tab => {
+          let lines = tab.outputElement.querySelectorAll(".outputContent");
+          lines.forEach(line => {
+            if (line.classList.contains("light-log")) {
+              line.classList.remove("light-log");
+              line.classList.add("dark-log");
+            } else if (line.classList.contains("light-error")) {
+              line.classList.remove("light-error");
+              line.classList.add("dark-error");
+            } else if (line.classList.contains("light-warn")) {
+              line.classList.remove("light-warn");
+              line.classList.add("dark-warn");
+            } else if (line.classList.contains("light-info")) {
+              line.classList.remove("light-info");
+              line.classList.add("dark-info");
+            }
+            let promptSpan = line.querySelector(".light-prompt");
+            if (promptSpan) {
+              promptSpan.classList.remove("light-prompt");
+              promptSpan.classList.add("dark-prompt");
+            }
+          });
+        });
       }
       updateUndoRedoButtons();
     }
+
+
     function reorderTabsByTab(dId, tId, side) {
-      let dIndex = tabs.findIndex(x => x.id === dId);
-      let tIndex = tabs.findIndex(x => x.id === tId);
+      let dIndex = tabs.findIndex((x) => x.id === dId);
+      let tIndex = tabs.findIndex((x) => x.id === tId);
       if (dIndex < 0 || tIndex < 0) return;
       let removed = tabs.splice(dIndex, 1)[0];
       let newI = tIndex + (side === "right" ? 1 : 0);
       if (dIndex < tIndex) newI--;
       tabs.splice(newI, 0, removed);
       let b = document.getElementById("tabBar");
-      tabs.forEach(x => { b.appendChild(x.tabElement); });
+      tabs.forEach((x) => {
+        b.appendChild(x.tabElement);
+      });
     }
     function createTab(desiredName = null, content = null) {
-      let name = desiredName ? getUniqueTabName(desiredName) : getNextTabName();
+      let name = desiredName
+        ? getUniqueTabName(desiredName)
+        : getNextTabName();
       let id = Date.now();
       let sharedBuffer = new SharedArrayBuffer(1024);
       let view = new Int32Array(sharedBuffer);
@@ -644,13 +1206,18 @@
       editorContainer.classList.add("editorContainer");
       editorOutputWrapper.appendChild(editorContainer);
       let outputContainer = document.createElement("div");
-      outputContainer.classList.add("outputContainer", "resize");
-      // outputContainer automatically “inherits” the current theme from the #compiler.
+      outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("resize");
+      outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
-      controlsBar.classList.add("controls", "theme");
+      controlsBar.classList.add("controls");
+      controlsBar.classList.add("theme");
+      controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
       outputContainer.appendChild(controlsBar);
-      controlsBar.addEventListener('mousedown', function(e) {
+
+      controlsBar.addEventListener('mousedown', function (e) {
         e.preventDefault();
+
         const overlay = document.createElement('div');
         overlay.style.position = 'fixed';
         overlay.style.top = '0';
@@ -661,26 +1228,41 @@
         overlay.style.zIndex = '10000';
         overlay.style.backgroundColor = 'transparent';
         document.body.appendChild(overlay);
+
         let startY = e.clientY;
         let parentHeight = outputContainer.parentElement.clientHeight;
         let startHeight = outputContainer.offsetHeight;
+
         const MIN_HEIGHT = 30;
         const MAX_HEIGHT = 60;
+
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
+
+
           let newHeightPercent = (newHeight / parentHeight) * 100;
+
+
           newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
+
+
           outputContainer.style.height = newHeightPercent + '%';
         }
+
         function onMouseUp() {
           document.removeEventListener('mousemove', onMouseMove);
           document.removeEventListener('mouseup', onMouseUp);
           overlay.remove();
         }
+
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
       });
+
+
+
+
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
       outputDiv.setAttribute("tabindex", "0");
@@ -697,12 +1279,13 @@
       outputContainer.appendChild(outputDiv);
       editorOutputWrapper.appendChild(outputContainer);
       let tabBar = document.getElementById("tabBar");
+      let addTabBtn = document.getElementById("addTabButton");
       tabBar.appendChild(tabEl);
       let tabsContainer = document.getElementById("tabsContainer");
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
-        theme: darkTheme ? "custom-dark" : "vs-light",
+        theme: darkModeFlag ? "custom-dark" : "vs-light",
         automaticLayout: true,
         tabSize: spaces,
         insertSpaces: true,
@@ -732,7 +1315,7 @@
         fixedOverflowWidgets: true,
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
-        const tabSizeNum = editorInstance.getModel().getOptions().tabSize;
+        const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
           tabSizeInput.value = tabSizeNum;
           tabSizeInput.dispatchEvent(new Event("input"));
@@ -751,8 +1334,13 @@
         editorAndOutput: editorOutputWrapper
       };
       tabs.push(tabObj);
-      editorInstance.onDidChangeCursorPosition(() => { updateStatusPosition(); });
-      closeIcon.addEventListener("click", (e) => { e.stopPropagation(); closeTab(id); });
+      editorInstance.onDidChangeCursorPosition(() => {
+        updateStatusPosition();
+      });
+      closeIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeTab(id);
+      });
       tabEl.addEventListener("dragstart", (ev) => {
         switchTab(id);
         ev.dataTransfer.setData("text/plain", "");
@@ -764,7 +1352,8 @@
         tabEl.classList.remove("dragging");
         draggedTabId = null;
         lastDropSide = null;
-        document.querySelectorAll(".tab").forEach(m => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
+        document.querySelectorAll(".tab")
+          .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
       });
       tabEl.addEventListener("dragover", (ev) => {
         ev.preventDefault();
@@ -781,7 +1370,9 @@
           lastDropSide = "right";
         }
       });
-      tabEl.addEventListener("dragleave", () => { tabEl.classList.remove("tab-drop-left", "tab-drop-right"); });
+      tabEl.addEventListener("dragleave", () => {
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
+      });
       tabEl.addEventListener("drop", (ev) => {
         ev.preventDefault();
         tabEl.classList.remove("tab-drop-left", "tab-drop-right");
@@ -789,9 +1380,12 @@
         reorderTabsByTab(draggedTabId, id, lastDropSide);
         lastDropSide = null;
       });
-      titleSpan.addEventListener("dblclick", () => { makeTabTitleEditable(tabObj); });
-      if (content !== null) { editorInstance.setValue(content); }
-      else {
+      titleSpan.addEventListener("dblclick", () => {
+        makeTabTitleEditable(tabObj);
+      });
+      if (content !== null) {
+        editorInstance.setValue(content);
+      } else {
         editorInstance.setValue(`// ${name}
 console.log("This is a log");
 console.info("This is an info");
@@ -806,7 +1400,9 @@ prompt("This is a prompt:");
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
       let suffix = 1;
-      while (tabs.some(t => t.id !== tabId && t.name.toLowerCase() === candidate.toLowerCase())) {
+      while (tabs.some((t) =>
+        t.id !== tabId && t.name.toLowerCase() === candidate.toLowerCase()
+      )) {
         candidate = baseName + `(${suffix++})`;
       }
       return candidate;
@@ -824,13 +1420,13 @@ prompt("This is a prompt:");
     }
     function switchTab(tabId) {
       if (activeTabId !== null) {
-        let current = tabs.find(x => x.id === activeTabId);
+        let current = tabs.find((x) => x.id === activeTabId);
         if (current) {
           current.tabElement.classList.remove("active");
           current.editorAndOutput.classList.remove("active");
         }
       }
-      let newTab = tabs.find(x => x.id === tabId);
+      let newTab = tabs.find((x) => x.id === tabId);
       if (newTab) {
         newTab.tabElement.classList.add("active");
         newTab.editorAndOutput.classList.add("active");
@@ -840,16 +1436,22 @@ prompt("This is a prompt:");
       }
     }
     function closeTab(tabId) {
-      let i = tabs.findIndex(x => x.id === tabId);
+      let i = tabs.findIndex((x) => x.id === tabId);
       if (i === -1) return;
       let obj = tabs[i];
-      if (obj.worker) { obj.worker.terminate(); obj.worker = null; }
+      if (obj.worker) {
+        obj.worker.terminate();
+        obj.worker = null;
+      }
       obj.tabElement.remove();
       obj.editorAndOutput.remove();
       tabs.splice(i, 1);
       if (activeTabId === tabId) {
-        if (tabs.length > 0) { switchTab(tabs[tabs.length - 1].id); }
-        else { activeTabId = null; }
+        if (tabs.length > 0) {
+          switchTab(tabs[tabs.length - 1].id);
+        } else {
+          activeTabId = null;
+        }
       }
     }
     async function handlePrompt(message, defaultValue, tab) {
@@ -858,26 +1460,33 @@ prompt("This is a prompt:");
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
         pl.style.marginLeft = "4px";
+
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
+
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[?]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
+
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
         messageDiv.style.display = "flex";
         messageDiv.style.flexWrap = "wrap";
+
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
         pl.appendChild(flexContainer);
+
         let inp = document.createElement("input");
         inp.type = "text";
         inp.autocomplete = "off";
         inp.classList.add("promptInput");
-        if (defaultValue) { inp.value = defaultValue; }
+        if (defaultValue) {
+          inp.value = defaultValue;
+        }
         inp.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             let val = inp.value.trim();
@@ -905,32 +1514,39 @@ prompt("This is a prompt:");
         inp.focus();
       });
     }
+
     async function handleAlert(message, tab) {
       return new Promise((resolve) => {
         let container = tab.outputElement;
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
         alertLine.style.marginLeft = "4px";
+
         let flexContainer = document.createElement("div");
         flexContainer.style.display = "flex";
         flexContainer.style.alignItems = "flex-start";
+
         let symbolDiv = document.createElement("div");
         symbolDiv.textContent = `[!]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
+
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
         messageDiv.style.whiteSpace = "pre-wrap";
         messageDiv.style.display = "flex";
         messageDiv.style.flexWrap = "wrap";
+
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
         alertLine.appendChild(flexContainer);
+
         const okBtn = document.createElement("button");
         okBtn.classList.add("vs-button");
         okBtn.style.marginLeft = "10px";
         okBtn.textContent = "OK";
         alertLine.appendChild(okBtn);
+
         container.appendChild(alertLine);
         okBtn.focus();
         okBtn.addEventListener("click", () => {
@@ -947,104 +1563,170 @@ prompt("This is a prompt:");
         });
       });
     }
+
+
+
+
     async function runTab() {
       let btn = document.getElementById("runButton");
       btn.disabled = true;
-      let tab = tabs.find(x => x.id === currentTab.id);
-      if (!tab) { btn.disabled = false; return; }
+      let tab = tabs.find((x) => x.id === currentTab.id);
+      if (!tab) {
+        btn.disabled = false;
+        return;
+      }
       try {
         clearConsole(tab.outputElement);
-        if (tab.worker) { tab.worker.terminate(); tab.worker = null; }
+        if (tab.worker) {
+          tab.worker.terminate();
+          tab.worker = null;
+        }
         await cacheWorkerCode();
         tab.groupStack = [];
         let w;
-        if (!nextWorker) { w = new Worker(workerPath); }
-        else { w = nextWorker; nextWorker = null; }
+        if (!nextWorker) {
+          w = new Worker(workerPath);
+        } else {
+          w = nextWorker;
+          nextWorker = null;
+        }
         tab.worker = w;
         w.onmessage = async (e) => {
           let type = e.data.type;
           let msg = e.data.message;
-          if (!currentTab.groupStack) { currentTab.groupStack = []; }
+
+          if (!currentTab.groupStack) {
+            currentTab.groupStack = [];
+          }
+
           if (type === "group") {
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
             summary.textContent = msg;
             details.appendChild(summary);
-            let parentContainer = currentTab.groupStack.length > 0 ? currentTab.groupStack[currentTab.groupStack.length - 1] : currentTab.outputElement;
+            let parentContainer = currentTab.groupStack.length > 0 ?
+              currentTab.groupStack[currentTab.groupStack.length - 1] :
+              currentTab.outputElement;
             parentContainer.appendChild(details);
             const groupLevel = currentTab.groupStack.length;
             details.style.marginLeft = groupLevel ? "20px" : "4px";
             currentTab.groupStack.push(details);
-          } else if (type === "groupEnd") {
-            if (currentTab.groupStack && currentTab.groupStack.length > 0) { currentTab.groupStack.pop(); }
-          } else if (type === "prompt") {
+          }
+          else if (type === "groupEnd") {
+            if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+              currentTab.groupStack.pop();
+            }
+          }
+
+          else if (type === "prompt") {
             await handlePrompt(msg, e.data.default, tab);
-          } else if (type === "alert") {
+          }
+          else if (type === "alert") {
             await handleAlert(msg, tab);
-          } else if (type === "clear") {
+          }
+          else if (type === "clear") {
             clearConsole(tab.outputElement);
-          } else if (type === "table") {
+          }
+          else if (type === "table") {
             appendTable(tab.outputElement, e.data);
-          } else if (["log", "error", "warn", "info"].includes(type)) {
+          }
+          else if (["log", "error", "warn", "info"].includes(type)) {
             const isForce = e.data.forceUse;
             appendToOutput(tab.outputElement, type, msg, isForce);
-          } else if (type === "dir") {
+          }
+          else if (type === "dir") {
             appendDir(tab.outputElement, msg);
           }
         }
+
         w.onerror = (err) => {
           appendToOutput(tab.outputElement, "error", err.message);
           if (flexSwitchCheckDefault.checked) {
-            appendToOutput(tab.outputElement, "log", "The script has finished running with exit code 1.", true);
+            appendToOutput(tab.outputElement, "log",
+              "The script has finished running with exit code 1.", true);
           }
         };
         let code = tab.editorInstance.getValue();
-        w.postMessage({ type: "execute", code, sharedBuffer: tab.sharedBuffer, flexSwitchCheckDefault: flexSwitchCheckDefault.checked });
-      } catch (ex) {
+        w.postMessage({
+          type: "execute",
+          code,
+          sharedBuffer: tab.sharedBuffer,
+          flexSwitchCheckDefault: flexSwitchCheckDefault.checked
+        });
+      }
+      catch (ex) {
         appendToOutput(tab.outputElement, "error", ex.message);
-        appendToOutput(tab.outputElement, "log", "The script has finished running with exit code 1.", true);
+        appendToOutput(tab.outputElement, "log",
+          "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
       nextWorker = new Worker(workerPath);
     }
-    function clearConsole(outputDiv) { outputDiv.innerHTML = ""; }
+    function clearConsole(outputDiv) {
+      outputDiv.innerHTML = "";
+    }
+
     function appendDir(outputDiv, obj) {
       let container = outputDiv;
-      if (currentTab.groupStack && currentTab.groupStack.length > 0) { container = currentTab.groupStack[currentTab.groupStack.length - 1]; }
+      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
       let line = document.createElement("div");
-      line.classList.add("outputContent", "log");
+      line.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
+      line.classList.add(styleClass);
       line.innerHTML = obj;
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
+
+
     function lazyRenderTreeNode(key, tree) {
       if (typeof tree !== 'object' || tree === null) {
         const div = document.createElement('div');
         let content = '';
-        if (typeof tree === 'string') { content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`; }
-        else if (typeof tree === 'number') { content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`; }
-        else { content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`; }
-        if (key !== null && key !== undefined) { div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`; }
-        else { div.innerHTML = content; }
+        if (typeof tree === 'string') {
+          content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`;
+        } else if (typeof tree === 'number') {
+          content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
+        } else {
+          content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
+        }
+        if (key !== null && key !== undefined) {
+
+          div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
+        } else {
+          div.innerHTML = content;
+        }
         return div;
       }
+
       let summaryText = "";
       let childrenTree = null;
-      if (key !== null) { summaryText = key; childrenTree = tree; }
-      else {
+      if (key !== null) {
+        summaryText = key;
+        childrenTree = tree;
+      } else {
         const keys = Object.keys(tree);
-        if (keys.length > 0) { summaryText = keys[0]; childrenTree = tree[keys[0]]; }
-        else { summaryText = "{}"; childrenTree = {}; }
+        if (keys.length > 0) {
+          summaryText = keys[0];
+          childrenTree = tree[keys[0]];
+        } else {
+          summaryText = "{}";
+          childrenTree = {};
+        }
       }
+
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
       summaryEl.className = 'objinsp objinsp-summary';
       summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
       detailsEl.appendChild(summaryEl);
+
       detailsEl.addEventListener('toggle', function () {
         if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
           const container = document.createElement('div');
@@ -1060,24 +1742,35 @@ prompt("This is a prompt:");
       });
       return detailsEl;
     }
+
+
+
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
+
     function appendToOutput(outputDiv, type, message, forceUse = false) {
       let container = outputDiv;
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
       let line = document.createElement("div");
-      line.classList.add("outputContent", type);
+      line.classList.add("outputContent");
       var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      if (forceUse) { groupLevel = 0; }
+      if (forceUse) {
+        groupLevel = 0;
+      }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
+      line.classList.add(styleClass);
+
       let flexContainer = document.createElement("div");
       flexContainer.style.display = "flex";
       flexContainer.style.alignItems = "flex-start";
+
       let symbolDiv = document.createElement("div");
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
       symbolDiv.style.marginRight = "5px";
       symbolDiv.style.flexShrink = "0";
+
       let messageDiv = document.createElement("div");
       messageDiv.style.whiteSpace = "pre-wrap";
       messageDiv.style.display = "flex";
@@ -1085,48 +1778,84 @@ prompt("This is a prompt:");
       if (type === "error" && forceUse) {
         const lines = message.split("\n");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
-      } else if (typeof message === "object") {
+      }
+      else if (typeof message === "object") {
+        let actualMsg = "";
+        let subMsgDiv
         for (let key in message) {
-          let subMsgDiv = document.createElement("div");
-          subMsgDiv.style.marginRight = "15px";
-          subMsgDiv.innerText = escapeHtml(message[key][0]);
-          messageDiv.appendChild(subMsgDiv);
+          if (message[key][1]) {
+            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
+            subMsgDiv.style.marginRight = "15px";
+            messageDiv.appendChild(subMsgDiv);
+          } else {
+            subMsgDiv = document.createElement("div");
+            subMsgDiv.style.marginRight = "15px";
+            subMsgDiv.innerText = escapeHtml(message[key][0]);
+            messageDiv.appendChild(subMsgDiv);
+          }
         }
-      } else { messageDiv.textContent = message; }
+      } else {
+        messageDiv.textContent = message;
+      }
+
       flexContainer.appendChild(symbolDiv);
       flexContainer.appendChild(messageDiv);
       line.appendChild(flexContainer);
+
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
+
+
     function appendTable(outputElement, tableInfo) {
       let container = outputElement;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
+
+      // Determine the structure of the received table data.
       let tableData, headerOrder;
-      if (tableInfo.table && typeof tableInfo.table === "object" && "tableData" in tableInfo.table && "headerOrder" in tableInfo.table) {
+      if (
+        tableInfo.table &&
+        typeof tableInfo.table === "object" &&
+        "tableData" in tableInfo.table &&
+        "headerOrder" in tableInfo.table
+      ) {
+        // When buildTableData returns an object with tableData and headerOrder.
         tableData = tableInfo.table.tableData;
         headerOrder = tableInfo.table.headerOrder;
       } else if (tableInfo.table && typeof tableInfo.table === "object") {
+        // Fallback: when tableInfo.table is already the table data.
         tableData = tableInfo.table;
+        // Use the keys of tableData as header order; ensure "(index)" is first.
         headerOrder = Object.keys(tableData);
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
         appendToOutput(container, "error", "Invalid table data received.");
         return;
       }
-      if (!tableData || !Array.isArray(tableData["(index)"]) || headerOrder.length === 0 || tableData["(index)"].length === 0) {
+
+      // Validate the extracted tableData and headerOrder.
+      if (
+        !tableData ||
+        !Array.isArray(tableData["(index)"]) ||
+        headerOrder.length === 0 ||
+        tableData["(index)"].length === 0
+      ) {
         appendToOutput(container, "log", "");
         return;
       }
+
       const rowCount = tableData["(index)"].length;
       const div = document.createElement("div");
       div.classList.add("outputContent");
       const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
       div.style.marginLeft = groupLevel ? "20px" : "4px";
+
       const table = document.createElement("table");
       table.classList.add("console-table");
+
+      // Create header row from headerOrder.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1138,6 +1867,8 @@ prompt("This is a prompt:");
       });
       thead.appendChild(headRow);
       table.appendChild(thead);
+
+      // Create table rows based on rowCount.
       const tbody = document.createElement("tbody");
       for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
@@ -1145,11 +1876,14 @@ prompt("This is a prompt:");
         headerOrder.forEach(col => {
           const td = document.createElement("td");
           td.classList.add("console-table-data");
+
           let value = tableData[col] && tableData[col][i];
           if (typeof value === "object" && value !== null) {
-            if (Array.isArray(value)) { td.textContent = `[Array(${value.length})]`; }
-            else if (value === "[Circular]") { td.textContent = "{…}"; }
-            else {
+            if (Array.isArray(value)) {
+              td.textContent = `[Array(${value.length})]`;
+            } else if (value === "[Circular]") {
+              td.textContent = "{…}";
+            } else {
               const expandable = document.createElement("span");
               expandable.classList.add("expandable");
               expandable.textContent = "{…}";
@@ -1171,13 +1905,18 @@ prompt("This is a prompt:");
               });
               td.appendChild(expandable);
             }
-          } else if (typeof value === "function") { td.textContent = value; }
-          else { td.textContent = (value === "undefined") ? "undefined" : String(value); }
+          } else if (typeof value === "function") {
+            td.textContent = value;
+          } else {
+            td.textContent = (value === "undefined") ? "undefined" : String(value);
+          }
           tr.appendChild(td);
         });
         tbody.appendChild(tr);
       }
       table.appendChild(tbody);
+
+      // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
       symbolDiv.innerHTML = "[>]";
       table.style.marginLeft = "7px";
@@ -1187,9 +1926,19 @@ prompt("This is a prompt:");
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
+
+
+
+
+
+
     function objectToHTML(obj, level = 0) {
-      if (obj === null) { return `<span style="opacity:0.7;">null</span>`; }
-      if (typeof obj !== "object") { return `<span>${escapeHtml(String(obj))}</span>`; }
+      if (obj === null) {
+        return `<span style="opacity:0.7;">null</span>`;
+      }
+      if (typeof obj !== "object") {
+        return `<span>${escapeHtml(String(obj))}</span>`;
+      }
       if (Array.isArray(obj)) {
         let html = `<details open style="margin-left:${level * 20}px;">`;
         html += `<summary>Array(${obj.length})</summary>`;
@@ -1212,12 +1961,17 @@ prompt("This is a prompt:");
       return html;
     }
     function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
-    require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs" } });
+    require.config({
+      paths: {
+        vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs"
+      }
+    });
     window.MonacoEnvironment = {
       getWorkerUrl: function () {
         return "data:text/javascript;charset=utf-8," + encodeURIComponent(`
@@ -1245,7 +1999,9 @@ prompt("This is a prompt:");
           { token: "comment", foreground: "6A9955" },
           { token: "number", foreground: "B5CEA8" }
         ],
-        colors: { "editor.background": "#1E1E1E" }
+        colors: {
+          "editor.background": "#1E1E1E"
+        }
       });
       createTab();
     });
@@ -1254,22 +2010,33 @@ prompt("This is a prompt:");
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
         return;
       }
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
       let pos = t.editorInstance.getPosition();
-      if (pos) { document.getElementById("statusPosition").textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`; }
+      if (pos) {
+        document.getElementById("statusPosition").textContent =
+          `Ln ${pos.lineNumber}, Col ${pos.column}`;
+      }
     }
-    document.getElementById("addTabButton").addEventListener("click", () => { createTab(); });
-    document.getElementById("tabBar").addEventListener("click", (e) => {
-      let clickedTab = tabs.find(t => t.tabElement === e.target || t.tabElement.contains(e.target));
-      if (clickedTab) { switchTab(clickedTab.id); }
+    document.getElementById("addTabButton").addEventListener("click", () => {
+      createTab();
     });
-    ["gitIcon", "settingsIcon"].forEach(iconId => {
+    document.getElementById("tabBar").addEventListener("click", (e) => {
+      let clickedTab = tabs.find((t) =>
+        t.tabElement === e.target || t.tabElement.contains(e.target)
+      );
+      if (clickedTab) {
+        switchTab(clickedTab.id);
+      }
+    });
+    ["gitIcon", "settingsIcon"].forEach((iconId) => {
       let el = document.getElementById(iconId);
       el.addEventListener("click", (e) => {
         let alreadyActive = e.currentTarget.classList.contains("active");
-        document.querySelectorAll(".icon").forEach(b => b.classList.remove("active"));
-        document.querySelectorAll(".sidebar-panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".icon")
+          .forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".sidebar-panel")
+          .forEach((p) => p.classList.remove("active"));
         if (!alreadyActive) {
           e.currentTarget.classList.add("active");
           let targetPanel = e.currentTarget.getAttribute("data-target");
@@ -1279,21 +2046,24 @@ prompt("This is a prompt:");
     });
     document.getElementById("searchIcon").addEventListener("click", () => {
       if (activeTabId === null) return;
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
       t.editorInstance.getAction("actions.find").run();
     });
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
-        document.querySelectorAll(".vs-navbar-dropdown").forEach(d => d.classList.remove("active"));
+        document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
+          d.classList.remove("active");
+        });
         activeDropdown = null;
       }
     });
-    document.querySelectorAll(".vs-navbar-item").forEach(item => {
+    document.querySelectorAll(".vs-navbar-item").forEach((item) => {
       item.addEventListener("click", (evt) => {
         let dropdownId = evt.currentTarget.getAttribute("data-dropdown");
         let dd = document.getElementById(dropdownId);
-        document.querySelectorAll(".vs-navbar-dropdown").forEach(d => d.classList.remove("active"));
+        document.querySelectorAll(".vs-navbar-dropdown")
+          .forEach((d) => d.classList.remove("active"));
         if (dd) {
           dd.classList.toggle("active");
           activeDropdown = dd.classList.contains("active") ? dd : null;
@@ -1315,7 +2085,9 @@ prompt("This is a prompt:");
       spaces = parseInt(tabSizeInput.value, 10);
       tabSizeDisplay.textContent = spaces;
       document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
-      tabs.forEach(t => { t.editorInstance.updateOptions({ tabSize: spaces }); });
+      tabs.forEach((t) => {
+        t.editorInstance.updateOptions({ tabSize: spaces });
+      });
     });
     let redoBtn = document.getElementById("redoBtn");
     let undoBtn = document.getElementById("undoBtn");
@@ -1327,7 +2099,11 @@ prompt("This is a prompt:");
       } else {
         el.classList.remove("disabled");
         el.style.cursor = "pointer";
-        el.style.color = darkTheme ? "white" : "black";
+        if (darkModeFlag) {
+          el.style.color = "white";
+        } else {
+          el.style.color = "black";
+        }
       }
     }
     function updateUndoRedoButtons() {
@@ -1336,7 +2112,7 @@ prompt("This is a prompt:");
         toggleDisabled(redoBtn, true);
         return;
       }
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
       let model = t.editorInstance.getModel();
       if (!model) return;
@@ -1346,20 +2122,22 @@ prompt("This is a prompt:");
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
-        document.getElementById("saveScriptBtn").dispatchEvent(new MouseEvent("click"));
-      } else if ((e.ctrlKey && e.key === "z") || (e.ctrlKey && e.shiftKey && e.key === "Z")) {
+        document.getElementById("saveScriptBtn")
+          .dispatchEvent(new MouseEvent("click"));
+      } else if ((e.ctrlKey && e.key === "z") ||
+        (e.ctrlKey && e.shiftKey && e.key === "Z")) {
         setTimeout(() => updateUndoRedoButtons(), 100);
       }
     });
     redoBtn.addEventListener("click", () => {
       if (activeTabId === null) return;
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       t.editorInstance.trigger("redo", "redo", null);
       updateUndoRedoButtons();
     });
     undoBtn.addEventListener("click", () => {
       if (activeTabId === null) return;
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       t.editorInstance.trigger("undo", "undo", null);
       updateUndoRedoButtons();
     });
@@ -1385,7 +2163,7 @@ prompt("This is a prompt:");
     });
     document.getElementById("saveScriptBtn").addEventListener("click", () => {
       if (activeTabId === null) return;
-      let t = tabs.find(x => x.id === activeTabId);
+      let t = tabs.find((x) => x.id === activeTabId);
       let content = t.editorInstance.getValue();
       let blob = new Blob([content], { type: "text/javascript" });
       let url = URL.createObjectURL(blob);
@@ -1397,64 +2175,111 @@ prompt("This is a prompt:");
       closeDropdowns();
     });
     function closeDropdowns() {
-      document.querySelectorAll(".vs-navbar-dropdown").forEach(d => d.classList.remove("active"));
+      document.querySelectorAll(".vs-navbar-dropdown")
+        .forEach((d) => d.classList.remove("active"));
     }
     let gitInp = document.getElementById("gitUrl");
     let loadGitButton = document.getElementById("loadGitButton");
-    gitInp.addEventListener("keydown", (e) => { if (e.key === "Enter") loadGitButton.click(); });
-    gitInp.addEventListener("input", () => { loadGitButton.disabled = !gitInp.value.trim(); });
+    gitInp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadGitButton.click();
+    });
+    gitInp.addEventListener("input", () => {
+      if (!gitInp.value.trim()) {
+        loadGitButton.disabled = true;
+      } else {
+        loadGitButton.disabled = false;
+      }
+    });
     loadGitButton.addEventListener("click", async () => {
       let urlVal = gitInp.value.trim();
       if (!urlVal) return;
       let fileName = "untitled.js";
-      try { new URL(urlVal); } catch (e) { alert("Invalid URL"); return; }
+      try {
+        new URL(urlVal);
+      } catch (e) {
+        alert("Invalid URL");
+        return;
+      }
       let normalized = normalizeUrl(urlVal);
       let parsed = parseGitHubUrl(normalized);
       if (parsed.isRawFile) {
         let slashIdx = parsed.rawUrl.lastIndexOf("/");
-        if (slashIdx !== -1) { fileName = parsed.rawUrl.substring(slashIdx + 1); }
+        if (slashIdx !== -1) {
+          fileName = parsed.rawUrl.substring(slashIdx + 1);
+        }
       } else if (parsed.isFile) {
         let slashIdx = parsed.path.lastIndexOf("/");
-        if (slashIdx !== -1) { fileName = parsed.path.substring(slashIdx + 1); }
-      } else { alert("Invalid GitHub file URL. Must point to a specific file."); return; }
+        if (slashIdx !== -1) {
+          fileName = parsed.path.substring(slashIdx + 1);
+        }
+      }
       try {
         let fileContent;
-        if (parsed.isRawFile) { fileContent = await fetchRawFile(parsed.rawUrl); }
-        else if (parsed.isFile) {
+        if (parsed.isRawFile) {
+          fileContent = await fetchRawFile(parsed.rawUrl);
+        } else if (parsed.isFile) {
           let fileData = await fetchFromGit(parsed.owner, parsed.repo, parsed.path, parsed.branch);
-          if (!fileData.content) { alert("Failed to fetch file content."); return; }
+          if (!fileData.content) {
+            alert("Failed to fetch file content.");
+            return;
+          }
           fileContent = atob(fileData.content);
-        } else { alert("Invalid GitHub file URL. Must point to a specific file."); return; }
+        } else {
+          alert("Invalid GitHub file URL. Must point to a specific file.");
+          return;
+        }
         createTab(fileName, fileContent);
-      } catch (err) { alert(`Error fetching file: ${err.message}`); }
+      } catch (err) {
+        alert(`Error fetching file: ${err.message}`);
+      }
     });
     function normalizeUrl(u) {
-      if (u.endsWith(".git")) { u = u.slice(0, -4); }
-      if (!u.startsWith("http://") && !u.startsWith("https://")) { u = "https://" + u; }
-      if (u.startsWith("http://")) { u = "https://" + u.substring(7); }
+      if (u.endsWith(".git")) {
+        u = u.slice(0, -4);
+      }
+      if (!u.startsWith("http://") && !u.startsWith("https://")) {
+        u = "https://" + u;
+      }
+      if (u.startsWith("http://")) {
+        u = "https://" + u.substring(7);
+      }
       return u;
     }
     function parseGitHubUrl(u) {
       if (u.includes("raw.githubusercontent.com")) {
         let match = u.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
-        if (match) { return { isRawFile: true, rawUrl: u }; }
+        if (match) {
+          return { isRawFile: true, rawUrl: u };
+        }
         return { isRawFile: false };
       }
       let m = u.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/);
       if (!m) return { isFile: false };
-      return { owner: m[1], repo: m[2], branch: m[3], path: m[4], isFile: true };
+      return {
+        owner: m[1],
+        repo: m[2],
+        branch: m[3],
+        path: m[4],
+        isFile: true
+      };
     }
     async function fetchFromGit(owner, repo, path, branch = "main") {
       let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
       let resp = await fetch(apiUrl);
-      if (!resp.ok) { throw new Error(`Failed to fetch file: ${resp.statusText}`); }
+      if (!resp.ok) {
+        throw new Error(`Failed to fetch file: ${resp.statusText}`);
+      }
       let data = await resp.json();
-      if (data.type !== "file") { throw new Error("The URL does not point to a valid file."); }
+      if (data.type !== "file") {
+        throw new Error("The URL does not point to a valid file.");
+      }
       return data;
     }
     async function fetchRawFile(rawUrl) {
       let r = await fetch(rawUrl);
-      if (!r.ok) { throw new Error(`Failed to fetch raw file: ${r.statusText}`); }
+      if (!r.ok) {
+        throw new Error(`Failed to fetch raw file: ${r.statusText}`);
+      }
       return await r.text();
     }
     function makeTabTitleEditable(tabObj) {
@@ -1475,26 +2300,41 @@ prompt("This is a prompt:");
         if (done) return;
         done = true;
         let newVal = input.value.trim();
-        if (!newVal || newVal === oldName) { newVal = oldName; }
-        else { newVal = getUniqueTabName(newVal, tabObj.id); }
+        if (!newVal || newVal === oldName) {
+          newVal = oldName;
+        } else {
+          newVal = getUniqueTabName(newVal, tabObj.id);
+        }
         tabObj.name = newVal;
         let newSpan = document.createElement("span");
         newSpan.classList.add("tab-title");
         newSpan.textContent = newVal;
-        newSpan.addEventListener("dblclick", () => { makeTabTitleEditable(tabObj); });
+        newSpan.addEventListener("dblclick", () => {
+          makeTabTitleEditable(tabObj);
+        });
         tabObj.tabElement.replaceChild(newSpan, input);
         closeIcon.style.display = "block";
       };
       input.addEventListener("blur", finalize);
       input.addEventListener("keydown", (evt) => {
-        if (evt.key === "Enter") { evt.preventDefault(); finalize(); }
-        else if (evt.key === "Escape") { evt.preventDefault(); input.value = oldName; finalize(); }
+        if (evt.key === "Enter") {
+          evt.preventDefault();
+          finalize();
+        } else if (evt.key === "Escape") {
+          evt.preventDefault();
+          input.value = oldName;
+          finalize();
+        }
       });
     }
+
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
     });
+
+    alert(2);
   </script>
 </body>
+
 </html>
