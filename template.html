@@ -2048,10 +2048,10 @@ prompt("This is a prompt:");
           `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
-    addTabBtn.addEventListener("click", () => {
+    document.getElementById('addTabButton').addEventListener("click", () => {
       createTab();
     });
-    addTabBtn_media.addEventListener("click", () => {
+    document.getElementById('addTabButton_media').addEventListener("click", () => {
       createTab();
     });
     document.getElementById("tabBar").addEventListener("click", (e) => {
