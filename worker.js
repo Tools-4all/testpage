@@ -511,6 +511,9 @@ class myPrompt {
 
 
 function objectToString(obj) {
+    if (typeof obj === "bigint") {
+        return `${obj.toString()}n`;
+    }
     if (typeof obj !== "object" || obj === null) {
         return String(obj);
     }
@@ -580,13 +583,15 @@ self.addEventListener("message", (event) => {
                     data === undefined ||
                     typeof data === "number" ||
                     typeof data === "string" ||
-                    typeof data === "boolean" ||
-                    typeof data === "bigint"
+                    typeof data === "boolean" 
                 ) {
                     customConsole.log(String(data));
                     return;
                 } else if (typeof data === "symbol" || typeof data === "function") {
                     customConsole.log(data);
+                    return;
+                } else if (typeof data === "bigint") {
+                    customConsole.log(data.toString() + "n");
                     return;
                 }
                 const tableData = buildTableData(data);
