@@ -373,7 +373,8 @@
       outline: none;
     }
 
-    #addTabButton {
+    #addTabButton,
+    #addTabButton_media {
       background: none;
       color: #c5c5c5;
       font-size: 17px;
@@ -384,8 +385,13 @@
       transition: color 0.2s;
     }
 
-    #addTabButton:hover {
+    #addTabButton:hover,
+    #addTabButton_media:hover {
       color: #fff;
+    }
+
+    #addTabButton_media {
+      display: none;
     }
 
     #tabsContainer {
@@ -935,6 +941,14 @@
       #activityBar .icon:hover:after {
         display: none;
       }
+
+      #addTabButton {
+        display: none;
+      }
+
+      #addTabButton_media {
+        display: block;
+      }
     }
 
     @media (max-width: 675px) {
@@ -998,6 +1012,7 @@
       </div>
     </div>
     <div id="activityBar" class="theme color252526">
+      <div id="addTabButton_media"><i class="fas fa-plus"></i></div>
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
       </div>
@@ -1007,6 +1022,7 @@
       <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
         <i class="fas fa-cog"></i>
       </div>
+
     </div>
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
