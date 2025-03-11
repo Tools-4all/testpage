@@ -487,7 +487,7 @@ function createWrappedCode(userCode) {
 // }
 
 // Override the global Error with your custom error
-self.Error = CustomError;
+// self.Error = CustomError;
 
 function getStack() {
     const rawLines = new Error().stack.split('\n');
