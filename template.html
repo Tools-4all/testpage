@@ -959,6 +959,12 @@
       }
     }
 
+    @media (hover: hover) and (pointer: fine) {
+      body {
+        user-select: text;
+      }
+    }
+
     .lightMode {}
 
     .darkMode {}
@@ -2363,6 +2369,12 @@ prompt("This is a prompt:");
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
+      if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.addEventListener('dblclick', function () {
+          // Remove any text selection on double-click
+          window.getSelection().removeAllRanges();
+        });
+      }
     });
 
     alert(4);
