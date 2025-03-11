@@ -48,58 +48,102 @@ console.log("loaded ferre")
 
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
-    // If the value is exactly its constructor's prototype, force prototype mode.
-    if (value && value.constructor && value === value.constructor.prototype) {
-        isPrototype = true;
-    }
-
     // Handle primitives.
     if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
         let rep = (typeof value === 'string') ? '"' + value + '"' : value;
-        return (key != null) ? { [key]: rep } : rep;
+        return (key !== null && key !== undefined) ? { [key]: rep } : rep;
     }
 
     // Handle circular references.
     if (visited.has(value)) {
-        return (key != null) ? { [key]: "[Circular]" } : "[Circular]";
+        return (key !== null && key !== undefined) ? { [key]: "[Circular]" } : "[Circular]";
     }
     visited.add(value);
 
-    let headerText = "";
-    // Special cases for arrays, Maps, Sets, and functions:
+    // --- Special branch for ArrayBuffer ---
+    if (value instanceof ArrayBuffer) {
+        let headerText = "ArrayBuffer";
+        let children = {};
+        // Instead of only showing own properties (which are none),
+        // inspect the ArrayBuffer prototype to list its attributes and methods.
+        let proto = Object.getPrototypeOf(value);
+        if (proto) {
+            let protoProps = Object.getOwnPropertyNames(proto);
+            protoProps.forEach(function (prop) {
+                try {
+                    const child = createNodeObject(prop, proto[prop], visited, depth + 1, false);
+                    for (let k in child) {
+                        children[k] = child[k];
+                    }
+                } catch (e) {
+                    children[prop] = "(...)";
+                }
+            });
+        }
+        let node = {};
+        if (key !== null && key !== undefined) {
+            node[key + ': ' + headerText] = children;
+        } else {
+            node[headerText] = children;
+        }
+        visited.delete(value);
+        return node;
+    }
+
+    // --- Special branch for Typed Arrays (excluding DataView) ---
+    if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+        let headerText = value.constructor.name + "(" + value.length + ")";
+        let children = {};
+        // Add numeric indices.
+        for (let i = 0; i < value.length; i++) {
+            children[String(i)] = createNodeObject(null, value[i], visited, depth + 1, false);
+        }
+        // Merge in properties so that keys include type info (e.g. "buffer: ArrayBuffer").
+        Object.assign(children, createNodeObject("buffer", value.buffer, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("byteLength", value.byteLength, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("byteOffset", value.byteOffset, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("length", value.length, visited, depth + 1, false));
+
+        // Add a prototype entry with key "[[Prototype]] : TypedArray"
+        let proto = Object.getPrototypeOf(value);
+        if (proto) {
+            let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
+            // protoNode is an object with one key; extract its value.
+            let protoValue = Object.values(protoNode)[0] || {};
+            children["[[Prototype]] : TypedArray"] = protoValue;
+        }
+
+        let node = {};
+        node[headerText] = children;
+        visited.delete(value);
+        return node;
+    }
+
+    // --- Default handling for functions, arrays, maps, sets, and objects ---
+    let headerText;
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        headerText = isPrototype ? "Array(" + value.length + ")" : "[]";
+        headerText = isPrototype ? "Array(" + (value.length || 0) + ")" : "[]";
     } else if (value instanceof Map) {
         headerText = "Map(" + value.size + ")";
     } else if (value instanceof Set) {
         headerText = "Set(" + value.size + ")";
     } else {
-        // For generic objects.
-        let tag = Object.prototype.toString.call(value); // e.g. "[object Console]" or "[object Object]"
-        let typeName = tag.slice(8, -1); // extract "Console" or "Object"
-        if (!isPrototype) {
-            // For main nodes:
-            if (typeName !== "Object") {
-                // For built-in types like Console, Date, etc.
-                headerText = typeName;
-            } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
-                // For class instances, toString gives "Object" but constructor is custom.
-                headerText = value.constructor.name + " {}";
-            } else {
-                headerText = "{}";
-            }
+        const objectToString = Object.prototype.toString.call(value);
+        const match = objectToString.match(/^\[object (.+)\]$/);
+        if (match && match[1] !== 'Object') {
+            headerText = match[1];
+        } else if (match && match[1] === 'Object' && !isPrototype) {
+            headerText = "{}";
         } else {
-            // For prototype nodes:
-            headerText = (typeName !== "Object") ? typeName : "Object";
+            headerText = "Object";
         }
     }
 
     let children = {};
 
     if (value instanceof Map) {
-        // Build an [[Entries]] node where each entry is an object with "key" and "value" properties.
         let entriesChildren = {};
         let index = 0;
         value.forEach((mapVal, mapKey) => {
@@ -111,14 +155,13 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         });
         children["[[Entries]]"] = entriesChildren;
         children["size"] = value.size;
-        // Create a flattened expandable [[Prototype]] node.
         try {
             const proto = Object.getPrototypeOf(value);
             if (proto) {
                 let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
                 const protoKeys = Object.keys(protoNode);
                 if (protoKeys.length > 0) {
-                    const flattenedKey = "[[Prototype]]: " + protoKeys[0];
+                    const flattenedKey = '[[Prototype]]: ' + protoKeys[0];
                     children[flattenedKey] = protoNode[protoKeys[0]];
                 }
             }
@@ -140,7 +183,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                 let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
                 const protoKeys = Object.keys(protoNode);
                 if (protoKeys.length > 0) {
-                    const flattenedKey = "[[Prototype]]: " + protoKeys[0];
+                    const flattenedKey = '[[Prototype]]: ' + protoKeys[0];
                     children[flattenedKey] = protoNode[protoKeys[0]];
                 }
             }
@@ -148,7 +191,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
             children["[[Prototype]]"] = "(...)";
         }
     } else {
-        // Default handling for other objects.
         let props = [];
         try {
             props = Object.getOwnPropertyNames(value);
@@ -193,31 +235,31 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                     }
                 }
             }
-        }
-        try {
-            const proto = Object.getPrototypeOf(value);
-            if (proto) {
-                const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
-                for (let k in protoNode) {
-                    children[k] = protoNode[k];
+            try {
+                const proto = Object.getPrototypeOf(value);
+                if (proto) {
+                    const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
+                    for (let k in protoNode) {
+                        children[k] = protoNode[k];
+                    }
                 }
+            } catch (e) {
+                children["[[Prototype]]"] = "(...)";
             }
-        } catch (e) {
-            children["[[Prototype]]"] = "(...)";
         }
     }
 
     let node = {};
-    if (key != null) {
+    if (key !== null && key !== undefined) {
         const combinedKey = key + ': ' + headerText;
         node[combinedKey] = children;
     } else {
         node[headerText] = children;
     }
+
     visited.delete(value);
     return node;
 }
-
 
 function renderObject(obj) {
     const visited = new Set();
