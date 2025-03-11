@@ -481,7 +481,7 @@ class CustomError extends NativeError {
         // Replace the stack trace with your custom stack if desired.
         // Use NativeError inside getStack() if needed to avoid recursion.
         if (this.stack && !this.stack.includes("getStack") && !this.stack.includes("relativeStack")) {
-            this.stack = getStack();
+            this.stack = relativeStack();
         }
     }
 }
