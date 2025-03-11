@@ -48,73 +48,163 @@ console.log("loaded ferre")
 
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
-    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
-        let rep;
-        if (typeof value === 'string') {
-            rep = '"' + value + '"';
-        } else {
-            rep = value;
-        }
-        if (key !== null && key !== undefined) {
-            let obj = {};
-            obj[key] = rep;
-            return obj;
-        } else {
-            return rep;
-        }
+    // If the value is exactly its constructor's prototype, force prototype mode.
+    if (value && value.constructor && value === value.constructor.prototype) {
+        isPrototype = true;
     }
 
+    // Handle primitives.
+    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
+        let rep = (typeof value === 'string') ? '"' + value + '"' : value;
+        return (key != null) ? { [key]: rep } : rep;
+    }
+
+    // Handle circular references.
     if (visited.has(value)) {
-        if (key !== null && key !== undefined) {
-            let obj = {};
-            obj[key] = "[Circular]";
-            return obj;
-        } else {
-            return "[Circular]";
-        }
+        return (key != null) ? { [key]: "[Circular]" } : "[Circular]";
     }
     visited.add(value);
 
-    let headerText;
+    // --- Special branch for ArrayBuffer ---
+    if (value instanceof ArrayBuffer) {
+        let headerText = "ArrayBuffer";
+        let children = {};
+        let proto = Object.getPrototypeOf(value);
+        if (proto) {
+            let protoProps = Object.getOwnPropertyNames(proto);
+            protoProps.forEach(function (prop) {
+                try {
+                    const child = createNodeObject(prop, proto[prop], visited, depth + 1, false);
+                    for (let k in child) {
+                        children[k] = child[k];
+                    }
+                } catch (e) {
+                    children[prop] = "(...)";
+                }
+            });
+        }
+        let node = {};
+        if (key != null) {
+            node[key + ': ' + headerText] = children;
+        } else {
+            node[headerText] = children;
+        }
+        visited.delete(value);
+        return node;
+    }
+
+    // --- Special branch for Typed Arrays (excluding DataView) ---
+    if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
+        let headerText = value.constructor.name + "(" + value.length + ")";
+        let children = {};
+        // Add numeric indices.
+        for (let i = 0; i < value.length; i++) {
+            children[String(i)] = createNodeObject(null, value[i], visited, depth + 1, false);
+        }
+        // Merge in properties so that keys include type info.
+        Object.assign(children, createNodeObject("buffer", value.buffer, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("byteLength", value.byteLength, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("byteOffset", value.byteOffset, visited, depth + 1, false));
+        Object.assign(children, createNodeObject("length", value.length, visited, depth + 1, false));
+
+        // Add a prototype entry with key "[[Prototype]] : TypedArray"
+        let proto = Object.getPrototypeOf(value);
+        if (proto) {
+            let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
+            let protoValue = Object.values(protoNode)[0] || {};
+            children["[[Prototype]] : TypedArray"] = protoValue;
+        }
+        let node = {};
+        node[headerText] = children;
+        visited.delete(value);
+        return node;
+    }
+
+    // --- Default handling for functions, arrays, Maps, Sets, and objects ---
+    let headerText = "";
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        if (isPrototype) {
-            headerText = "Array(" + (value.length || 0) + ")";
-        } else {
-            headerText = "[]";
-        }
+        headerText = isPrototype ? "Array(" + value.length + ")" : "[]";
+    } else if (value instanceof Map) {
+        headerText = "Map(" + value.size + ")";
+    } else if (value instanceof Set) {
+        headerText = "Set(" + value.size + ")";
     } else {
-        const objectToString = Object.prototype.toString.call(value);
-        const match = objectToString.match(/^\[object (.+)\]$/);
-        if (match && match[1] !== 'Object') {
-            headerText = match[1];
-        } else if (match && match[1] === 'Object' && !isPrototype) {
-            headerText = "{}";
+        // For generic objects.
+        let tag = Object.prototype.toString.call(value); // e.g. "[object Console]" or "[object Object]"
+        let typeName = tag.slice(8, -1); // extract "Console" or "Object"
+        if (!isPrototype) {
+            // For main nodes:
+            if (typeName !== "Object") {
+                headerText = typeName;
+            } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
+                headerText = value.constructor.name + " {}";
+            } else {
+                headerText = "{}";
+            }
         } else {
-            headerText = "Object";
+            // For prototype nodes:
+            headerText = (typeName !== "Object") ? typeName : "Object";
         }
     }
 
     let children = {};
 
-    let props = [];
-    try {
-        props = Object.getOwnPropertyNames(value);
-    } catch (e) { }
-
-    props.forEach(function (prop) {
-        if (prop === "arguments") {
-            try {
-                const argVal = value[prop];
-                const child = createNodeObject(prop, argVal, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
+    if (value instanceof Map) {
+        // Build an [[Entries]] node where each entry is an object with "key" and "value" properties.
+        let entriesChildren = {};
+        let index = 0;
+        value.forEach((mapVal, mapKey) => {
+            let entryNode = {};
+            entryNode["key"] = createNodeObject(null, mapKey, visited, depth + 1, false);
+            entryNode["value"] = createNodeObject(null, mapVal, visited, depth + 1, false);
+            entriesChildren[String(index)] = entryNode;
+            index++;
+        });
+        children["[[Entries]]"] = entriesChildren;
+        children["size"] = value.size;
+        try {
+            const proto = Object.getPrototypeOf(value);
+            if (proto) {
+                let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
+                const protoKeys = Object.keys(protoNode);
+                if (protoKeys.length > 0) {
+                    const flattenedKey = "[[Prototype]]: " + protoKeys[0];
+                    children[flattenedKey] = protoNode[protoKeys[0]];
                 }
-            } catch (e) {
-                children[prop] = "[Arguments not accessible]";
             }
-        } else {
+        } catch (e) {
+            children["[[Prototype]]"] = "(...)";
+        }
+    } else if (value instanceof Set) {
+        let entriesChildren = {};
+        let index = 0;
+        value.forEach((setVal) => {
+            entriesChildren[String(index)] = createNodeObject(null, setVal, visited, depth + 1, false);
+            index++;
+        });
+        children["[[Entries]]"] = entriesChildren;
+        children["size"] = value.size;
+        try {
+            const proto = Object.getPrototypeOf(value);
+            if (proto) {
+                let protoNode = createNodeObject(null, proto, visited, depth + 1, true);
+                const protoKeys = Object.keys(protoNode);
+                if (protoKeys.length > 0) {
+                    const flattenedKey = "[[Prototype]]: " + protoKeys[0];
+                    children[flattenedKey] = protoNode[protoKeys[0]];
+                }
+            }
+        } catch (e) {
+            children["[[Prototype]]"] = "(...)";
+        }
+    } else {
+        let props = [];
+        try {
+            props = Object.getOwnPropertyNames(value);
+        } catch (e) { }
+        props.forEach(function (prop) {
             try {
                 const child = createNodeObject(prop, value[prop], visited, depth + 1, false);
                 for (let k in child) {
@@ -123,62 +213,58 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
             } catch (e) {
                 children[prop] = "(...)";
             }
-        }
-    });
-
-    let symbols = [];
-    try {
-        symbols = Object.getOwnPropertySymbols(value);
-    } catch (e) { }
-    symbols.forEach(function (sym) {
+        });
+        let symbols = [];
         try {
-            const child = createNodeObject(sym.toString(), value[sym], visited, depth + 1, false);
-            for (let k in child) {
-                children[k] = child[k];
+            symbols = Object.getOwnPropertySymbols(value);
+        } catch (e) { }
+        symbols.forEach(function (sym) {
+            try {
+                const child = createNodeObject(sym.toString(), value[sym], visited, depth + 1, false);
+                for (let k in child) {
+                    children[k] = child[k];
+                }
+            } catch (e) {
+                children[sym.toString()] = "[Error retrieving property]";
+            }
+        });
+        if (isPrototype && typeof value === 'object' && value !== null) {
+            const protoDesc = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
+            if (protoDesc) {
+                if (typeof protoDesc.get === 'function') {
+                    const child = createNodeObject('get __proto__', protoDesc.get, visited, depth + 1, false);
+                    for (let k in child) {
+                        children[k] = child[k];
+                    }
+                }
+                if (typeof protoDesc.set === 'function') {
+                    const child = createNodeObject('set __proto__', protoDesc.set, visited, depth + 1, false);
+                    for (let k in child) {
+                        children[k] = child[k];
+                    }
+                }
+            }
+        }
+        try {
+            const proto = Object.getPrototypeOf(value);
+            if (proto) {
+                const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
+                for (let k in protoNode) {
+                    children[k] = protoNode[k];
+                }
             }
         } catch (e) {
-            children[sym.toString()] = "[Error retrieving property]";
+            children["[[Prototype]]"] = "(...)";
         }
-    });
-
-    if (isPrototype && typeof value === 'object' && value !== null) {
-        const protoDesc = Object.getOwnPropertyDescriptor(Object.prototype, '__proto__');
-        if (protoDesc) {
-            if (typeof protoDesc.get === 'function') {
-                const child = createNodeObject('get __proto__', protoDesc.get, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
-            }
-            if (typeof protoDesc.set === 'function') {
-                const child = createNodeObject('set __proto__', protoDesc.set, visited, depth + 1, false);
-                for (let k in child) {
-                    children[k] = child[k];
-                }
-            }
-        }
-    }
-
-    try {
-        const proto = Object.getPrototypeOf(value);
-        if (proto) {
-            const protoNode = createNodeObject('[[Prototype]]', proto, visited, depth + 1, true);
-            for (let k in protoNode) {
-                children[k] = protoNode[k];
-            }
-        }
-    } catch (e) {
-        children['[[Prototype]]'] = "(...)";
     }
 
     let node = {};
-    if (key !== null && key !== undefined) {
+    if (key != null) {
         const combinedKey = key + ': ' + headerText;
         node[combinedKey] = children;
     } else {
         node[headerText] = children;
     }
-
     visited.delete(value);
     return node;
 }
@@ -583,7 +669,7 @@ self.addEventListener("message", (event) => {
                     data === undefined ||
                     typeof data === "number" ||
                     typeof data === "string" ||
-                    typeof data === "boolean" 
+                    typeof data === "boolean"
                 ) {
                     customConsole.log(String(data));
                     return;
