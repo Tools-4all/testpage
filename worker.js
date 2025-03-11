@@ -472,6 +472,17 @@ function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
 }
 
+let oldError = Error
+
+let Error = function (...args) {
+    let error = new oldError(...args)
+    const stack = error.stack
+    if (!stack.includes("getStack") && !stack.includes("relativeStack")) {
+        error.stack = stack + "\n" + getStack()
+    }
+    return error
+}
+
 
 function getStack() {
     const rawLines = new Error().stack.split('\n');
