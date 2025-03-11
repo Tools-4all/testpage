@@ -471,20 +471,20 @@ const WRAPPER_LINE_COUNT_FOR_ERR = wrapperPrefixLines.length + 2;
 function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
 }
+// need rework
+// const NativeError = Error;
 
-const NativeError = Error;
-
-// Create a custom error class that extends the native Error
-class CustomError extends NativeError {
-    constructor(...args) {
-        super(...args);
-        // Replace the stack trace with your custom stack if desired.
-        // Use NativeError inside getStack() if needed to avoid recursion.
-        if (this.stack && !this.stack.includes("getStack") && !this.stack.includes("relativeStack")) {
-            this.stack = relativeStack();
-        }
-    }
-}
+// // Create a custom error class that extends the native Error
+// class CustomError extends NativeError {
+//     constructor(...args) {
+//         super(...args);
+//         // Replace the stack trace with your custom stack if desired.
+//         // Use NativeError inside getStack() if needed to avoid recursion.
+//         if (this.stack && !this.stack.includes("getStack") && !this.stack.includes("relativeStack")) {
+//             this.stack = getStack();
+//         }
+//     }
+// }
 
 // Override the global Error with your custom error
 self.Error = CustomError;
