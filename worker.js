@@ -472,13 +472,13 @@ function createWrappedCode(userCode) {
     return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
 }
 
-let oldError = Error
+oldError = Error.constructor
 
 let Error = function (...args) {
     let error = new oldError(...args)
     const stack = error.stack
     if (!stack.includes("getStack") && !stack.includes("relativeStack")) {
-        error.stack = stack + "\n" + getStack()
+        error.stack = getStack()
     }
     return error
 }
