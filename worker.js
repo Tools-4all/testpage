@@ -48,7 +48,6 @@ console.log("loaded ferre")
 
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
-    // Handle primitives
     if (value === null || (typeof value !== 'object' && typeof value !== 'function')) {
         let rep;
         if (typeof value === 'string') {
@@ -65,7 +64,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         }
     }
 
-    // Check for circular references.
     if (visited.has(value)) {
         if (key !== null && key !== undefined) {
             let obj = {};
@@ -77,115 +75,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     }
     visited.add(value);
 
-    // ----- Special handling for Maps -----
-    if (value instanceof Map) {
-        let headerText = "Map(" + value.size + ")";
-        let children = {};
-        let index = 0;
-        // For each [k,v] entry, create a nested object showing both key and value.
-        for (let [mapKey, mapVal] of value.entries()) {
-            let entry = {};
-            entry["key"] = createNodeObject(null, mapKey, visited, depth + 1, false);
-            entry["value"] = createNodeObject(null, mapVal, visited, depth + 1, false);
-            children[String(index)] = entry;
-            index++;
-        }
-        let node = {};
-        if (key !== null && key !== undefined) {
-            let combinedKey = key + ': ' + headerText;
-            node[combinedKey] = children;
-        } else {
-            node[headerText] = children;
-        }
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Special handling for Sets -----
-    if (value instanceof Set) {
-        let headerText = "Set(" + value.size + ")";
-        let children = {};
-        let index = 0;
-        // Iterate through set items
-        for (let item of value.values()) {
-            children[String(index)] = createNodeObject(null, item, visited, depth + 1, false);
-            index++;
-        }
-        let node = {};
-        if (key !== null && key !== undefined) {
-            let combinedKey = key + ': ' + headerText;
-            node[combinedKey] = children;
-        } else {
-            node[headerText] = children;
-        }
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Special handling for WeakMaps -----
-    if (value instanceof WeakMap) {
-        let headerText = "WeakMap";
-        let node = {};
-        node[key ? key + ': ' + headerText : headerText] = { "": "[Not enumerable]" };
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Special handling for WeakSets -----
-    if (value instanceof WeakSet) {
-        let headerText = "WeakSet";
-        let node = {};
-        node[key ? key + ': ' + headerText : headerText] = { "": "[Not enumerable]" };
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Special handling for TypedArrays -----
-    // Check if value is one of the typed array views (but not DataView)
-    if (ArrayBuffer.isView(value) && !(value instanceof DataView)) {
-        let headerText = value.constructor.name + "(" + value.length + ")";
-        let children = {};
-        // Manually add the non-index properties.
-        children["buffer"] = createNodeObject("buffer", value.buffer, visited, depth + 1, false);
-        children["byteOffset"] = createNodeObject("byteOffset", value.byteOffset, visited, depth + 1, false);
-        children["byteLength"] = createNodeObject("byteLength", value.byteLength, visited, depth + 1, false);
-        children["length"] = createNodeObject("length", value.length, visited, depth + 1, false);
-        // Also include the toStringTag symbol if available.
-        let tag = value[Symbol.toStringTag];
-        if (tag) {
-            children["Symbol(Symbol.toStringTag)"] = createNodeObject("Symbol(Symbol.toStringTag)", tag, visited, depth + 1, false);
-        }
-        let node = {};
-        if (key !== null && key !== undefined) {
-            let combinedKey = key + ': ' + headerText;
-            node[combinedKey] = children;
-        } else {
-            node[headerText] = children;
-        }
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Special handling for Promise -----
-    if (value instanceof Promise) {
-        // Note: There is no standard synchronous API to determine promise state.
-        // Here we insert placeholders similar to Chrome DevTools.
-        let headerText = "Promise";
-        let children = {};
-        children["[[PromiseState]]"] = createNodeObject(null, "[unknown]", visited, depth + 1, false);
-        children["[[PromiseResult]]"] = createNodeObject(null, "[unknown]", visited, depth + 1, false);
-        let node = {};
-        if (key !== null && key !== undefined) {
-            let combinedKey = key + ': ' + headerText;
-            node[combinedKey] = children;
-        } else {
-            node[headerText] = children;
-        }
-        visited.delete(value);
-        return node;
-    }
-
-    // ----- Default handling for functions, arrays, and objects -----
     let headerText;
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
@@ -293,7 +182,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     visited.delete(value);
     return node;
 }
-
 
 function renderObject(obj) {
     const visited = new Set();
@@ -695,7 +583,7 @@ self.addEventListener("message", (event) => {
                     data === undefined ||
                     typeof data === "number" ||
                     typeof data === "string" ||
-                    typeof data === "boolean"
+                    typeof data === "boolean" 
                 ) {
                     customConsole.log(String(data));
                     return;
