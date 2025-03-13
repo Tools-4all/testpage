@@ -2439,22 +2439,6 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Create a full clone for the Monaco editor content using a <pre> element.
-    function createFullMonacoClone(editorInstance) {
-      const code = editorInstance.getValue();
-      // Create a <pre> element which preserves formatting and line breaks.
-      const pre = document.createElement("pre");
-      pre.style.fontFamily = "Fira Code, Consolas, 'Courier New', monospace";
-      pre.style.fontSize = "14px";
-      pre.style.backgroundColor = "#1e1e1e";
-      pre.style.color = "#d4d4d4";
-      pre.style.padding = "10px";
-      pre.style.whiteSpace = "pre-wrap";
-      pre.style.lineHeight = "1.5";
-      pre.style.overflow = "visible";
-      pre.textContent = code;
-      return pre;
-    }
     // Create a clone element for the full Monaco editor content.
     function createFullMonacoClone(editorInstance) {
       const code = editorInstance.getValue();
@@ -2538,26 +2522,27 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Create a full clone for the Monaco editor content.
+      // Instead of capturing the Monaco container (which is virtualized),
+      // create a full clone from the editor instance.
       const monacoClone = createFullMonacoClone(currentTabObj.editorInstance);
-      // Position it off-screen so it doesn't affect layout.
-      monacoClone.style.position = "absolute";
-      monacoClone.style.top = "-10000px";
-      document.body.appendChild(monacoClone);
-
       // For the output, use its DOM element as before.
       const outputElement = currentTabObj.outputElement;
 
-      // Measure dimensions.
+      // Determine dimensions for each capture.
+      // For the full Monaco clone, measure its dimensions after it's in the document.
+      monacoClone.style.position = "absolute";
+      monacoClone.style.top = "-10000px";
+      document.body.appendChild(monacoClone);
       const editorRect = monacoClone.getBoundingClientRect();
       const editorWidth = editorRect.width;
-      const editorHeight = monacoClone.scrollHeight; // full content height
+      const editorHeight = monacoClone.scrollHeight; // full height
 
+      // For the output element, use scrollHeight if scrollable.
       const outputRect = outputElement.getBoundingClientRect();
       const outputWidth = outputRect.width;
       const outputHeight = outputElement.scrollHeight || outputRect.height;
 
-      // Calculate the overall dimensions.
+      // Use the maximum width.
       const totalWidth = Math.max(editorWidth, outputWidth);
       const totalHeight = editorHeight + outputHeight;
 
@@ -2566,7 +2551,7 @@ prompt("This is a prompt:");
         domToImage(monacoClone, editorWidth, editorHeight),
         domToImage(outputElement, outputWidth, outputHeight)
       ]).then(([editorCanvas, outputCanvas]) => {
-        // Remove the offscreen clone.
+        // Remove the temporary clone.
         document.body.removeChild(monacoClone);
         const ratio = window.devicePixelRatio || 1;
         const combinedCanvas = document.createElement("canvas");
@@ -2576,7 +2561,7 @@ prompt("This is a prompt:");
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        // Draw the full editor snapshot.
+        // Draw the full editor snapshot at the top.
         ctx.drawImage(editorCanvas, 0, 0);
         // Draw a separator line.
         ctx.strokeStyle = "#007acc";
@@ -2585,7 +2570,7 @@ prompt("This is a prompt:");
         ctx.moveTo(0, editorHeight);
         ctx.lineTo(totalWidth, editorHeight);
         ctx.stroke();
-        // Draw the output snapshot.
+        // Draw the output snapshot below.
         ctx.drawImage(outputCanvas, 0, editorHeight);
         const dataURL = combinedCanvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
