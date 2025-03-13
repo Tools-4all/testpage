@@ -2439,121 +2439,125 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Recursively clone an element and inline its computed styles.
+    // Recursively clone an element and inline its computed styles,
+    // and override height and overflow if the element is scrollable.
     function cloneWithInlineStyles(element) {
-      // Clone the element (deep clone).
       const clone = element.cloneNode(true);
 
-      // Function to process each element.
-      function process(elOriginal, elClone) {
-        const computedStyle = window.getComputedStyle(elOriginal);
+      function process(original, cloned) {
+        const computedStyle = window.getComputedStyle(original);
         let styleString = "";
         for (let i = 0; i < computedStyle.length; i++) {
           const prop = computedStyle[i];
           styleString += `${prop}:${computedStyle.getPropertyValue(prop)};`;
         }
-        elClone.setAttribute("style", styleString);
+        // If the element is scrollable, force its height to the full content height
+        // and set overflow to visible.
+        if (original.scrollHeight > original.clientHeight) {
+          styleString += `height: ${original.scrollHeight}px; overflow: visible;`;
+        }
+        cloned.setAttribute("style", styleString);
 
         // Process children recursively.
-        for (let i = 0; i < elOriginal.children.length; i++) {
-          process(elOriginal.children[i], elClone.children[i]);
+        for (let i = 0; i < original.children.length; i++) {
+          process(original.children[i], cloned.children[i]);
         }
       }
       process(element, clone);
       return clone;
     }
 
-    // Helper function: Converts a DOM element into a canvas using an SVG foreignObject.
+    // Helper: Converts a DOM element into a canvas using an SVG foreignObject.
+    // Renders at a scale for higher quality.
     function domToImage(element, width, height) {
       return new Promise((resolve, reject) => {
-        // Clone the element with inline styles.
+        // Clone the element with inline styles (and override scrollable dimensions)
         const clonedElement = cloneWithInlineStyles(element);
 
         // Serialize the cloned element.
-        let serializer = new XMLSerializer();
-        let elementString = serializer.serializeToString(clonedElement);
+        const serializer = new XMLSerializer();
+        const elementString = serializer.serializeToString(clonedElement);
 
-        // Create an SVG containing a foreignObject that embeds the element's HTML.
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+        // Build an SVG string that embeds the element.
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
       <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">
-          ${elementString}
-        </div>
+        <div xmlns="http://www.w3.org/1999/xhtml">${elementString}</div>
       </foreignObject>
     </svg>`;
 
-        // Create an image from the SVG data.
-        let img = new Image();
+        const img = new Image();
         img.onload = function () {
-          // Create a canvas and draw the image.
-          let canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          let ctx = canvas.getContext('2d');
-          // Optionally fill with white background
+          // Use devicePixelRatio to improve quality.
+          const ratio = window.devicePixelRatio || 1;
+          const canvas = document.createElement("canvas");
+          canvas.width = width * ratio;
+          canvas.height = height * ratio;
+          const ctx = canvas.getContext("2d");
+          // Optionally fill background white
           ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, width, height);
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
           ctx.drawImage(img, 0, 0);
           resolve(canvas);
         };
         img.onerror = reject;
-        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
       });
     }
 
-    // Main exportImage function (without using external libraries)
+    // Main exportImage function.
     function exportImage() {
-      // Get the current tab object.
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
         alert("No active tab found.");
         return;
       }
 
-      // Identify the elements to capture.
-      // Monaco editor is assumed to be inside editorContainer,
-      // and the output div is outputElement.
+      // Elements to capture.
       const editorElement = currentTabObj.editorContainer;
       const outputElement = currentTabObj.outputElement;
 
-      // Get the dimensions of each element.
+      // Determine full dimensions:
+      // For scrollable content, use scrollHeight instead of visible height.
       const editorRect = editorElement.getBoundingClientRect();
+      const editorHeight = editorElement.scrollHeight || editorRect.height;
       const outputRect = outputElement.getBoundingClientRect();
+      const outputHeight = outputElement.scrollHeight || outputRect.height;
 
-      // Compute the width and height for the combined image.
+      // Use the maximum width of the two.
       const totalWidth = Math.max(editorRect.width, outputRect.width);
-      const totalHeight = editorRect.height + outputRect.height;
+      const totalHeight = editorHeight + outputHeight;
 
       // Capture both elements as canvases.
       Promise.all([
-        domToImage(editorElement, editorRect.width, editorRect.height),
-        domToImage(outputElement, outputRect.width, outputRect.height)
+        domToImage(editorElement, editorRect.width, editorHeight),
+        domToImage(outputElement, outputRect.width, outputHeight)
       ]).then(([editorCanvas, outputCanvas]) => {
-        // Create a canvas to combine the two images.
-        const combinedCanvas = document.createElement('canvas');
-        combinedCanvas.width = totalWidth;
-        combinedCanvas.height = totalHeight;
-        const ctx = combinedCanvas.getContext('2d');
-
-        // Fill with white background.
+        // Create a combined canvas with high resolution.
+        const ratio = window.devicePixelRatio || 1;
+        const combinedCanvas = document.createElement("canvas");
+        combinedCanvas.width = totalWidth * ratio;
+        combinedCanvas.height = totalHeight * ratio;
+        const ctx = combinedCanvas.getContext("2d");
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, totalWidth, totalHeight);
+        ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
         // Draw the editor canvas at the top.
         ctx.drawImage(editorCanvas, 0, 0);
 
-        // Draw a separator line.
+        // Draw a styled separator line.
         ctx.strokeStyle = "#007acc";
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(0, editorRect.height);
-        ctx.lineTo(totalWidth, editorRect.height);
+        ctx.moveTo(0, editorHeight);
+        ctx.lineTo(totalWidth, editorHeight);
         ctx.stroke();
 
         // Draw the output canvas below the editor.
-        ctx.drawImage(outputCanvas, 0, editorRect.height);
+        ctx.drawImage(outputCanvas, 0, editorHeight);
 
-        // Convert the combined canvas to a PNG data URL.
+        // Convert combined canvas to PNG.
         const dataURL = combinedCanvas.toDataURL("image/png");
 
         // Trigger a download.
