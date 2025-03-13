@@ -959,7 +959,7 @@
         padding-right: 50px;
       }
     }
-    
+
 
     .lightMode {}
 
@@ -1715,13 +1715,13 @@ prompt("This is a prompt:");
     }
 
     function escapeHtmlVisible(text) {
-    return text.replace(/&/g, '&amp;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#039;')
-               .replace(/\n/g, '\\n');
-}
+      return text.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '\\n');
+    }
 
 
 
@@ -1831,7 +1831,7 @@ prompt("This is a prompt:");
           } else {
             subMsgDiv = document.createElement("div");
             subMsgDiv.style.marginRight = "15px";
-            subMsgDiv.innerText = escapeHtml(message[key][0]);
+            subMsgDiv.innerText = message[key][0]
             messageDiv.appendChild(subMsgDiv);
           }
         }
