@@ -2440,9 +2440,14 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    async function exportEditorAsImage(editorInstance) {
-      // 1) Get the entire code as styled HTML
-      const range = editorInstance.getModel().getFullModelRange();
+    async function exportImage(editorInstance) {
+      const currentTabObj = tabs.find(tab => tab.id === activeTabId);
+      if (!currentTabObj) {
+        alert("No active tab found.");
+        return;
+      }
+      const editorInstance = currentTabObj.editorInstance;
+      const outputElement = currentTabObj.outputElement; const range = editorInstance.getModel().getFullModelRange();
       const codeHtml = editorInstance.viewModel.getHTMLToCopy([range], false);
 
       // 2) Create an offscreen container to render that HTML
