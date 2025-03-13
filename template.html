@@ -2449,8 +2449,10 @@ prompt("This is a prompt:");
         return;
       }
       let zip = new JSZip();
+      let zipedFileNmae;
       tabs.forEach((t) => {
-        zip.file(t.name, t.editorInstance.getValue());
+        zipedFileNmae = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+        zip.file(zipedFileNmae, t.editorInstance.getValue());
       });
       zip.generateAsync({ type: "blob" })
         .then((content) => {
