@@ -2439,119 +2439,27 @@ prompt("This is a prompt:");
       }
     }
 
-    function exportAllZip() { }
-    // Capture full Monaco content without scroll using dom-to-image.
-    async function captureFullMonacoWithoutScroll(editorInstance) {
-      // Get the full content as plain text.
-      const content = editorInstance.getValue();
-      // Create a hidden container to render the entire content.
-      const cloneContainer = document.createElement("div");
-      cloneContainer.style.position = "absolute";
-      cloneContainer.style.top = "-9999px";
-      cloneContainer.style.left = "-9999px";
-      cloneContainer.style.width = editorInstance.getDomNode().clientWidth + "px";
-      // Use a <pre> tag to preserve whitespace and formatting.
-      cloneContainer.innerHTML = `<pre style="margin:0; font-family: 'Fira Code', monospace; font-size:14px; white-space: pre-wrap;">${escapeHtml(content)}</pre>`;
-      document.body.appendChild(cloneContainer);
+    function exportAllZip() {}
+    function exportImage() {
+      const oldRemoveLine = HTMLDivElement.prototype.removeChild
+      HTMLDivElement.prototype.removeChild=function(){}
+      // go to top of monaco then scroll down 
+      document.querySelector(".monaco-scrollable-element").scrollTop = 0
+      setTimeout(() => {
+        html2canvas(document.querySelector(".monaco-scrollable-element")).then(canvas => {
+          const img = canvas.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = img;
+          a.download = "code.png";
+          a.click();
+        });
+      }, 1000)
+      HTMLDivElement.prototype.removeChild=oldRemoveLine
+      
 
-      // Wait a bit for rendering.
-      await new Promise(r => setTimeout(r, 300));
-
-      // Capture the element using dom-to-image.
-      const dataUrl = await domtoimage.toPng(cloneContainer);
-      document.body.removeChild(cloneContainer);
-      return dataUrl;
     }
-
-    // Helper to escape HTML special characters.
-    function escapeHtml(text) {
-      const map = {
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "\"": "&quot;",
-        "'": "&#039;"
-      };
-      return text.replace(/[&<>"']/g, m => map[m]);
-    }
-
-    // Helper to load an image from a data URL.
-    function loadImage(dataUrl) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = dataUrl;
-      });
-    }
-
-    // Revised exportImage function.
-    async function exportImage() {
-      const currentTabObj = tabs.find(tab => tab.id === activeTabId);
-      if (!currentTabObj) {
-        alert("No active tab found.");
-        return;
-      }
-      const editorInstance = currentTabObj.editorInstance;
-      const outputElement = currentTabObj.outputElement;
-
-      // Capture the full Monaco editor content (returns a data URL).
-      const editorDataUrl = await captureFullMonacoWithoutScroll(editorInstance);
-      // Load the data URL into an Image.
-      const editorImg = await loadImage(editorDataUrl);
-
-      // Capture the output element (assuming it's not virtualized).
-      const outputRect = outputElement.getBoundingClientRect();
-      const outputDataUrl = await domtoimage.toPng(outputElement, {
-        width: outputRect.width,
-        height: outputElement.scrollHeight || outputRect.height
-      });
-      const outputImg = await loadImage(outputDataUrl);
-
-      // Determine dimensions (using CSS pixels).
-      const totalWidth = Math.max(editorInstance.getDomNode().clientWidth, outputRect.width);
-      const editorCssHeight = editorImg.height / (window.devicePixelRatio || 1);
-      const outputCssHeight = outputImg.height / (window.devicePixelRatio || 1);
-      const totalHeight = editorCssHeight + outputCssHeight;
-      const dpr = window.devicePixelRatio || 1;
-
-      // Create a combined canvas.
-      const combinedCanvas = document.createElement("canvas");
-      combinedCanvas.width = totalWidth * dpr;
-      combinedCanvas.height = totalHeight * dpr;
-      const ctx = combinedCanvas.getContext("2d");
-
-      // White background.
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      // Draw the editor image at the top.
-      ctx.drawImage(editorImg, 0, 0, totalWidth, editorCssHeight);
-
-      // Optional: Draw a separator line.
-      ctx.strokeStyle = "#007acc";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(0, editorCssHeight);
-      ctx.lineTo(totalWidth, editorCssHeight);
-      ctx.stroke();
-
-      // Draw the output image below the editor image.
-      ctx.drawImage(outputImg, 0, editorCssHeight);
-
-      // Convert combined canvas to PNG and trigger download.
-      const dataURL = combinedCanvas.toDataURL("image/png");
-      const downloadLink = document.createElement("a");
-      downloadLink.href = dataURL;
-      downloadLink.download = currentTabObj.name + ".png";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }
-
-    function exportPDF() { }
-    function exportCurrent() { }
+    function exportPDF() {}
+    function exportCurrent() {}
     alert(4);
   </script>
 </body>
