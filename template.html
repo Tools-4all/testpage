@@ -2446,7 +2446,6 @@ prompt("This is a prompt:");
         alert("No active tab found.");
         return;
       }
-      const editorInstance = currentTabObj.editorInstance;
       const outputElement = currentTabObj.outputElement; const range = editorInstance.getModel().getFullModelRange();
       const codeHtml = editorInstance.viewModel.getHTMLToCopy([range], false);
 
