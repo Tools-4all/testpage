@@ -15,6 +15,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       user-select: none;
       -webkit-user-drag: none;
       -webkit-user-select: none;
@@ -1258,6 +1261,7 @@
       editorOutputWrapper.appendChild(editorContainer);
       let outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
       outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
@@ -1316,7 +1320,6 @@
 
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
-      outputDiv.classList.add("allowSelect");
       outputDiv.setAttribute("tabindex", "0");
       outputDiv.addEventListener("keydown", (e) => {
         if (e.ctrlKey && e.key.toLowerCase() === "a") {
