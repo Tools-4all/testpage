@@ -2441,19 +2441,26 @@ prompt("This is a prompt:");
 
     function exportAllZip() { }
     async function exportImage() {
-      // Get the active tab object
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
         alert("No active tab found.");
         return;
       }
 
-      // Use the editor instance from the current tab object
       const editorInstance = currentTabObj.editorInstance;
       const range = editorInstance.getModel().getFullModelRange();
-      const codeHtml = editorInstance.viewModel.getHTMLToCopy([range], false);
 
-      // Create an offscreen container to render the HTML
+      // Use the exposed viewModel if available; otherwise, fallback to the internal property.
+      const viewModel = editorInstance.viewModel || editorInstance._modelData?.viewModel;
+      if (!viewModel) {
+        console.error("Cannot access viewModel from the editor instance.");
+        return;
+      }
+
+      // Get the full code as HTML using Monaco's internal API.
+      const codeHtml = viewModel.getHTMLToCopy([range], false);
+
+      // Create an offscreen container for the HTML
       const container = document.createElement('div');
       container.innerHTML = codeHtml;
       container.style.position = 'absolute';
@@ -2461,7 +2468,7 @@ prompt("This is a prompt:");
       container.style.left = '-9999px';
       document.body.appendChild(container);
 
-      // Measure the container's dimensions
+      // Determine the rendered size of the container
       const width = container.scrollWidth;
       const height = container.scrollHeight;
 
@@ -2480,12 +2487,10 @@ prompt("This is a prompt:");
       } catch (err) {
         console.error('Error exporting image:', err);
       } finally {
-        // Clean up the offscreen container
         document.body.removeChild(container);
       }
     }
 
-    // Converts a DOM element to a canvas using <svg><foreignObject>
     function domToImage(element, width, height) {
       return new Promise((resolve, reject) => {
         const serializer = new XMLSerializer();
@@ -2504,7 +2509,6 @@ prompt("This is a prompt:");
           canvas.width = width * ratio;
           canvas.height = height * ratio;
           const ctx = canvas.getContext('2d');
-          // Optional: Fill background to match the editor's background
           ctx.fillStyle = '#1e1e1e';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
