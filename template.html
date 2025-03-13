@@ -2487,7 +2487,7 @@ prompt("This is a prompt:");
       const outputElement = currentTabObj.outputElement;
 
       // Capture full editor using our scroll-and-capture method
-      const editorCanvas = await captureFullMonacoViaScroll(editorInstance);
+      const editorCanvas = await captureFullMonacoWithoutScroll(editorInstance);
 
       // Capture the output element using domtoimage (assuming it isn't virtualized)
       const outputRect = outputElement.getBoundingClientRect();
