@@ -2476,10 +2476,10 @@ prompt("This is a prompt:");
       while (currentLine > 0) {
         linesRendered.push(editorDiv.innerHTML);
         currentLine -= currentTab.editorInstance.getOption(monaco.editor.EditorOption.scrollBeyondLastLine);
-        if (currentLine < 0 && isFirst) {
+        if (currentLine < 1 && isFirst) {
           currentLine = 1;
           isFirst = false;
-        } else if (currentLine < 0) {
+        } else if (currentLine < 1) {
           break;
         }
         currentTab.editorInstance.setScrollTop(currentScrollPos - (currentLine * lineHeight));
