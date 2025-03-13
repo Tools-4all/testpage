@@ -17,7 +17,6 @@ importScripts("https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.m
 
 
 const wrapperPrefixLines = [
-    '"use strict";',
     'var console = customConsole;',
     'var prompt = customPrompt;',
     'var alert = customAlert;',
