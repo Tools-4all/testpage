@@ -2470,12 +2470,19 @@ prompt("This is a prompt:");
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
       const height = numLines * lineHeight;
       const width = editorDiv.scrollWidth;
-      currentTab.editorInstance.revealLine(numLines);
-      let currentLine = 0;
-      while (currentTab.editorInstance.getScrollTop() < height) {
+      currentTab.editorInstance.setScrollTop(numLines * lineHeight);
+      let currentLine = numLines;
+      let isFirst = true;
+      while (currentLine > 0) {
         linesRendered.push(editorDiv.innerHTML);
-        currentLine += editorDiv.querySelectorAll(".view-line").length
-        currentTab.editorInstance.revealLine(numLines - currentLine);
+        currentLine -= currentTab.editorInstance.getOption(monaco.editor.EditorOption.scrollBeyondLastLine);
+        if (currentLine < 0 && isFirst) {
+          currentLine = 0;
+          isFirst = false;
+        } else if (currentLine < 0) {
+          break;
+        }
+        currentTab.editorInstance.setScrollTop(currentScrollPos - (currentLine * lineHeight));
         await new Promise((resolve) => setTimeout(resolve, 300));
         console.log("scrolling");
       }
