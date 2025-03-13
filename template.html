@@ -2451,73 +2451,29 @@ prompt("This is a prompt:");
     }
 
     // Scrolls through the Monaco editor and captures each visible segment via dom-to-image
-    async function captureFullMonacoViaScroll(editorInstance) {
-      const editorDom = editorInstance.getDomNode();
-      if (!editorDom) {
-        throw new Error("Editor DOM node not found");
-      }
+    async function captureFullMonacoWithoutScroll(editorInstance) {
+      // Get the full content as plain text
+      const content = editorInstance.getValue();
+      // Create a hidden container to render the entire content
+      const cloneContainer = document.createElement("div");
+      cloneContainer.style.position = "absolute";
+      cloneContainer.style.top = "-9999px";
+      cloneContainer.style.left = "-9999px";
+      cloneContainer.style.width = editorInstance.getDomNode().clientWidth + "px";
+      // Use a <pre> to preserve whitespace and newlines
+      cloneContainer.innerHTML = `<pre style="margin:0; font-family: 'Fira Code', monospace; font-size:14px; white-space: pre-wrap;">${escapeHtml(content)}</pre>`;
+      document.body.appendChild(cloneContainer);
 
-      const viewportHeight = editorDom.clientHeight;
-      const totalHeight = editorInstance.getScrollHeight();
-      const width = editorDom.clientWidth;
-      const segments = [];
-      const originalScrollTop = editorInstance.getScrollTop();
+      // Give the browser time to render the clone
+      await new Promise(r => setTimeout(r, 300));
 
-      // Ensure we start at the top
-      editorInstance.setScrollTop(0);
-      await new Promise(r => setTimeout(r, 300)); // wait for rendering
+      // Use dom-to-image (version 2.6.0) to capture the clone
+      const dataUrl = await domtoimage.toPng(cloneContainer);
 
-      // Calculate number of steps (segments)
-      const steps = Math.ceil(totalHeight / viewportHeight);
+      // Clean up
+      document.body.removeChild(cloneContainer);
 
-      for (let i = 0; i < steps; i++) {
-        const offset = i * viewportHeight;
-        editorInstance.setScrollTop(offset);
-        await new Promise(r => setTimeout(r, 300)); // wait for virtualization to update
-
-        // Capture the visible portion using dom-to-image
-        const dataUrl = await domtoimage.toPng(editorDom, {
-          width: width,
-          height: viewportHeight
-        });
-        segments.push({ dataUrl, offset });
-      }
-
-      // Restore the original scroll position
-      editorInstance.setScrollTop(originalScrollTop);
-
-      // Create a canvas to stitch all segments together
-      const dpr = window.devicePixelRatio || 1;
-      const finalCanvas = document.createElement("canvas");
-      finalCanvas.width = width * dpr;
-      finalCanvas.height = totalHeight * dpr;
-      const ctx = finalCanvas.getContext("2d");
-
-      let yOffset = 0;
-      for (let i = 0; i < segments.length; i++) {
-        const { dataUrl, offset } = segments[i];
-        const img = await loadImage(dataUrl);
-        // For the last segment, crop if needed
-        let segmentHeight = viewportHeight;
-        if (i === segments.length - 1) {
-          segmentHeight = totalHeight - offset;
-        }
-        // Draw the captured image onto the final canvas (scaling accordingly)
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          img.width,
-          img.height,
-          0,
-          yOffset,
-          width,
-          segmentHeight
-        );
-        yOffset += segmentHeight;
-      }
-
-      return finalCanvas;
+      return dataUrl;
     }
 
     // Example export function that stitches the full Monaco editor capture with an output area capture
