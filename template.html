@@ -2441,38 +2441,27 @@ prompt("This is a prompt:");
 
     function exportAllZip() { }
     async function exportImage() {
-      // Find the current active tab's Monaco instance
-      const currentTabObj = tabs.find(tab => tab.id === activeTabId);
-      if (!currentTabObj) {
-        alert("No active tab found.");
-        return;
-      }
-      const editorInstance = currentTabObj.editorInstance;
-      const editorDom = editorInstance.getDomNode();
-      if (!editorDom) {
-        alert("Editor DOM node not found.");
-        return;
-      }
-
-      // Get the minimap canvas element.
-      // Monaco typically uses a canvas with the class 'minimap-decorations-layer'
-      const minimapCanvas = editorDom.querySelector('.minimap-decorations-layer');
+      // Use the provided CSS selector to target the minimap canvas.
+      const selector = "#tabsContainer > div > div.editorContainer > div.monaco-editor.no-user-select.showUnused.showDeprecated.vs-dark > div.overflow-guard > div.minimap.slider-mouseover > canvas";
+      const minimapCanvas = document.querySelector(selector);
       if (!minimapCanvas) {
         alert("Minimap canvas not found.");
         return;
       }
 
-      // Convert the minimap canvas to a data URL (PNG)
+      // Convert the canvas to a data URL (PNG format)
       const dataURL = minimapCanvas.toDataURL("image/png");
 
-      // Create a temporary download link and trigger the download
+      // Create a temporary link element to trigger download
       const downloadLink = document.createElement("a");
       downloadLink.href = dataURL;
-      downloadLink.download = currentTabObj.name + "_minimap.png";
+      downloadLink.download = "minimap.png";
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
     }
+
+    // Example usage:
 
     function exportPDF() { }
     function exportCurrent() { }
