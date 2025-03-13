@@ -2446,30 +2446,35 @@ prompt("This is a prompt:");
       const editorDom = editorInstance.getDomNode();
       if (!editorDom) throw new Error("Editor DOM node not found");
 
-      // Save original height and layout settings
+      // Save original height and scroll position
       const originalHeight = editorDom.style.height;
-      const originalLayout = editorInstance.getLayoutInfo();
+      const originalScrollTop = editorInstance.getScrollTop();
+
+      // Force scroll to top
+      editorInstance.setScrollTop(0);
 
       // Get the full height needed to render all lines
       const fullHeight = editorInstance.getScrollHeight();
 
-      // Temporarily set the editor container to full height and re-layout
+      // Temporarily expand the editor to full height and re-layout
       editorDom.style.height = fullHeight + "px";
       editorInstance.layout();
 
-      // Wait a bit to ensure all lines are rendered (adjust timeout if needed)
+      // Wait a bit to ensure all lines are rendered
       await new Promise(r => setTimeout(r, 300));
 
-      // Capture the full editor content using domToImage
+      // Capture the editor using domToImage helper
       const width = editorDom.clientWidth;
       const canvas = await domToImage(editorDom, width, fullHeight);
 
-      // Restore the original height and layout
+      // Restore original height and scroll position
       editorDom.style.height = originalHeight;
       editorInstance.layout();
+      editorInstance.setScrollTop(originalScrollTop);
 
       return canvas;
     }
+
 
     function cloneWithInlineStyles(element) {
       const clone = element.cloneNode(true);
