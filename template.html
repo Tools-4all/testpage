@@ -1091,7 +1091,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
     let currentTab = null;
@@ -2439,11 +2439,44 @@ prompt("This is a prompt:");
       }
     }
 
-    function exportAllZip() { }
+    function exportAllZip() { 
+      if (tabs.length === 0) {
+        alert("No tabs to export.");
+        return;
+      }
+      if (tabs.length === 1) {
+        exportCurrent();
+        return;
+      }
+      let zip = new JSZip();
+      tabs.forEach((t) => {
+        zip.file(t.name, t.editorInstance.getValue());
+      });
+      zip.generateAsync({ type: "blob" })
+        .then((content) => {
+          let a = document.createElement("a");
+          a.href = URL.createObjectURL(content);
+          a.download = "scripts.zip";
+          a.click();
+        });
+    }
     function exportImage () {}
 
     function exportPDF() { }
-    function exportCurrent() { }
+    function exportCurrent() {
+      if (activeTabId === null) {
+        alert("No tab to export.");
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
+     }
     alert(4);
   </script>
 </body>
