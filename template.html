@@ -2477,42 +2477,13 @@ prompt("This is a prompt:");
       const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-      const containerStyles = `
-        font-size: ${fontSize}px;
-        line-height: ${lineHeight}px;
-        font-family: ${fontFamily};
-        padding: 20px;
-        background-color: ${darkModeFlag ? "#1E1E1E" : "white"};
-        color: ${darkModeFlag ? "white" : "black"};
-      `;
-      const container = `<div style="${containerStyles}">${highlightedHTML}</div>`;
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Exported Code</title>
-            <style>
-              body {
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-              }
-            </style>
-          </head>
-          <body>
-            ${container}
-          </body>
-        </html>
-      `;
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'code.html';
-      a.click();
-      URL.revokeObjectURL(url);
+      const imageDiv = document.createElement('div');
+      imageDiv.style.fontFamily = fontFamily;
+      imageDiv.style.fontSize = `${fontSize}px`;
+      imageDiv.style.lineHeight = `${lineHeight}px`;
+      imageDiv.style.whiteSpace = 'pre-wrap';
+      imageDiv.innerHTML = highlightedHTML;
+      document.body.appendChild(imageDiv);
     }
 
 
