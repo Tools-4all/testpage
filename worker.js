@@ -535,20 +535,20 @@ function createWrappedCode(userCode) {
 }
 
 
-const NativeError = Error;
+// const NativeError = Error;
 
-class CustomError extends NativeError {
-    constructor(...args) {
-        super(...args);
-        if (this.stack && !this.stack.includes("relativeStack")) {
-            // Replace the original stack with a relative one.
-            this.stack = relativeStack(this);
-        }
-    }
-}
+// class CustomError extends NativeError {
+//     constructor(...args) {
+//         super(...args);
+//         if (this.stack && !this.stack.includes("relativeStack")) {
+//             // Replace the original stack with a relative one.
+//             this.stack = relativeStack(this);
+//         }
+//     }
+// }
 
-// Override the global Error with your custom error.
-self.Error = CustomError;
+// // Override the global Error with your custom error.
+// self.Error = CustomError;
 
 
 function getStack() {
