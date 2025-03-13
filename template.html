@@ -15,6 +15,27 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      user-select: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .allowSelect {
+      user-select: text;
+      -webkit-user-drag: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+    }
+
+    .dontAllowSelect {
+      user-select: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
 
     #compiler {
@@ -1295,6 +1316,7 @@
 
       let outputDiv = document.createElement("div");
       outputDiv.classList.add("output");
+      outputDiv.classList.add("allowSelect");
       outputDiv.setAttribute("tabindex", "0");
       outputDiv.addEventListener("keydown", (e) => {
         if (e.ctrlKey && e.key.toLowerCase() === "a") {
@@ -1497,6 +1519,7 @@ prompt("This is a prompt:");
         flexContainer.style.alignItems = "flex-start";
 
         let symbolDiv = document.createElement("div");
+        symbolDiv.classList.add("dontAllowSelect");
         symbolDiv.textContent = `[?]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
@@ -1558,6 +1581,7 @@ prompt("This is a prompt:");
         flexContainer.style.alignItems = "flex-start";
 
         let symbolDiv = document.createElement("div");
+        symbolDiv.classList.add("dontAllowSelect");
         symbolDiv.textContent = `[!]`;
         symbolDiv.style.marginRight = "5px";
         symbolDiv.style.flexShrink = "0";
@@ -1808,6 +1832,7 @@ prompt("This is a prompt:");
       flexContainer.style.alignItems = "flex-start";
 
       let symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect");
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
       symbolDiv.style.marginRight = "5px";
       symbolDiv.style.flexShrink = "0";
@@ -1959,6 +1984,7 @@ prompt("This is a prompt:");
 
       // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect");
       symbolDiv.innerHTML = "[>]";
       table.style.marginLeft = "7px";
       symbolDiv.style.marginTop = "7px";
