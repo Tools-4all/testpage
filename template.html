@@ -1091,6 +1091,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
     let currentTab = null;
@@ -2439,12 +2440,22 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Recursively clone an element and inline its computed styles,
-    // and override height and overflow if the element is scrollable.
-    // Scroll through Monaco, capture each visible segment, and stitch them together.
+    // Helper to load an image from a data URL
+    function loadImage(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+
+    // Scrolls through the Monaco editor and captures each visible segment via dom-to-image
     async function captureFullMonacoViaScroll(editorInstance) {
       const editorDom = editorInstance.getDomNode();
-      if (!editorDom) throw new Error("Editor DOM node not found");
+      if (!editorDom) {
+        throw new Error("Editor DOM node not found");
+      }
 
       const viewportHeight = editorDom.clientHeight;
       const totalHeight = editorInstance.getScrollHeight();
@@ -2452,112 +2463,64 @@ prompt("This is a prompt:");
       const segments = [];
       const originalScrollTop = editorInstance.getScrollTop();
 
-      // Scroll to top to start capture
+      // Ensure we start at the top
       editorInstance.setScrollTop(0);
       await new Promise(r => setTimeout(r, 300)); // wait for rendering
 
-      // Calculate the number of segments needed
+      // Calculate number of steps (segments)
       const steps = Math.ceil(totalHeight / viewportHeight);
 
       for (let i = 0; i < steps; i++) {
         const offset = i * viewportHeight;
         editorInstance.setScrollTop(offset);
-        // Wait for virtualization to update (adjust delay if necessary)
-        await new Promise(r => setTimeout(r, 300));
-        // Capture only the visible portion (viewport)
-        const canvas = await domToImage(editorDom, width, viewportHeight);
-        segments.push({ canvas, offset });
+        await new Promise(r => setTimeout(r, 300)); // wait for virtualization to update
+
+        // Capture the visible portion using dom-to-image
+        const dataUrl = await domtoimage.toPng(editorDom, {
+          width: width,
+          height: viewportHeight
+        });
+        segments.push({ dataUrl, offset });
       }
 
       // Restore the original scroll position
       editorInstance.setScrollTop(originalScrollTop);
 
-      // Stitch segments together
-      const ratio = window.devicePixelRatio || 1;
-      // Create a final canvas with total height (in CSS pixels) multiplied by ratio
-      const combinedCanvas = document.createElement("canvas");
-      combinedCanvas.width = width * ratio;
-      combinedCanvas.height = totalHeight * ratio;
-      const ctx = combinedCanvas.getContext("2d");
+      // Create a canvas to stitch all segments together
+      const dpr = window.devicePixelRatio || 1;
+      const finalCanvas = document.createElement("canvas");
+      finalCanvas.width = width * dpr;
+      finalCanvas.height = totalHeight * dpr;
+      const ctx = finalCanvas.getContext("2d");
 
       let yOffset = 0;
-      segments.forEach((seg, index) => {
+      for (let i = 0; i < segments.length; i++) {
+        const { dataUrl, offset } = segments[i];
+        const img = await loadImage(dataUrl);
+        // For the last segment, crop if needed
         let segmentHeight = viewportHeight;
-        // If it's the last segment, crop if needed
-        if (index === segments.length - 1) {
-          segmentHeight = totalHeight - seg.offset;
+        if (i === segments.length - 1) {
+          segmentHeight = totalHeight - offset;
         }
-        // Draw the segment's canvas onto the combined canvas.
-        // Note: seg.canvas height is viewportHeight (in device pixels already captured by domToImage)
+        // Draw the captured image onto the final canvas (scaling accordingly)
         ctx.drawImage(
-          seg.canvas,
+          img,
           0,
           0,
-          seg.canvas.width,
-          seg.canvas.height,
+          img.width,
+          img.height,
           0,
           yOffset,
           width,
           segmentHeight
         );
         yOffset += segmentHeight;
-      });
-
-      return combinedCanvas;
-    }
-
-    // Helper: Clones element with inline styles (as before)
-    function cloneWithInlineStyles(element) {
-      const clone = element.cloneNode(true);
-      function process(original, cloned) {
-        const computedStyle = window.getComputedStyle(original);
-        let styleString = "";
-        for (let i = 0; i < computedStyle.length; i++) {
-          const prop = computedStyle[i];
-          styleString += `${prop}:${computedStyle.getPropertyValue(prop)};`;
-        }
-        // For scrollable elements, force height to full content height (if needed)
-        if (original.scrollHeight > original.clientHeight) {
-          styleString += `height: ${original.scrollHeight}px; overflow: visible;`;
-        }
-        cloned.setAttribute("style", styleString);
-        for (let i = 0; i < original.children.length; i++) {
-          process(original.children[i], cloned.children[i]);
-        }
       }
-      process(element, clone);
-      return clone;
+
+      return finalCanvas;
     }
 
-    function domToImage(element, width, height) {
-      return new Promise((resolve, reject) => {
-        const clonedElement = cloneWithInlineStyles(element);
-        const serializer = new XMLSerializer();
-        const elementString = serializer.serializeToString(clonedElement);
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-      <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">${elementString}</div>
-      </foreignObject>
-    </svg>`;
-        const img = new Image();
-        img.onload = function () {
-          const ratio = window.devicePixelRatio || 1;
-          const canvas = document.createElement("canvas");
-          canvas.width = width * ratio;
-          canvas.height = height * ratio;
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas);
-        };
-        img.onerror = reject;
-        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-      });
-    }
-
-    // Updated exportImage function that uses the scrolling capture method
+    // Example export function that stitches the full Monaco editor capture with an output area capture
     async function exportImage() {
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
@@ -2567,31 +2530,40 @@ prompt("This is a prompt:");
       const editorInstance = currentTabObj.editorInstance;
       const outputElement = currentTabObj.outputElement;
 
-      // Capture the full Monaco editor by scrolling through its content
+      // Capture full editor using our scroll-and-capture method
       const editorCanvas = await captureFullMonacoViaScroll(editorInstance);
 
-      // Capture the output element (assumed non-virtualized) as before
+      // Capture the output element using domtoimage (assuming it isn't virtualized)
       const outputRect = outputElement.getBoundingClientRect();
       const outputHeight = outputElement.scrollHeight || outputRect.height;
-      const outputCanvas = await domToImage(outputElement, outputRect.width, outputHeight);
+      const outputDataUrl = await domtoimage.toPng(outputElement, {
+        width: outputRect.width,
+        height: outputHeight
+      });
+      const outputImg = await loadImage(outputDataUrl);
 
-      // Determine final dimensions (in CSS pixels)
-      const totalWidth = Math.max(editorInstance.getDomNode().clientWidth, outputRect.width);
+      // Determine final dimensions (using CSS pixels)
+      const totalWidth = Math.max(
+        editorInstance.getDomNode().clientWidth,
+        outputRect.width
+      );
       const editorCssHeight = editorCanvas.height / (window.devicePixelRatio || 1);
-      const outputCssHeight = outputCanvas.height / (window.devicePixelRatio || 1);
+      const outputCssHeight = outputImg.height / (window.devicePixelRatio || 1);
       const totalHeight = editorCssHeight + outputCssHeight;
-      const ratio = window.devicePixelRatio || 1;
+      const dpr = window.devicePixelRatio || 1;
 
       // Create a combined canvas
       const combinedCanvas = document.createElement("canvas");
-      combinedCanvas.width = totalWidth * ratio;
-      combinedCanvas.height = totalHeight * ratio;
+      combinedCanvas.width = totalWidth * dpr;
+      combinedCanvas.height = totalHeight * dpr;
       const ctx = combinedCanvas.getContext("2d");
+
+      // Fill background white
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Draw the editor capture at the top
+      // Draw the full editor capture at the top
       ctx.drawImage(editorCanvas, 0, 0, totalWidth, editorCssHeight);
 
       // Draw a separator line (optional)
@@ -2603,7 +2575,7 @@ prompt("This is a prompt:");
       ctx.stroke();
 
       // Draw the output capture below the editor
-      ctx.drawImage(outputCanvas, 0, editorCssHeight);
+      ctx.drawImage(outputImg, 0, editorCssHeight);
 
       // Convert to PNG and trigger download
       const dataURL = combinedCanvas.toDataURL("image/png");
