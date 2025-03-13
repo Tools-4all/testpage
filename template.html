@@ -2440,33 +2440,36 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    async function exportImage(editorInstance) {
+    async function exportImage() {
+      // Get the active tab object
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
         alert("No active tab found.");
         return;
       }
-      const outputElement = currentTabObj.outputElement; const range = editorInstance.getModel().getFullModelRange();
+
+      // Use the editor instance from the current tab object
+      const editorInstance = currentTabObj.editorInstance;
+      const range = editorInstance.getModel().getFullModelRange();
       const codeHtml = editorInstance.viewModel.getHTMLToCopy([range], false);
 
-      // 2) Create an offscreen container to render that HTML
+      // Create an offscreen container to render the HTML
       const container = document.createElement('div');
       container.innerHTML = codeHtml;
-      // Make it offscreen (so it doesn’t flicker in the UI)
       container.style.position = 'absolute';
       container.style.top = '-9999px';
       container.style.left = '-9999px';
       document.body.appendChild(container);
 
-      // 3) Measure its rendered size
+      // Measure the container's dimensions
       const width = container.scrollWidth;
       const height = container.scrollHeight;
 
       try {
-        // 4) Convert that container to a canvas
+        // Convert the container to a canvas
         const canvas = await domToImage(container, width, height);
 
-        // 5) Trigger a PNG download
+        // Trigger a PNG download
         const dataURL = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.href = dataURL;
@@ -2477,7 +2480,7 @@ prompt("This is a prompt:");
       } catch (err) {
         console.error('Error exporting image:', err);
       } finally {
-        // Remove the offscreen container in all cases
+        // Clean up the offscreen container
         document.body.removeChild(container);
       }
     }
@@ -2494,26 +2497,21 @@ prompt("This is a prompt:");
         </foreignObject>
       </svg>
     `;
-
         const img = new Image();
         img.onload = () => {
-          // Scale for device pixel ratio
           const ratio = window.devicePixelRatio || 1;
           const canvas = document.createElement('canvas');
           canvas.width = width * ratio;
           canvas.height = height * ratio;
           const ctx = canvas.getContext('2d');
-          // Fill background if needed
-          ctx.fillStyle = '#1e1e1e'; // or match your editor’s background
+          // Optional: Fill background to match the editor's background
+          ctx.fillStyle = '#1e1e1e';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Apply scale
           ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
           ctx.drawImage(img, 0, 0);
           resolve(canvas);
         };
         img.onerror = reject;
-        // Pass the SVG string as a data URL
         img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
       });
     }
