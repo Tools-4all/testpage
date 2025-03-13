@@ -2440,7 +2440,42 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Helper to load an image from a data URL
+    // Capture full Monaco content without scroll using dom-to-image.
+    async function captureFullMonacoWithoutScroll(editorInstance) {
+      // Get the full content as plain text.
+      const content = editorInstance.getValue();
+      // Create a hidden container to render the entire content.
+      const cloneContainer = document.createElement("div");
+      cloneContainer.style.position = "absolute";
+      cloneContainer.style.top = "-9999px";
+      cloneContainer.style.left = "-9999px";
+      cloneContainer.style.width = editorInstance.getDomNode().clientWidth + "px";
+      // Use a <pre> tag to preserve whitespace and formatting.
+      cloneContainer.innerHTML = `<pre style="margin:0; font-family: 'Fira Code', monospace; font-size:14px; white-space: pre-wrap;">${escapeHtml(content)}</pre>`;
+      document.body.appendChild(cloneContainer);
+
+      // Wait a bit for rendering.
+      await new Promise(r => setTimeout(r, 300));
+
+      // Capture the element using dom-to-image.
+      const dataUrl = await domtoimage.toPng(cloneContainer);
+      document.body.removeChild(cloneContainer);
+      return dataUrl;
+    }
+
+    // Helper to escape HTML special characters.
+    function escapeHtml(text) {
+      const map = {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    // Helper to load an image from a data URL.
     function loadImage(dataUrl) {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -2450,33 +2485,7 @@ prompt("This is a prompt:");
       });
     }
 
-    // Scrolls through the Monaco editor and captures each visible segment via dom-to-image
-    async function captureFullMonacoWithoutScroll(editorInstance) {
-      // Get the full content as plain text
-      const content = editorInstance.getValue();
-      // Create a hidden container to render the entire content
-      const cloneContainer = document.createElement("div");
-      cloneContainer.style.position = "absolute";
-      cloneContainer.style.top = "-9999px";
-      cloneContainer.style.left = "-9999px";
-      cloneContainer.style.width = editorInstance.getDomNode().clientWidth + "px";
-      // Use a <pre> to preserve whitespace and newlines
-      cloneContainer.innerHTML = `<pre style="margin:0; font-family: 'Fira Code', monospace; font-size:14px; white-space: pre-wrap;">${escapeHtml(content)}</pre>`;
-      document.body.appendChild(cloneContainer);
-
-      // Give the browser time to render the clone
-      await new Promise(r => setTimeout(r, 300));
-
-      // Use dom-to-image (version 2.6.0) to capture the clone
-      const dataUrl = await domtoimage.toPng(cloneContainer);
-
-      // Clean up
-      document.body.removeChild(cloneContainer);
-
-      return dataUrl;
-    }
-
-    // Example export function that stitches the full Monaco editor capture with an output area capture
+    // Revised exportImage function.
     async function exportImage() {
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
@@ -2486,43 +2495,41 @@ prompt("This is a prompt:");
       const editorInstance = currentTabObj.editorInstance;
       const outputElement = currentTabObj.outputElement;
 
-      // Capture full editor using our scroll-and-capture method
-      const editorCanvas = await captureFullMonacoWithoutScroll(editorInstance);
+      // Capture the full Monaco editor content (returns a data URL).
+      const editorDataUrl = await captureFullMonacoWithoutScroll(editorInstance);
+      // Load the data URL into an Image.
+      const editorImg = await loadImage(editorDataUrl);
 
-      // Capture the output element using domtoimage (assuming it isn't virtualized)
+      // Capture the output element (assuming it's not virtualized).
       const outputRect = outputElement.getBoundingClientRect();
-      const outputHeight = outputElement.scrollHeight || outputRect.height;
       const outputDataUrl = await domtoimage.toPng(outputElement, {
         width: outputRect.width,
-        height: outputHeight
+        height: outputElement.scrollHeight || outputRect.height
       });
       const outputImg = await loadImage(outputDataUrl);
 
-      // Determine final dimensions (using CSS pixels)
-      const totalWidth = Math.max(
-        editorInstance.getDomNode().clientWidth,
-        outputRect.width
-      );
-      const editorCssHeight = editorCanvas.height / (window.devicePixelRatio || 1);
+      // Determine dimensions (using CSS pixels).
+      const totalWidth = Math.max(editorInstance.getDomNode().clientWidth, outputRect.width);
+      const editorCssHeight = editorImg.height / (window.devicePixelRatio || 1);
       const outputCssHeight = outputImg.height / (window.devicePixelRatio || 1);
       const totalHeight = editorCssHeight + outputCssHeight;
       const dpr = window.devicePixelRatio || 1;
 
-      // Create a combined canvas
+      // Create a combined canvas.
       const combinedCanvas = document.createElement("canvas");
       combinedCanvas.width = totalWidth * dpr;
       combinedCanvas.height = totalHeight * dpr;
       const ctx = combinedCanvas.getContext("2d");
 
-      // Fill background white
+      // White background.
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Draw the full editor capture at the top
-      ctx.drawImage(editorCanvas, 0, 0, totalWidth, editorCssHeight);
+      // Draw the editor image at the top.
+      ctx.drawImage(editorImg, 0, 0, totalWidth, editorCssHeight);
 
-      // Draw a separator line (optional)
+      // Optional: Draw a separator line.
       ctx.strokeStyle = "#007acc";
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -2530,10 +2537,10 @@ prompt("This is a prompt:");
       ctx.lineTo(totalWidth, editorCssHeight);
       ctx.stroke();
 
-      // Draw the output capture below the editor
+      // Draw the output image below the editor image.
       ctx.drawImage(outputImg, 0, editorCssHeight);
 
-      // Convert to PNG and trigger download
+      // Convert combined canvas to PNG and trigger download.
       const dataURL = combinedCanvas.toDataURL("image/png");
       const downloadLink = document.createElement("a");
       downloadLink.href = dataURL;
