@@ -1076,7 +1076,7 @@
           <option value="image">Export as Image</option>
           <option value="pdf">Export as PDF</option>
         </select>
-        <button id="exportButton" class="vs-button">Export</button>
+        <button id="exportButton" class="vs-button" onclick="exportCode()">Export</button>
       </div>
     </div>
     <div id="mainContainer">
@@ -1106,6 +1106,7 @@
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
+    const exportSelect = document.getElementById("exportSelect");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
@@ -2420,6 +2421,45 @@ prompt("This is a prompt:");
       nextWorker = new Worker(workerBlobURL);
     });
 
+    function exportCode() {
+      switch (exportSelect.value) {
+        case "allZip":
+          exportAllZip();
+          break;
+        case "image":
+          exportImage();
+          break;
+        case "pdf":
+          exportPDF();
+          break;
+        case "current":
+          exportCurrent();
+          break;
+      }
+    }
+
+    function exportAllZip() {}
+    function exportImage() {
+      let tab = tabs.find((x) => x.id === activeTabId);
+      if (!tab) return;
+      let code = tab.editorInstance.getValue();
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+      let img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        let dataUrl = canvas.toDataURL("image/png");
+        let a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "script.png";
+        a.click();
+      };
+      img.src = "data:image/svg+xml;base64," + btoa(code);
+    }
+    function exportPDF() {}
+    function exportCurrent() {}
     alert(4);
   </script>
 </body>
