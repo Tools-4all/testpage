@@ -2444,18 +2444,11 @@ prompt("This is a prompt:");
       const oldRemoveLine = HTMLDivElement.prototype.removeChild
       HTMLDivElement.prototype.removeChild=function(){}
       // go to top of monaco then scroll down 
-      document.querySelector(".monaco-scrollable-element").scrollTop = 0
-      setTimeout(() => {
-        html2canvas(document.querySelector(".monaco-scrollable-element")).then(canvas => {
-          const img = canvas.toDataURL("image/png");
-          const a = document.createElement("a");
-          a.href = img;
-          a.download = "code.png";
-          a.click();
-        });
-      }, 1000)
+      const scrollElem = document.querySelector(".monaco-scrollable-element")
+      const oldScrollPos = scrollElem.scrollTop
+      scrollElem.scrollTop = 0
       HTMLDivElement.prototype.removeChild=oldRemoveLine
-      
+      scrollElem.scrollTop = oldScrollPos
 
     }
     function exportPDF() {}
