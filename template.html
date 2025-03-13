@@ -2439,20 +2439,124 @@ prompt("This is a prompt:");
       }
     }
 
-    function exportAllZip() {}
-    function exportImage() {
-      const oldRemoveLine = HTMLDivElement.prototype.removeChild
-      HTMLDivElement.prototype.removeChild=function(){}
-      // go to top of monaco then scroll down 
-      const scrollElem = document.querySelector(".monaco-scrollable-element")
-      const oldScrollPos = scrollElem.scrollTop
-      scrollElem.scrollTop = 0
-      HTMLDivElement.prototype.removeChild=oldRemoveLine
-      scrollElem.scrollTop = oldScrollPos
-
+    function exportAllZip() { }
+    // Helper: Recursively inline computed styles for an element and its children.
+    function inlineAllStyles(element) {
+      if (!(element instanceof Element)) return;
+      const computedStyle = window.getComputedStyle(element);
+      let style = "";
+      for (let i = 0; i < computedStyle.length; i++) {
+        const prop = computedStyle[i];
+        style += prop + ":" + computedStyle.getPropertyValue(prop) + ";";
+      }
+      element.setAttribute("style", style);
+      Array.from(element.children).forEach(child => inlineAllStyles(child));
     }
-    function exportPDF() {}
-    function exportCurrent() {}
+
+    // Helper: Load an Image from a data URL.
+    function loadImage(dataUrl) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        // Some browsers require explicit dimensions if using foreignObject
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+
+    // Main exportImage function without any library.
+    async function exportImage() {
+      const currentTabObj = tabs.find(tab => tab.id === activeTabId);
+      if (!currentTabObj) {
+        alert("No active tab found.");
+        return;
+      }
+
+      // Get the Monaco editor instance and its DOM node.
+      const editorInstance = currentTabObj.editorInstance;
+      const editorDom = editorInstance.getDomNode();
+      if (!editorDom) {
+        alert("Editor DOM not found.");
+        return;
+      }
+
+      // Save original scroll position.
+      const originalScrollTop = editorInstance.getScrollTop();
+
+      // Get viewport and total content dimensions.
+      const viewportHeight = editorDom.clientHeight;
+      const totalHeight = editorInstance.getScrollHeight();
+      const width = editorDom.clientWidth;
+
+      // (Optional) Prevent Monaco from removing child nodes during our capture.
+      const oldRemoveChild = HTMLDivElement.prototype.removeChild;
+      HTMLDivElement.prototype.removeChild = function () { };
+
+      // Scroll to the top.
+      editorInstance.setScrollTop(0);
+      await new Promise(r => setTimeout(r, 300)); // wait for render
+
+      // Calculate the number of segments we must capture.
+      const numSteps = Math.ceil(totalHeight / viewportHeight);
+      const segments = [];
+
+      // For each viewport "page":
+      for (let step = 0; step < numSteps; step++) {
+        const offset = step * viewportHeight;
+        editorInstance.setScrollTop(offset);
+        // Wait for Monaco to update its rendered view.
+        await new Promise(r => setTimeout(r, 300));
+
+        // Clone the editor DOM.
+        const clone = editorDom.cloneNode(true);
+        inlineAllStyles(clone);
+
+        // Serialize the clone to an SVG string using a foreignObject.
+        const serializer = new XMLSerializer();
+        const clonedHTML = serializer.serializeToString(clone);
+        const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${viewportHeight}">
+  <foreignObject width="100%" height="100%">${clonedHTML}</foreignObject>
+</svg>`;
+        const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+        const img = await loadImage(dataUrl);
+        segments.push({ img, offset });
+      }
+
+      // Restore original scroll position and remove our override.
+      editorInstance.setScrollTop(originalScrollTop);
+      HTMLDivElement.prototype.removeChild = oldRemoveChild;
+
+      // Create a canvas to stitch all captured segments.
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = totalHeight;
+      const ctx = canvas.getContext("2d");
+
+      let yOffset = 0;
+      for (let i = 0; i < segments.length; i++) {
+        // For the last segment, adjust the height if necessary.
+        let segHeight = viewportHeight;
+        if (yOffset + segHeight > totalHeight) {
+          segHeight = totalHeight - yOffset;
+        }
+        ctx.drawImage(segments[i].img, 0, 0, width, segHeight, 0, yOffset, width, segHeight);
+        yOffset += viewportHeight;
+      }
+
+      // Convert the stitched canvas to a PNG data URL.
+      const finalDataUrl = canvas.toDataURL("image/png");
+
+      // Trigger a download.
+      const downloadLink = document.createElement("a");
+      downloadLink.href = finalDataUrl;
+      downloadLink.download = currentTabObj.name + ".png";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    }
+
+    function exportPDF() { }
+    function exportCurrent() { }
     alert(4);
   </script>
 </body>
