@@ -2439,70 +2439,61 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Create a clone element for the full Monaco editor content.
-    function createFullMonacoClone(editorInstance) {
-      const code = editorInstance.getValue();
-      // Create a container div.
-      const container = document.createElement('div');
-      // Apply styles to mimic Monaco's dark theme.
-      container.style.fontFamily = 'Fira Code, Consolas, "Courier New", monospace';
-      container.style.fontSize = '14px';
-      container.style.backgroundColor = "#1e1e1e";
-      container.style.color = "#d4d4d4";
-      container.style.padding = '10px';
-      container.style.whiteSpace = 'pre';
-      container.style.lineHeight = '1.5';
-      container.style.overflow = 'visible';
-      // Optionally, add line numbers manually if desired.
-      // For now, we just set the code text.
-      container.textContent = code;
-      return container;
-    }
-
-    // Recursively clone an element and inline its computed styles.
+    // Recursively clone an element and inline its computed styles,
+    // and override height and overflow if the element is scrollable.
     function cloneWithInlineStyles(element) {
       const clone = element.cloneNode(true);
-      function process(orig, cln) {
-        const computedStyle = window.getComputedStyle(orig);
+
+      function process(original, cloned) {
+        const computedStyle = window.getComputedStyle(original);
         let styleString = "";
         for (let i = 0; i < computedStyle.length; i++) {
           const prop = computedStyle[i];
           styleString += `${prop}:${computedStyle.getPropertyValue(prop)};`;
         }
-        // For scrollable elements, force full height.
-        if (orig.scrollHeight > orig.clientHeight) {
-          styleString += `height: ${orig.scrollHeight}px; overflow: visible;`;
+        // If the element is scrollable, force its height to the full content height
+        // and set overflow to visible.
+        if (original.scrollHeight > original.clientHeight) {
+          styleString += `height: ${original.scrollHeight}px; overflow: visible;`;
         }
-        cln.setAttribute("style", styleString);
-        for (let i = 0; i < orig.children.length; i++) {
-          process(orig.children[i], cln.children[i]);
+        cloned.setAttribute("style", styleString);
+
+        // Process children recursively.
+        for (let i = 0; i < original.children.length; i++) {
+          process(original.children[i], cloned.children[i]);
         }
       }
       process(element, clone);
       return clone;
     }
 
-    // Helper: Convert a DOM element to a canvas using an SVG foreignObject,
-    // rendering at high resolution.
+    // Helper: Converts a DOM element into a canvas using an SVG foreignObject.
+    // Renders at a scale for higher quality.
     function domToImage(element, width, height) {
       return new Promise((resolve, reject) => {
+        // Clone the element with inline styles (and override scrollable dimensions)
         const clonedElement = cloneWithInlineStyles(element);
+
+        // Serialize the cloned element.
         const serializer = new XMLSerializer();
         const elementString = serializer.serializeToString(clonedElement);
+
+        // Build an SVG string that embeds the element.
         const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
       <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">
-          ${elementString}
-        </div>
+        <div xmlns="http://www.w3.org/1999/xhtml">${elementString}</div>
       </foreignObject>
     </svg>`;
+
         const img = new Image();
         img.onload = function () {
+          // Use devicePixelRatio to improve quality.
           const ratio = window.devicePixelRatio || 1;
           const canvas = document.createElement("canvas");
           canvas.width = width * ratio;
           canvas.height = height * ratio;
           const ctx = canvas.getContext("2d");
+          // Optionally fill background white
           ctx.fillStyle = "#ffffff";
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
@@ -2514,7 +2505,7 @@ prompt("This is a prompt:");
       });
     }
 
-    // Updated exportImage function
+    // Main exportImage function.
     function exportImage() {
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
@@ -2522,37 +2513,27 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Instead of capturing the Monaco container (which is virtualized),
-      // create a full clone from the editor instance.
-      const monacoClone = createFullMonacoClone(currentTabObj.editorInstance);
-      // For the output, use its DOM element as before.
+      // Elements to capture.
+      const editorElement = currentTabObj.editorContainer;
       const outputElement = currentTabObj.outputElement;
 
-      // Determine dimensions for each capture.
-      // For the full Monaco clone, measure its dimensions after it's in the document.
-      monacoClone.style.position = "absolute";
-      monacoClone.style.top = "-10000px";
-      document.body.appendChild(monacoClone);
-      const editorRect = monacoClone.getBoundingClientRect();
-      const editorWidth = editorRect.width;
-      const editorHeight = monacoClone.scrollHeight; // full height
-
-      // For the output element, use scrollHeight if scrollable.
+      // Determine full dimensions:
+      // For scrollable content, use scrollHeight instead of visible height.
+      const editorRect = editorElement.getBoundingClientRect();
+      const editorHeight = editorElement.scrollHeight || editorRect.height;
       const outputRect = outputElement.getBoundingClientRect();
-      const outputWidth = outputRect.width;
       const outputHeight = outputElement.scrollHeight || outputRect.height;
 
-      // Use the maximum width.
-      const totalWidth = Math.max(editorWidth, outputWidth);
+      // Use the maximum width of the two.
+      const totalWidth = Math.max(editorRect.width, outputRect.width);
       const totalHeight = editorHeight + outputHeight;
 
       // Capture both elements as canvases.
       Promise.all([
-        domToImage(monacoClone, editorWidth, editorHeight),
-        domToImage(outputElement, outputWidth, outputHeight)
+        domToImage(editorElement, editorRect.width, editorHeight),
+        domToImage(outputElement, outputRect.width, outputHeight)
       ]).then(([editorCanvas, outputCanvas]) => {
-        // Remove the temporary clone.
-        document.body.removeChild(monacoClone);
+        // Create a combined canvas with high resolution.
         const ratio = window.devicePixelRatio || 1;
         const combinedCanvas = document.createElement("canvas");
         combinedCanvas.width = totalWidth * ratio;
@@ -2561,18 +2542,25 @@ prompt("This is a prompt:");
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        // Draw the full editor snapshot at the top.
+
+        // Draw the editor canvas at the top.
         ctx.drawImage(editorCanvas, 0, 0);
-        // Draw a separator line.
+
+        // Draw a styled separator line.
         ctx.strokeStyle = "#007acc";
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.moveTo(0, editorHeight);
         ctx.lineTo(totalWidth, editorHeight);
         ctx.stroke();
-        // Draw the output snapshot below.
+
+        // Draw the output canvas below the editor.
         ctx.drawImage(outputCanvas, 0, editorHeight);
+
+        // Convert combined canvas to PNG.
         const dataURL = combinedCanvas.toDataURL("image/png");
+
+        // Trigger a download.
         const downloadLink = document.createElement("a");
         downloadLink.href = dataURL;
         downloadLink.download = currentTabObj.name + ".png";
