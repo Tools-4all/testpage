@@ -2530,7 +2530,7 @@ prompt("This is a prompt:");
 
       // Capture both elements as canvases.
       Promise.all([
-        domToImage(editorElement, editorRect.width, editorHeight),
+        domToImage(document.querySelector("#tabsContainer > div > div.editorContainer > div.monaco-editor.no-user-select.showUnused.showDeprecated.vs-dark > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark > div.lines-content.monaco-editor-background > div.contentWidgets"), editorRect.width, editorHeight),
         domToImage(outputElement, outputRect.width, outputHeight)
       ]).then(([editorCanvas, outputCanvas]) => {
         // Create a combined canvas with high resolution.
