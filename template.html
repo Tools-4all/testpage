@@ -2439,82 +2439,22 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
-    // Create a clone element for the full Monaco editor content.
+    // Create a full clone for the Monaco editor content using a <pre> element.
     function createFullMonacoClone(editorInstance) {
       const code = editorInstance.getValue();
-      // Create a container div.
-      const container = document.createElement('div');
-      // Apply styles to mimic Monaco's dark theme.
-      container.style.fontFamily = 'Fira Code, Consolas, "Courier New", monospace';
-      container.style.fontSize = '14px';
-      container.style.backgroundColor = "#1e1e1e";
-      container.style.color = "#d4d4d4";
-      container.style.padding = '10px';
-      container.style.whiteSpace = 'pre';
-      container.style.lineHeight = '1.5';
-      container.style.overflow = 'visible';
-      // Optionally, add line numbers manually if desired.
-      // For now, we just set the code text.
-      container.textContent = code;
-      return container;
+      // Create a <pre> element which preserves formatting and line breaks.
+      const pre = document.createElement("pre");
+      pre.style.fontFamily = "Fira Code, Consolas, 'Courier New', monospace";
+      pre.style.fontSize = "14px";
+      pre.style.backgroundColor = "#1e1e1e";
+      pre.style.color = "#d4d4d4";
+      pre.style.padding = "10px";
+      pre.style.whiteSpace = "pre-wrap";
+      pre.style.lineHeight = "1.5";
+      pre.style.overflow = "visible";
+      pre.textContent = code;
+      return pre;
     }
-
-    // Recursively clone an element and inline its computed styles.
-    function cloneWithInlineStyles(element) {
-      const clone = element.cloneNode(true);
-      function process(orig, cln) {
-        const computedStyle = window.getComputedStyle(orig);
-        let styleString = "";
-        for (let i = 0; i < computedStyle.length; i++) {
-          const prop = computedStyle[i];
-          styleString += `${prop}:${computedStyle.getPropertyValue(prop)};`;
-        }
-        // For scrollable elements, force full height.
-        if (orig.scrollHeight > orig.clientHeight) {
-          styleString += `height: ${orig.scrollHeight}px; overflow: visible;`;
-        }
-        cln.setAttribute("style", styleString);
-        for (let i = 0; i < orig.children.length; i++) {
-          process(orig.children[i], cln.children[i]);
-        }
-      }
-      process(element, clone);
-      return clone;
-    }
-
-    // Helper: Convert a DOM element to a canvas using an SVG foreignObject,
-    // rendering at high resolution.
-    function domToImage(element, width, height) {
-      return new Promise((resolve, reject) => {
-        const clonedElement = cloneWithInlineStyles(element);
-        const serializer = new XMLSerializer();
-        const elementString = serializer.serializeToString(clonedElement);
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-      <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">
-          ${elementString}
-        </div>
-      </foreignObject>
-    </svg>`;
-        const img = new Image();
-        img.onload = function () {
-          const ratio = window.devicePixelRatio || 1;
-          const canvas = document.createElement("canvas");
-          canvas.width = width * ratio;
-          canvas.height = height * ratio;
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas);
-        };
-        img.onerror = reject;
-        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-      });
-    }
-
-    // Updated exportImage function
     function exportImage() {
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
@@ -2522,27 +2462,26 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Instead of capturing the Monaco container (which is virtualized),
-      // create a full clone from the editor instance.
+      // Create a full clone for the Monaco editor content.
       const monacoClone = createFullMonacoClone(currentTabObj.editorInstance);
-      // For the output, use its DOM element as before.
-      const outputElement = currentTabObj.outputElement;
-
-      // Determine dimensions for each capture.
-      // For the full Monaco clone, measure its dimensions after it's in the document.
+      // Position it off-screen so it doesn't affect layout.
       monacoClone.style.position = "absolute";
       monacoClone.style.top = "-10000px";
       document.body.appendChild(monacoClone);
+
+      // For the output, use its DOM element as before.
+      const outputElement = currentTabObj.outputElement;
+
+      // Measure dimensions.
       const editorRect = monacoClone.getBoundingClientRect();
       const editorWidth = editorRect.width;
-      const editorHeight = monacoClone.scrollHeight; // full height
+      const editorHeight = monacoClone.scrollHeight; // full content height
 
-      // For the output element, use scrollHeight if scrollable.
       const outputRect = outputElement.getBoundingClientRect();
       const outputWidth = outputRect.width;
       const outputHeight = outputElement.scrollHeight || outputRect.height;
 
-      // Use the maximum width.
+      // Calculate the overall dimensions.
       const totalWidth = Math.max(editorWidth, outputWidth);
       const totalHeight = editorHeight + outputHeight;
 
@@ -2551,7 +2490,7 @@ prompt("This is a prompt:");
         domToImage(monacoClone, editorWidth, editorHeight),
         domToImage(outputElement, outputWidth, outputHeight)
       ]).then(([editorCanvas, outputCanvas]) => {
-        // Remove the temporary clone.
+        // Remove the offscreen clone.
         document.body.removeChild(monacoClone);
         const ratio = window.devicePixelRatio || 1;
         const combinedCanvas = document.createElement("canvas");
@@ -2561,7 +2500,7 @@ prompt("This is a prompt:");
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
         ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        // Draw the full editor snapshot at the top.
+        // Draw the full editor snapshot.
         ctx.drawImage(editorCanvas, 0, 0);
         // Draw a separator line.
         ctx.strokeStyle = "#007acc";
@@ -2570,7 +2509,7 @@ prompt("This is a prompt:");
         ctx.moveTo(0, editorHeight);
         ctx.lineTo(totalWidth, editorHeight);
         ctx.stroke();
-        // Draw the output snapshot below.
+        // Draw the output snapshot.
         ctx.drawImage(outputCanvas, 0, editorHeight);
         const dataURL = combinedCanvas.toDataURL("image/png");
         const downloadLink = document.createElement("a");
