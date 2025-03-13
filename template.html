@@ -2469,8 +2469,8 @@ prompt("This is a prompt:");
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
       const height = numLines * lineHeight;
       const width = editorDiv.scrollWidth;
-      currentTab.editorInstance.setScrollTop(numLines);
-      
+      currentTab.editorInstance.revealLine(numLines);
+
     }
 
     function exportPDF() { }
