@@ -2477,7 +2477,7 @@ prompt("This is a prompt:");
         linesRendered.push(editorDiv.innerHTML);
         currentLine -= currentTab.editorInstance.getOption(monaco.editor.EditorOption.scrollBeyondLastLine);
         if (currentLine < 0 && isFirst) {
-          currentLine = 0;
+          currentLine = 1;
           isFirst = false;
         } else if (currentLine < 0) {
           break;
