@@ -1091,7 +1091,6 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
     let currentTab = null;
@@ -2440,68 +2439,107 @@ prompt("This is a prompt:");
     }
 
     function exportAllZip() { }
+    // Helper function: Converts a DOM element into a canvas using an SVG foreignObject.
+    function domToImage(element, width, height) {
+      return new Promise((resolve, reject) => {
+        // Serialize the element's HTML.
+        let serializer = new XMLSerializer();
+        let elementString = serializer.serializeToString(element);
+
+        // Create an SVG containing a foreignObject that embeds the element's HTML.
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+          ${elementString}
+        </div>
+      </foreignObject>
+    </svg>`;
+
+        // Create an image from the SVG data.
+        let img = new Image();
+        img.onload = function () {
+          // Create a canvas and draw the image.
+          let canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          let ctx = canvas.getContext('2d');
+          // Optionally fill with white background
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas);
+        };
+        img.onerror = reject;
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      });
+    }
+
+    // Main exportImage function (without using require or external libraries).
     function exportImage() {
-      // Find the current tab from the activeTabId.
+      // Get the current tab object.
       const currentTabObj = tabs.find(tab => tab.id === activeTabId);
       if (!currentTabObj) {
         alert("No active tab found.");
         return;
       }
 
-      // Get the DOM elements for the code editor and the output.
-      // Note: The Monaco editor is contained in editorContainer.
+      // Identify the elements to capture.
+      // Monaco editor is assumed to be inside editorContainer,
+      // and the output div is outputElement.
       const editorElement = currentTabObj.editorContainer;
       const outputElement = currentTabObj.outputElement;
 
-      // Use html2canvas to take a snapshot of both elements.
+      // Get the dimensions of each element.
+      const editorRect = editorElement.getBoundingClientRect();
+      const outputRect = outputElement.getBoundingClientRect();
+
+      // Compute the width and height for the combined image.
+      const totalWidth = Math.max(editorRect.width, outputRect.width);
+      const totalHeight = editorRect.height + outputRect.height;
+
+      // Capture both elements as canvases.
       Promise.all([
-        html2canvas(editorElement, { backgroundColor: null }),
-        html2canvas(outputElement, { backgroundColor: null })
-      ])
-        .then(([editorCanvas, outputCanvas]) => {
-          // Calculate the dimensions for the combined canvas.
-          const combinedWidth = Math.max(editorCanvas.width, outputCanvas.width);
-          const combinedHeight = editorCanvas.height + outputCanvas.height;
+        domToImage(editorElement, editorRect.width, editorRect.height),
+        domToImage(outputElement, outputRect.width, outputRect.height)
+      ]).then(([editorCanvas, outputCanvas]) => {
+        // Create a canvas to combine the two images.
+        const combinedCanvas = document.createElement('canvas');
+        combinedCanvas.width = totalWidth;
+        combinedCanvas.height = totalHeight;
+        const ctx = combinedCanvas.getContext('2d');
 
-          // Create a new canvas to combine both snapshots.
-          const combinedCanvas = document.createElement("canvas");
-          combinedCanvas.width = combinedWidth;
-          combinedCanvas.height = combinedHeight;
-          const ctx = combinedCanvas.getContext("2d");
+        // Fill with white background.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, totalWidth, totalHeight);
 
-          // Optional: fill with a nice background color.
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, combinedWidth, combinedHeight);
+        // Draw the editor canvas at the top.
+        ctx.drawImage(editorCanvas, 0, 0);
 
-          // Draw the editor canvas at the top.
-          ctx.drawImage(editorCanvas, 0, 0);
+        // Draw a nice separator line.
+        ctx.strokeStyle = "#007acc";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(0, editorRect.height);
+        ctx.lineTo(totalWidth, editorRect.height);
+        ctx.stroke();
 
-          // Draw the output canvas below the editor snapshot.
-          ctx.drawImage(outputCanvas, 0, editorCanvas.height);
+        // Draw the output canvas below the editor.
+        ctx.drawImage(outputCanvas, 0, editorRect.height);
 
-          // Optionally, add a styled header or border between sections.
-          ctx.strokeStyle = "#007acc";
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.moveTo(0, editorCanvas.height);
-          ctx.lineTo(combinedWidth, editorCanvas.height);
-          ctx.stroke();
+        // Convert the combined canvas to a PNG data URL.
+        const dataURL = combinedCanvas.toDataURL("image/png");
 
-          // Convert the combined canvas to a data URL.
-          const imageData = combinedCanvas.toDataURL("image/png");
-
-          // Create a temporary link element to download the image.
-          const downloadLink = document.createElement("a");
-          downloadLink.href = imageData;
-          downloadLink.download = currentTabObj.name + ".png";
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-        })
-        .catch(error => {
-          console.error("Error exporting image:", error);
-          alert("Error exporting image: " + error);
-        });
+        // Trigger a download.
+        const downloadLink = document.createElement("a");
+        downloadLink.href = dataURL;
+        downloadLink.download = currentTabObj.name + ".png";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }).catch(err => {
+        console.error("Error exporting image:", err);
+        alert("Error exporting image: " + err.message);
+      });
     }
 
     function exportPDF() { }
