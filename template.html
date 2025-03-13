@@ -1069,7 +1069,6 @@
       </div>
     </div>
     <div id="exportPanel" class="sidebar-panel">
-      <!-- drop down with download current script as default, download all scripts in zip, export as image, export as pdf, underneath it export button-->
       <div>
         <select id="exportSelect">
           <option value="current">Download Current Script</option>
@@ -2117,7 +2116,7 @@ prompt("This is a prompt:");
         switchTab(clickedTab.id);
       }
     });
-    ["gitIcon", "settingsIcon"].forEach((iconId) => {
+    ["gitIcon", "settingsIcon", "exportIcon"].forEach((iconId) => {
       let el = document.getElementById(iconId);
       el.addEventListener("click", (e) => {
         let alreadyActive = e.currentTarget.classList.contains("active");
