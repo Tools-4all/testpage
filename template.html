@@ -29,7 +29,7 @@
       user-select: text !important;
       -webkit-user-drag: text !important;
       -webkit-user-select: text !important;
-      -moz-user-select: text  !important;
+      -moz-user-select: text !important;
       -ms-user-select: text !important;
     }
 
@@ -1049,8 +1049,11 @@
       <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
         <i class="fas fa-cog"></i>
       </div>
-
+      <div class="icon" id="exportIcon" data-label="Export" data-target="exportPanel">
+        <i class="fas fa-file-export"></i>
+      </div>
     </div>
+
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton" disabled="true">Load</button>
@@ -1063,6 +1066,18 @@
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
         </div>
+      </div>
+    </div>
+    <div id="exportPanel" class="sidebar-panel">
+      <!-- drop down with download current script as default, download all scripts in zip, export as image, export as pdf, underneath it export button-->
+      <div>
+        <select id="exportSelect">
+          <option value="current">Download Current Script</option>
+          <option value="allZip">Download All Scripts (zip)</option>
+          <option value="image">Export as Image</option>
+          <option value="pdf">Export as PDF</option>
+        </select>
+        <button id="exportButton" class="vs-button">Export</button>
       </div>
     </div>
     <div id="mainContainer">
