@@ -2439,7 +2439,7 @@ prompt("This is a prompt:");
       }
     }
 
-    function exportAllZip() { 
+    function exportAllZip() {
       if (tabs.length === 0) {
         alert("No tabs to export.");
         return;
@@ -2462,33 +2462,49 @@ prompt("This is a prompt:");
           a.click();
         });
     }
-    async function exportImage () {
-      const editorDiv = document.querySelector("#tabsContainer > div.editor-and-output.active > div.editorContainer > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
-      const linesRendered = []
-      const currentScrollPos = currentTab.editorInstance.getScrollTop();
-      const numLines = currentTab.editorInstance.getModel().getLineCount();
-      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
-      const height = numLines * lineHeight;
-      const width = editorDiv.scrollWidth;
-      currentTab.editorInstance.setScrollTop(numLines * lineHeight);
-      let currentLine = numLines;
-      let isFirst = true;
-      while (currentLine > 0) {
-        linesRendered.push(editorDiv.innerHTML);
-        currentLine -= currentTab.editorInstance.getOption(monaco.editor.EditorOption.scrollBeyondLastLine);
-        if (currentLine < 1 && isFirst) {
-          currentLine = 1;
-          isFirst = false;
-        } else if (currentLine < 1) {
-          break;
-        }
-        currentTab.editorInstance.setScrollTop(currentScrollPos - (currentLine * lineHeight));
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        console.log("scrolling");
-      }
-      console.log(linesRendered);
+    async function exportImage() {
+      // Get the editor model and its full content
+      const model = currentTab.editorInstance.getModel();
+      const code = model.getValue();
 
+      // Get the language (e.g., 'javascript')
+      const language = model.getLanguageIdentifier().language;
+
+      // Use Monaco's built-in colorize function to generate HTML with syntax highlighting
+      const highlightedHTML = await monaco.editor.colorize(code, language, {});
+
+      // Wrap the highlighted HTML in a container with some basic styles for consistency
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+
+      const style = `
+    <style>
+      body {
+        margin: 0;
+        padding: 10px;
+        font-family: ${fontFamily};
+        font-size: ${fontSize}px;
+        line-height: ${lineHeight}px;
+        background: ${darkModeFlag ? '#1e1e1e' : '#ffffff'};
+        color: ${darkModeFlag ? '#d4d4d4' : '#000'};
+      }
+      pre {
+        margin: 0;
+      }
+    </style>
+  `;
+
+      const finalHtml = style + `<pre>${highlightedHTML}</pre>`;
+
+      // For testing, open the HTML in a new window
+      const newWindow = window.open("", "_blank");
+      newWindow.document.write(finalHtml);
+      // newWindow.document.close();
+
+      // At this point, you can pass finalHtml to a library (e.g., html2canvas) to render it as an image.
     }
+
 
     function exportPDF() { }
     function exportCurrent() {
@@ -2504,7 +2520,7 @@ prompt("This is a prompt:");
       a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
       a.click();
       URL.revokeObjectURL(url);
-     }
+    }
     alert(4);
   </script>
 </body>
