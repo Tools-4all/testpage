@@ -2471,7 +2471,7 @@ prompt("This is a prompt:");
       const height = numLines * lineHeight;
       const width = editorDiv.scrollWidth;
       currentTab.editorInstance.revealLine(numLines);
-      const currentLine = 0;
+      let currentLine = 0;
       while (currentTab.editorInstance.getScrollTop() < height) {
         linesRendered.push(editorDiv.innerHTML);
         currentLine += editorDiv.querySelectorAll(".view-line").length
