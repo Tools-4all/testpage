@@ -2468,7 +2468,7 @@ prompt("This is a prompt:");
       const code = model.getValue();
 
       // Get the language (e.g., 'javascript')
-      const language = model.getLanguageIdentifier().language;
+      const language = "javascript";
 
       // Use Monaco's built-in colorize function to generate HTML with syntax highlighting
       const highlightedHTML = await monaco.editor.colorize(code, language, {});
