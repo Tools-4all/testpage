@@ -1720,7 +1720,7 @@ prompt("This is a prompt:");
         const div = document.createElement('div');
         let content = '';
         if (typeof tree === 'string') {
-          content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`;
+          content = `<span class="objinsp objinsp-highlight-string">${escapeHtml(tree)}</span>`;
         } else if (typeof tree === 'number') {
           content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
         } else {
