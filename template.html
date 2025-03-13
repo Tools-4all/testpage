@@ -2475,6 +2475,7 @@ prompt("This is a prompt:");
         linesRendered.push(editorDiv.innerHTML);
         currentTab.editorInstance.revealLine(numLines - editorDiv.querySelectorAll(".view-line").length);
         await new Promise((resolve) => setTimeout(resolve, 300));
+        console.log("scrolling");
       }
       console.log(linesRendered);
 
