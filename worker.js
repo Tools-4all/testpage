@@ -48,6 +48,10 @@ console.log("loaded ferre")
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     // Convert Symbol keys to strings.
+
+    if (value instanceof Error) {
+        value.stack = `Error: ${value.message}\n${value.stack}`;
+    }
     if (typeof key === "symbol") {
         key = key.toString();
     }
