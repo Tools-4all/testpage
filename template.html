@@ -2462,7 +2462,7 @@ prompt("This is a prompt:");
           a.click();
         });
     }
-    function exportImage () {
+    async function exportImage () {
       const editorDiv = document.querySelector("#tabsContainer > div.editor-and-output.active > div.editorContainer > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text")
       const linesRendered = []
       const currentScrollPos = currentTab.editorInstance.getScrollTop();
@@ -2474,6 +2474,7 @@ prompt("This is a prompt:");
       while (currentTab.editorInstance.getScrollTop() < height) {
         linesRendered.push(editorDiv.innerHTML);
         currentTab.editorInstance.revealLine(numLines - editorDiv.querySelectorAll(".view-line").length);
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
       console.log(linesRendered);
 
