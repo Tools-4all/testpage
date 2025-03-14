@@ -2570,18 +2570,18 @@ prompt("This is a prompt:");
       const ctx = canvas.getContext('2d');
       const editorImg = new Image();
       const outputImg = new Image();
-      editorImg.src = editorImgSrc;
-      outputImg.src = outputImgSrc;
-      let bothReady = [false, false];
-
       editorImg.onload = () => {
         bothReady[0] = true;
       };
       outputImg.onload = () => {
         bothReady[1] = true;
       };
+      editorImg.src = editorImgSrc;
+      outputImg.src = outputImgSrc;
+      let bothReady = [false, false];
 
       while (!bothReady.every((ready) => ready)) {
+        console.log("not ready", outputImg, editorImg);
         await new Promise((resolve) => setTimeout(resolve, 150));
       }
 
