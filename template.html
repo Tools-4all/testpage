@@ -1125,7 +1125,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
@@ -2498,55 +2498,39 @@ prompt("This is a prompt:");
         });
     }
 
-    async function takeImage(domElem, append = false) {
-      let element = domElem;
+    async function takeImage(domElem, destroy = true, append = true) {
+      let tempContainer;
+      let clonedElem;
       if (append) {
-        // Wrap the element in a temporary container offscreen
-        const tempDiv = document.createElement('div');
-        tempDiv.appendChild(domElem);
-        element = tempDiv;
-        element.style.position = 'absolute';
-        element.style.top = '-9999px';
-        element.style.left = '-9999px';
-        document.body.appendChild(element);
+        tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        document.body.appendChild(tempContainer);
+        clonedElem = domElem.cloneNode(true);
+        tempContainer.appendChild(clonedElem);
+      } else {
+        clonedElem = domElem;
       }
-      try {
-        const dataUrl = await htmlToImage.toPng(element, {
-          width: element.clientWidth * 2,
-          height: element.clientHeight * 2,
-          style: {
-            transform: 'scale(2)',
-            transformOrigin: 'top left'
-          }
-        });
-        if (append) {
-          element.remove();
-        }
-        return dataUrl;
-      } catch (error) {
-        console.error("Error converting element to PNG:", error);
-        if (append) {
-          element.remove();
-        }
-        throw error;
-      }
-    }
 
-
-
-    function loadImage(src) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = reject;
-        img.src = src;
+      const canvas = await html2canvas(clonedElem, {
+        scale: 2,
+        logging: false,
+        backgroundColor: null,
       });
+
+      if (destroy && append) {
+        document.body.removeChild(tempContainer);
+      }
+      return canvas.toDataURL("image/png");
     }
+
 
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
       const language = "javascript";
+
       const codeLines = code.split('\n');
 
       const highlightedLines = await Promise.all(
@@ -2558,9 +2542,7 @@ prompt("This is a prompt:");
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px";
-
-      // Create container for code image
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
@@ -2582,22 +2564,23 @@ prompt("This is a prompt:");
         lineNumberDiv.textContent = index + 1;
 
         const codeLineDiv = document.createElement('div');
-        codeLineDiv.classList.add("codeLineDiv");
+        codeLineDiv.classList.add("codeLineDiv")
         codeLineDiv.innerHTML = highlightedLines[index] || '';
 
         lineWrapper.appendChild(lineNumberDiv);
         lineWrapper.appendChild(codeLineDiv);
         wrapperDiv.appendChild(lineWrapper);
       });
-      console.log("wrapperDiv", wrapperDiv);
-      const editorImgSrc = await takeImage(wrapperDiv, true);
+
+      const editorImgSrc = await takeImage(wrapperDiv);
       let outputImgSrc;
+      let tempOutputDiv;
 
       if (currentTab.outputElement.innerHTML.trim()) {
         const originalWidth = currentTab.outputElement.style.width;
         currentTab.outputElement.style.width = maxWidth;
-        outputImgSrc = await takeImage(currentTab.outputElement);
-        currentTab.outputElement.style.width = originalWidth;
+        outputImgSrc = await takeImage(currentTab.outputElement, false, false);
+        currentTab.outputElement.style.width = originalWidth; 1
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
@@ -2605,14 +2588,27 @@ prompt("This is a prompt:");
         outputImgSrc = blankCanvas.toDataURL("image/png");
       }
 
-      // Wait for images to load using promises
-      const editorImg = await loadImage(editorImgSrc);
-      const outputImg = await loadImage(outputImgSrc);
-
       const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const editorImg = new Image();
+      const outputImg = new Image();
+      editorImg.src = editorImgSrc;
+      outputImg.src = outputImgSrc;
+      let bothReady = [false, false];
+
+      editorImg.onload = () => {
+        bothReady[0] = true;
+      };
+      outputImg.onload = () => {
+        bothReady[1] = true;
+      };
+
+      while (!bothReady.every((ready) => ready)) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+
       canvas.width = editorImg.width;
       canvas.height = editorImg.height + outputImg.height;
-      const ctx = canvas.getContext('2d');
       ctx.drawImage(editorImg, 0, 0);
       ctx.drawImage(outputImg, 0, editorImg.height);
 
@@ -2621,7 +2617,6 @@ prompt("This is a prompt:");
       a.download = `${currentTab.name}.png`;
       a.click();
     }
-
 
 
 
