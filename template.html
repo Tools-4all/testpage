@@ -2498,14 +2498,16 @@ prompt("This is a prompt:");
         });
     }
 
-    async function takeImage(domElem) {
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.top = '-9999px';
-      tempContainer.style.left = '-9999px';
-      document.body.appendChild(tempContainer);
-      const clonedElem = domElem.cloneNode(true);
-      tempContainer.appendChild(clonedElem);
+    async function takeImage(domElem, destroy = true, append = true) {
+      if (append) {
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        document.body.appendChild(tempContainer);
+        const clonedElem = domElem.cloneNode(true);
+        tempContainer.appendChild(clonedElem);
+      }
 
       const canvas = await html2canvas(clonedElem, {
         scale: 2,
@@ -2513,8 +2515,9 @@ prompt("This is a prompt:");
         backgroundColor: null,
       });
 
-      document.body.removeChild(tempContainer);
-
+      if (destroy && append ) {
+        document.body.removeChild(tempContainer);
+      }
       return canvas.toDataURL("image/png");
     }
 
@@ -2587,11 +2590,10 @@ prompt("This is a prompt:");
       let tempOutputDiv;
 
       if (currentTab.outputElement.innerHTML.trim()) {
-        tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        copyComputedStyles(currentTab.outputElement, tempOutputDiv);
-        tempOutputDiv.style.width = maxWidth;
-        tempOutputDiv.style.maxWidth = maxWidth;
-        outputImgSrc = await takeImage(tempOutputDiv);
+        const originalWidth = currentTab.outputElement.style.width;
+        currentTab.outputElement.style.width = maxWidth;
+        outputImgSrc = await takeImage(currentTab.outputElement, false, false);
+        currentTab.outputElement.style.width = originalWidth;
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
