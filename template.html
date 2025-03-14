@@ -2498,7 +2498,7 @@ prompt("This is a prompt:");
         });
     }
 
-    async function takeImage(domElem, append=false) {
+    async function takeImage(domElem, append = false) {
       if (append) {
         const tempDiv = document.createElement('div');
         tempDiv.appendChild(domElem);
@@ -2509,7 +2509,13 @@ prompt("This is a prompt:");
         document.body.appendChild(domElem);
       }
       try {
-        const dataUrl = await domtoimage.toPng(domElem);
+        const dataUrl = await domtoimage.toBlob(domElem,
+          {
+            width: element.clientWidth * 2,
+            height: element.clientHeight * 2,
+            style: { transform: 'scale(' + 2 + ')', transformOrigin: 'top left' }
+          }
+        );
         if (append) {
           domElem.remove();
         }
