@@ -2507,7 +2507,9 @@ prompt("This is a prompt:");
       const clonedElem = domElem.cloneNode(true);
       tempContainer.appendChild(clonedElem);
 
-      const canvas = await html2canvas(clonedElem);
+      const canvas = await html2canvas(clonedElem, {
+        scale: 2,
+      });
 
       document.body.removeChild(tempContainer);
 
