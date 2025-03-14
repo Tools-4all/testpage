@@ -2499,10 +2499,21 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem) {
-      console.log(html2canvas, "html2canvas");
-      const canvas = await html2canvas(domElem);
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'fixed';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
+      document.body.appendChild(tempContainer);
+      const clonedElem = domElem.cloneNode(true);
+      tempContainer.appendChild(clonedElem);
+
+      const canvas = await html2canvas(clonedElem);
+
+      document.body.removeChild(tempContainer);
+
       return canvas.toDataURL("image/png");
     }
+
 
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
