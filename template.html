@@ -2566,13 +2566,12 @@ prompt("This is a prompt:");
       const editorImgSrc = await takeImage(wrapperDiv);
       let tempOuputDiv;
       if (currentTab.outputElement.innerHTML) {
-        tempOuputDiv = cloneNode(currentTab.outputElement);
+        tempOuputDiv = currentTab.outputElement.cloneNode(true);
         tempOuputDiv.style.width = maxWidth
         tempOuputDiv.style.maxWidth = maxWidth;
         const outputImgSrc = await takeImage(tempOuputDiv);
       }
 
-      // combine both images into one, editor top output bottom 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const editorImg = new Image();
