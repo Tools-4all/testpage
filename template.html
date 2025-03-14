@@ -2499,35 +2499,60 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem, append = false) {
+      let element = domElem;
       if (append) {
+        // Wrap the element in a temporary container and move it offscreen.
         const tempDiv = document.createElement('div');
         tempDiv.appendChild(domElem);
-        domElem = tempDiv;
-        domElem.style.position = "absolute";
-        domElem.style.top = "-9999px";
-        domElem.style.left = "-9999px";
-        document.body.appendChild(domElem);
+        element = tempDiv;
+        element.style.position = 'absolute';
+        element.style.top = '-9999px';
+        element.style.left = '-9999px';
+        document.body.appendChild(element);
       }
-      try {
-        const dataUrl = await domtoimage.toPng(domElem,
-          {
-            width: domElem.clientWidth * 2,
-            height: domElem.clientHeight * 2,
-            style: { transform: 'scale(' + 2 + ')', transformOrigin: 'top left' }
+      return new Promise((resolve, reject) => {
+        try {
+          const width = element.clientWidth;
+          const height = element.clientHeight;
+          const scale = 2; // Scale factor (adjust as needed)
+          const serializer = new XMLSerializer();
+          const clonedElem = element.cloneNode(true);
+          // Create an SVG with a foreignObject that wraps the cloned element.
+          const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}">
+  <foreignObject width="${width}" height="${height}" transform="scale(${scale})" style="overflow:visible;">
+    ${serializer.serializeToString(clonedElem)}
+  </foreignObject>
+</svg>`;
+          const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement('canvas');
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            if (append) {
+              element.remove();
+            }
+            resolve(dataUrl);
+          };
+          img.onerror = function (e) {
+            if (append) {
+              element.remove();
+            }
+            reject(e);
+          };
+          img.src = svgDataUrl;
+        } catch (error) {
+          if (append) {
+            element.remove();
           }
-        );
-        if (append) {
-          domElem.remove();
+          reject(error);
         }
-        return dataUrl;
-      } catch (error) {
-        console.error("Error converting element to PNG:", error);
-        if (append) {
-          domElem.remove();
-        }
-        throw error;
-      }
+      });
     }
+
 
 
     function loadImage(src) {
