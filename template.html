@@ -992,6 +992,23 @@
     .monaco-editor .find-widget>.button.codicon-widget-close {
       top: 8px !important;
     }
+
+    .lineNumber {
+      vertical-align: middle;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      box-sizing: border-box;
+    }
+
+    .lineNumDark {
+      color: rgb(198, 198, 198);
+      width: 68px;
+      height: 100%;
+    }
+
+    .lineNumLight {
+      color: rgb(11, 33, 111);
+    }
   </style>
 </head>
 
@@ -2462,33 +2479,48 @@ prompt("This is a prompt:");
           a.click();
         });
     }
-    async function exportImage() {
-      // Get the editor model and its full content
-      const model = currentTab.editorInstance.getModel();
-      const code = model.getValue();
-
-      // Get the language (e.g., 'javascript')
-      const language = "javascript";
-
-      // Use Monaco's built-in colorize function to generate HTML with syntax highlighting
-      const highlightedHTML = await monaco.editor.colorize(code, language, {});
-
-      // Wrap the highlighted HTML in a container with some basic styles for consistency
-      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
-      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      const imageDiv = document.createElement('div');
-      imageDiv.style.fontFamily = fontFamily;
-      imageDiv.style.fontSize = `${fontSize}px`;
-      imageDiv.style.lineHeight = `${lineHeight}px`;
-      imageDiv.style.whiteSpace = 'pre-wrap';
-      imageDiv.innerHTML = highlightedHTML;
-      imageDiv.style.backgroundColor = backgroundColor;
-      imageDiv.style.color = textColor;
-      document.body.appendChild(imageDiv);
+    function getWrappedLineCount(text, availableWidth, fontSize, lineHeight, fontFamily) {
+      const dummy = document.createElement('div');
+      dummy.style.position = 'absolute';
+      dummy.style.visibility = 'hidden';
+      dummy.style.whiteSpace = 'pre-wrap';
+      dummy.style.fontSize = fontSize + 'px';
+      dummy.style.lineHeight = lineHeight + 'px';
+      dummy.style.fontFamily = fontFamily;
+      dummy.style.width = availableWidth + 'px';
+      dummy.textContent = text || ' ';
+      document.body.appendChild(dummy);
+      const height = dummy.clientHeight;
+      document.body.removeChild(dummy);
+      return Math.ceil(height / lineHeight);
     }
+
+    // Assume these values match your editor
+    const availableWidth = 400; // width of your imageDiv
+    const fontSize = 14;
+    const lineHeight = 20;
+    const fontFamily = 'Fira Code, monospace';
+
+    const code = currentTab.editorInstance.getModel().getValue();
+    const lines = code.split('\n');
+    numbersDiv.innerHTML = '';
+
+    lines.forEach((line, index) => {
+      // Create the main line number element
+      const lineNumberDiv = document.createElement('div');
+      lineNumberDiv.textContent = index + 1;
+      numbersDiv.appendChild(lineNumberDiv);
+
+      // Calculate wrapped line count
+      const count = getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily);
+      // For each extra wrapped line, add an empty div to keep the line numbers aligned
+      for (let i = 1; i < count; i++) {
+        const blankDiv = document.createElement('div');
+        blankDiv.textContent = ''; // leave blank
+        numbersDiv.appendChild(blankDiv);
+      }
+    });
+
 
 
     function exportPDF() { }
