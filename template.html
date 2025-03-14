@@ -2518,6 +2518,23 @@ prompt("This is a prompt:");
       return canvas.toDataURL("image/png");
     }
 
+    function copyComputedStyles(srcElem, destElem) {
+      const computedStyle = window.getComputedStyle(srcElem);
+      for (let i = 0; i < computedStyle.length; i++) {
+        const key = computedStyle[i];
+        destElem.style.setProperty(
+          key,
+          computedStyle.getPropertyValue(key),
+          computedStyle.getPropertyPriority(key)
+        );
+      }
+      Array.from(srcElem.children).forEach((child, index) => {
+        if (destElem.children[index])
+          copyComputedStyles(child, destElem.children[index]);
+      });
+    }
+
+
 
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
@@ -2571,9 +2588,7 @@ prompt("This is a prompt:");
 
       if (currentTab.outputElement.innerHTML.trim()) {
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        tempOutputDiv.style.cssText = window.getComputedStyle(currentTab.outputElement).cssText;
-        tempOutputDiv.style.backgroundColor = backgroundColor;
-        tempOutputDiv.style.color = currentTab.outputElement.style.color;
+        copyComputedStyles(currentTab.outputElement, tempOutputDiv);
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
         outputImgSrc = await takeImage(tempOutputDiv);
