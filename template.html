@@ -2510,14 +2510,44 @@ prompt("This is a prompt:");
         element.style.left = '-9999px';
         document.body.appendChild(element);
       }
+
+      // Helper: inline computed styles for a single element.
+      function inlineStyles(el) {
+        const computedStyle = window.getComputedStyle(el);
+        let styleString = "";
+        for (let i = 0; i < computedStyle.length; i++) {
+          const key = computedStyle[i];
+          styleString += `${key}:${computedStyle.getPropertyValue(key)};`;
+        }
+        el.setAttribute('style', styleString);
+      }
+
+      // Recursively inline styles on the element and its children.
+      function inlineStylesRecursively(el) {
+        if (el.nodeType !== 1) return;
+        inlineStyles(el);
+        for (let i = 0; i < el.children.length; i++) {
+          inlineStylesRecursively(el.children[i]);
+        }
+      }
+
+      // Clone the element and inline all styles.
+      function cloneWithInlineStyles(el) {
+        const clone = el.cloneNode(true);
+        inlineStylesRecursively(clone);
+        return clone;
+      }
+
+      const clonedElem = cloneWithInlineStyles(element);
+
       return new Promise((resolve, reject) => {
         try {
           const width = element.clientWidth;
           const height = element.clientHeight;
-          const scale = 2; // Scale factor (adjust as needed)
+          const scale = 2; // adjust the scale as needed
+
           const serializer = new XMLSerializer();
-          const clonedElem = element.cloneNode(true);
-          // Create an SVG with a foreignObject that wraps the cloned element.
+          // Create an SVG that embeds the cloned element via a foreignObject.
           const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width * scale}" height="${height * scale}">
   <foreignObject width="${width}" height="${height}" transform="scale(${scale})" style="overflow:visible;">
     ${serializer.serializeToString(clonedElem)}
