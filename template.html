@@ -2496,55 +2496,44 @@ prompt("This is a prompt:");
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
 
+      // Create main wrapper container for all lines
       const wrapperDiv = document.createElement('div');
-      wrapperDiv.style.display = "flex";
+      wrapperDiv.style.backgroundColor = backgroundColor;
+      wrapperDiv.style.fontFamily = fontFamily;
+      wrapperDiv.style.fontSize = `${fontSize}px`;
+      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.whiteSpace = "pre-wrap";
+      wrapperDiv.style.color = textColor;
 
-      const numbersDiv = document.createElement('div');
-      numbersDiv.style.backgroundColor = backgroundColor;
-      numbersDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight");
-      numbersDiv.classList.add("lineNum");
-      numbersDiv.style.fontSize = "14px"; 
-      numbersDiv.style.paddingRight = "30px"
+      // Split raw code and highlighted HTML into lines.
+      const codeLines = code.split('\n');
+      const highlightedLines = highlightedHTML.split('<br>');
 
-      const imageDiv = document.createElement('div');
-      imageDiv.style.fontFamily = fontFamily;
-      imageDiv.style.fontSize = `${fontSize}px`;
-      imageDiv.style.lineHeight = `${lineHeight}px`;
-      imageDiv.style.whiteSpace = 'pre-wrap';
-      imageDiv.innerHTML = highlightedHTML;
-      imageDiv.style.backgroundColor = backgroundColor;
-      imageDiv.style.color = textColor;
-      imageDiv.style.width = currentTab.editorInstance.getLayoutInfo().contentWidth + 'px';
-      imageDiv.style.textWrap = 'wrap';
-      imageDiv.style.overflowWrap = "break-word";
+      // For each line, create a flex sub-wrapper containing the line number and the highlighted code.
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
 
-      wrapperDiv.appendChild(numbersDiv);
-      wrapperDiv.appendChild(imageDiv);
+        const lineNumberDiv = document.createElement('div');
+        // Use the same classes for coloring and style.
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.style.paddingRight = "10px"; // adjust spacing as needed
+        lineNumberDiv.textContent = index + 1;
+
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.style.flex = "1"; // allow code content to take up remaining space
+        codeLineDiv.style.whiteSpace = "pre-wrap"; // ensure word wrapping
+        // Use the corresponding highlighted HTML for this line if available.
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
 
       document.body.appendChild(wrapperDiv);
-
-      const availableWidth = imageDiv.clientWidth;
-
-      numbersDiv.innerHTML = '';
-      const codeLines = code.split('\n');
-
-      codeLines.forEach((line, index) => {
-        const lineNumberDiv = document.createElement('div');
-        lineNumberDiv.classList.add("numberDiv")
-        lineNumberDiv.textContent = index + 1;
-        numbersDiv.appendChild(lineNumberDiv);
-
-        // check if wrapped line, if so add blank numberDiv for each wrapped line
-        const wrappedLines = Math.ceil((line.length * fontSize) / availableWidth);
-        if (wrappedLines > 1) {
-          for (let i = 1; i < wrappedLines; i++) {
-            const wrappedLineDiv = document.createElement('div');
-            wrappedLineDiv.classList.add("numberDiv")
-            numbersDiv.appendChild(wrappedLineDiv);
-          }
-        }
-      });
     }
+
 
 
 
