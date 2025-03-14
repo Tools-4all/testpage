@@ -1009,6 +1009,10 @@
     .lineNumLight {
       color: rgb(11, 33, 111);
     }
+
+    .numberDiv {
+      text-align: right;
+    }
   </style>
 </head>
 
@@ -2548,6 +2552,7 @@ prompt("This is a prompt:");
       // For each code line, create a numbered div and add extra blank divs if the line wraps
       codeLines.forEach((line, index) => {
         const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add("numberDiv")
         lineNumberDiv.textContent = index + 1;
         numbersDiv.appendChild(lineNumberDiv);
 
