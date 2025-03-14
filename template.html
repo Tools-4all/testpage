@@ -2621,7 +2621,7 @@ prompt("This is a prompt:");
       canvas.width = editorImg.width;
       canvas.height = editorImg.height + outputImg.height;
       ctx.drawImage(editorImg, 0, 0);
-      ctx.drawImage(outputImg, 0, editorImg.height*2);
+      ctx.drawImage(outputImg, 0, editorImg.height);
 
       const a = document.createElement('a');
       a.href = canvas.toDataURL("image/png");
