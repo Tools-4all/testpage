@@ -1012,6 +1012,7 @@
 
     .numberDiv {
       text-align: right;
+      height: 19px;
     }
   </style>
 </head>
@@ -2560,7 +2561,8 @@ prompt("This is a prompt:");
         const wrappedCount = getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily);
         for (let i = 1; i < wrappedCount; i++) {
           const blankDiv = document.createElement('div');
-          blankDiv.textContent = ''; // blank for each extra visual line
+          blankDiv.classList.add("numberDiv")
+          blankDiv.textContent = ''; 
           numbersDiv.appendChild(blankDiv);
         }
       });
