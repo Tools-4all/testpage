@@ -896,6 +896,31 @@
       color: #d4d4d4;
     }
 
+    /* Hide native marker */
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::marker {
+      /* for Firefox */
+      display: none;
+    }
+
+    /* Add a custom arrow */
+    summary::before {
+      content: "▶";
+      /* closed state arrow */
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+    }
+
+    /* Rotate the arrow when the details element is open */
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+
     .objinsp-highlight-key {
       color: #9cdcfe;
       margin-left: 10px;
