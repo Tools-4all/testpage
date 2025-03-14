@@ -2500,13 +2500,14 @@ prompt("This is a prompt:");
 
     async function takeImage(domElem, destroy = true, append = true) {
       let tempContainer;
+      let clonedElem;
       if (append) {
         tempContainer = document.createElement('div');
         tempContainer.style.position = 'fixed';
         tempContainer.style.top = '-9999px';
         tempContainer.style.left = '-9999px';
         document.body.appendChild(tempContainer);
-        const clonedElem = domElem.cloneNode(true);
+        clonedElem = domElem.cloneNode(true);
         tempContainer.appendChild(clonedElem);
       }
 
