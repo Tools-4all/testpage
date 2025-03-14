@@ -2563,12 +2563,47 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
 
-      const imgSrc = await takeImage(wrapperDiv);
-      const a = document.createElement('a');
-      a.href = imgSrc;
-      a.download = 'script.png';
-      a.click();
+      const editorImgSrc = await takeImage(wrapperDiv);
+      let tempOuputDiv;
+      if (currentTab.outputElement.innerHTML) {
+        tempOuputDiv = cloneNode(currentTab.outputElement);
+        tempOuputDiv.style.width = maxWidth
+        tempOuputDiv.style.maxWidth = maxWidth;
+        const outputImgSrc = await takeImage(tempOuputDiv);
+      }
 
+      // combine both images into one, editor top output bottom 
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const editorImg = new Image();
+      const outputImg = new Image();
+      editorImg.src = editorImgSrc;
+      outputImg.src = outputImgSrc;
+      let bothReady = [false, false];
+
+      editorImg.onload = () => {
+        bothReady[0] = true;
+      };
+
+      outputImg.onload = () => {
+        bothReady[1] = true;
+      };
+
+      while (!bothReady.every((ready) => ready)) {
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+
+      canvas.width = editorImg.width;
+      canvas.height = editorImg.height + outputImg.height;
+      ctx.drawImage(editorImg, 0, 0);
+      ctx.drawImage(outputImg, 0, editorImg.height);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL("image/png");
+      a.download = `${currentTab.name}.png`;
+      a.click();
+      // cleanup 
+      document.body.removeChild(tempOuputDiv);
+      document.body.removeChild(wrapperDiv);
     }
 
 
