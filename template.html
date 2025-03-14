@@ -2579,8 +2579,8 @@ prompt("This is a prompt:");
         lineWrapper.appendChild(codeLineDiv);
         wrapperDiv.appendChild(lineWrapper);
       });
-
-      const editorImgSrc = await takeImage(wrapperDiv);
+      console.log("wrapperDiv", wrapperDiv);
+      const editorImgSrc = await takeImage(wrapperDi, true);
       let outputImgSrc;
 
       if (currentTab.outputElement.innerHTML.trim()) {
