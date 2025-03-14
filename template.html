@@ -2523,7 +2523,7 @@ prompt("This is a prompt:");
         const codeLineDiv = document.createElement('div');
         codeLineDiv.style.flex = "1"; 
         codeLineDiv.style.whiteSpace = "pre-wrap"; 
-        codeLineDiv.style.overflowWrap = "word-break";
+        codeLineDiv.style.overflowWrap = "anywhere";
         codeLineDiv.innerHTML = highlightedLines[index] || '';
 
         lineWrapper.appendChild(lineNumberDiv);
