@@ -2499,38 +2499,6 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem, append = false) {
-      if (append) {
-        const tempDiv = document.createElement('div');
-        tempDiv.appendChild(domElem);
-        domElem = tempDiv;
-        domElem.style.position = "absolute";
-        domElem.style.top = "-9999px";
-        domElem.style.left = "-9999px";
-        document.body.appendChild(domElem);
-      }
-      try {
-        const dataUrl = await domtoimage.toPng(domElem,
-          {
-            width: domElem.clientWidth * 2,
-            height: domElem.clientHeight * 2,
-            style: { transform: 'scale(' + 2 + ')', transformOrigin: 'top left' }
-          }
-        );
-        if (append) {
-          domElem.remove();
-        }
-        return dataUrl;
-      } catch (error) {
-        console.error("Error converting element to PNG:", error);
-        if (append) {
-          domElem.remove();
-        }
-        throw error;
-      }
-    }
-
-
-    async function takeImage(domElem, append = false) {
       let element = domElem;
       if (append) {
         // Wrap the element in a temporary container offscreen
@@ -2564,6 +2532,16 @@ prompt("This is a prompt:");
       }
     }
 
+
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
 
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
