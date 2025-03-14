@@ -2479,7 +2479,7 @@ prompt("This is a prompt:");
           a.click();
         });
     }
-
+    // Helper function defined outside exportImage
     function getWrappedLineCount(text, availableWidth, fontSize, lineHeight, fontFamily) {
       const dummy = document.createElement('div');
       dummy.style.position = 'absolute';
@@ -2489,7 +2489,6 @@ prompt("This is a prompt:");
       dummy.style.lineHeight = lineHeight + 'px';
       dummy.style.fontFamily = fontFamily;
       dummy.style.width = availableWidth + 'px';
-      // Use a space if the line is empty so we get a minimal height
       dummy.textContent = text || ' ';
       document.body.appendChild(dummy);
       const height = dummy.clientHeight;
@@ -2498,34 +2497,28 @@ prompt("This is a prompt:");
     }
 
     async function exportImage() {
-      // Get the code and produce highlighted HTML via Monaco
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
       const language = "javascript";
       const highlightedHTML = await monaco.editor.colorize(code, language, {});
 
-      // Get editor options
       const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
 
-      // Create a wrapper div that will hold the line numbers and the code side by side
+      // Create the wrapper that holds the numbers and the code side by side
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.display = "flex";
 
-      // Create the numbersDiv for line numbering
+      // Create the numbersDiv using your existing class for dark/light mode
       const numbersDiv = document.createElement('div');
       numbersDiv.style.backgroundColor = backgroundColor;
-      numbersDiv.style.fontSize = `${fontSize}px`;
-      numbersDiv.style.lineHeight = `${lineHeight}px`;
-      numbersDiv.style.paddingRight = "10px";
-      numbersDiv.style.textAlign = "right";
-      // Optionally, set a minimum width for the numbers column
-      numbersDiv.style.minWidth = "40px";
+      numbersDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight");
+      numbersDiv.style.fontSize = "14px"; // Preserve your number font size
 
-      // Create the imageDiv that will display the highlighted code
+      // Create the imageDiv for the highlighted code
       const imageDiv = document.createElement('div');
       imageDiv.style.fontFamily = fontFamily;
       imageDiv.style.fontSize = `${fontSize}px`;
@@ -2534,63 +2527,36 @@ prompt("This is a prompt:");
       imageDiv.innerHTML = highlightedHTML;
       imageDiv.style.backgroundColor = backgroundColor;
       imageDiv.style.color = textColor;
-      // Set a fixed width to determine wrapping (adjust as needed)
-      imageDiv.style.width = "600px";
 
-      // Append the numbers and code divs to the wrapper
+      // Append the two divs into the wrapper
       wrapperDiv.appendChild(numbersDiv);
       wrapperDiv.appendChild(imageDiv);
 
-      // Append the wrapper to the document body temporarily so we can measure dimensions
+      // Append the wrapper to the document so we can measure widths
       document.body.appendChild(wrapperDiv);
 
-      // Helper function to calculate how many visual (wrapped) lines a given text occupies
-
-      // Calculate the available width for the code in the imageDiv
+      // Determine available width for code in imageDiv (for wrapping calculations)
       const availableWidth = imageDiv.clientWidth;
 
-      // Clear any existing content in the numbersDiv
+      // Clear any existing content in numbersDiv
       numbersDiv.innerHTML = '';
-      // Split the plain code text into lines
+      // Split the plain code into lines
       const codeLines = code.split('\n');
 
-      // For each code line, create a numbered div and account for wrapped lines
+      // For each code line, create a numbered div and add extra blank divs if the line wraps
       codeLines.forEach((line, index) => {
-        // Create the main line number element
         const lineNumberDiv = document.createElement('div');
         lineNumberDiv.textContent = index + 1;
         numbersDiv.appendChild(lineNumberDiv);
 
-        // Calculate how many visual lines this code line takes up
+        // Calculate visual line count based on wrapping
         const wrappedCount = getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily);
-        // If the line wraps (i.e. occupies more than one visual line),
-        // add extra blank divs to keep the numbering aligned.
         for (let i = 1; i < wrappedCount; i++) {
           const blankDiv = document.createElement('div');
-          blankDiv.textContent = ''; // blank line for extra wrapped part
+          blankDiv.textContent = ''; // blank for each extra visual line
           numbersDiv.appendChild(blankDiv);
         }
       });
-
-
-      // At this point, wrapperDiv contains both the line numbers and highlighted code.
-      // You can now export wrapperDiv as an image using a library like html2canvas,
-      // or perform any further processing as needed.
-      //
-      // For example, using html2canvas (make sure to include it in your project):
-      // html2canvas(wrapperDiv).then(canvas => {
-      //   const imageUrl = canvas.toDataURL("image/png");
-      //   // Create a link to download the image
-      //   const a = document.createElement("a");
-      //   a.href = imageUrl;
-      //   a.download = "code.png";
-      //   a.click();
-      //   // Optionally, remove the temporary wrapperDiv from the document
-      //   wrapperDiv.remove();
-      // });
-
-      // For now, we leave the wrapperDiv on the page.
-    }
 
 
 
