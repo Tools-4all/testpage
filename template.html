@@ -1125,7 +1125,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
@@ -2498,31 +2498,9 @@ prompt("This is a prompt:");
         });
     }
 
-    async function takeImage(domElem, destroy = true, append = true) {
-      let tempContainer;
-      let clonedElem;
-      if (append) {
-        tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.left = '-9999px';
-        document.body.appendChild(tempContainer);
-        clonedElem = domElem.cloneNode(true);
-        tempContainer.appendChild(clonedElem);
-      } else {
-        clonedElem = domElem;
-      }
-
-      const canvas = await html2canvas(clonedElem, {
-        scale: 2,
-        logging: false,
-        backgroundColor: null,
-      });
-
-      if (destroy && append) {
-        document.body.removeChild(tempContainer);
-      }
-      return canvas.toDataURL("image/png");
+    async function takeImage(domElem) {
+      const img = await domtoimage.toPng(domElem);
+      return img;
     }
 
 
@@ -2579,7 +2557,7 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         const originalWidth = currentTab.outputElement.style.width;
         currentTab.outputElement.style.width = maxWidth;
-        outputImgSrc = await takeImage(currentTab.outputElement, false, false);
+        outputImgSrc = await takeImage(currentTab.outputElement);
         currentTab.outputElement.style.width = originalWidth; 1
       } else {
         const blankCanvas = document.createElement('canvas');
