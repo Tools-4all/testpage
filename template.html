@@ -2564,14 +2564,24 @@ prompt("This is a prompt:");
       });
 
       const editorImgSrc = await takeImage(wrapperDiv);
-      let tempOuputDiv;
-      if (currentTab.outputElement.innerHTML) {
-        tempOuputDiv = currentTab.outputElement.cloneNode(true);
-        tempOuputDiv.style.width = maxWidth
-        tempOuputDiv.style.maxWidth = maxWidth;
-        const outputImgSrc = await takeImage(tempOuputDiv);
+      let outputImgSrc;
+      let tempOutputDiv;
+
+      // If there's any output content, capture it; otherwise, create a blank image.
+      if (currentTab.outputElement.innerHTML.trim()) {
+        tempOutputDiv = currentTab.outputElement.cloneNode(true);
+        tempOutputDiv.style.width = maxWidth;
+        tempOutputDiv.style.maxWidth = maxWidth;
+        outputImgSrc = await takeImage(tempOutputDiv);
+      } else {
+        // Create a 1px high blank canvas as a placeholder.
+        const blankCanvas = document.createElement('canvas');
+        blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
+        blankCanvas.height = 1;
+        outputImgSrc = blankCanvas.toDataURL("image/png");
       }
 
+      // Create images from the generated sources.
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const editorImg = new Image();
@@ -2583,26 +2593,25 @@ prompt("This is a prompt:");
       editorImg.onload = () => {
         bothReady[0] = true;
       };
-
       outputImg.onload = () => {
         bothReady[1] = true;
       };
 
+      // Wait until both images have loaded.
       while (!bothReady.every((ready) => ready)) {
         await new Promise((resolve) => setTimeout(resolve, 150));
       }
 
+      // Set canvas size based on the images.
       canvas.width = editorImg.width;
       canvas.height = editorImg.height + outputImg.height;
       ctx.drawImage(editorImg, 0, 0);
       ctx.drawImage(outputImg, 0, editorImg.height);
+
       const a = document.createElement('a');
       a.href = canvas.toDataURL("image/png");
       a.download = `${currentTab.name}.png`;
       a.click();
-      // cleanup 
-      document.body.removeChild(tempOuputDiv);
-      document.body.removeChild(wrapperDiv);
     }
 
 
