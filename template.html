@@ -2509,6 +2509,8 @@ prompt("This is a prompt:");
         document.body.appendChild(tempContainer);
         clonedElem = domElem.cloneNode(true);
         tempContainer.appendChild(clonedElem);
+      } else {
+        clonedElem = domElem;
       }
 
       const canvas = await html2canvas(clonedElem, {
@@ -2517,28 +2519,11 @@ prompt("This is a prompt:");
         backgroundColor: null,
       });
 
-      if (destroy && append ) {
+      if (destroy && append) {
         document.body.removeChild(tempContainer);
       }
       return canvas.toDataURL("image/png");
     }
-
-    function copyComputedStyles(srcElem, destElem) {
-      const computedStyle = window.getComputedStyle(srcElem);
-      for (let i = 0; i < computedStyle.length; i++) {
-        const key = computedStyle[i];
-        destElem.style.setProperty(
-          key,
-          computedStyle.getPropertyValue(key),
-          computedStyle.getPropertyPriority(key)
-        );
-      }
-      Array.from(srcElem.children).forEach((child, index) => {
-        if (destElem.children[index])
-          copyComputedStyles(child, destElem.children[index]);
-      });
-    }
-
 
 
     async function exportImage() {
@@ -2595,7 +2580,7 @@ prompt("This is a prompt:");
         const originalWidth = currentTab.outputElement.style.width;
         currentTab.outputElement.style.width = maxWidth;
         outputImgSrc = await takeImage(currentTab.outputElement, false, false);
-        currentTab.outputElement.style.width = originalWidth;1
+        currentTab.outputElement.style.width = originalWidth; 1
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
