@@ -2499,8 +2499,15 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem) {
-      return await domtoimage.toPng(domElem);
+      try {
+        const dataUrl = await domtoimage.toPng(domElem);
+        return dataUrl;
+      } catch (error) {
+        console.error("Error converting element to PNG:", error);
+        throw error;
+      }
     }
+
 
     function loadImage(src) {
       return new Promise((resolve, reject) => {
