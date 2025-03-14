@@ -2569,8 +2569,8 @@ prompt("This is a prompt:");
 
       if (currentTab.outputElement.innerHTML.trim()) {
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        // copy all styles from the original output div
         tempOutputDiv.style.cssText = window.getComputedStyle(currentTab.outputElement).cssText;
+        tempOutputDiv.style.backgroundColor = backgroundColor;
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
         outputImgSrc = await takeImage(tempOutputDiv);
