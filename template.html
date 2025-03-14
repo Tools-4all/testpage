@@ -2591,6 +2591,9 @@ prompt("This is a prompt:");
         copyComputedStyles(currentTab.outputElement, tempOutputDiv);
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
+        // Ensure full content is visible:
+        tempOutputDiv.style.height = 'auto';
+        tempOutputDiv.style.overflow = 'visible';
         outputImgSrc = await takeImage(tempOutputDiv);
       } else {
         const blankCanvas = document.createElement('canvas');
