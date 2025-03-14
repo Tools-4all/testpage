@@ -2496,16 +2496,19 @@ prompt("This is a prompt:");
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
 
+      // Create the wrapper that holds the numbers and the code side by side
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.display = "flex";
 
+      // Create the numbersDiv using your existing class for dark/light mode
       const numbersDiv = document.createElement('div');
       numbersDiv.style.backgroundColor = backgroundColor;
       numbersDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight");
       numbersDiv.classList.add("lineNum");
-      numbersDiv.style.fontSize = "14px";
+      numbersDiv.style.fontSize = "14px"; // Preserve your number font size
       numbersDiv.style.paddingRight = "30px"
 
+      // Create the imageDiv for the highlighted code
       const imageDiv = document.createElement('div');
       imageDiv.style.fontFamily = fontFamily;
       imageDiv.style.fontSize = `${fontSize}px`;
@@ -2518,55 +2521,63 @@ prompt("This is a prompt:");
       imageDiv.style.textWrap = 'wrap';
       imageDiv.style.overflowWrap = "break-word";
 
+      // Append the two divs into the wrapper
       wrapperDiv.appendChild(numbersDiv);
       wrapperDiv.appendChild(imageDiv);
 
+      // Append the wrapper to the document so we can measure widths
       document.body.appendChild(wrapperDiv);
 
+      // Determine available width for code in imageDiv (for wrapping calculations)
       const availableWidth = imageDiv.clientWidth;
 
+      // Clear any existing content in numbersDiv
       numbersDiv.innerHTML = '';
+      // Split the plain code into lines
       const codeLines = code.split('\n');
 
+      // For each code line, create a numbered div and add extra blank divs if the line wraps
       codeLines.forEach((line, index) => {
         const lineNumberDiv = document.createElement('div');
-        lineNumberDiv.classList.add("numberDiv")
+        lineNumberDiv.classList.add("numberDiv");
         lineNumberDiv.textContent = index + 1;
         numbersDiv.appendChild(lineNumberDiv);
 
-        // check if wrapped line, if so add blank numberDiv for each wrapped line
-        codeLines.forEach((line, index) => {
-          const lineNumberDiv = document.createElement('div');
-          lineNumberDiv.classList.add("numberDiv");
-          lineNumberDiv.textContent = index + 1;
-          numbersDiv.appendChild(lineNumberDiv);
-
-          const wrappedCount = getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily);
-          for (let i = 1; i < wrappedCount; i++) {
-            const blankDiv = document.createElement('div');
-            blankDiv.classList.add("numberDiv");
-            blankDiv.textContent = '';
-            numbersDiv.appendChild(blankDiv);
-          }
-        });
-
+        // Calculate the wrapped lines by checking the width of the full line
+        const wrappedCount = getWrappedLineCountByElement(line, availableWidth, fontSize, fontFamily);
+        for (let i = 1; i < wrappedCount; i++) {
+          const blankDiv = document.createElement('div');
+          blankDiv.classList.add("numberDiv");
+          blankDiv.textContent = '';
+          numbersDiv.appendChild(blankDiv);
+        }
       });
     }
 
-    function getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily) {
-      const temp = document.createElement('span');
-      temp.style.fontFamily = fontFamily;
-      temp.style.fontSize = fontSize + 'px';
-      temp.style.whiteSpace = 'pre';
-      temp.style.visibility = 'hidden';
-      temp.textContent = line;
-      document.body.appendChild(temp);
+    // Function to calculate how many times a line will wrap based on the available width
+    function getWrappedLineCountByElement(line, availableWidth, fontSize, fontFamily) {
+      // Create a temporary element to hold the line of text
+      const tempElement = document.createElement('div');
+      tempElement.style.fontFamily = fontFamily;
+      tempElement.style.fontSize = `${fontSize}px`;
+      tempElement.style.whiteSpace = 'pre-wrap';
+      tempElement.style.position = 'absolute';
+      tempElement.style.visibility = 'hidden';
+      tempElement.textContent = line;
+      document.body.appendChild(tempElement);
 
-      const textWidth = temp.offsetWidth;
-      document.body.removeChild(temp);
+      // Get the width of the text in the temporary element
+      const textWidth = tempElement.offsetWidth;
 
-      return Math.ceil(textWidth / availableWidth);
+      // Remove the temporary element from the DOM
+      document.body.removeChild(tempElement);
+
+      // Calculate how many lines the text will wrap into
+      const wrappedLines = Math.ceil(textWidth / availableWidth);
+      return wrappedLines;
     }
+
+
 
 
     function exportPDF() { }
