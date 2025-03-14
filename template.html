@@ -998,12 +998,12 @@
       text-align: right;
       font-variant-numeric: tabular-nums;
       box-sizing: border-box;
+      width: 35px;
+      height: 100%;
     }
 
     .lineNumDark {
       color: rgb(133, 133, 133);
-      width: 68px;
-      height: 100%;
     }
 
     .lineNumLight {
@@ -1013,6 +1013,7 @@
     .numberDiv {
       text-align: right;
       height: 18.9px;
+      padding-right: 10px;
     }
 
     .codeLineDiv {
@@ -2573,7 +2574,6 @@ prompt("This is a prompt:");
 
         const lineNumberDiv = document.createElement('div');
         lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-        lineNumberDiv.style.paddingRight = "10px";
         lineNumberDiv.textContent = index + 1;
 
         const codeLineDiv = document.createElement('div');
