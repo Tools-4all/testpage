@@ -2503,7 +2503,7 @@ prompt("This is a prompt:");
       numbersDiv.style.backgroundColor = backgroundColor;
       numbersDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight");
       numbersDiv.classList.add("lineNum");
-      numbersDiv.style.fontSize = "14px"; 
+      numbersDiv.style.fontSize = "14px";
       numbersDiv.style.paddingRight = "30px"
 
       const imageDiv = document.createElement('div');
@@ -2535,17 +2535,38 @@ prompt("This is a prompt:");
         numbersDiv.appendChild(lineNumberDiv);
 
         // check if wrapped line, if so add blank numberDiv for each wrapped line
-        const wrappedLines = Math.ceil((line.length * fontSize) / availableWidth);
-        if (wrappedLines > 1) {
-          for (let i = 1; i < wrappedLines; i++) {
-            const wrappedLineDiv = document.createElement('div');
-            wrappedLineDiv.classList.add("numberDiv")
-            numbersDiv.appendChild(wrappedLineDiv);
+        codeLines.forEach((line, index) => {
+          const lineNumberDiv = document.createElement('div');
+          lineNumberDiv.classList.add("numberDiv");
+          lineNumberDiv.textContent = index + 1;
+          numbersDiv.appendChild(lineNumberDiv);
+
+          const wrappedCount = getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily);
+          for (let i = 1; i < wrappedCount; i++) {
+            const blankDiv = document.createElement('div');
+            blankDiv.classList.add("numberDiv");
+            blankDiv.textContent = '';
+            numbersDiv.appendChild(blankDiv);
           }
-        }
+        });
+
       });
     }
 
+    function getWrappedLineCount(line, availableWidth, fontSize, lineHeight, fontFamily) {
+      const temp = document.createElement('span');
+      temp.style.fontFamily = fontFamily;
+      temp.style.fontSize = fontSize + 'px';
+      temp.style.whiteSpace = 'pre';
+      temp.style.visibility = 'hidden';
+      temp.textContent = line;
+      document.body.appendChild(temp);
+
+      const textWidth = temp.offsetWidth;
+      document.body.removeChild(temp);
+
+      return Math.ceil(textWidth / availableWidth);
+    }
 
 
     function exportPDF() { }
