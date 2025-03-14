@@ -2509,6 +2509,8 @@ prompt("This is a prompt:");
 
       const canvas = await html2canvas(clonedElem, {
         scale: 2,
+        logging: false,
+        backgroundColor: null,
       });
 
       document.body.removeChild(tempContainer);
