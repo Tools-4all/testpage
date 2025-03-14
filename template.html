@@ -2499,8 +2499,9 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem, destroy = true, append = true) {
+      let tempContainer;
       if (append) {
-        const tempContainer = document.createElement('div');
+        tempContainer = document.createElement('div');
         tempContainer.style.position = 'fixed';
         tempContainer.style.top = '-9999px';
         tempContainer.style.left = '-9999px';
@@ -2593,7 +2594,7 @@ prompt("This is a prompt:");
         const originalWidth = currentTab.outputElement.style.width;
         currentTab.outputElement.style.width = maxWidth;
         outputImgSrc = await takeImage(currentTab.outputElement, false, false);
-        currentTab.outputElement.style.width = originalWidth;
+        currentTab.outputElement.style.width = originalWidth;1
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
