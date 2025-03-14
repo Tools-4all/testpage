@@ -1014,6 +1014,17 @@
       text-align: right;
       height: 18.9px;
     }
+
+    .codeLineDiv {
+      display: inline-block;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      word-break: normal;
+      line-break: strict;
+      hyphens: none;
+      -webkit-hyphens: none;
+      -moz-hyphens: none;
+    }
   </style>
 </head>
 
@@ -2513,17 +2524,15 @@ prompt("This is a prompt:");
       codeLines.forEach((line, index) => {
         const lineWrapper = document.createElement('div');
         lineWrapper.style.display = "flex";
-        lineWrapper.style.alignItems = "flex-start"; 
+        lineWrapper.style.alignItems = "flex-start";
 
         const lineNumberDiv = document.createElement('div');
         lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-        lineNumberDiv.style.paddingRight = "10px"; 
+        lineNumberDiv.style.paddingRight = "10px";
         lineNumberDiv.textContent = index + 1;
 
         const codeLineDiv = document.createElement('div');
-        codeLineDiv.style.flex = "1"; 
-        codeLineDiv.style.whiteSpace = "pre-wrap"; 
-        codeLineDiv.style.overflowWrap = "anywhere";
+        codeLineDiv.classList.add("codeLineDiv")
         codeLineDiv.innerHTML = highlightedLines[index] || '';
 
         lineWrapper.appendChild(lineNumberDiv);
