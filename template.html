@@ -2498,31 +2498,39 @@ prompt("This is a prompt:");
         });
     }
 
-    async function takeImage(domElem, destroy = true, append = true) {
-      let tempContainer;
-      let clonedElem;
-      if (append) {
-        tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.left = '-9999px';
-        document.body.appendChild(tempContainer);
-        clonedElem = domElem.cloneNode(true);
-        tempContainer.appendChild(clonedElem);
-      } else {
-        clonedElem = domElem;
-      }
+    async function captureElementAsImage(element) {
+      const width = element.offsetWidth;
+      const height = element.offsetHeight;
 
-      const canvas = await html2canvas(clonedElem, {
-        scale: 2,
-        logging: false,
-        backgroundColor: null,
+      const serializedElement = new XMLSerializer().serializeToString(element);
+
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+      <foreignObject width="100%" height="100%">
+        ${serializedElement}
+      </foreignObject>
+    </svg>`;
+
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      const img = new Image();
+      img.src = url;
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
       });
 
-      if (destroy && append) {
-        document.body.removeChild(tempContainer);
-      }
-      return canvas.toDataURL("image/png");
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      const dataURL = canvas.toDataURL('image/png');
+
+      URL.revokeObjectURL(url);
+      return dataURL;
     }
 
 
@@ -2572,14 +2580,14 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
 
-      const editorImgSrc = await takeImage(wrapperDiv);
+      const editorImgSrc = await captureElementAsImage(wrapperDiv);
       let outputImgSrc;
       let tempOutputDiv;
 
       if (currentTab.outputElement.innerHTML.trim()) {
         const originalWidth = currentTab.outputElement.style.width;
         currentTab.outputElement.style.width = maxWidth;
-        outputImgSrc = await takeImage(currentTab.outputElement, false, false);
+        outputImgSrc = await captureElementAsImage(currentTab.outputElement);
         currentTab.outputElement.style.width = originalWidth; 1
       } else {
         const blankCanvas = document.createElement('canvas');
