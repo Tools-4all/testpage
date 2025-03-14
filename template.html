@@ -2573,6 +2573,7 @@ prompt("This is a prompt:");
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
         tempOutputDiv.style.cssText = window.getComputedStyle(currentTab.outputElement).cssText;
         tempOutputDiv.style.backgroundColor = backgroundColor;
+        tempOutputDiv.style.color = currentTab.outputElement.style.color;
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
         outputImgSrc = await takeImage(tempOutputDiv);
