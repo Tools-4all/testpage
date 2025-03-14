@@ -2485,54 +2485,62 @@ prompt("This is a prompt:");
         });
     }
     async function exportImage() {
-      const model = currentTab.editorInstance.getModel();
-      const code = model.getValue();
-      const language = "javascript";
-      const highlightedHTML = await monaco.editor.colorize(code, language, {});
+  const model = currentTab.editorInstance.getModel();
+  const code = model.getValue();
+  const language = "javascript";
+  
+  // Split the raw code into lines.
+  const codeLines = code.split('\n');
+  
+  // Highlight each line individually.
+  const highlightedLines = await Promise.all(
+    codeLines.map((line) => monaco.editor.colorize(line, language, {}))
+  );
 
-      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
-      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+  // Get style options.
+  const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+  const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+  const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+  const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+  const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
 
-      // Create main wrapper container for all lines
-      const wrapperDiv = document.createElement('div');
-      wrapperDiv.style.backgroundColor = backgroundColor;
-      wrapperDiv.style.fontFamily = fontFamily;
-      wrapperDiv.style.fontSize = `${fontSize}px`;
-      wrapperDiv.style.lineHeight = `${lineHeight}px`;
-      wrapperDiv.style.whiteSpace = "pre-wrap";
-      wrapperDiv.style.color = textColor;
+  // Create the main wrapper div.
+  const wrapperDiv = document.createElement('div');
+  wrapperDiv.style.backgroundColor = backgroundColor;
+  wrapperDiv.style.fontFamily = fontFamily;
+  wrapperDiv.style.fontSize = `${fontSize}px`;
+  wrapperDiv.style.lineHeight = `${lineHeight}px`;
+  wrapperDiv.style.whiteSpace = "pre-wrap";
+  wrapperDiv.style.color = textColor;
 
-      // Split raw code and highlighted HTML into lines.
-      const codeLines = code.split('\n');
-      const highlightedLines = highlightedHTML.split('<br>');
+  // For each code line, create a flex sub-wrapper with line number and code.
+  codeLines.forEach((line, index) => {
+    const lineWrapper = document.createElement('div');
+    lineWrapper.style.display = "flex";
+    lineWrapper.style.alignItems = "flex-start"; // Ensures proper alignment
 
-      // For each line, create a flex sub-wrapper containing the line number and the highlighted code.
-      codeLines.forEach((line, index) => {
-        const lineWrapper = document.createElement('div');
-        lineWrapper.style.display = "flex";
+    // Create and style the line number element.
+    const lineNumberDiv = document.createElement('div');
+    lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+    lineNumberDiv.style.paddingRight = "10px"; // adjust spacing as needed
+    lineNumberDiv.textContent = index + 1;
 
-        const lineNumberDiv = document.createElement('div');
-        // Use the same classes for coloring and style.
-        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-        lineNumberDiv.style.paddingRight = "10px"; // adjust spacing as needed
-        lineNumberDiv.textContent = index + 1;
+    // Create the code line container.
+    const codeLineDiv = document.createElement('div');
+    codeLineDiv.style.flex = "1"; // take up remaining space
+    codeLineDiv.style.whiteSpace = "pre-wrap"; // allow word wrapping
+    // Insert the highlighted HTML for the line.
+    codeLineDiv.innerHTML = highlightedLines[index] || '';
 
-        const codeLineDiv = document.createElement('div');
-        codeLineDiv.style.flex = "1"; // allow code content to take up remaining space
-        codeLineDiv.style.whiteSpace = "pre-wrap"; // ensure word wrapping
-        // Use the corresponding highlighted HTML for this line if available.
-        codeLineDiv.innerHTML = highlightedLines[index] || '';
+    // Append both elements to the line wrapper.
+    lineWrapper.appendChild(lineNumberDiv);
+    lineWrapper.appendChild(codeLineDiv);
+    // Append the line wrapper to the main container.
+    wrapperDiv.appendChild(lineWrapper);
+  });
 
-        lineWrapper.appendChild(lineNumberDiv);
-        lineWrapper.appendChild(codeLineDiv);
-        wrapperDiv.appendChild(lineWrapper);
-      });
-
-      document.body.appendChild(wrapperDiv);
-    }
+  document.body.appendChild(wrapperDiv);
+}
 
 
 
