@@ -2509,7 +2509,7 @@ prompt("This is a prompt:");
         document.body.appendChild(domElem);
       }
       try {
-        const dataUrl = await domtoimage.toBlob(domElem,
+        const dataUrl = await domtoimage.toPng(domElem,
           {
             width: domElem.clientWidth * 2,
             height: domElem.clientHeight * 2,
