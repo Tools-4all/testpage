@@ -2527,6 +2527,8 @@ prompt("This is a prompt:");
       imageDiv.innerHTML = highlightedHTML;
       imageDiv.style.backgroundColor = backgroundColor;
       imageDiv.style.color = textColor;
+      imageDiv.style.width = currentTab.editorInstance.getLayoutInfo().contentWidth + 'px';
+      imageDiv.style.textWrap = 'wrap';
 
       // Append the two divs into the wrapper
       wrapperDiv.appendChild(numbersDiv);
