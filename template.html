@@ -2499,13 +2499,11 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem) {
-      const { html2canvas } = await import("https://cdn.skypack.dev/html2canvas");
-      const canvas = await html2canvas(domElem, {
-        backgroundColor: darkModeFlag ? "#1E1E1E" : "#FFFFFF"
-      });
+      console.log(html2canvas, "html2canvas");
+      const canvas = await html2canvas(domElem);
       return canvas.toDataURL("image/png");
-
     }
+
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
@@ -2557,7 +2555,7 @@ prompt("This is a prompt:");
       a.href = imgSrc;
       a.download = 'script.png';
       a.click();
-      
+
     }
 
 
