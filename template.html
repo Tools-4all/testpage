@@ -2511,8 +2511,8 @@ prompt("This is a prompt:");
       try {
         const dataUrl = await domtoimage.toBlob(domElem,
           {
-            width: element.clientWidth * 2,
-            height: element.clientHeight * 2,
+            width: domElem.clientWidth * 2,
+            height: domElem.clientHeight * 2,
             style: { transform: 'scale(' + 2 + ')', transformOrigin: 'top left' }
           }
         );
