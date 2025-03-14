@@ -2511,6 +2511,7 @@ prompt("This is a prompt:");
         scale: 2,
         logging: false,
         backgroundColor: null,
+        willReadFrequently: true
       });
 
       document.body.removeChild(tempContainer);
@@ -2591,7 +2592,6 @@ prompt("This is a prompt:");
         copyComputedStyles(currentTab.outputElement, tempOutputDiv);
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
-        // Ensure full content is visible:
         tempOutputDiv.style.height = 'auto';
         tempOutputDiv.style.overflow = 'visible';
         outputImgSrc = await takeImage(tempOutputDiv);
