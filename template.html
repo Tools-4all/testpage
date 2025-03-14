@@ -1125,6 +1125,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
@@ -2496,6 +2497,15 @@ prompt("This is a prompt:");
           a.click();
         });
     }
+
+    async function takeImage(domElem) {
+      const { html2canvas } = await import("https://cdn.skypack.dev/html2canvas");
+      const canvas = await html2canvas(domElem, {
+        backgroundColor: darkModeFlag ? "#1E1E1E" : "#FFFFFF"
+      });
+      return canvas.toDataURL("image/png");
+
+    }
     async function exportImage() {
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
@@ -2542,7 +2552,12 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
 
-      document.body.appendChild(wrapperDiv);
+      const imgSrc = await takeImage(wrapperDiv);
+      const a = document.createElement('a');
+      a.href = imgSrc;
+      a.download = 'script.png';
+      a.click();
+      
     }
 
 
