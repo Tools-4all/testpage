@@ -1039,7 +1039,7 @@
     .numberDiv {
       text-align: right;
       height: 18.9px;
-      padding-right: 10px;
+      padding-right: 20px;
     }
 
     .codeLineDiv {
@@ -2582,7 +2582,7 @@ prompt("This is a prompt:");
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      const maxWidth =  "850px"
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
