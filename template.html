@@ -1062,6 +1062,12 @@
       -webkit-hyphens: none;
       -moz-hyphens: none;
     }
+
+    .outputItem {
+        white-space: pre-wrap;
+        display: flex;
+        flex-wrap: wrap;
+      }
     
   </style>
 </head>
@@ -1617,9 +1623,7 @@ prompt("This is a prompt:");
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
-        messageDiv.style.whiteSpace = "pre-wrap";
-        messageDiv.style.display = "flex";
-        messageDiv.style.flexWrap = "wrap";
+        messageDiv.classList.add("outputItem")
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1679,9 +1683,7 @@ prompt("This is a prompt:");
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
-        messageDiv.style.whiteSpace = "pre-wrap";
-        messageDiv.style.display = "flex";
-        messageDiv.style.flexWrap = "wrap";
+        messageDiv.classList.add("outputItem")
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1929,9 +1931,7 @@ prompt("This is a prompt:");
       symbolDiv.style.flexShrink = "0";
 
       let messageDiv = document.createElement("div");
-      messageDiv.style.whiteSpace = "pre-wrap";
-      messageDiv.style.display = "flex";
-      messageDiv.style.flexWrap = "wrap";
+      messageDiv.classList.add("outputItem");
       if (type === "error" && forceUse) {
         const lines = message.split("\n");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
