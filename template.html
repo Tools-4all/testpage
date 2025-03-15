@@ -2623,13 +2623,18 @@ prompt("This is a prompt:");
       let tempOutputDiv;
 
       if (currentTab.outputElement.innerHTML.trim()) {
+        const outputWrapper = document.createElement('div');
+        outputWrapper.classList.add("outputContainer", darkModeFlag ? "darkMode" : "lightMode");
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
+        outputWrapper.appendChild(tempOutputDiv);
         // copyComputedStyles(currentTab.outputElement, tempOutputDiv);
+        tempOutputDiv.classList.add()
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
         tempOutputDiv.style.height = 'auto';
         tempOutputDiv.style.overflowY = 'visible';
-        outputImgSrc = await takeImage(tempOutputDiv);
+
+        outputImgSrc = await takeImage(outputWrapper);
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
