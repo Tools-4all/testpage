@@ -2624,7 +2624,7 @@ prompt("This is a prompt:");
 
       if (currentTab.outputElement.innerHTML.trim()) {
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        copyComputedStyles(currentTab.outputElement, tempOutputDiv);
+        // copyComputedStyles(currentTab.outputElement, tempOutputDiv);
         tempOutputDiv.style.width = maxWidth;
         tempOutputDiv.style.maxWidth = maxWidth;
         tempOutputDiv.style.height = 'auto';
