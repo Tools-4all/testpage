@@ -2628,6 +2628,8 @@ prompt("This is a prompt:");
         outputWrapper.style.backgroundColor = backgroundColor;
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
         outputWrapper.appendChild(tempOutputDiv);
+        // add all the classes from the original output div
+        tempOutputDiv.classList.add(...currentTab.outputElement.classList);
         // copyComputedStyles(currentTab.outputElement, tempOutputDiv);
         tempOutputDiv.classList.add()
         tempOutputDiv.style.width = maxWidth;
