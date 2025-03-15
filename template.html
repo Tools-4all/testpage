@@ -2689,8 +2689,11 @@ prompt("This is a prompt:");
 
 
     function exportPDF() {
-      jsPDF.html(currentTab.outputElement).then((doc) => {
-        doc.save('output.pdf');
+      const doc = new jsPDF();
+      doc.html(currentTab.outputElement, {
+        callback: function (doc) {
+          doc.save('output.pdf');
+        }
       });
     }
     function exportCurrent() {
