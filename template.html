@@ -2553,14 +2553,14 @@ prompt("This is a prompt:");
         useCORS: true
       });
 
-      // document.body.removeChild(tempContainer);
+      document.body.removeChild(tempContainer);
       // show the div
-      tempContainer.style.top = '0';
-      tempContainer.style.left = '0';
-      tempContainer.style.width = '100%';
-      tempContainer.style.height = '100%';
-      tempContainer.style.position = "relative";
-      return canvas.toDataURL("image/png");
+      // tempContainer.style.top = '0';
+      // tempContainer.style.left = '0';
+      // tempContainer.style.width = '100%';
+      // tempContainer.style.height = '100%';
+      // tempContainer.style.position = "relative";
+      // return canvas.toDataURL("image/png");
     }
 
     function copyComputedStyles(srcElem, destElem) {
@@ -2678,13 +2678,11 @@ prompt("This is a prompt:");
       ctx.drawImage(editorImg, 0, 0);
       ctx.drawImage(outputImg, 0, editorImg.height);
 
-      // const a = document.createElement('a');
-      // a.href = canvas.toDataURL("image/png");
-      // a.download = `${currentTab.name}.png`;
-      // a.click();
-      // display the image in preview in a new tab
-      // const win = window.open();
-      // win.document.write(`<img src="${canvas.toDataURL("image/png")}" style="max-width: 100%; height: auto;" />`);
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL("image/png");
+      a.download = `${currentTab.name}.png`;
+      a.click();
+
     }
 
 
