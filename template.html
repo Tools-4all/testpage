@@ -2581,9 +2581,22 @@ prompt("This is a prompt:");
       });
     }
 
+    async function getOutputDivClone() {
+      const outputWrapper = document.createElement('div');
+      outputWrapper.classList.add("outputContainer", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.style.backgroundColor = backgroundColor;
+      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      outputWrapper.appendChild(tempOutputDiv);
+      tempOutputDiv.classList.add(...currentTab.outputElement.classList);
+      tempOutputDiv.classList.add()
+      tempOutputDiv.style.width = maxWidth;
+      tempOutputDiv.style.maxWidth = maxWidth;
+      tempOutputDiv.style.height = 'auto';
+      tempOutputDiv.style.overflowY = 'visible';
+      return outputWrapper;
+    }
 
-
-    async function exportImage() {
+    async function getEditorDiv() {
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
       const language = "javascript";
@@ -2627,28 +2640,16 @@ prompt("This is a prompt:");
         lineWrapper.appendChild(codeLineDiv);
         wrapperDiv.appendChild(lineWrapper);
       });
+    }
 
 
-      const editorImgSrc = await takeImage(wrapperDiv);
+    async function exportImage() {
+      const editorImgSrc = await takeImage(await getEditorDiv());
       let outputImgSrc;
       let tempOutputDiv;
 
       if (currentTab.outputElement.innerHTML.trim()) {
-        const outputWrapper = document.createElement('div');
-        outputWrapper.classList.add("outputContainer", darkModeFlag ? "darkMode" : "lightMode");
-        outputWrapper.style.backgroundColor = backgroundColor;
-        tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        outputWrapper.appendChild(tempOutputDiv);
-        // add all the classes from the original output div
-        tempOutputDiv.classList.add(...currentTab.outputElement.classList);
-        // copyComputedStyles(currentTab.outputElement, tempOutputDiv);
-        tempOutputDiv.classList.add()
-        tempOutputDiv.style.width = maxWidth;
-        tempOutputDiv.style.maxWidth = maxWidth;
-        tempOutputDiv.style.height = 'auto';
-        tempOutputDiv.style.overflowY = 'visible';
-
-        outputImgSrc = await takeImage(outputWrapper);
+        outputImgSrc = await takeImage(await getOutputDivClone());
       } else {
         const blankCanvas = document.createElement('canvas');
         blankCanvas.width = parseInt(currentTab.editorInstance.getLayoutInfo().contentWidth, 10);
@@ -2688,13 +2689,14 @@ prompt("This is a prompt:");
     }
 
 
-    function exportPDF() {
+    async function exportPDF() {
       const doc = new jsPDF();
-      doc.html(currentTab.outputElement, {
-        callback: function (doc) {
-          doc.save('output.pdf');
-        }
-      });
+      const editorDiv = await getEditorDiv();
+      const outputDiv = await getOutputDivClone();
+      await doc.html(editorDiv)
+      await doc.addPage();
+      await doc.html(outputDiv)
+      doc.save(`${currentTab.name}.pdf`);
     }
     function exportCurrent() {
       if (activeTabId === null) {
