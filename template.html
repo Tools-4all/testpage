@@ -2655,10 +2655,32 @@ prompt("This is a prompt:");
       ctx.drawImage(editorImg, 0, 0);
       ctx.drawImage(outputImg, 0, editorImg.height);
 
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL("image/png");
-      a.download = `${currentTab.name}.png`;
-      a.click();
+      // const a = document.createElement('a');
+      // a.href = canvas.toDataURL("image/png");
+      // a.download = `${currentTab.name}.png`;
+      // a.click();
+      // display the image in preview
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL("image/png");
+      const holder = document.createElement('div');
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.addEventListener('click', () => {
+        document.body.removeChild(holder);
+      });
+      holder.appendChild(img);
+      holder.appendChild(closeBtn);
+      holder.style.position = 'fixed';
+      holder.style.top = '0';
+      holder.style.left = '0';
+      holder.style.width = '100%';
+      holder.style.height = '100%';
+      holder.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+      holder.style.display = 'flex';
+      holder.style.flexDirection = 'column';
+      holder.style.alignItems = 'center';
+      holder.style.justifyContent = 'center';
+      img.style.maxWidth = '100%';
     }
 
 
