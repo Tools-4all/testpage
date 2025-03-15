@@ -1180,8 +1180,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
+    const { jsPDF } = window.jspdf;
     let currentTab = null;
     let workerBlobURL = null;
     let activeDropdown = null;
@@ -2686,7 +2688,11 @@ prompt("This is a prompt:");
     }
 
 
-    function exportPDF() { }
+    function exportPDF() {
+      jsPDF.html(currentTab.outputElement).then((doc) => {
+        doc.save('output.pdf');
+      });
+    }
     function exportCurrent() {
       if (activeTabId === null) {
         alert("No tab to export.");
