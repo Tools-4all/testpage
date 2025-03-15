@@ -539,6 +539,7 @@
       display: flex;
       align-items: center;
       font-size: 14px;
+      margin-left: 4px;
     }
 
     .prompt-line span {
@@ -1064,11 +1065,20 @@
     }
 
     .outputItem {
-        white-space: pre-wrap;
-        display: flex;
-        flex-wrap: wrap;
-      }
-    
+      white-space: pre-wrap;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .symbolDiv {
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    .flexContainer {
+      display: flex;
+      align-items: flex-start;
+    }
   </style>
 </head>
 
@@ -1609,17 +1619,13 @@ prompt("This is a prompt:");
         let container = tab.outputElement;
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
-        pl.style.marginLeft = "4px";
 
         let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        flexContainer.classList.add("flexContainer");
 
         let symbolDiv = document.createElement("div");
-        symbolDiv.classList.add("dontAllowSelect");
+        symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
         symbolDiv.textContent = `[?]`;
-        symbolDiv.style.marginRight = "5px";
-        symbolDiv.style.flexShrink = "0";
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
@@ -1669,17 +1675,13 @@ prompt("This is a prompt:");
         let container = tab.outputElement;
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
-        alertLine.style.marginLeft = "4px";
 
         let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        flexContainer.classList.add("flexContainer");
 
-        let symbolDiv = document.createElement("div");
+        let symbolDiv = document.createElement("div", "symbolDiv");
         symbolDiv.classList.add("dontAllowSelect");
         symbolDiv.textContent = `[!]`;
-        symbolDiv.style.marginRight = "5px";
-        symbolDiv.style.flexShrink = "0";
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
@@ -1921,14 +1923,12 @@ prompt("This is a prompt:");
       line.classList.add(styleClass);
 
       let flexContainer = document.createElement("div");
-      flexContainer.style.display = "flex";
-      flexContainer.style.alignItems = "flex-start";
+      flexContainer.classList.add("flexContainer");
 
       let symbolDiv = document.createElement("div");
-      symbolDiv.classList.add("dontAllowSelect");
+      symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
+
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
-      symbolDiv.style.marginRight = "5px";
-      symbolDiv.style.flexShrink = "0";
 
       let messageDiv = document.createElement("div");
       messageDiv.classList.add("outputItem");
@@ -2626,7 +2626,7 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
 
-      
+
       const editorImgSrc = await takeImage(wrapperDiv);
       let outputImgSrc;
       let tempOutputDiv;
