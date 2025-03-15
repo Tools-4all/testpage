@@ -2625,6 +2625,7 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         const outputWrapper = document.createElement('div');
         outputWrapper.classList.add("outputContainer", darkModeFlag ? "darkMode" : "lightMode");
+        outputWrapper.style.backgroundColor = backgroundColor;
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
         outputWrapper.appendChild(tempOutputDiv);
         // copyComputedStyles(currentTab.outputElement, tempOutputDiv);
