@@ -2659,7 +2659,13 @@ prompt("This is a prompt:");
       // a.href = canvas.toDataURL("image/png");
       // a.download = `${currentTab.name}.png`;
       // a.click();
+<<<<<<< HEAD
+      // display the image in preview in a new tab
+      const win = window.open();
+      win.document.write(`<img src="${canvas.toDataURL("image/png")}" style="max-width: 100%; height: auto;" />`);
+=======
       // display the image in preview
+>>>>>>> bcb5ccec04f15d0fdfa7ed40330a57d97272b5db
     }
 
 
