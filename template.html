@@ -2617,7 +2617,7 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
 
-      
+
       const editorImgSrc = await takeImage(wrapperDiv);
       let outputImgSrc;
       let tempOutputDiv;
@@ -2625,8 +2625,8 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         tempOutputDiv = currentTab.outputElement.cloneNode(true);
         copyComputedStyles(currentTab.outputElement, tempOutputDiv);
-        tempOutputDiv.style.width = maxWidth;
-        tempOutputDiv.style.maxWidth = maxWidth;
+        tempOutputDiv.style.width = window.innerWidth + "px";
+        tempOutputDiv.style.maxWidth = window.innerWidth + "px";
         tempOutputDiv.style.height = 'auto';
         tempOutputDiv.style.overflowY = 'visible';
         outputImgSrc = await takeImage(tempOutputDiv);
