@@ -2543,8 +2543,10 @@ prompt("This is a prompt:");
         useCORS: true
       });
 
-      document.body.removeChild(tempContainer);
-
+      // document.body.removeChild(tempContainer);
+      // show the div
+      tempContainer.style.top = '0';
+      tempContainer.style.left = '0';
       return canvas.toDataURL("image/png");
     }
 
@@ -2663,8 +2665,6 @@ prompt("This is a prompt:");
       const win = window.open();
       win.document.write(`<img src="${canvas.toDataURL("image/png")}" style="max-width: 100%; height: auto;" />`);
     }
-
-
 
 
     function exportPDF() { }
