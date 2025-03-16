@@ -2692,7 +2692,17 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
-      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
+      await new Promise(resolve => {
+        doc.html(wrapBoth, {
+          callback: resolve,
+          x: 0,
+          y: 0,
+          width: wrapBoth.offsetWidth,
+          windowWidth: wrapBoth.scrollWidth,
+          html2canvas: { scale: 2 } // optional: adjust for resolution
+        });
+      });
+
       wrapBoth.remove();
       doc.save(`${currentTab.name}.pdf`);
     }
