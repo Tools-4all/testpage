@@ -2687,7 +2687,7 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      const doc = new jsPDF("p", "px", [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
+      const doc = new jsPDF();
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
