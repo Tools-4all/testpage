@@ -2700,9 +2700,8 @@ prompt("This is a prompt:");
       const doc = new jsPDF();
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
-      await doc.html(editorDiv)
-      await doc.addPage();
-      await doc.html(outputDiv)
+      await new Promise(resolve => { doc.html(editorDiv, { callback: resolve }) });
+      await new Promise(resolve => { doc.addPage(); doc.html(outputDiv, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
     }
     function exportCurrent() {
