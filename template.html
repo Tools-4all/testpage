@@ -2689,6 +2689,7 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
+      document.body.appendChild(wrapBoth);
     }
     function exportCurrent() {
       if (activeTabId === null) {
