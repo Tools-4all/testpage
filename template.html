@@ -2688,7 +2688,14 @@ prompt("This is a prompt:");
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
-      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
+      await new Promise(resolve => {
+        doc.html(wrapBoth, {
+          callback: resolve,
+          html2canvas: {
+            backgroundColor: darkModeFlag ? '#1E1E1E' : '#FFFFFF'
+          }
+        });
+      });
       doc.save(`${currentTab.name}.pdf`);
       wrapBoth.remove();
     }
