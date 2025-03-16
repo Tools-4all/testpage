@@ -1194,7 +1194,6 @@
     let lastDropSide = null;
     let darkModeFlag = true;
     let nextWorker;
-    let base64StringFont;
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
@@ -2502,13 +2501,6 @@ prompt("This is a prompt:");
       return window.btoa(binary);
     }
 
-    async function loadFont() {
-      const fontUrl = "{% static 'fonts/DejaVuSans.ttf' %}";
-      const response = await fetch(fontUrl);
-      const buffer = await response.arrayBuffer();
-      base64StringFont = arrayBufferToBase64(buffer);
-    }
-
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
@@ -2694,9 +2686,6 @@ prompt("This is a prompt:");
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      if (!base64StringFont) {
-        await loadFont()
-      }
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
@@ -2708,9 +2697,6 @@ prompt("This is a prompt:");
         unit: 'px',
         format: [contentWidth, contentHeight]
       });
-      doc.addFileToVFS("DejaVuSans.ttf", base64StringFont);
-      doc.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
-      doc.setFont("DejaVuSans")
       await new Promise(resolve => {
         doc.html(wrapBoth, {
           callback: resolve,
