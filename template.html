@@ -2679,37 +2679,27 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      // Use getBoundingClientRect() to get accurate dimensions even on mobile.
-      const rect = wrapBoth.getBoundingClientRect();
-      const contentWidth = rect.width;
-      const contentHeight = rect.height;
-
-      // Create the PDF with a custom page size exactly matching your element.
-      let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
-
-      // Force html2canvas to render with the desired width.
-      await new Promise(resolve => {
-        doc.html(wrapBoth, {
-          callback: resolve,
-          x: 0,
-          y: 0,
-          margin: [0, 0, 0, 0],
-          width: contentWidth, // set the maximum width for the HTML rendering
-          html2canvas: {
-            scale: 1,
-            logging: false,
-            windowWidth: contentWidth // force html2canvas to use your element's width
-          }
-        });
+      // Render the wrapBoth element to a canvas
+      const canvas = await html2canvas(wrapBoth, {
+        scale: 1,             // no scaling
+        logging: false,
+        useCORS: true,
+        width: wrapBoth.offsetWidth,
+        height: wrapBoth.offsetHeight
       });
+      const imgData = canvas.toDataURL('image/png');
 
+      // Remove the temporary element
       wrapBoth.remove();
-      // Remove any extra pages if necessary.
-      if (doc.internal.getNumberOfPages() > 1) {
-        for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-          doc.deletePage(i);
-        }
-      }
+
+      // Get the exact dimensions from the canvas
+      const contentWidth = canvas.width;
+      const contentHeight = canvas.height;
+
+      // Create a PDF with a page exactly matching your element size
+      let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
+      // Add the image to the PDF without any scaling adjustments
+      doc.addImage(imgData, 'PNG', 0, 0, contentWidth, contentHeight);
       doc.save(`${currentTab.name}.pdf`);
     }
 
