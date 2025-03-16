@@ -2689,22 +2689,22 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      // Create a default jsPDF instance
-      let doc = new jsPDF();
-      // Manually override the page dimensions
-      doc.internal.pageSize.width = wrapBoth.offsetWidth;
-      doc.internal.pageSize.height = wrapBoth.offsetHeight;
-
-      // Use doc.html to render your element
+      const contentWidth = wrapBoth.offsetWidth;
+      const contentHeight = wrapBoth.offsetHeight;
+      let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
       await new Promise(resolve => {
-        doc.html(wrapBoth, { callback: resolve });
+        doc.html(wrapBoth, {
+          callback: resolve,
+          x: 0,
+          y: 0,
+          margin: [0, 0, 0, 0],
+          html2canvas: { scale: 1 }
+        });
       });
+      doc.save(`${currentTab.name}.pdf`);
+
 
       wrapBoth.remove();
-      if (doc.internal.getNumberOfPages() > 1) {
-        doc.deletePage(doc.internal.getNumberOfPages());
-      }
-      doc.save(`${currentTab.name}.pdf`);
     }
 
 
