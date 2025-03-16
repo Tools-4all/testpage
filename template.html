@@ -2578,7 +2578,6 @@ prompt("This is a prompt:");
       tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
-      tempOutputDiv.classList.add()
       tempOutputDiv.style.width = maxWidth;
       tempOutputDiv.style.maxWidth = maxWidth;
       tempOutputDiv.style.height = 'auto';
@@ -2688,7 +2687,6 @@ prompt("This is a prompt:");
       const wrapBoth = document.createElement('div');
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
-      wrapBoth.style.backgroundColor = backgroundColor;
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
     }
