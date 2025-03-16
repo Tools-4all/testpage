@@ -2692,11 +2692,9 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
-
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
-
-      doc.save(`${currentTab.name}.pdf`);
       wrapBoth.remove();
+      doc.save(`${currentTab.name}.pdf`);
     }
 
     function exportCurrent() {
