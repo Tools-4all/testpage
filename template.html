@@ -2680,7 +2680,6 @@ prompt("This is a prompt:");
 
 
     async function exportPDF() {
-      const doc = new jsPDF();
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
       const wrapBoth = document.createElement('div');
@@ -2688,21 +2687,11 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-
+      const doc = new jsPDF("p", "px", [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
-      await new Promise(resolve => {
-        doc.html(wrapBoth, {
-          callback: resolve,
-          x: 0,
-          y: 0,
-          width: wrapBoth.offsetWidth,
-          windowWidth: wrapBoth.scrollWidth,
-          html2canvas: { scale: 2 } // optional: adjust for resolution
-        });
-      });
-
+      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       wrapBoth.remove();
       doc.save(`${currentTab.name}.pdf`);
     }
