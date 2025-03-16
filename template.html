@@ -2681,7 +2681,11 @@ prompt("This is a prompt:");
 
       const contentWidth = wrapBoth.offsetWidth;
       const contentHeight = wrapBoth.offsetHeight;
-      let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
+      let doc = new jsPDF({
+        orientation: contentWidth > contentHeight ? 'l' : 'p',
+        unit: 'px',
+        format: [contentWidth, contentHeight]
+      });
       await new Promise(resolve => {
         doc.html(wrapBoth, {
           callback: resolve,
