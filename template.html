@@ -2699,11 +2699,11 @@ prompt("This is a prompt:");
       await new Promise(resolve => {
         doc.html(wrapBoth, { callback: resolve });
       });
+
+      wrapBoth.remove();
       if (doc.internal.getNumberOfPages() > 1) {
         doc.deletePage(doc.internal.getNumberOfPages());
       }
-
-      wrapBoth.remove();
       doc.save(`${currentTab.name}.pdf`);
     }
 
