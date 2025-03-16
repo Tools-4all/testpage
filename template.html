@@ -2640,7 +2640,7 @@ prompt("This is a prompt:");
 
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapperBoth.appendChild(await getOutputDivClone());
-      } 
+      }
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -2679,20 +2679,32 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      const contentWidth = wrapBoth.offsetWidth;
-      const contentHeight = wrapBoth.offsetHeight;
+      // Use getBoundingClientRect() to get accurate dimensions even on mobile.
+      const rect = wrapBoth.getBoundingClientRect();
+      const contentWidth = rect.width;
+      const contentHeight = rect.height;
+
+      // Create the PDF with a custom page size exactly matching your element.
       let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
+
+      // Force html2canvas to render with the desired width.
       await new Promise(resolve => {
         doc.html(wrapBoth, {
           callback: resolve,
           x: 0,
           y: 0,
           margin: [0, 0, 0, 0],
-          html2canvas: { scale: 1, logging: false}
+          width: contentWidth, // set the maximum width for the HTML rendering
+          html2canvas: {
+            scale: 1,
+            logging: false,
+            windowWidth: contentWidth // force html2canvas to use your element's width
+          }
         });
       });
-      wrapBoth.remove();
 
+      wrapBoth.remove();
+      // Remove any extra pages if necessary.
       if (doc.internal.getNumberOfPages() > 1) {
         for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
           doc.deletePage(i);
@@ -2700,6 +2712,7 @@ prompt("This is a prompt:");
       }
       doc.save(`${currentTab.name}.pdf`);
     }
+
 
 
     function exportCurrent() {
