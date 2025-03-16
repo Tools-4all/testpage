@@ -2682,11 +2682,13 @@ prompt("This is a prompt:");
 
     async function exportPDF() {
       const doc = new jsPDF();
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
       const wrapBoth = document.createElement('div');
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
+      wrapBoth.style.backgroundColor = backgroundColor;
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
     }
