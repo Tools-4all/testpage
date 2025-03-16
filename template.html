@@ -2565,22 +2565,6 @@ prompt("This is a prompt:");
       return canvas.toDataURL("image/png");
     }
 
-    function copyComputedStyles(srcElem, destElem) {
-      const computedStyle = window.getComputedStyle(srcElem);
-      for (let i = 0; i < computedStyle.length; i++) {
-        const key = computedStyle[i];
-        destElem.style.setProperty(
-          key,
-          computedStyle.getPropertyValue(key),
-          computedStyle.getPropertyPriority(key)
-        );
-      }
-      Array.from(srcElem.children).forEach((child, index) => {
-        if (destElem.children[index])
-          copyComputedStyles(child, destElem.children[index]);
-      });
-    }
-
     async function getOutputDivClone() {
       const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
@@ -2700,8 +2684,10 @@ prompt("This is a prompt:");
       const doc = new jsPDF();
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
-      await new Promise(resolve => { doc.html(editorDiv, { callback: resolve }) });
-      await new Promise(resolve => { doc.addPage(); doc.html(outputDiv, { callback: resolve }) });
+      const wrapBoth = document.createElement('div');
+      wrapBoth.appendChild(editorDiv);
+      wrapBoth.appendChild(outputDiv);
+      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
     }
     function exportCurrent() {
