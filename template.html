@@ -2708,7 +2708,7 @@ prompt("This is a prompt:");
         unit: 'px',
         format: [contentWidth, contentHeight]
       });
-      doc.addFileToVFS("DejaVuSans.ttf", base64String);
+      doc.addFileToVFS("DejaVuSans.ttf", base64StringFont);
       doc.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
       doc.setFont("DejaVuSans")
       await new Promise(resolve => {
