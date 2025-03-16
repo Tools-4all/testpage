@@ -2670,7 +2670,7 @@ prompt("This is a prompt:");
 
 
     async function exportPDF() {
-      // Get the editor and output elements to export.
+      // Get the content to export.
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
 
@@ -2682,42 +2682,47 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      // Clone the container for modifications so we don't affect the live DOM.
+      // Clone the export container so we can modify it without affecting the live page.
       const clone = wrapBoth.cloneNode(true);
 
-      // Inject a style tag into the clone to remove any ::after content from <summary> elements.
+      // Inject a style override to remove any ::after content from <summary> elements.
       const styleOverride = document.createElement("style");
       styleOverride.textContent = "summary::after { content: none !important; }";
       clone.insertBefore(styleOverride, clone.firstChild);
 
-      // Get summary elements from the original container (which is styled correctly)...
+      // Get all <summary> elements from the original and the clone.
       const originalSummaries = wrapBoth.querySelectorAll("summary");
-      // ...and from the clone.
       const cloneSummaries = clone.querySelectorAll("summary");
 
-      // For each summary, inline the ::before pseudo-element content.
+      // For each summary, inline its ::before content.
       originalSummaries.forEach((orig, index) => {
-        let pseudoContent = getComputedStyle(orig, "::before").content;
-        // Remove surrounding quotes if present.
+        let pseudoContent = getComputedStyle(orig, "::before").getPropertyValue("content");
+        // Remove surrounding quotes.
         pseudoContent = pseudoContent.replace(/^"(.*)"$/, '$1');
+        // If the computed content is the unwanted placeholder, substitute your custom arrow.
+        if (pseudoContent === '%¶') {
+          pseudoContent = "▶"; // Change this if needed.
+        }
         if (pseudoContent && pseudoContent !== "none") {
-          // Prepend the arrow to the clone's summary content.
           cloneSummaries[index].innerHTML = pseudoContent + " " + cloneSummaries[index].innerHTML;
         }
       });
 
-      // Determine export dimensions.
+      // As a safeguard, remove any remaining %¶ tokens in the clone.
+      clone.innerHTML = clone.innerHTML.replace(/%¶/g, '');
+
+      // Determine dimensions.
       const contentWidth = wrapBoth.offsetWidth;
       const contentHeight = wrapBoth.offsetHeight;
 
-      // Create a jsPDF instance with a page size exactly matching your export container.
+      // Create jsPDF instance sized exactly to the container.
       let doc = new jsPDF({
         orientation: contentWidth > contentHeight ? 'l' : 'p',
         unit: 'px',
         format: [contentWidth, contentHeight]
       });
 
-      // Render the cloned element (with inlined arrows) into the PDF.
+      // Render the cloned element (with inlined pseudo content) into the PDF.
       await new Promise(resolve => {
         doc.html(clone, {
           callback: resolve,
@@ -2728,14 +2733,14 @@ prompt("This is a prompt:");
         });
       });
 
-      // Optionally remove any extra pages.
+      // Remove any extra pages.
       if (doc.internal.getNumberOfPages() > 1) {
         for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
           doc.deletePage(i);
         }
       }
 
-      // Clean up the temporary container.
+      // Clean up.
       wrapBoth.remove();
 
       // Save the PDF.
