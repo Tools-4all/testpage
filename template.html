@@ -2685,11 +2685,12 @@ prompt("This is a prompt:");
       const outputDiv = await getOutputDivClone();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       doc.save(`${currentTab.name}.pdf`);
-      document.body.appendChild(wrapBoth);
+      wrapBoth.remove();
     }
     function exportCurrent() {
       if (activeTabId === null) {
