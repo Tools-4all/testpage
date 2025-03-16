@@ -2686,10 +2686,14 @@ prompt("This is a prompt:");
       alert(3)
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-
-      const doc = new jsPDF();
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
+      let doc;
+      if (wrapBoth.offsetWidth > wrapBoth.offsetHeight) {
+        doc = new jsPDF('l', 'px', [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
+      } else {
+        doc = new jsPDF('p', 'px', [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
+      }
       document.body.appendChild(wrapBoth);
       await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
       wrapBoth.remove();
