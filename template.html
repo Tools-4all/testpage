@@ -2690,7 +2690,6 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Position off-screen so it’s in the DOM but not visible
       wrapBoth.style.position = 'absolute';
       wrapBoth.style.top = '-9999px';
       wrapBoth.style.left = '-9999px';
@@ -2699,14 +2698,8 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      await new Promise(resolve => {
-        doc.html(wrapBoth, {
-          callback: resolve,
-          html2canvas: {
-            backgroundColor: darkModeFlag ? '#1E1E1E' : '#FFFFFF'
-          }
-        });
-      });
+      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
+
       doc.save(`${currentTab.name}.pdf`);
       wrapBoth.remove();
     }
