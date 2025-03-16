@@ -2683,22 +2683,27 @@ prompt("This is a prompt:");
       const editorDiv = await getEditorDiv();
       const outputDiv = await getOutputDivClone();
       const wrapBoth = document.createElement('div');
-      alert(3)
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
-      let doc;
-      if (wrapBoth.offsetWidth > wrapBoth.offsetHeight) {
-        doc = new jsPDF('l', 'px', [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
-      } else {
-        doc = new jsPDF('p', 'px', [wrapBoth.offsetWidth, wrapBoth.offsetHeight]);
-      }
-      await new Promise(resolve => { doc.html(wrapBoth, { callback: resolve }) });
+
+      // Create a default jsPDF instance
+      let doc = new jsPDF();
+      // Manually override the page dimensions
+      doc.internal.pageSize.width = wrapBoth.offsetWidth;
+      doc.internal.pageSize.height = wrapBoth.offsetHeight;
+
+      // Use doc.html to render your element
+      await new Promise(resolve => {
+        doc.html(wrapBoth, { callback: resolve });
+      });
+
       wrapBoth.remove();
       doc.save(`${currentTab.name}.pdf`);
     }
+
 
     function exportCurrent() {
       if (activeTabId === null) {
