@@ -2491,16 +2491,25 @@ prompt("This is a prompt:");
       });
     }
 
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return window.btoa(binary);
+    }
+
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
       const fontUrl = "{% static 'fonts/DejaVuSans.ttf' %}";
       fetch(fontUrl).then(response => response.arrayBuffer())
         .then(buffer => {
-          const base64String = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+          const base64String = arrayBufferToBase64(buffer);
           jsPDF.API.addFileToVFS("DejaVuSans.ttf", base64String);
           jsPDF.API.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
-          doc.setFont("DejaVuSans");
         });
     });
 
