@@ -2640,7 +2640,7 @@ prompt("This is a prompt:");
 
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapperBoth.appendChild(await getOutputDivClone());
-      }
+      } 
 
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -2679,30 +2679,26 @@ prompt("This is a prompt:");
       wrapBoth.appendChild(outputDiv);
       document.body.appendChild(wrapBoth);
 
-      // Render the wrapBoth element to a canvas
-      const canvas = await html2canvas(wrapBoth, {
-        scale: 1,             // no scaling
-        logging: false,
-        useCORS: true,
-        width: wrapBoth.offsetWidth,
-        height: wrapBoth.offsetHeight
-      });
-      const imgData = canvas.toDataURL('image/png');
-
-      // Remove the temporary element
-      wrapBoth.remove();
-
-      // Get the exact dimensions from the canvas
-      const contentWidth = canvas.width;
-      const contentHeight = canvas.height;
-
-      // Create a PDF with a page exactly matching your element size
+      const contentWidth = wrapBoth.offsetWidth;
+      const contentHeight = wrapBoth.offsetHeight;
       let doc = new jsPDF('p', 'px', [contentWidth, contentHeight]);
-      // Add the image to the PDF without any scaling adjustments
-      doc.addImage(imgData, 'PNG', 0, 0, contentWidth, contentHeight);
+      await new Promise(resolve => {
+        doc.html(wrapBoth, {
+          callback: resolve,
+          x: 0,
+          y: 0,
+          margin: [0, 0, 0, 0],
+          html2canvas: { scale: 1, logging: false}
+        });
+      });
+      wrapBoth.remove();
+      if (doc.internal.getNumberOfPages() > 1) {
+        for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+          doc.deletePage(i);
+        }
+      }
       doc.save(`${currentTab.name}.pdf`);
     }
-
 
 
     function exportCurrent() {
