@@ -2701,10 +2701,12 @@ prompt("This is a prompt:");
           html2canvas: { scale: 1 }
         });
       });
-      doc.save(`${currentTab.name}.pdf`);
-
-
       wrapBoth.remove();
+
+      if (doc.internal.getNumberOfPages() > 1) {
+        doc.deletePage(doc.internal.getNumberOfPages());
+      }
+      doc.save(`${currentTab.name}.pdf`);
     }
 
 
