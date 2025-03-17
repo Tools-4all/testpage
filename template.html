@@ -378,9 +378,6 @@
       visibility: visible;
     }
 
-    body.lastTab .tab.close {
-      visibility: hidden;
-    }
 
     .tab:hover:not(.active, .theme.colorffffff .tab) {
       background-color: rgba(255, 255, 255, 0.1) !important;
@@ -1135,6 +1132,10 @@
       color: black;
       text-decoration: none;
       cursor: pointer;
+    }
+
+    body.lastTab .tab.close {
+      visibility: hidden !important;
     }
   </style>
 </head>
