@@ -2703,38 +2703,34 @@ prompt("This is a prompt:");
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportModalContent.appendChild(exportBtn);
-      exportBtn.onclick = async function() {
+      exportBtn.onclick = async function () {
         exportBtn.disabled = true;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        let theyReady = false;
+
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
+        while (!theyReady) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height
+        ctx.drawImage(bothImg, 0, 0);
+
         const a = document.createElement('a');
-        a.href = imgSrc;
+        a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
         a.click();
-        closeModal("close");
       }
-      // const canvas = document.createElement('canvas');
-      // const ctx = canvas.getContext('2d');
-      // const imgSrc = await takeImage(wrapperBoth);
-      // const bothImg = new Image();
-      // bothImg.src = imgSrc;
-      // let theyReady = false;
 
-      // bothImg.onload = () => {
-      //   theyReady = true;
-      // };
-
-      // while (!theyReady) {
-      //   await new Promise((resolve) => setTimeout(resolve, 150));
-      // }
-
-      // canvas.width = bothImg.width;
-      // canvas.height = bothImg.height
-      // ctx.drawImage(bothImg, 0, 0);
-
-      // const a = document.createElement('a');
-      // a.href = canvas.toDataURL("image/png");
-      // a.download = `${currentTab.name}.png`;
-      // a.click();
       displayModal()
     }
 
@@ -2754,7 +2750,7 @@ prompt("This is a prompt:");
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
       exportModalContent.appendChild(exportBtn);
-      exportBtn.onclick = async function() {
+      exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
@@ -2779,7 +2775,7 @@ prompt("This is a prompt:");
           }
         }
         doc.save(`${currentTab.name}.pdf`);
-      } 
+      }
       displayModal();
     }
 
