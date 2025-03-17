@@ -1094,6 +1094,41 @@
       display: flex;
       align-items: flex-start;
     }
+
+    .previewModal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .previewModal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    .modalClose {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .modalClose:hover,
+    .modalClose:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -1192,6 +1227,14 @@
       </div>
     </div>
   </div>
+
+  <div id="exportModal" class="previewModal">
+    <div class="previewModal-content">
+      <span class="modalClose" id="modalCloseBtn">&times;</span>
+      <p>Some text in the Modal..</p>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -1214,6 +1257,8 @@
     const compiler = document.getElementById("compiler");
     const exportSelect = document.getElementById("exportSelect");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
+    const modal = document.getElementById("exportModal");
+    const closeModalBtn = document.getElementsById("modalCloseBtn");
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -2746,6 +2791,27 @@ prompt("This is a prompt:");
       a.click();
       URL.revokeObjectURL(url);
     }
+
+    function displayModal() {
+      modal.style.display = "block";
+      modal.dispatchEvent(new Event("modalOpened"));
+    }
+
+    function closeModal(event) {
+      if (event.target === modal || event === "close") {
+        modal.style.display = "none";
+        modal.dispatchEvent(new Event("modalClosed"));
+      }
+    }
+    modal.addEventListener("modalOpened", () => {
+      document.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("modalClosed", () => {
+      document.removeEventListener("click", closeModal);
+    });
+    closeModalBtn.addEventListener("click", () => {
+      closeModal("close");
+    });
     alert(4);
   </script>
 </body>
