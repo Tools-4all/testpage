@@ -2701,7 +2701,6 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
       if (currentTab.outputElement.innerHTML.trim()) {
-        uncollapseAll(currentTab.outputElement);
         const outputDiv = await getOutputDivClone();
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputDiv);
