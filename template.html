@@ -2802,15 +2802,25 @@ prompt("This is a prompt:");
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapperBoth.appendChild(await getEditorDiv());
-
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapperBoth.appendChild(await getOutputDivClone());
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+        });
       }
       exportModalContent.appendChild(wrapperBoth);
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
-      exportModalContent.appendChild(exportBtn);
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
