@@ -1567,6 +1567,10 @@
       });
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
+        // check if last tab if yes then dont close
+        if (tabs.length === 1) {
+          return;
+        }
         closeTab(id);
       });
       tabEl.addEventListener("dragstart", (ev) => {
