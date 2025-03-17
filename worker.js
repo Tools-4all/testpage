@@ -43,8 +43,6 @@ const wrapperPrefixLines = [
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-console.log("loaded ferre")
-
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     // Convert Symbol keys to strings.
