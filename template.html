@@ -2773,13 +2773,13 @@ prompt("This is a prompt:");
             html2canvas: { scale: 1, logging: false }
           });
         });
+        closeModal("close");
         if (doc.internal.getNumberOfPages() > 1) {
           for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
             doc.deletePage(i);
           }
         }
         doc.save(`${currentTab.name}.pdf`);
-        closeModal("close");
       } 
       displayModal();
     }
