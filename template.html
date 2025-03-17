@@ -926,10 +926,23 @@
       transition: transform 0.2s;
     }
 
+
     details[open]>summary::before {
       transform: rotate(90deg);
     }
 
+    .outputContainer.isClone details>summary::before {
+      font-family: "Symbol", Symbol, symbol;
+      content: "▶";
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+    }
+
+    .outputContainer.isClone details[open]>summary::before {
+      content: "ß";
+      transform: none;
+    }
 
     .objinsp-highlight-key {
       color: #9cdcfe;
@@ -2584,7 +2597,7 @@ prompt("This is a prompt:");
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
       const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const outputWrapper = document.createElement('div');
-      outputWrapper.classList.add("outputContainer", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
       tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
@@ -2682,12 +2695,14 @@ prompt("This is a prompt:");
 
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
-      const outputDiv = await getOutputDivClone();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
-      wrapBoth.appendChild(outputDiv);
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputDiv = await getOutputDivClone();
+        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        wrapBoth.appendChild(outputDiv);
+      }
       document.body.appendChild(wrapBoth);
 
       const contentWidth = wrapBoth.offsetWidth;
@@ -2706,7 +2721,7 @@ prompt("This is a prompt:");
           html2canvas: { scale: 1, logging: false }
         });
       });
-      // wrapBoth.remove();
+      wrapBoth.remove();
       if (doc.internal.getNumberOfPages() > 1) {
         for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
           doc.deletePage(i);
