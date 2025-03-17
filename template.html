@@ -1259,6 +1259,7 @@
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     const modal = document.getElementById("exportModal");
     const closeModalBtn = document.getElementById("modalCloseBtn");
+    const exportModalContent = document.getElementById("exportModalContent");
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -2808,6 +2809,7 @@ prompt("This is a prompt:");
     });
     modal.addEventListener("modalClosed", () => {
       document.removeEventListener("click", closeModal);
+      exportModalContent.innerHTML = "";
     });
     closeModalBtn.addEventListener("click", () => {
       closeModal("close");
