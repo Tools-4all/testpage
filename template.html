@@ -2849,6 +2849,8 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       exportModalContent.appendChild(wrapBoth);
       wrapBoth.appendChild(editorDiv);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       if (currentTab.outputElement.innerHTML.trim()) {
         const outputDiv = await getOutputDivClone();
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
@@ -2862,8 +2864,6 @@ prompt("This is a prompt:");
           outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
         });
       }
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
