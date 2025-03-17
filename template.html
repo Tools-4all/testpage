@@ -2265,12 +2265,13 @@ prompt("This is a prompt:");
           { token: 'enum', foreground: '4EC9B0' },
           { token: 'typeParameter', foreground: '4EC9B0' },
           { token: 'function', foreground: 'DCDCAA' },
+          { token: 'property', foreground: 'D16969' },
           { token: 'variable', foreground: '9CDCFE' },
           { token: 'parameter', foreground: '9CDCFE' },
           { token: 'regex', foreground: 'D16969' },
           { token: 'delimiter.arrow', foreground: '569CD6' },
           { token: 'keyword.null', foreground: '569CD6' },
-          { token: 'meta.member', foreground: '9CDCFE' }
+          { token: 'meta.member', foreground: 'DCDCAA' }
         ],
         colors: {
           'editor.background': '#1E1E1E',
@@ -2297,19 +2298,21 @@ prompt("This is a prompt:");
           { token: 'enum', foreground: '267F99' },
           { token: 'typeParameter', foreground: '267F99' },
           { token: 'function', foreground: '795E26' },
+          { token: 'property', foreground: 'AF0000' },
           { token: 'variable', foreground: '001080' },
           { token: 'parameter', foreground: '001080' },
           { token: 'regex', foreground: 'AF0000' },
           { token: 'delimiter.arrow', foreground: '0000FF' },
           { token: 'keyword.null', foreground: '0000FF' },
-          { token: 'meta.member', foreground: '001080' }
+          { token: 'meta.member', foreground: '795E26' }
         ],
         colors: {
           'editor.background': '#FFFFFF',
           'editor.foreground': '#000000'
         }
       });
-      monaco.editor.setTheme(darkModeFlag ? 'vscode-dark' : 'vscode-light');
+
+      monaco.editor.setTheme('vscode-dark');
       createTab();
     });
     function updateStatusPosition() {
