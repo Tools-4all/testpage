@@ -2733,12 +2733,6 @@ prompt("This is a prompt:");
       doc.save(`${currentTab.name}.pdf`);
     }
 
-    function uncollapseAll(targetElement) {
-      targetElement.querySelectorAll("details").forEach((d) => {
-        d.open = true;
-      });
-    }
-
     function exportCurrent() {
       if (activeTabId === null) {
         alert("No tab to export.");
