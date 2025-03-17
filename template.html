@@ -1343,7 +1343,7 @@
             }
           });
         });
-        monaco.editor.setTheme("vs-light");
+        monaco.editor.setTheme("vscode-light");
 
         // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
@@ -1385,7 +1385,7 @@
             }
           });
         });
-        monaco.editor.setTheme("custom-dark");
+        monaco.editor.setTheme("vscode-dark");
 
         // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
@@ -2246,18 +2246,63 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      monaco.editor.defineTheme("custom-dark", {
-        base: "vs-dark",
+      monaco.editor.defineTheme('vscode-dark', {
+        base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: "keyword", foreground: "C586C0" },
-          { token: "identifier", foreground: "9CDCFE" },
-          { token: "string", foreground: "CE9178" },
-          { token: "comment", foreground: "6A9955" },
-          { token: "number", foreground: "B5CEA8" }
+          { token: 'comment', foreground: '6A9955', fontStyle: 'italic' },
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'namespace', foreground: '4EC9B0' },
+          { token: 'type', foreground: '4EC9B0' },
+          { token: 'struct', foreground: '4EC9B0' },
+          { token: 'class', foreground: '4EC9B0' },
+          { token: 'interface', foreground: '4EC9B0' },
+          { token: 'enum', foreground: '4EC9B0' },
+          { token: 'typeParameter', foreground: '4EC9B0' },
+          { token: 'function', foreground: 'DCDCAA' },
+          { token: 'variable', foreground: '9CDCFE' },
+          { token: 'parameter', foreground: '9CDCFE' },
+          { token: 'regex', foreground: 'D16969' },
+          { token: 'meta.function-call', foreground: 'DCDCAA' }
         ],
         colors: {
-          "editor.background": "#1E1E1E"
+          'editor.background': '#1E1E1E',
+          'editor.foreground': '#D4D4D4'
+        }
+      });
+
+      monaco.editor.defineTheme('vscode-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'comment', foreground: '008000', fontStyle: 'italic' },
+          { token: 'keyword', foreground: '0000FF' },
+          { token: 'identifier', foreground: '333333' },
+          { token: 'number', foreground: '09885A' },
+          { token: 'string', foreground: 'A31515' },
+          { token: 'delimiter', foreground: '000000' },
+          { token: 'operator', foreground: '000000' },
+          { token: 'namespace', foreground: '267f99' },
+          { token: 'type', foreground: '267f99' },
+          { token: 'struct', foreground: '267f99' },
+          { token: 'class', foreground: '267f99' },
+          { token: 'interface', foreground: '267f99' },
+          { token: 'enum', foreground: '267f99' },
+          { token: 'typeParameter', foreground: '267f99' },
+          { token: 'function', foreground: '795E26' },
+          { token: 'variable', foreground: '001080' },
+          { token: 'parameter', foreground: '001080' },
+          { token: 'regex', foreground: 'AF0000' },
+          { token: 'meta.function-call', foreground: '795E26' }
+        ],
+        colors: {
+          'editor.background': '#FFFFFF',
+          'editor.foreground': '#000000'
         }
       });
       createTab();
