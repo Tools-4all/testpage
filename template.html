@@ -1572,11 +1572,13 @@
       });
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
-        // check if last tab if yes then dont close
         if (tabs.length === 1) {
           return;
         }
         closeTab(id);
+        if (tabs.length === 1) {
+          document.body.classList.add("lastTab");
+        }
       });
       tabEl.addEventListener("dragstart", (ev) => {
         switchTab(id);
@@ -1632,6 +1634,9 @@ prompt("This is a prompt:");
 `);
       }
       switchTab(id);
+      if (tabs.length > 1) {
+        document.body.classList.remove("lastTab");
+      }
       return id;
     }
     function getUniqueTabName(baseName, tabId = null) {
