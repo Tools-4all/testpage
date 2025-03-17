@@ -2701,6 +2701,7 @@ prompt("This is a prompt:");
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       wrapBoth.appendChild(editorDiv);
       if (currentTab.outputElement.innerHTML.trim()) {
+        uncollapseAll(currentTab.outputElement);
         const outputDiv = await getOutputDivClone();
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputDiv);
@@ -2732,6 +2733,11 @@ prompt("This is a prompt:");
       doc.save(`${currentTab.name}.pdf`);
     }
 
+    function uncollapseAll(targetElement) {
+      targetElement.querySelectorAll("details").forEach((d) => {
+        d.open = true;
+      });
+    }
 
     function exportCurrent() {
       if (activeTabId === null) {
