@@ -1137,6 +1137,9 @@
     body.lastTab .tab .close {
       visibility: hidden !important;
     }
+    body.lastTab .tab #allZip {
+      display: none !important;
+    }
   </style>
 </head>
 
@@ -1217,7 +1220,7 @@
       <div>
         <select id="exportSelect">
           <option value="current">Download Current Script</option>
-          <option value="allZip">Download All Scripts (zip)</option>
+          <option id="allZip" value="allZip">Download All Scripts (zip)</option>
           <option value="image">Export as Image</option>
           <option value="pdf">Export as PDF</option>
         </select>
