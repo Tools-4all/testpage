@@ -2751,31 +2751,36 @@ prompt("This is a prompt:");
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputDiv);
       }
-      document.body.appendChild(wrapBoth);
-
-      const contentWidth = wrapBoth.offsetWidth;
-      const contentHeight = wrapBoth.offsetHeight;
-      let doc = new jsPDF({
-        orientation: contentWidth > contentHeight ? 'l' : 'p',
-        unit: 'px',
-        format: [contentWidth, contentHeight]
-      });
-      await new Promise(resolve => {
-        doc.html(wrapBoth, {
-          callback: resolve,
-          x: 0,
-          y: 0,
-          margin: [0, 0, 0, 0],
-          html2canvas: { scale: 1, logging: false }
+      exportModalContent.appendChild(wrapBoth);
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export PDF";
+      exportBtn.classList.add("exportBtn");
+      exportModalContent.appendChild(exportBtn);
+      exportBtn.onclick = async function {
+        const contentWidth = wrapBoth.offsetWidth;
+        const contentHeight = wrapBoth.offsetHeight;
+        let doc = new jsPDF({
+          orientation: contentWidth > contentHeight ? 'l' : 'p',
+          unit: 'px',
+          format: [contentWidth, contentHeight]
         });
-      });
-      // wrapBoth.remove();
-      if (doc.internal.getNumberOfPages() > 1) {
-        for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-          doc.deletePage(i);
+        await new Promise(resolve => {
+          doc.html(wrapBoth, {
+            callback: resolve,
+            x: 0,
+            y: 0,
+            margin: [0, 0, 0, 0],
+            html2canvas: { scale: 1, logging: false }
+          });
+        });
+        if (doc.internal.getNumberOfPages() > 1) {
+          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+            doc.deletePage(i);
+          }
         }
+        doc.save(`${currentTab.name}.pdf`);
+        closeModal("close");
       }
-      doc.save(`${currentTab.name}.pdf`);
     }
 
     function exportCurrent() {
