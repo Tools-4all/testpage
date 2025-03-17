@@ -244,7 +244,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
             try {
                 propValue = value[prop];
             } catch (err) {
-                propValue = "[Error retrieving property]";
+                propValue = "[Cannot retrieve property]";
             }
             try {
                 const child = createNodeObject(prop, propValue, visited, depth + 1, false);
@@ -264,7 +264,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
             try {
                 symValue = value[sym];
             } catch (err) {
-                symValue = "[Error retrieving property]";
+                symValue = "[Cannot retrieve property]";
             }
             try {
                 const child = createNodeObject(sym.toString(), symValue, visited, depth + 1, false);
@@ -272,7 +272,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                     children[k] = child[k];
                 }
             } catch (e) {
-                children[sym.toString()] = "[Error retrieving property]";
+                children[sym.toString()] = "[Cannot display Symbol]";
             }
         });
 
