@@ -1285,7 +1285,7 @@
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape' && modalIsOpen()) {
-          closeModal();
+          closeModal("close");
         } else if (event.key === 'Escape') {
           compiler.style.width = "60%";
           compiler.style.height = "500px";
