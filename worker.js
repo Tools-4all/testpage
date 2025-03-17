@@ -529,8 +529,6 @@ function buildTableData(input, columns) {
 
 
 
-
-
 const wrapperSuffix = `})();`;
 
 const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
@@ -763,7 +761,7 @@ self.addEventListener("message", (event) => {
                     customConsole.log(data.toString() + "n");
                     return;
                 }
-                const tableData = buildTableData(data);
+                const tableData = buildTableData(data, columns);
                 self.postMessage({
                     type: "table",
                     table: tableData,
