@@ -2587,27 +2587,104 @@ prompt("This is a prompt:");
 
     function exportAllZip() {
       if (tabs.length === 0) {
-        alert("No tabs to export.");
         return;
       }
       if (tabs.length === 1) {
         exportCurrent();
         return;
       }
-      let zip = new JSZip();
-      let zipedFileNmae;
-      tabs.forEach((t) => {
-        zipedFileNmae = t.name.endsWith(".js") ? t.name : (t.name + ".js");
-        zip.file(zipedFileNmae, t.editorInstance.getValue());
+
+      exportModalContent.innerHTML = "";
+
+      let checklistContainer = document.createElement("div");
+      checklistContainer.style.display = "flex";
+      checklistContainer.style.flexWrap = "wrap";
+      checklistContainer.style.gap = "10px";
+      checklistContainer.style.padding = "10px";
+
+      tabs.forEach((tab) => {
+        let checkboxWrapper = document.createElement("div");
+        checkboxWrapper.style.display = "flex";
+        checkboxWrapper.style.alignItems = "center";
+        checkboxWrapper.style.flex = "1 0 auto";
+
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.id = "export-tab-" + tab.id;
+        checkbox.dataset.tabId = tab.id;
+
+        let label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = tab.name;
+        label.style.marginLeft = "5px";
+
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checklistContainer.appendChild(checkboxWrapper);
       });
-      zip.generateAsync({ type: "blob" })
-        .then((content) => {
-          let a = document.createElement("a");
-          a.href = URL.createObjectURL(content);
-          a.download = "scripts.zip";
-          a.click();
+      exportModalContent.appendChild(checklistContainer);
+
+      let exportBtn = document.createElement("button");
+      exportBtn.textContent = "Export";
+      exportBtn.classList.add("exportBtn");
+      exportBtn.style.marginTop = "20px";
+
+      function updateExportButtonState() {
+        let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
+        exportBtn.disabled = selectedCount === 0;
+      }
+
+      checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
+        cb.addEventListener("change", updateExportButtonState);
+      });
+      updateExportButtonState();
+
+      exportModalContent.appendChild(exportBtn);
+
+      exportBtn.addEventListener("click", function () {
+        let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
+        let selectedTabs = [];
+        selectedCheckboxes.forEach((cb) => {
+          let tabId = parseInt(cb.dataset.tabId, 10);
+          let tabObj = tabs.find((t) => t.id === tabId);
+          if (tabObj) {
+            selectedTabs.push(tabObj);
+          }
         });
+        closeModal("close");
+
+        if (selectedTabs.length === 0) {
+          return;
+        }
+
+        if (selectedTabs.length === 1) {
+          let t = selectedTabs[0];
+          let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+          let url = URL.createObjectURL(blob);
+          let a = document.createElement("a");
+          a.href = url;
+          a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
+          a.click();
+          URL.revokeObjectURL(url);
+        } else {
+          let zip = new JSZip();
+          selectedTabs.forEach((t) => {
+            let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
+            zip.file(fileName, t.editorInstance.getValue());
+          });
+          zip.generateAsync({ type: "blob" }).then((content) => {
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "scripts.zip";
+            a.click();
+          });
+        }
+      });
+
+      displayModal();
     }
+
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
