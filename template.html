@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Multi-Tab Sandboxed JS Compiler</title>
-    <!-- CodeMirror 6 CSS (למרות ש–CM6 בנוי בצורה מודולרית, אנו משתמשים בקובץ CSS בסיסי) -->
+    <!-- CodeMirror 6 CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
@@ -384,7 +384,7 @@
         position: relative;
         min-height: 0;
       }
-      /* קובץ CSS לעורכי CodeMirror – אנו מניחים שהעורך ימלא את כל האזור */
+      /* CodeMirror 6 – העורך ימלא את כל האזור */
       .cm-editor {
         width: 100%;
         height: 100%;
@@ -862,8 +862,8 @@
     <script type="module">
       import { EditorView, basicSetup, EditorState } from "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js";
       import { javascript } from "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/lang-javascript.min.js";
-      import { undo, redo } from "https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/commands.min.js";
-
+      import { undo, redo } from "https://cdn.skypack.dev/@codemirror/commands?min";
+      
       // הגדרות נושא VSCode Dark/Light
       const vscodeDarkTheme = EditorView.theme({
         "&": { color: "#d4d4d4", backgroundColor: "#1e1e1e" },
@@ -875,7 +875,7 @@
         ".cm-content": { caretColor: "#000000" },
         ".cm-gutters": { backgroundColor: "#f3f3f3", color: "#888888", border: "none" }
       }, { dark: false });
-
+      
       // משתנים גלובליים
       const workerPath = "{% url 'betzi_test_js' %}";
       const { jsPDF } = window.jspdf;
@@ -897,7 +897,7 @@
       const modal = document.getElementById("exportModal");
       const closeModalBtn = document.getElementById("modalCloseBtn");
       const exportModalContent = document.getElementById("exportModalContent");
-
+      
       if (window.innerWidth < 768) {
         compiler.style.width = '100%';
         compiler.style.height = '100vh';
@@ -931,8 +931,7 @@
           }
         }
       });
-
-      // שמירת קוד העובד – כאן דומים לפונקציות הקודמות (אין שינוי בתהליכי הריצה)
+      
       async function cacheWorkerCode() {
         if (!workerBlobURL) {
           let resp = await fetch(workerPath);
@@ -941,8 +940,7 @@
           workerBlobURL = URL.createObjectURL(blob);
         }
       }
-
-      // פונקציה ליצירת טאב – במקום שימוש ב-monaco, אנו משתמשים ב-CodeMirror
+      
       function createTab(desiredName = null, content = null) {
         let name = desiredName ? getUniqueTabName(desiredName) : getNextTabName();
         let id = Date.now();
@@ -968,7 +966,7 @@
         let controlsBar = document.createElement("div");
         controlsBar.classList.add("controls", "theme", darkModeFlag ? "color252526" : "colorf0f0f0");
         outputContainer.appendChild(controlsBar);
-
+      
         controlsBar.addEventListener('mousedown', function (e) {
           e.preventDefault();
           const overlay = document.createElement('div');
@@ -1001,7 +999,7 @@
           document.addEventListener('mousemove', onMouseMove);
           document.addEventListener('mouseup', onMouseUp);
         });
-
+      
         let outputDiv = document.createElement("div");
         outputDiv.classList.add("output");
         outputDiv.setAttribute("tabindex", "0");
@@ -1019,7 +1017,6 @@
         editorOutputWrapper.appendChild(outputContainer);
         document.getElementById("tabBar").appendChild(tabEl);
         document.getElementById("tabsContainer").appendChild(editorOutputWrapper);
-        // יצירת עורך CodeMirror
         let initialContent = content !== null ? content : `// ${name}
 console.log("This is a log");
 console.info("This is an info");
@@ -1306,7 +1303,7 @@ prompt("This is a prompt:");
         outputDiv.innerHTML = "";
       }
       function appendDir(outputDiv, obj) {
-        let container = currentTab.groupStack && currentTab.groupStack.length > 0 ? currentTab.groupStack[currentTab.groupStack.length - 1] : outputDiv;
+        let container = (currentTab.groupStack && currentTab.groupStack.length > 0) ? currentTab.groupStack[currentTab.groupStack.length - 1] : outputDiv;
         let line = document.createElement("div");
         line.classList.add("outputContent");
         line.style.marginLeft = (currentTab.groupStack ? currentTab.groupStack.length * 20 : 4) + "px";
@@ -1317,15 +1314,24 @@ prompt("This is a prompt:");
         container.scrollTop = container.scrollHeight;
       }
       function escapeHtmlVisible(text) {
-        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/\n/g, '\\n');
+        return text.replace(/&/g, '&amp;')
+                   .replace(/</g, '&lt;')
+                   .replace(/>/g, '&gt;')
+                   .replace(/"/g, '&quot;')
+                   .replace(/'/g, '&#039;')
+                   .replace(/\n/g, '\\n');
       }
       function lazyRenderTreeNode(key, tree) {
         if (typeof tree !== 'object' || tree === null) {
           const div = document.createElement('div');
           let content = '';
-          if (typeof tree === 'string') { content = `<span class="objinsp objinsp-highlight-string">${escapeHtmlVisible(tree)}</span>`; }
-          else if (typeof tree === 'number') { content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`; }
-          else { content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`; }
+          if (typeof tree === 'string') {
+            content = `<span class="objinsp objinsp-highlight-string">${escapeHtmlVisible(tree)}</span>`;
+          } else if (typeof tree === 'number') {
+            content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
+          } else {
+            content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
+          }
           if (key !== null && key !== undefined) {
             div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
           } else {
@@ -1384,11 +1390,19 @@ prompt("This is a prompt:");
         } else if (typeof message === "object") {
           for (let key in message) {
             let subMsgDiv;
-            if (message[key][1]) { subMsgDiv = lazyRenderTreeNode(null, message[key][0]); subMsgDiv.style.marginRight = "15px"; }
-            else { subMsgDiv = document.createElement("div"); subMsgDiv.style.marginRight = "15px"; subMsgDiv.innerText = message[key][0]; }
+            if (message[key][1]) {
+              subMsgDiv = lazyRenderTreeNode(null, message[key][0]);
+              subMsgDiv.style.marginRight = "15px";
+            } else {
+              subMsgDiv = document.createElement("div");
+              subMsgDiv.style.marginRight = "15px";
+              subMsgDiv.innerText = message[key][0];
+            }
             messageDiv.appendChild(subMsgDiv);
           }
-        } else { messageDiv.textContent = message; }
+        } else {
+          messageDiv.textContent = message;
+        }
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
         line.appendChild(flexContainer);
@@ -1572,7 +1586,6 @@ prompt("This is a prompt:");
         });
       });
       document.getElementById("searchIcon").addEventListener("click", () => {
-        // לצורך CodeMirror ניתן להפעיל חיפוש בעזרת פקודת ברירת מחדל (לא ממומש כאן)
         alert("Search action is not implemented in CodeMirror version.");
       });
       document.addEventListener("click", (event) => {
@@ -1600,7 +1613,6 @@ prompt("This is a prompt:");
         spaces = parseInt(tabSizeInput.value, 10);
         tabSizeDisplay.textContent = spaces;
         document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
-        // עדכון הטאב – כאן אנו מחדשרים את מצב העורך (הודעה: undo/redo לא תישמר)
         tabs.forEach(t => {
           let content = t.editorInstance.state.doc.toString();
           t.editorInstance.destroy();
@@ -1629,7 +1641,6 @@ prompt("This is a prompt:");
         if (activeTabId === null) { toggleDisabled(undoBtn, true); toggleDisabled(redoBtn, true); return; }
         let t = tabs.find(x => x.id === activeTabId);
         if (!t) return;
-        // לצורך CodeMirror – אין API ישיר לבדיקה, לכן נסמוך על אפשרות להריץ פקודות
         toggleDisabled(undoBtn, false);
         toggleDisabled(redoBtn, false);
       }
@@ -1757,10 +1768,12 @@ prompt("This is a prompt:");
           darkModeFlag = false;
           document.querySelectorAll(".theme").forEach(element => {
             Object.keys(themeMapDark).forEach(cls => {
-              if (element.classList.contains(cls)) { element.classList.remove(cls); element.classList.add(themeMapDark[cls]); }
+              if (element.classList.contains(cls)) {
+                element.classList.remove(cls);
+                element.classList.add(themeMapDark[cls]);
+              }
             });
           });
-          // עדכון נושא לכל העורכים
           tabs.forEach(tab => {
             const content = tab.editorInstance.state.doc.toString();
             tab.editorInstance.destroy();
@@ -1797,7 +1810,10 @@ prompt("This is a prompt:");
           darkModeFlag = true;
           document.querySelectorAll(".theme").forEach(element => {
             Object.keys(themeMapLight).forEach(cls => {
-              if (element.classList.contains(cls)) { element.classList.remove(cls); element.classList.add(themeMapLight[cls]); }
+              if (element.classList.contains(cls)) {
+                element.classList.remove(cls);
+                element.classList.add(themeMapLight[cls]);
+              }
             });
           });
           tabs.forEach(tab => {
@@ -1935,7 +1951,6 @@ prompt("This is a prompt:");
       async function getEditorDiv() {
         const content = currentTab.editorInstance.state.doc.toString();
         const codeLines = content.split('\n');
-        // נעזר בפונקציה פשוטה לעיטוף קוד (ללא צבע תחבירי מתקדם)
         const wrapperDiv = document.createElement('div');
         wrapperDiv.style.whiteSpace = "pre-wrap";
         wrapperDiv.style.width = currentTab.editorInstance.dom.clientWidth + "px";
