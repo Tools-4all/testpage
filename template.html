@@ -2246,20 +2246,19 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      // 1. Register a new language so we can attach our custom tokenizer.
+      // 1. Register a custom language.
       monaco.languages.register({ id: 'customLang' });
 
-      // 2. Define a full Monarch tokenizer using regex rules.
+      // 2. Define a full Monarch tokenizer with states for class declarations.
       monaco.languages.setMonarchTokensProvider('customLang', {
-        // Set default token
         defaultToken: '',
         tokenPostfix: '.custom',
 
-        // Define keywords, types, operators, etc.
         keywords: [
-          'break', 'case', 'catch', 'continue', 'default', 'do', 'else', 'finally', 'for', 'function',
-          'if', 'in', 'instanceof', 'new', 'return', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with',
-          'class', 'const', 'enum', 'export', 'extends', 'import', 'super'
+          'break', 'case', 'catch', 'continue', 'default', 'do', 'else', 'finally',
+          'for', 'function', 'if', 'in', 'instanceof', 'new', 'return', 'switch',
+          'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'class',
+          'const', 'enum', 'export', 'extends', 'import', 'super'
         ],
         typeKeywords: [
           'boolean', 'number', 'string', 'undefined', 'null', 'any', 'void'
@@ -2269,17 +2268,16 @@ prompt("This is a prompt:");
           '+', '-', '*', '/', '%', '++', '--', '<<', '>>', '>>>', '&', '|', '^', '&&', '||', '??'
         ],
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
-        // Escape sequences for strings
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4})/,
 
-        // The main tokenizer for our language
         tokenizer: {
           root: [
-            // whitespace
             { include: '@whitespace' },
-
-            // identifiers and keywords
+            // When a class declaration is encountered, push the class state.
+            [/\bclass\b/, { token: 'keyword', next: '@classDeclaration' }],
+            // function declarations outside classes.
+            [/\bfunction\b/, { token: 'keyword', next: '@functionDeclaration' }],
+            // Identifiers and keywords.
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2287,8 +2285,6 @@ prompt("This is a prompt:");
                 '@default': 'identifier'
               }
             }],
-
-            // Delimiters and operators.
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, {
               cases: {
@@ -2296,19 +2292,15 @@ prompt("This is a prompt:");
                 '@default': ''
               }
             }],
-
-            // Numbers
+            // Numbers.
             [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
             [/\d+/, 'number'],
-
-            // Strings: double quoted and single quoted.
-            [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+            // Strings.
             [/"/, { token: 'string.quote', bracket: '@open', next: '@string_double' }],
             [/'/, { token: 'string.quote', bracket: '@open', next: '@string_single' }],
           ],
 
-          // Deal with white spaces and comments.
+          // Whitespace and comments.
           whitespace: [
             [/[ \t\r\n]+/, ''],
             [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
@@ -2325,71 +2317,106 @@ prompt("This is a prompt:");
             [/\*\//, 'comment.doc', '@pop'],
             [/[\/*]/, 'comment.doc']
           ],
-
-          // Double-quoted string rules.
           string_double: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
           ],
-
-          // Single-quoted string rules.
           string_single: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/'/, { token: 'string.quote', bracket: '@close', next: '@pop' }]
           ],
+
+          // After a "function" keyword, grab the function name.
+          functionDeclaration: [
+            [/[a-zA-Z_$][\w$]*/, 'entity.name.function', '@pop'],
+            ['', '', '@pop']
+          ],
+
+          // State for class declaration: capture the class name then enter the class body.
+          classDeclaration: [
+            [/[a-zA-Z_$][\w$]*/, 'entity.name.class'],
+            [/\{/, { token: '@brackets', next: '@classBody' }],
+            ['', '', '@pop']
+          ],
+
+          // In the class body, try to differentiate methods.
+          classBody: [
+            { include: '@whitespace' },
+            // Look for a potential method: an identifier immediately followed by a parenthesis.
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                // Use lookahead to detect "(" following optional whitespace.
+                '(?=\\s*\\()': { token: 'method', next: '@methodBody' },
+                '@default': 'identifier'
+              }
+            }],
+            [/\{/, '@brackets'],
+            [/\}/, { token: '@brackets', next: '@pop' }],
+            [/@symbols/, {
+              cases: {
+                '@operators': 'operator',
+                '@default': ''
+              }
+            }],
+            [/./, '']
+          ],
+
+          // Simple state to consume the method parameters until the closing parenthesis.
+          methodBody: [
+            // Match until the closing parenthesis.
+            [/\)/, { token: 'delimiter.parenthesis', next: '@classBody' }],
+            [/[^\)]+/, '']
+          ]
         }
       });
 
-      // 3. Define a theme that closely mimics VSCode Dark Modern using our token types.
+      // 3. Define a theme that differentiates function tokens from method tokens.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          // Keywords
+          // Keywords.
           { token: 'keyword', foreground: 'C586C0' },
           { token: 'keyword.control', foreground: 'C586C0' },
           { token: 'keyword.type', foreground: '4EC9B0' },
 
-          // Operators and symbols
+          // Operators and symbols.
           { token: 'operator', foreground: 'C586C0' },
 
-          // Identifiers
+          // Identifiers.
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'meta.definition.variable.name', foreground: '9CDCFE' },
 
-          // Numbers
+          // Numbers.
           { token: 'number', foreground: 'B5CEA8' },
           { token: 'number.float', foreground: 'B5CEA8' },
 
-          // Strings
+          // Strings.
           { token: 'string', foreground: 'CE9178' },
           { token: 'string.escape', foreground: 'D7BA7D' },
 
-          // Comments
+          // Comments.
           { token: 'comment', foreground: '6A9955' },
           { token: 'comment.doc', foreground: '6A9955' },
 
-          // Classes, functions, methods
-          { token: 'identifier.class', foreground: '4EC9B0' },
-          { token: 'identifier.interface', foreground: '4EC9B0' },
+          // Classes and functions.
           { token: 'entity.name.class', foreground: '4EC9B0' },
-          { token: 'entity.name.type', foreground: '4EC9B0' },
           { token: 'entity.name.function', foreground: 'DCDCAA' },
-          { token: 'support.function', foreground: 'DCDCAA' },
-          { token: 'function', foreground: 'DCDCAA' },
+
+          // Methods – now using a dedicated token.
           { token: 'method', foreground: 'DCDCAA' },
 
-          // Variables and constants
+          // Variables and constants.
           { token: 'variable', foreground: '9CDCFE' },
           { token: 'constant', foreground: '4FC1FF' },
           { token: 'variable.other.constant', foreground: '4FC1FF' },
           { token: 'variable.other.enummember', foreground: '4FC1FF' },
 
-          // Tags and support
+          // Tags and support.
           { token: 'entity.name.tag', foreground: '569CD6' },
           { token: 'support', foreground: '9CDCFE' }
         ],
