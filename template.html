@@ -2610,15 +2610,7 @@ prompt("This is a prompt:");
     }
 
     async function takeImage(domElem) {
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.top = '-9999px';
-      tempContainer.style.left = '-9999px';
-      document.body.appendChild(tempContainer);
-      const clonedElem = domElem.cloneNode(true);
-      tempContainer.appendChild(clonedElem);
-
-      const canvas = await html2canvas(clonedElem, {
+      const canvas = await html2canvas(domElem, {
         scale: 2,
         logging: false,
         backgroundColor: null,
@@ -2627,13 +2619,6 @@ prompt("This is a prompt:");
         useCORS: true
       });
 
-      document.body.removeChild(tempContainer);
-      // show the div
-      // tempContainer.style.top = '0';
-      // tempContainer.style.left = '0';
-      // tempContainer.style.width = '100%';
-      // tempContainer.style.height = '100%';
-      // tempContainer.style.position = "relative";
       return canvas.toDataURL("image/png");
     }
 
@@ -2713,30 +2698,43 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapperBoth.appendChild(await getOutputDivClone());
       }
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const editorImgSrc = await takeImage(wrapperBoth);
-      const editorImg = new Image();
-      editorImg.src = editorImgSrc;
-      let theyReady = false;
-
-      editorImg.onload = () => {
-        theyReady = true;
-      };
-
-      while (!theyReady) {
-        await new Promise((resolve) => setTimeout(resolve, 150));
+      exportModalContent.appendChild(wrapperBoth);
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportModalContent.appendChild(exportBtn);
+      exportBtn.onclick = async function() {
+        exportBtn.disabled = true;
+        const imgSrc = await takeImage(wrapperBoth);
+        const a = document.createElement('a');
+        a.href = imgSrc;
+        a.download = `${currentTab.name}.png`;
+        a.click();
+        closeModal("close");
       }
+      // const canvas = document.createElement('canvas');
+      // const ctx = canvas.getContext('2d');
+      // const imgSrc = await takeImage(wrapperBoth);
+      // const bothImg = new Image();
+      // bothImg.src = imgSrc;
+      // let theyReady = false;
 
-      canvas.width = editorImg.width;
-      canvas.height = editorImg.height
-      ctx.drawImage(editorImg, 0, 0);
+      // bothImg.onload = () => {
+      //   theyReady = true;
+      // };
 
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL("image/png");
-      a.download = `${currentTab.name}.png`;
-      a.click();
+      // while (!theyReady) {
+      //   await new Promise((resolve) => setTimeout(resolve, 150));
+      // }
+
+      // canvas.width = bothImg.width;
+      // canvas.height = bothImg.height
+      // ctx.drawImage(bothImg, 0, 0);
+
+      // const a = document.createElement('a');
+      // a.href = canvas.toDataURL("image/png");
+      // a.download = `${currentTab.name}.png`;
+      // a.click();
 
     }
 
