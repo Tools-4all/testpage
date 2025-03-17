@@ -1636,6 +1636,8 @@ prompt("This is a prompt:");
       switchTab(id);
       if (tabs.length > 1) {
         document.body.classList.remove("lastTab");
+      } else {
+        document.body.classList.add("lastTab");
       }
       return id;
     }
