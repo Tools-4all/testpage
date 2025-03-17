@@ -2757,6 +2757,7 @@ prompt("This is a prompt:");
       exportBtn.classList.add("exportBtn");
       exportModalContent.appendChild(exportBtn);
       exportBtn.onclick = async function() {
+        exportBtn.disabled = true;
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
         let doc = new jsPDF({
