@@ -1284,7 +1284,9 @@
     }
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && modalIsOpen()) {
+          closeModal();
+        } else if (event.key === 'Escape') {
           compiler.style.width = "60%";
           compiler.style.height = "500px";
           compiler.style.margin = '100px auto';
@@ -2892,6 +2894,10 @@ prompt("This is a prompt:");
     closeModalBtn.addEventListener("click", () => {
       closeModal("close");
     });
+
+    function modalIsOpen() {
+      return modal.style.display === "block";
+    }
     alert(4);
   </script>
 </body>
