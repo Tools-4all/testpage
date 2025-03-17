@@ -1137,8 +1137,15 @@
     body.lastTab .tab .close {
       visibility: hidden !important;
     }
+
     body.lastTab #allZip {
       display: none !important;
+    }
+
+    .exportBtnsWrapper {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -2840,17 +2847,28 @@ prompt("This is a prompt:");
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      exportModalContent.appendChild(wrapBoth);
       wrapBoth.appendChild(editorDiv);
       if (currentTab.outputElement.innerHTML.trim()) {
         const outputDiv = await getOutputDivClone();
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputDiv);
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+        });
       }
-      exportModalContent.appendChild(wrapBoth);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
-      exportModalContent.appendChild(exportBtn);
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const contentWidth = wrapBoth.offsetWidth;
