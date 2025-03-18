@@ -2287,14 +2287,14 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
-            // Special rule: method calls like console.error()
+            // highlight method calls like console.error()
             [/\b([a-zA-Z_$][\w$]*)(\.)([a-zA-Z_$][\w$]*)(?=\()/, ['identifier', 'delimiter', 'method']],
-            // Direct function calls
+            // direct function calls like myFunc()
             [/\b([a-zA-Z_$][\w$]*)(?=\()/, 'function'],
-            // Arrow operator
+            // arrow operator
             [/(=>)/, 'arrow'],
 
-            // Identifiers & keywords
+            // normal identifiers / keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2303,14 +2303,14 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Whitespace and comments
+            // whitespace & comments
             { include: '@whitespace' },
 
-            // Brackets and operators
+            // brackets & operators
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
 
-            // Numbers (including BigInt)
+            // numbers
             [/(0[xX](@hexdigits))n/, 'number.hex'],
             [/(0[xX](@hexdigits))/, 'number.hex'],
             [/(0[bB](@binarydigits))n/, 'number.binary'],
@@ -2321,26 +2321,27 @@ prompt("This is a prompt:");
             [/@digits*\.@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
 
-            // Delimiters
+            // delimiters
             [/[;,.]/, 'delimiter'],
 
-            // Strings: double and single quotes
+            // strings
             [/"([^"\\]|\\.)*$/, 'string.invalid'],
             [/'([^'\\]|\\.)*$/, 'string.invalid'],
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
-            // Template literals
+            // template literal start
             [/`/, { token: 'string.quote', next: '@templateString' }],
 
-            // Regex literal
+            // regex literal start
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
+          // handle whitespace & line comments
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment'],
+            [/\/\/.*$/, 'comment']
           ],
           comment: [
             [/[^\/*]+/, 'comment'],
@@ -2348,12 +2349,14 @@ prompt("This is a prompt:");
             [/[\/*]/, 'comment']
           ],
 
+          // double-quoted strings
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
+          // single-quoted strings
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2361,25 +2364,28 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Template string rules:
+          // template strings can be multiline
           templateString: [
-            // Interpolation start
-            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterpolation' }],
-            // End of template literal
+            // handle interpolation: ${ ... }
+            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
+            // closing backtick
             [/`/, { token: 'string.quote', next: '@pop' }],
-            // Escaped characters
+            // escaped characters
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
-            // Consume as many characters as possible that are not backtick, backslash, or $
+            // handle newlines within template strings
+            [/(\r\n|\n|\r)/, 'string'],
+            // match all other text until backtick, backslash, or $
             [/[^\\`$]+/, 'string'],
-            // Handle stray '$'
+            // leftover single '$'
             [/\$/, 'string']
           ],
-          templateStringInterpolation: [
+          templateStringInterp: [
             [/\}/, { token: 'delimiter.bracket', next: '@templateString' }],
             { include: 'root' }
           ],
 
+          // regex
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
@@ -2400,20 +2406,20 @@ prompt("This is a prompt:");
             [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
             [/\\./, 'regexp.escape'],
             [/./, 'regexp']
-          ],
+          ]
         }
       });
 
-      // Define a “custom-dark” theme matching VS Code dark-modern colors.
+      // Define a custom-dark theme that mimics VSCode's Dark+ color scheme
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'keyword', foreground: '569CD6' },  // blue for keywords (e.g. const)
-          { token: 'arrow', foreground: '569CD6' },  // blue for =>
-          { token: 'function', foreground: 'DCDCAA' },  // yellow for function calls
-          { token: 'method', foreground: 'DCDCAA' },  // yellow for method calls
-          { token: 'identifier', foreground: '9CDCFE' },  // light blue for identifiers (e.g. console)
+          { token: 'keyword', foreground: '569CD6' },
+          { token: 'arrow', foreground: '569CD6' },
+          { token: 'function', foreground: 'DCDCAA' },
+          { token: 'method', foreground: 'DCDCAA' },
+          { token: 'identifier', foreground: '9CDCFE' },
           { token: 'operator', foreground: 'D4D4D4' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'number', foreground: 'B5CEA8' },
@@ -2430,9 +2436,9 @@ prompt("This is a prompt:");
       });
 
 
-    // Finally, create your editor (or call createTab()) using the custom theme.
-    // If you already do something like `createTab()`, just leave that call as-is.
-    createTab();
+      // Finally, create your editor (or call createTab()) using the custom theme.
+      // If you already do something like `createTab()`, just leave that call as-is.
+      createTab();
     });
 
     function updateStatusPosition() {
