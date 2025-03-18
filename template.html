@@ -2270,7 +2270,7 @@ prompt("This is a prompt:");
           '*', '/', '%', '++', '--', '<<', '</', '>>', '>>>', '&',
           '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=',
           '*=', '**=', '/=', '%=', '<<=', '>>=', '>>>=', '&=', '|=',
-          '^=', '@',
+          '^=', '@'
         ],
 
         // we include these common regular expressions
@@ -2280,11 +2280,9 @@ prompt("This is a prompt:");
         octaldigits: /[0-7]+(_+[0-7]+)*/,
         binarydigits: /[0-1]+(_+[0-1]+)*/,
         hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-
         regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
         regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
 
-        // The main tokenizer for our languages
         tokenizer: {
           root: [
             [/[{}]/, 'delimiter.bracket'],
@@ -2292,7 +2290,13 @@ prompt("This is a prompt:");
           ],
 
           common: [
-            // identifiers and keywords
+            // Match identifiers that are immediately followed by a '(' as methods
+            [/[a-z_$][\w$]*(?=\s*\()/, 'method'],
+            // Match dot-prefixed identifiers as attributes
+            [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
+            // Match the arrow function operator with its own token
+            [/=>/, 'arrow'],
+            // Identifiers and keywords
             [/[a-z_$][\w$]*/, {
               cases: {
                 '@typeKeywords': 'keyword',
@@ -2300,16 +2304,15 @@ prompt("This is a prompt:");
                 '@default': 'identifier'
               }
             }],
-            [/[A-Z][\w\$]*/, 'type.identifier'],  // to show class names nicely
-            // [/[A-Z][\w\$]*/, 'identifier'],
+            [/[A-Z][\w\$]*/, 'type.identifier'],
 
-            // whitespace
+            // Whitespace
             { include: '@whitespace' },
 
-            // regular expression: ensure it is terminated before beginning (otherwise it is an opeator)
+            // Regular expression: ensure it is terminated before beginning (otherwise it is an operator)
             [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
 
-            // delimiters and operators
+            // Delimiters and operators
             [/[()\[\]]/, '@brackets'],
             [/[<>](?!@symbols)/, '@brackets'],
             [/@symbols/, {
@@ -2319,7 +2322,7 @@ prompt("This is a prompt:");
               }
             }],
 
-            // numbers
+            // Numbers
             [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
             [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
             [/0[xX](@hexdigits)/, 'number.hex'],
@@ -2327,22 +2330,22 @@ prompt("This is a prompt:");
             [/0[bB](@binarydigits)/, 'number.binary'],
             [/(@digits)/, 'number'],
 
-            // delimiter: after number because of .\d floats
+            // Delimiter: after number because of .\d floats
             [/[;,.]/, 'delimiter'],
 
-            // strings
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+            // Strings
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
             [/"/, 'string', '@string_double'],
             [/'/, 'string', '@string_single'],
-            [/`/, 'string', '@string_backtick'],
+            [/`/, 'string', '@string_backtick']
           ],
 
           whitespace: [
             [/[ \t\r\n]+/, ''],
             [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
             [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment'],
+            [/\/\/.*$/, 'comment']
           ],
 
           comment: [
@@ -2357,7 +2360,6 @@ prompt("This is a prompt:");
             [/[\/*]/, 'comment.doc']
           ],
 
-          // We match regular expression quite precisely
           regexp: [
             [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
             [/(\[)(\^?)(?=(?:[^\]\\\/]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
@@ -2367,7 +2369,7 @@ prompt("This is a prompt:");
             [/[^\\\/]/, 'regexp'],
             [/@regexpesc/, 'regexp.escape'],
             [/\\\./, 'regexp.invalid'],
-            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']],
+            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']]
           ],
 
           regexrange: [
@@ -2375,7 +2377,7 @@ prompt("This is a prompt:");
             [/\^/, 'regexp.invalid'],
             [/@regexpesc/, 'regexp.escape'],
             [/[^\]]/, 'regexp'],
-            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
           ],
 
           string_double: [
@@ -2404,7 +2406,7 @@ prompt("This is a prompt:");
             [/\{/, 'delimiter.bracket', '@bracketCounting'],
             [/\}/, 'delimiter.bracket', '@pop'],
             { include: 'common' }
-          ],
+          ]
         }
       });
 
@@ -2418,6 +2420,7 @@ prompt("This is a prompt:");
           { token: 'operator', foreground: 'D4D4D4' },
           { token: 'method', foreground: '4EC9B0' },
           { token: 'attribute', foreground: 'CE9178' },
+          { token: 'arrow', foreground: 'FF00FF' },
           { token: 'function', foreground: 'DCDCAA' },
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
@@ -2434,6 +2437,7 @@ prompt("This is a prompt:");
       // Initialize your editor (or call your tab creation function)
       createTab();
     });
+
 
 
     function updateStatusPosition() {
