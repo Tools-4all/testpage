@@ -190,7 +190,7 @@
     }
 
     #activityBar .icon {
-      padding-bottom: 24px;
+      padding: 12px 0;
       cursor: pointer;
       transition: background-color 0.3s, color 0.3s;
       width: 100%;
@@ -1155,6 +1155,9 @@
       display: flex;
       justify-content: space-between;
       margin-top: 10px;
+    }
+    .headerText {
+      
     }
   </style>
 </head>
@@ -3059,7 +3062,19 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         const outputDiv = await getOutputDivClone();
         outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputDiv);
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -3067,6 +3082,7 @@ prompt("This is a prompt:");
         exportCheckbox.checked = true;
         exportCheckbox.addEventListener("change", () => {
           outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.display = exportCheckbox.checked ? "block" : "visible";
         });
       }
       const exportBtn = document.createElement('button');
