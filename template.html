@@ -2246,13 +2246,7 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      monaco.languages.register({ id: 'javascript' });
-
       monaco.languages.setMonarchTokensProvider('javascript', {
-        // Adapted from the official TS/JS grammar in the monaco-languages repo.
-        // Stripped down to avoid overshadowing template-string interpolation.
-
-        // For simplicity, treat JavaScript & TypeScript similarly, minus TS-only keywords.
         defaultToken: '',
         tokenPostfix: '.js',
 
@@ -2261,66 +2255,57 @@ prompt("This is a prompt:");
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
           'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
           'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
-          'var', 'void', 'while', 'with', 'yield', 'async', 'await', 'of',
-          'static', 'as', 'from'
+          'var', 'void', 'while', 'with', 'yield'
         ],
 
+        // Treat these like "built-in" or "special" identifiers. VS Code often highlights them like functions/types.
+        builtins: [
+          'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
+          'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
+          'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
+          'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
+          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
+        ],
+
+        // Expand your operator list to match more of what VS Code highlights (e.g., ===, !==, ?., ??, etc.).
         operators: [
-          '===', '!==', '=>', '**', '**=', '?.', '??', '??=', '...',
+          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
           '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
           '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
           '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
-        // Recognize some common builtin objects
-        // (omitting the big list for brevity)
-        builtinVariables: [
-          'NaN', 'Infinity', 'undefined'
-        ],
-        builtinFunctions: [
-          'alert', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'decodeURI', 'encodeURI'
-          // ...
-        ],
+        // Common regex snippets for convenience.
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
+        digits: /\d+(_+\d+)*/,
+        octaldigits: /[0-7]+(_+[0-7]+)*/,
+        binarydigits: /[0-1]+(_+[0-1]+)*/,
+        hexdigits: /[[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
 
-        // Catches operators and punctuation
-        symbols: /[=><!~?:&|+\-*\^%]+/,
-
-        // Escapes
-        escapes: /\\(?:[abfnrtv"'\`\\0-7xuU]|x[0-9A-Fa-f]{1,2}|u\{[0-9A-Fa-f]+\}|u[0-9A-Fa-f]{4})/,
-
-        // The main tokenizer
         tokenizer: {
           root: [
-            // ---------------------------
-            // Whitespace / Comments
-            // ---------------------------
+            // ----------------------------------------------------------------
+            // 1) IDENTIFIERS & KEYWORDS
+            // ----------------------------------------------------------------
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@builtins': 'function', // highlight your builtins as "function" color
+                '@default': 'identifier'
+              }
+            }],
+
+            // ----------------------------------------------------------------
+            // 2) WHITESPACE / COMMENTS
+            // ----------------------------------------------------------------
             { include: '@whitespace' },
 
-            // ---------------------------
-            // 1) Strings (single & double)
-            // ---------------------------
-            [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-            [/"/, { token: 'string.quote', next: '@string_double' }],
-            [/'/, { token: 'string.quote', next: '@string_single' }],
-
-            // ---------------------------
-            // 2) Template strings
-            // ---------------------------
-            [/`/, { token: 'string.quote', next: '@template_string' }],
-
-            // ---------------------------
-            // 3) RegExp literal
-            // ---------------------------
-            // A slash that is not * or / is likely the start of a regex
-            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
-
-            // ---------------------------
-            // 4) Operators / Delimiters
-            // ---------------------------
+            // ----------------------------------------------------------------
+            // 3) DELIMITERS & OPERATORS
+            // ----------------------------------------------------------------
             [/[{}()\[\]]/, '@brackets'],
-            [/[;,.]/, 'delimiter'],
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2328,146 +2313,144 @@ prompt("This is a prompt:");
               }
             }],
 
-            // ---------------------------
-            // 5) Numbers
-            // ---------------------------
-            [/0[xX][0-9a-fA-F]+[nN]?/, 'number.hex'],   // hex
-            [/0[bB][0-1]+[nN]?/, 'number.binary'],// binary
-            [/0[oO][0-7]+[nN]?/, 'number.octal'], // octal
-            [/[0-9]+[nN]/, 'number'],       // BigInt (123n)
-            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-            [/\d+([eE][\-+]?\d+)?/, 'number'],
+            // ----------------------------------------------------------------
+            // 4) NUMBERS
+            // ----------------------------------------------------------------
+            // floating point
+            [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
+            // regular integer
+            [/@digits+/, 'number'],
+            // hex, binary, octal
+            [/0x(@hexdigits)/, 'number.hex'],
+            [/0b(@binarydigits)/, 'number.binary'],
+            [/0o(@octaldigits)/, 'number.octal'],
 
-            // ---------------------------
-            // 6) Keywords / Identifiers
-            // ---------------------------
-            [/[a-zA-Z_$][\w$]*/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtinVariables': 'variable.predefined',
-                '@builtinFunctions': 'predefined',
-                '@default': 'identifier'
-              }
-            }],
+            // punctuation / delimiters
+            [/[;,.]/, 'delimiter'],
+
+            // ----------------------------------------------------------------
+            // 5) STRINGS
+            // ----------------------------------------------------------------
+            // unterminated string check
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            // normal strings
+            [/"/, { token: 'string.quote', next: '@stringDouble' }],
+            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+
+            // template strings (backtick)
+            [/`/, { token: 'string.quote', next: '@templateString' }],
+
+            // ----------------------------------------------------------------
+            // 6) REGEX LITERALS
+            // ----------------------------------------------------------------
+            // If we see a slash NOT followed by * (comment), we assume regex
+            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
-          // Comments
-          whitespace: [
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\*/, { token: 'comment', next: '@comment' }],
-            [/\/\/.*$/, 'comment']
+          // --------------------------------------------------------------------
+          // REGEX SUB-TOKENS
+          // --------------------------------------------------------------------
+          regexp: [
+            { include: '@regexrange' },
+            [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
+            [/[()]/, 'regexp.escape.control'],
+            [/[\^$|?*+\.]/, 'regexp.escape.control'],
+            [/[^\{(\^$|?*+\.]+/, 'regexp'],
+            // closing / and optional flags
+            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
-          comment: [
-            [/[^\/*]+/, 'comment'],
-            [/\*\//, { token: 'comment', next: '@pop' }],
-            [/[\/*]/, 'comment']
+          regexpBraces: [
+            [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
+            { include: '@regexrange' },
+            [/.*/, 'regexp']
+          ],
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.escape.control'],
+            [/\[/, 'regexp.escape.control'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/\\./, 'regexp.escape'],
+            [/./, 'regexp']
           ],
 
-          // Double-quoted string
-          string_double: [
+          // --------------------------------------------------------------------
+          // STRINGS
+          // --------------------------------------------------------------------
+          stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
-          // Single-quoted string
-          string_single: [
+          stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Template string
-          template_string: [
-            // Interpolation start
-            [/\$\{/, { token: 'delimiter.bracket', next: '@template_string_interp' }],
-            // End of template
+          // --------------------------------------------------------------------
+          // TEMPLATE STRINGS
+          // --------------------------------------------------------------------
+          templateString: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
             [/`/, { token: 'string.quote', next: '@pop' }],
-            // Escapes
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
-            // Allow newlines in template strings
-            [/(\r\n|\n|\r)/, 'string'],
-            // Everything else
-            [/[^\\`$]+/, 'string'],
-            [/\$/, 'string']
+            [/./, 'string']
           ],
-          // Inside ${ ... } in a template string
-          template_string_interp: [
-            [/\}/, { token: 'delimiter.bracket', next: '@template_string' }],
-            { include: 'root' } // look for nested expressions
+          templateStringInterp: [
+            [/\}/, { token: 'delimiter.bracket', next: '@templateString' }],
+            { include: 'root' }
           ],
 
-          // RegExp
-          regexp: [
-            // bracketed character ranges
-            [/\[\^?/, { token: 'regexp.escape.control', next: '@regexrange' }],
-            // regular characters
-            [/[()]/, 'regexp.escape.control'],
-            [/[\^$|?*+\.]/, 'regexp.escape.control'],
-            [/{\d+(?:,\d*)?}/, 'regexp.escape.control'],
-            [/}/, { token: 'regexp.escape.control' }],
-            [/~|@symbols/, 'regexp'],
-            [/[^\]]/, 'regexp'],
-            [/]/, { token: 'regexp.escape.control', next: '@pop' }],
-            [/$/, 'regexp'],
-            // end of regex
-            [/\//, { token: 'regexp', bracket: '@close', next: '@regexp_flags' }]
-            ],
-            regexp_flags: [
-              [/[gimsuy]*/, 'keyword'], // allowed flags
-              [/[^gimsuy]/, 'keyword.invalid'],
-              [/.*$/, { token: '@pop' }]
-            ],
-            regexrange: [
-              [/-/, 'regexp.escape.control'],
-              [/\^/, 'regexp.escape.control'],
-              [/\\./, 'regexp.escape'],
-              [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
-              [/./, 'regexp']
-            ]
-    }
+          // --------------------------------------------------------------------
+          // WHITESPACE / COMMENTS
+          // --------------------------------------------------------------------
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment'],
+          ],
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            // No nested comments by default, remove the next line if you do want them:
+            // [/\/\*/,       'comment', '@push' ],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ],
+        }
       });
 
-      // ------------------------------------------------
-      // 2) Define a “custom-dark” theme to mimic VS Code
-      // ------------------------------------------------
+      // Define your custom theme. We just added a few more token colors for
+      // regex, escapes, invalid, etc. to keep them consistent with typical VS Code.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          // keywords
-          { token: 'keyword', foreground: '569CD6' },
-          // built-in variables (e.g. undefined, NaN)
-          { token: 'variable.predefined', foreground: '9CDCFE' },
-          // built-in functions (e.g. parseInt, console)
-          { token: 'predefined', foreground: 'C586C0' },
-          // normal identifiers
+          { token: 'keyword', foreground: 'C586C0' },
           { token: 'identifier', foreground: '9CDCFE' },
-          // numbers
-          { token: 'number', foreground: 'B5CEA8' },
-          // strings
-          { token: 'string', foreground: 'CE9178' },
-          { token: 'string.escape', foreground: 'd7ba7d' },
-          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
-          // comments
-          { token: 'comment', foreground: '6A9955' },
-          // operators
-          { token: 'operator', foreground: 'D4D4D4' },
-          // delimiters (commas, semicolons)
           { token: 'delimiter', foreground: 'D4D4D4' },
-          // brackets
-          { token: 'brackets', foreground: 'D4D4D4' },
-          // regex
-          { token: 'regexp', foreground: 'D16969' }
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: '4EC9B0' }, // from your dot-based method rule
+          { token: 'attribute', foreground: 'CE9178' }, // from your dot-based attribute rule
+          { token: 'function', foreground: 'DCDCAA' }, // for builtins
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string.escape', foreground: 'd7ba7d' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
         ],
         colors: {
           'editor.background': '#1E1E1E'
         }
       });
 
-    createTab();
+      // Finally, create your editor (or call createTab()) using the custom theme.
+      // If you already do something like `createTab()`, just leave that call as-is.
+      createTab();
     });
 
     function updateStatusPosition() {
