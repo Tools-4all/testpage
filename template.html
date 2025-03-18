@@ -2251,7 +2251,7 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // list of keywords and builtins as in VS Code
+        // Keywords & builtins as in VS Code
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2259,7 +2259,6 @@ prompt("This is a prompt:");
           'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
           'var', 'void', 'while', 'with', 'yield'
         ],
-
         builtins: [
           'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
           'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
@@ -2267,7 +2266,6 @@ prompt("This is a prompt:");
           'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
           'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
         ],
-
         operators: [
           '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
           '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
@@ -2275,8 +2273,6 @@ prompt("This is a prompt:");
           '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
-
-        // regex for symbols and escapes
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
         escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
         digits: /\d+(_+\d+)*/,
@@ -2286,26 +2282,15 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
-            // identifiers and keywords
-            [/[a-zA-Z_$][\w$]*/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtins': 'function',
-                '@default': 'identifier'
-              }
-            }],
+            // Identifiers & keywords
+            [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
             { include: '@whitespace' },
 
-            // brackets and operators
+            // Brackets & operators
             [/[{}()\[\]]/, '@brackets'],
-            [/@symbols/, {
-              cases: {
-                '@operators': 'operator',
-                '@default': ''
-              }
-            }],
+            [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
 
-            // numbers
+            // Numbers
             [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
             [/0x(@hexdigits)/, 'number.hex'],
@@ -2313,30 +2298,30 @@ prompt("This is a prompt:");
             [/0o(@octaldigits)/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
 
-            // strings: note we do not use unterminated-string rules here
+            // Strings (only complete strings)
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
-            // template (backtick) strings
+            // Template (backtick) strings with interpolation support
             [/`/, { token: 'string.quote', next: '@stringBacktick' }],
 
-            // regex literals (make sure a slash is not confused with division)
+            // Regex literals – note the closing slash also consumes any flags
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
-          // whitespace and comments
+          // Whitespace & comments
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
             [/\/\/.*$/, 'comment']
           ],
           comment: [
-            [/[^\/*]+/, 'comment'],
+            [/[^/*]+/, 'comment'], // changed from [/[^\/*]+/, 'comment']
             [/\*\//, 'comment', '@pop'],
-            [/[\/*]/, 'comment']
+            [/[/*]/, 'comment']
           ],
 
-          // double-quoted strings
+          // Double-quoted strings
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2344,7 +2329,7 @@ prompt("This is a prompt:");
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // single-quoted strings
+          // Single-quoted strings
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2352,7 +2337,7 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // backtick (template) strings – allow newlines and handle interpolation
+          // Backtick (template) strings – allow newlines and handle interpolation
           stringBacktick: [
             [/`/, { token: 'string.quote', next: '@pop' }],
             [/\$\{/, { token: 'delimiter.bracket', next: '@interpolation' }],
@@ -2361,23 +2346,23 @@ prompt("This is a prompt:");
             [/\$/, 'string']
           ],
 
-          // interpolation inside template strings: delegate to the root rules
+          // Interpolation inside template strings: delegate to root rules until "}" is encountered
           interpolation: [
             [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
             { include: 'root' }
           ],
 
-          // regular expression literals
+          // Regex literal state
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
             [/[()]/, 'regexp.escape.control'],
             [/[\^$|?*+\.]/, 'regexp.escape.control'],
             [/[^\{(\^$|?*+\.]+/, 'regexp'],
-            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
+            [/\/[gimsuy]*/, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
           regexpBraces: [
-            [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
+            [/\}/, { token: 'regexp.escape.control', next: '@regex' }],
             { include: '@regexrange' },
             [/.*/, 'regexp']
           ],
