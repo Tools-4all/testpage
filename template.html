@@ -2255,14 +2255,22 @@ prompt("This is a prompt:");
         defaultToken: 'invalid',
         tokenPostfix: '.js',
 
+        // Split keywords into two groups:
+        // Special keywords (e.g., let, function, const, var) get one color
+        // Other keywords get a different color
         keywords: [
-          'break', 'case', 'catch', 'class', 'continue', 'const',
-          'constructor', 'debugger', 'default', 'delete', 'do', 'else',
-          'export', 'extends', 'false', 'finally', 'for', 'from', 'function',
-          'get', 'if', 'import', 'in', 'instanceof', 'let', 'new', 'null',
-          'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw', 'true',
-          'try', 'typeof', 'undefined', 'var', 'void', 'while', 'with', 'yield',
+          'break', 'case', 'catch', 'class', 'continue', 'constructor', 'debugger',
+          'default', 'delete', 'do', 'else', 'export', 'extends', 'false', 'finally',
+          'catch', 'default', 'delete', 'do', 'else', 'export', 'extends', 'false',
+          'finally', 'for', 'from', 'get', 'if', 'import', 'in', 'instanceof', 'new',
+          'null', 'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw',
+          'true', 'try', 'typeof', 'undefined', 'void', 'while', 'with', 'yield',
           'async', 'await', 'of'
+        ],
+
+        // Special keywords that should be highlighted with a different color
+        specialKeywords: [
+          'let', 'function', 'const', 'var'
         ],
 
         typeKeywords: [
@@ -2283,7 +2291,7 @@ prompt("This is a prompt:");
         digits: /\d+(_+\d+)*/,
         octaldigits: /[0-7]+(_+[0-7]+)*/,
         binarydigits: /[0-1]+(_+[0-1]+)*/,
-        hexdigits: /[[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
+        hexdigits: /[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
         regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
         regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
 
@@ -2308,6 +2316,7 @@ prompt("This is a prompt:");
             [/[a-z_$][\w$]*/, {
               cases: {
                 '@typeKeywords': 'keyword',
+                '@specialKeywords': 'special.keyword',
                 '@keywords': 'keyword',
                 '@default': 'identifier'
               }
@@ -2419,7 +2428,10 @@ prompt("This is a prompt:");
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'keyword', foreground: 'C586C0' },
+          // Special keywords (let, function, const, var) get color #569cd6
+          { token: 'special.keyword', foreground: '569cd6' },
+          // Other keywords get color #c586c0
+          { token: 'keyword', foreground: 'c586c0' },
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
@@ -2444,6 +2456,7 @@ prompt("This is a prompt:");
       // Initialize your editor (or call your tab creation function)
       createTab();
     });
+
 
 
 
