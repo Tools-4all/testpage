@@ -2246,79 +2246,94 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      // Define a custom Monarch tokenizer for JavaScript that highlights method calls.
+      // Extend the default JavaScript tokenizer with custom rules
       monaco.languages.setMonarchTokensProvider('javascript', {
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // Keywords, operators, etc. (you can add more if needed)
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
           'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
           'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield'
         ],
+
         operators: [
           '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||', '++', '--',
           '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>', '+=', '-=', '*=',
           '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
         ],
+
+        // Match typical symbol characters
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
-        // The tokenizer rules.
         tokenizer: {
           root: [
-            // Highlight method calls: detect "console.log(" pattern.
-            [/(console)(\.)(log)(\()/, [
-              'identifier', // console
-              'delimiter',  // .
-              'method',     // log (custom token)
-              { token: 'delimiter', next: '@arguments' } // (
-            ]],
-            // Recognize identifiers and check for keywords.
+            // ===== Method calls with a dot and a following parenthesis =====
+            // Matches: .identifier(  — marks identifier as a method
+            [/(\.)([a-zA-Z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
+
+            // ===== Method calls that are not preceded by a dot =====
+            // Matches any identifier immediately followed by '('
+            [/([a-zA-Z_$][\w$]*)(?=\s*\()/, 'method'],
+
+            // ===== Attribute access after a dot not followed by '(' =====
+            // Matches: .identifier  where there is no immediate '(' after the identifier
+            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
+
+            // ===== Identifiers (fallback) =====
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
                 '@default': 'identifier'
               }
             }],
-            // Whitespace and comments.
+
+            // ===== Numbers =====
+            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+            [/\d+/, 'number'],
+
+            // ===== Whitespace and comments =====
             { include: '@whitespace' },
-            // Brackets.
+
+            // ===== Brackets =====
             [/[{}()\[\]]/, '@brackets'],
-            // Operators.
+
+            // ===== Operators =====
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
                 '@default': ''
               }
             }],
-            // Strings.
+
+            // ===== Strings =====
             [/"/, { token: 'string.quote', next: '@string' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
-            // Numbers.
-            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-            [/\d+/, 'number'],
           ],
-          arguments: [
-            [/\)/, { token: 'delimiter', next: '@pop' }],
-            { include: 'root' }
-          ],
+
+          // Rule to match whitespace and comments.
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
             [/\/\/.*$/, 'comment']
           ],
+
+          // Block comments.
           comment: [
             [/[^\/*]+/, 'comment'],
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ],
+
+          // Double-quoted strings.
           string: [
             [/[^\\"]+/, 'string'],
             [/\\./, 'string.escape'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
+
+          // Single-quoted strings.
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/\\./, 'string.escape'],
@@ -2327,7 +2342,7 @@ prompt("This is a prompt:");
         }
       });
 
-      // Define a custom theme that maps our custom tokens (like 'method') to colors.
+      // Define a custom theme that styles our new tokens differently.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
@@ -2335,7 +2350,9 @@ prompt("This is a prompt:");
           { token: 'keyword', foreground: 'C586C0' },
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },  // Methods get a distinct color.
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: '4EC9B0' },    // Methods (e.g. function calls) in a distinct color.
+          { token: 'attribute', foreground: 'CE9178' }, // Attributes (property access) in another color.
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' }
@@ -2345,6 +2362,8 @@ prompt("This is a prompt:");
         }
       });
 
+      // When creating an editor instance (for example in your createTab() function),
+      // make sure to set the theme to "custom-dark" so the above rules apply.
       createTab();
     });
 
