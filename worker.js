@@ -906,7 +906,7 @@ self.addEventListener("message", (event) => {
                 let name = names[i];
                 let func = funcs[i];
                 Object.defineProperty(func, "name", { value: name });
-                func.valueOf = () => `[native ${name} code]`;
+                func.valueOf = () => `function ${name}() { [native code] }`;
                 func.toString = () => `function ${name}() { [native code] }`;
                 func.toLocaleString = () => `function ${name}() { [native code] }`;
             }
