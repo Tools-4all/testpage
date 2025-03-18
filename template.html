@@ -2246,6 +2246,11 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
+<<<<<<< HEAD
+      // Set a Monarch tokenizer that replicates the default JavaScript grammar
+      // similar to VS Code’s Dark+ without extra method/attribute logic.
+=======
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       monaco.languages.setMonarchTokensProvider('javascript', {
         defaultToken: '',
         tokenPostfix: '.js',
@@ -2254,7 +2259,8 @@ prompt("This is a prompt:");
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
           'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
-          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield'
+          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var',
+          'void', 'while', 'with', 'yield'
         ],
 
         // Optionally define built-in functions if you want them to be highlighted differently.
@@ -2264,15 +2270,29 @@ prompt("This is a prompt:");
         ],
 
         operators: [
-          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||', '++', '--',
-          '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>', '+=', '-=', '*=',
-          '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
+          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||',
+          '++', '--', '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>',
+          '+=', '-=', '*=', '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
+<<<<<<< HEAD
+        // Define common symbol characters.
+        symbols: /[=><!~?:&|+\-*/^%]+/,
+=======
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
 
         tokenizer: {
           root: [
+<<<<<<< HEAD
+            // Whitespace and comments.
+            { include: '@whitespace' },
+
+            // Brackets.
+            [/[{}()[\]]/, '@brackets'],
+
+            // Numbers.
+=======
             // Dot access: if an identifier follows a dot and is immediately followed by '(' then it's a method.
             [/(\.)([a-zA-Z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
             // Dot access as attribute: identifier following a dot without an immediate '('.
@@ -2287,24 +2307,50 @@ prompt("This is a prompt:");
               }
             }],
             // Numbers.
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
             [/\d+/, 'number'],
+<<<<<<< HEAD
+
+            // Strings: handle non-terminated strings as invalid.
+            [/"/, { token: 'string.quote', next: '@string_dq' }],
+            [/'/, { token: 'string.quote', next: '@string_sq' }],
+
+            // Operators & delimiters.
+=======
             // Whitespace and comments.
             { include: '@whitespace' },
             // Brackets.
             [/[{}()\[\]]/, '@brackets'],
             // Operators.
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
                 '@default': ''
               }
             }],
+<<<<<<< HEAD
+            [/[;,.]/, 'delimiter'],
+
+            // Identifiers and keywords.
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@default': 'identifier'
+              }
+            }],
+=======
             // Strings.
             [/"/, { token: 'string.quote', next: '@string' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
           ],
 
+<<<<<<< HEAD
+          // Double-quoted strings.
+          string_dq: [
+=======
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
@@ -2318,24 +2364,52 @@ prompt("This is a prompt:");
           ],
 
           string: [
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/[^\\"]+/, 'string'],
             [/\\./, 'string.escape'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
 
+<<<<<<< HEAD
+          // Single-quoted strings.
+          string_sq: [
+=======
           stringSingle: [
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/[^\\']+/, 'string'],
             [/\\./, 'string.escape'],
             [/'/, { token: 'string.quote', next: '@pop' }]
+          ],
+
+          // Whitespace and comments.
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+
+          // Block comments.
+          comment: [
+            [/[^/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/./, 'comment']
           ]
         }
       });
 
+<<<<<<< HEAD
+      // Define a custom theme named "custom-dark" that replicates VS Code Dark+ colors.
+=======
       // Define a custom theme mapping our tokens to colors.
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
+<<<<<<< HEAD
+          { token: '', foreground: 'D4D4D4', background: '1E1E1E' },
+          { token: 'invalid', foreground: 'F44747' },
+=======
           { token: 'keyword', foreground: 'C586C0' },
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
@@ -2343,16 +2417,31 @@ prompt("This is a prompt:");
           { token: 'method', foreground: '4EC9B0' },    // Dot-based method calls.
           { token: 'attribute', foreground: 'CE9178' }, // Dot-based attribute access.
           { token: 'function', foreground: 'DCDCAA' },  // Built-in functions (if matched via @builtins).
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
-          { token: 'number', foreground: 'B5CEA8' }
+          { token: 'string.escape', foreground: 'D7BA7D' },
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'identifier', foreground: 'D4D4D4' }
         ],
         colors: {
-          'editor.background': '#1E1E1E'
+          'editor.foreground': '#D4D4D4',
+          'editor.background': '#1E1E1E',
+          'editor.lineHighlightBackground': '#FFFFFF0F',
+          'editor.selectionBackground': '#264F78',
+          'editorCursor.foreground': '#AEAFAD',
+          'editorWhitespace.foreground': '#404040'
         }
       });
 
+<<<<<<< HEAD
+      // Create the editor instance (e.g., via createTab()) using the "custom-dark" theme.
+=======
       // Create the editor instance (e.g. via createTab()) using the custom theme.
+>>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       createTab();
     });
 
