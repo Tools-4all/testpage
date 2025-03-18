@@ -2246,63 +2246,41 @@ prompt("This is a prompt:");
         workerBlobURL = URL.createObjectURL(blob);
       }
     }
-    require(["vs/editor/editor.main"], function () {
-      monaco.languages.setMonarchTokensProvider('javascript', {
-        defaultToken: '',
-        tokenPostfix: '.js',
-
-        keywords: [
-          'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
-          'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
-          'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
-          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
-          'var', 'void', 'while', 'with', 'yield'
-        ],
-
-        builtins: [
-          'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
-          'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
-          'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
-          'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
-          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
-        ],
-
-        operators: [
-          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
-          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
-          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-          '^=', '%=', '<<=', '>>=', '>>>='
-        ],
-
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
-        tokenizer: {
-          root: [
-            // Identifiers & keywords
-            [/[a-zA-Z_$][\w$]*/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtins': 'function',
-                '@default': 'identifier'
-              }
-            }],
-            // Brackets
-            [/[{}()\[\]]/, '@brackets'],
-            // Operators / symbols
-            [/@symbols/, {
-              cases: {
-                '@operators': 'operator',
-                '@default': ''
-              }
-            }],
-            // Delimiters
-            [/[;,.]/, 'delimiter']
-            // NOTE: Custom retokenization for strings, numbers, regex, and whitespace has been removed.
-          ]
+    require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
+      // Remove the custom rules for strings, numbers, regex, and whitespace
+      // from the default tokenizer so that Monaco’s built-in behavior is used.
+      jsDefaults.tokenizer.root = jsDefaults.tokenizer.root.filter(function (rule) {
+        if (!Array.isArray(rule)) {
+          return true;
         }
+        // Remove rules that match string literals (", ', `), numbers, regex literals, or whitespace.
+        const pattern = rule[0].toString();
+        // Remove any rule that contains a double quote, single quote, or backtick,
+        // or that looks like it’s matching numbers (\d) or whitespace (\s),
+        // or the regex literal start (using lookahead, e.g. /\/(?=...)/).
+        if (pattern.indexOf('"') >= 0 ||
+          pattern.indexOf("'") >= 0 ||
+          pattern.indexOf("`") >= 0 ||
+          pattern.indexOf("\\d") >= 0 ||
+          pattern.indexOf("\\s") >= 0 ||
+          (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)) {
+          return false;
+        }
+        return true;
       });
+      // Remove the related additional states for strings, whitespace, and regex.
+      delete jsDefaults.tokenizer.whitespace;
+      delete jsDefaults.tokenizer.comment;
+      delete jsDefaults.tokenizer.stringDouble;
+      delete jsDefaults.tokenizer.stringSingle;
+      delete jsDefaults.tokenizer.templateString;
+      delete jsDefaults.tokenizer.templateStringInterp;
+      delete jsDefaults.tokenizer.regexp;
 
+      // Set the modified provider
+      monaco.languages.setMonarchTokensProvider('javascript', jsDefaults);
+
+      // Define your theme so that the tokens you DO want to override keep their colors.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
@@ -2311,15 +2289,16 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'CE9178' },
           { token: 'function', foreground: 'DCDCAA' },
-          { token: 'comment', foreground: '6A9955' },
+          { token: 'attribute', foreground: 'CE9178' },
+          // These rules won’t be applied by our tokenizer now,
+          // so the default JS handling for strings, numbers, regex, and comments will take over.
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' },
           { token: 'regexp', foreground: 'D16969' },
           { token: 'string.escape', foreground: 'd7ba7d' },
-          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'comment', foreground: '6A9955' }
         ],
         colors: {
           'editor.background': '#1E1E1E'
