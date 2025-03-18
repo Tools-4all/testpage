@@ -2280,6 +2280,7 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
+            // Identifiers & keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2288,8 +2289,7 @@ prompt("This is a prompt:");
               }
             }],
 
-            { include: '@whitespace' },
-
+            // Brackets & operators
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, {
               cases: {
@@ -2298,6 +2298,14 @@ prompt("This is a prompt:");
               }
             }],
 
+          ],
+
+          // Regular expressions
+
+          // Template string interpolation state:
+          // Note: We pop the state when encountering a closing curly bracket.
+
+          // Inner JS state for interpolation (excludes template string starts)
           innerJS: [
             [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
             [/[{}()\[\]]/, '@brackets'],
