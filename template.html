@@ -2247,31 +2247,106 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
-        // Use the default language definition as provided.
-        monaco.languages.setMonarchTokensProvider('javascript', jsDefaults.language);
+      monaco.languages.setMonarchTokensProvider('javascript', {
+        defaultToken: '',
+        tokenPostfix: '.js',
 
-        // Define your custom theme. This will override token colors for keywords, builtins, etc.
-        monaco.editor.defineTheme('custom-dark', {
-          base: 'vs-dark',
-          inherit: true,
-          rules: [
-            { token: 'keyword', foreground: 'C586C0' },
-            { token: 'identifier', foreground: '9CDCFE' },
-            { token: 'delimiter', foreground: 'D4D4D4' },
-            { token: 'operator', foreground: 'D4D4D4' },
-            { token: 'function', foreground: 'DCDCAA' },
-            { token: 'attribute', foreground: 'CE9178' }
-            // Do not override the defaults for string, number, regexp, whitespace, etc.
-          ],
-          colors: {
-            'editor.background': '#1E1E1E'
-          }
-        });
+        keywords: [
+          'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
+          'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
+          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
+          'var', 'void', 'while', 'with', 'yield'
+        ],
 
-        // Now initialize your editor (or call your tab creation function)
-        createTab();
+        builtins: [
+          'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
+          'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
+          'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
+          'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
+          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
+        ],
+
+        operators: [
+          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
+          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
+          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
+          '^=', '%=', '<<=', '>>=', '>>>='
+        ],
+
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+        tokenizer: {
+          root: [
+            // Identifiers & keywords
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@builtins': 'function',
+                '@default': 'identifier'
+              }
+            }],
+
+            // Brackets & operators
+            [/[{}()\[\]]/, '@brackets'],
+            [/@symbols/, {
+              cases: {
+                '@operators': 'operator',
+                '@default': ''
+              }
+            }],
+
+            // Delimiters
+            [/[;,.]/, 'delimiter'],
+
+            // Simple numbers (decimals & hex)
+            [/\b0x[0-9A-Fa-f]+\b/, 'number.hex'],
+            [/\b\d+(\.\d+)?\b/, 'number'],
+
+            // Simple strings (double & single quoted)
+            [/\"([^"\\]|\\.)*\"/, 'string'],
+            [/\'([^'\\]|\\.)*\'/, 'string'],
+
+            // Simple regex literals (with optional flags)
+            [/\/([^\/\\]|\\.)*\/[gimuy]*/, 'regexp'],
+
+            // Whitespace and comments
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\/.*$/, 'comment'],
+            [/\/\*.*\*\//, 'comment'],
+
+            // Fallback
+            [/.+/, '']
+          ]
+        }
       });
+
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: '4EC9B0' },
+          { token: 'attribute', foreground: 'CE9178' },
+          { token: 'function', foreground: 'DCDCAA' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string.escape', foreground: 'd7ba7d' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
+        }
+      });
+
+      // Initialize your editor (or call your tab creation function)
+      createTab();
     });
 
 
