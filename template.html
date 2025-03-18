@@ -10,9 +10,9 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://unpkg.com/vscode-oniguruma/release/onig.wasm" crossorigin="anonymous" type="application/wasm"></script>
+  <script src="https://unpkg.com/vscode-oniguruma/release/onig.wasm" crossorigin="anonymous"
+    type="application/wasm"></script>
   <script src="https://unpkg.com/vscode-oniguruma" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/monaco-textmate@3.0.1/dist/main.js" crossorigin="anonymous"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -1265,7 +1265,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
-  <script>
+  <script type="module">
+    import * as monacoTextmate from "https://unpkg.com/monaco-textmate@3.0.1/dist/main.js";
+
     const workerPath = "{% url 'betzi_test_js' %}";
     const { jsPDF } = window.jspdf;
     let currentTab = null;
@@ -2667,361 +2669,361 @@ prompt("This is a prompt:");
       require(["vs/editor/editor.main"], async function () {
         await mainMonacoSetup();
       });
-        await cacheWorkerCode();
-        nextWorker = new Worker(workerBlobURL);
-      });
+      await cacheWorkerCode();
+      nextWorker = new Worker(workerBlobURL);
+    });
 
 
-      function exportCode() {
-        switch (exportSelect.value) {
-          case "allZip":
-            exportAllZip();
-            break;
-          case "image":
-            exportImage();
-            break;
-          case "pdf":
-            exportPDF();
-            break;
-          case "current":
-            exportCurrent();
-            break;
-        }
-      }
-
-      function exportAllZip() {
-        if (tabs.length === 0) {
-          return;
-        }
-        if (tabs.length === 1) {
+    function exportCode() {
+      switch (exportSelect.value) {
+        case "allZip":
+          exportAllZip();
+          break;
+        case "image":
+          exportImage();
+          break;
+        case "pdf":
+          exportPDF();
+          break;
+        case "current":
           exportCurrent();
-          return;
-        }
+          break;
+      }
+    }
 
-        exportModalContent.innerHTML = "";
-
-        let checklistContainer = document.createElement("div");
-        checklistContainer.style.display = "flex";
-        checklistContainer.style.flexWrap = "wrap";
-        checklistContainer.style.gap = "10px";
-        checklistContainer.style.padding = "10px";
-
-        tabs.forEach((tab) => {
-          let checkboxWrapper = document.createElement("div");
-          checkboxWrapper.style.display = "flex";
-          checkboxWrapper.style.alignItems = "center";
-          checkboxWrapper.style.flex = "1 0 auto";
-
-          let checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = true;
-          checkbox.id = "export-tab-" + tab.id;
-          checkbox.dataset.tabId = tab.id;
-
-          let label = document.createElement("label");
-          label.htmlFor = checkbox.id;
-          label.textContent = tab.name;
-          label.style.marginLeft = "5px";
-
-          checkboxWrapper.appendChild(checkbox);
-          checkboxWrapper.appendChild(label);
-          checklistContainer.appendChild(checkboxWrapper);
-        });
-        exportModalContent.appendChild(checklistContainer);
-
-        let exportBtn = document.createElement("button");
-        exportBtn.textContent = "Export";
-        exportBtn.classList.add("exportBtn");
-        exportBtn.style.marginTop = "20px";
-
-        function updateExportButtonState() {
-          let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
-          exportBtn.disabled = selectedCount === 0;
-        }
-
-        checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
-          cb.addEventListener("change", updateExportButtonState);
-        });
-        updateExportButtonState();
-
-        exportModalContent.appendChild(exportBtn);
-
-        exportBtn.addEventListener("click", function () {
-          let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
-          let selectedTabs = [];
-          selectedCheckboxes.forEach((cb) => {
-            let tabId = parseInt(cb.dataset.tabId, 10);
-            let tabObj = tabs.find((t) => t.id === tabId);
-            if (tabObj) {
-              selectedTabs.push(tabObj);
-            }
-          });
-          closeModal("close");
-
-          if (selectedTabs.length === 0) {
-            return;
-          }
-
-          if (selectedTabs.length === 1) {
-            let t = selectedTabs[0];
-            let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement("a");
-            a.href = url;
-            a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
-            a.click();
-            URL.revokeObjectURL(url);
-          } else {
-            let zip = new JSZip();
-            selectedTabs.forEach((t) => {
-              let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
-              zip.file(fileName, t.editorInstance.getValue());
-            });
-            zip.generateAsync({ type: "blob" }).then((content) => {
-              let a = document.createElement("a");
-              a.href = URL.createObjectURL(content);
-              a.download = "scripts.zip";
-              a.click();
-            });
-          }
-        });
-
-        displayModal();
+    function exportAllZip() {
+      if (tabs.length === 0) {
+        return;
+      }
+      if (tabs.length === 1) {
+        exportCurrent();
+        return;
       }
 
+      exportModalContent.innerHTML = "";
 
-      async function takeImage(domElem) {
-        const canvas = await html2canvas(domElem, {
-          scale: 2,
-          logging: false,
-          backgroundColor: null,
-          willReadFrequently: true,
-          allowTaint: true,
-          useCORS: true
-        });
+      let checklistContainer = document.createElement("div");
+      checklistContainer.style.display = "flex";
+      checklistContainer.style.flexWrap = "wrap";
+      checklistContainer.style.gap = "10px";
+      checklistContainer.style.padding = "10px";
 
-        return canvas.toDataURL("image/png");
-      }
+      tabs.forEach((tab) => {
+        let checkboxWrapper = document.createElement("div");
+        checkboxWrapper.style.display = "flex";
+        checkboxWrapper.style.alignItems = "center";
+        checkboxWrapper.style.flex = "1 0 auto";
 
-      async function getOutputDivClone() {
-        const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
-        const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-        const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-        const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-        const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
-        const outputWrapper = document.createElement('div');
-        outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
-        outputWrapper.style.backgroundColor = backgroundColor;
-        tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        outputWrapper.appendChild(tempOutputDiv);
-        tempOutputDiv.classList.add(...currentTab.outputElement.classList);
-        tempOutputDiv.style.width = maxWidth;
-        tempOutputDiv.style.maxWidth = maxWidth;
-        tempOutputDiv.style.height = 'auto';
-        tempOutputDiv.style.overflowY = 'visible';
-        return outputWrapper;
-      }
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.id = "export-tab-" + tab.id;
+        checkbox.dataset.tabId = tab.id;
 
-      async function getEditorDiv() {
-        const model = currentTab.editorInstance.getModel();
-        const code = model.getValue();
-        const language = "javascript";
+        let label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = tab.name;
+        label.style.marginLeft = "5px";
 
-        const codeLines = code.split('\n');
-
-        const highlightedLines = await Promise.all(
-          codeLines.map((line) => monaco.editor.colorize(line, language, {}))
-        );
-
-        const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
-        const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-        const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-        const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-        const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.style.backgroundColor = backgroundColor;
-        wrapperDiv.style.fontFamily = fontFamily;
-        wrapperDiv.style.fontSize = `${fontSize}px`;
-        wrapperDiv.style.lineHeight = `${lineHeight}px`;
-        wrapperDiv.style.whiteSpace = "pre-wrap";
-        wrapperDiv.style.width = maxWidth;
-        wrapperDiv.style.maxWidth = maxWidth;
-        wrapperDiv.style.color = textColor;
-
-        codeLines.forEach((line, index) => {
-          const lineWrapper = document.createElement('div');
-          lineWrapper.style.display = "flex";
-          lineWrapper.style.alignItems = "flex-start";
-
-          const lineNumberDiv = document.createElement('div');
-          lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-          lineNumberDiv.textContent = index + 1;
-
-          const codeLineDiv = document.createElement('div');
-          codeLineDiv.classList.add("codeLineDiv")
-          codeLineDiv.innerHTML = highlightedLines[index] || '';
-
-          lineWrapper.appendChild(lineNumberDiv);
-          lineWrapper.appendChild(codeLineDiv);
-          wrapperDiv.appendChild(lineWrapper);
-        });
-        return wrapperDiv;
-      }
-
-
-      async function exportImage() {
-        const wrapperBoth = document.createElement('div');
-        wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        wrapperBoth.appendChild(await getEditorDiv());
-        const exportBtnsWrapper = document.createElement('div');
-        exportBtnsWrapper.classList.add("exportBtnsWrapper");
-        if (currentTab.outputElement.innerHTML.trim()) {
-          wrapperBoth.appendChild(await getOutputDivClone());
-          const exportCheckbox = document.createElement("input");
-          exportCheckbox.type = "checkbox";
-          exportCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(exportCheckbox);
-          exportCheckbox.checked = true;
-          exportCheckbox.addEventListener("change", () => {
-            tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          });
-        }
-        exportModalContent.appendChild(wrapperBoth);
-        const exportBtn = document.createElement('button');
-        exportBtn.textContent = "Export Image";
-        exportBtn.classList.add("exportBtn");
-        exportBtnsWrapper.appendChild(exportBtn);
-        exportModalContent.appendChild(exportBtnsWrapper);
-        exportBtn.onclick = async function () {
-          exportBtn.disabled = true;
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const imgSrc = await takeImage(wrapperBoth);
-          closeModal("close");
-          const bothImg = new Image();
-          bothImg.src = imgSrc;
-          let theyReady = false;
-
-          bothImg.onload = () => {
-            theyReady = true;
-          };
-
-          while (!theyReady) {
-            await new Promise((resolve) => setTimeout(resolve, 150));
-          }
-
-          canvas.width = bothImg.width;
-          canvas.height = bothImg.height
-          ctx.drawImage(bothImg, 0, 0);
-
-          const a = document.createElement('a');
-          a.href = canvas.toDataURL("image/png");
-          a.download = `${currentTab.name}.png`;
-          a.click();
-        }
-
-        displayModal()
-      }
-
-
-      async function exportPDF() {
-        const editorDiv = await getEditorDiv();
-        const wrapBoth = document.createElement('div');
-        wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        exportModalContent.appendChild(wrapBoth);
-        wrapBoth.appendChild(editorDiv);
-        const exportBtnsWrapper = document.createElement('div');
-        exportBtnsWrapper.classList.add("exportBtnsWrapper");
-        if (currentTab.outputElement.innerHTML.trim()) {
-          const outputDiv = await getOutputDivClone();
-          outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-          wrapBoth.appendChild(outputDiv);
-          const exportCheckbox = document.createElement("input");
-          exportCheckbox.type = "checkbox";
-          exportCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(exportCheckbox);
-          exportCheckbox.checked = true;
-          exportCheckbox.addEventListener("change", () => {
-            outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          });
-        }
-        const exportBtn = document.createElement('button');
-        exportBtn.textContent = "Export PDF";
-        exportBtn.classList.add("exportBtn");
-        exportBtnsWrapper.appendChild(exportBtn);
-        exportModalContent.appendChild(exportBtnsWrapper);
-        exportBtn.onclick = async function () {
-          exportBtn.disabled = true;
-          const contentWidth = wrapBoth.offsetWidth;
-          const contentHeight = wrapBoth.offsetHeight;
-          let doc = new jsPDF({
-            orientation: contentWidth > contentHeight ? 'l' : 'p',
-            unit: 'px',
-            format: [contentWidth, contentHeight]
-          });
-          await new Promise(resolve => {
-            doc.html(wrapBoth, {
-              callback: resolve,
-              x: 0,
-              y: 0,
-              margin: [0, 0, 0, 0],
-              html2canvas: { scale: 1, logging: false }
-            });
-          });
-          closeModal("close");
-          if (doc.internal.getNumberOfPages() > 1) {
-            for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-              doc.deletePage(i);
-            }
-          }
-          doc.save(`${currentTab.name}.pdf`);
-        }
-        displayModal();
-      }
-
-      function exportCurrent() {
-        if (activeTabId === null) {
-          alert("No tab to export.");
-          return;
-        }
-        let t = tabs.find((x) => x.id === activeTabId);
-        let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function displayModal() {
-        modal.style.display = "block";
-        modal.dispatchEvent(new Event("modalOpened"));
-      }
-
-      function closeModal(event) {
-        if (event.target === modal || event === "close") {
-          modal.style.display = "none";
-          modal.dispatchEvent(new Event("modalClosed"));
-        }
-      }
-      modal.addEventListener("modalOpened", () => {
-        document.addEventListener("click", closeModal);
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checklistContainer.appendChild(checkboxWrapper);
       });
-      modal.addEventListener("modalClosed", () => {
-        document.removeEventListener("click", closeModal);
-        exportModalContent.innerHTML = "";
+      exportModalContent.appendChild(checklistContainer);
+
+      let exportBtn = document.createElement("button");
+      exportBtn.textContent = "Export";
+      exportBtn.classList.add("exportBtn");
+      exportBtn.style.marginTop = "20px";
+
+      function updateExportButtonState() {
+        let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
+        exportBtn.disabled = selectedCount === 0;
+      }
+
+      checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
+        cb.addEventListener("change", updateExportButtonState);
       });
-      closeModalBtn.addEventListener("click", () => {
+      updateExportButtonState();
+
+      exportModalContent.appendChild(exportBtn);
+
+      exportBtn.addEventListener("click", function () {
+        let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
+        let selectedTabs = [];
+        selectedCheckboxes.forEach((cb) => {
+          let tabId = parseInt(cb.dataset.tabId, 10);
+          let tabObj = tabs.find((t) => t.id === tabId);
+          if (tabObj) {
+            selectedTabs.push(tabObj);
+          }
+        });
         closeModal("close");
+
+        if (selectedTabs.length === 0) {
+          return;
+        }
+
+        if (selectedTabs.length === 1) {
+          let t = selectedTabs[0];
+          let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+          let url = URL.createObjectURL(blob);
+          let a = document.createElement("a");
+          a.href = url;
+          a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
+          a.click();
+          URL.revokeObjectURL(url);
+        } else {
+          let zip = new JSZip();
+          selectedTabs.forEach((t) => {
+            let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
+            zip.file(fileName, t.editorInstance.getValue());
+          });
+          zip.generateAsync({ type: "blob" }).then((content) => {
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "scripts.zip";
+            a.click();
+          });
+        }
       });
 
-      function modalIsOpen() {
-        return modal.style.display === "block";
+      displayModal();
+    }
+
+
+    async function takeImage(domElem) {
+      const canvas = await html2canvas(domElem, {
+        scale: 2,
+        logging: false,
+        backgroundColor: null,
+        willReadFrequently: true,
+        allowTaint: true,
+        useCORS: true
+      });
+
+      return canvas.toDataURL("image/png");
+    }
+
+    async function getOutputDivClone() {
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const outputWrapper = document.createElement('div');
+      outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.style.backgroundColor = backgroundColor;
+      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      outputWrapper.appendChild(tempOutputDiv);
+      tempOutputDiv.classList.add(...currentTab.outputElement.classList);
+      tempOutputDiv.style.width = maxWidth;
+      tempOutputDiv.style.maxWidth = maxWidth;
+      tempOutputDiv.style.height = 'auto';
+      tempOutputDiv.style.overflowY = 'visible';
+      return outputWrapper;
+    }
+
+    async function getEditorDiv() {
+      const model = currentTab.editorInstance.getModel();
+      const code = model.getValue();
+      const language = "javascript";
+
+      const codeLines = code.split('\n');
+
+      const highlightedLines = await Promise.all(
+        codeLines.map((line) => monaco.editor.colorize(line, language, {}))
+      );
+
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.style.backgroundColor = backgroundColor;
+      wrapperDiv.style.fontFamily = fontFamily;
+      wrapperDiv.style.fontSize = `${fontSize}px`;
+      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.whiteSpace = "pre-wrap";
+      wrapperDiv.style.width = maxWidth;
+      wrapperDiv.style.maxWidth = maxWidth;
+      wrapperDiv.style.color = textColor;
+
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
+        lineWrapper.style.alignItems = "flex-start";
+
+        const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.textContent = index + 1;
+
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.classList.add("codeLineDiv")
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
+      return wrapperDiv;
+    }
+
+
+    async function exportImage() {
+      const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      wrapperBoth.appendChild(await getEditorDiv());
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        wrapperBoth.appendChild(await getOutputDivClone());
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+        });
       }
-      alert(4);
+      exportModalContent.appendChild(wrapperBoth);
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        let theyReady = false;
+
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
+        while (!theyReady) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height
+        ctx.drawImage(bothImg, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${currentTab.name}.png`;
+        a.click();
+      }
+
+      displayModal()
+    }
+
+
+    async function exportPDF() {
+      const editorDiv = await getEditorDiv();
+      const wrapBoth = document.createElement('div');
+      wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      exportModalContent.appendChild(wrapBoth);
+      wrapBoth.appendChild(editorDiv);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputDiv = await getOutputDivClone();
+        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        wrapBoth.appendChild(outputDiv);
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+        });
+      }
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export PDF";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const contentWidth = wrapBoth.offsetWidth;
+        const contentHeight = wrapBoth.offsetHeight;
+        let doc = new jsPDF({
+          orientation: contentWidth > contentHeight ? 'l' : 'p',
+          unit: 'px',
+          format: [contentWidth, contentHeight]
+        });
+        await new Promise(resolve => {
+          doc.html(wrapBoth, {
+            callback: resolve,
+            x: 0,
+            y: 0,
+            margin: [0, 0, 0, 0],
+            html2canvas: { scale: 1, logging: false }
+          });
+        });
+        closeModal("close");
+        if (doc.internal.getNumberOfPages() > 1) {
+          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+            doc.deletePage(i);
+          }
+        }
+        doc.save(`${currentTab.name}.pdf`);
+      }
+      displayModal();
+    }
+
+    function exportCurrent() {
+      if (activeTabId === null) {
+        alert("No tab to export.");
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function displayModal() {
+      modal.style.display = "block";
+      modal.dispatchEvent(new Event("modalOpened"));
+    }
+
+    function closeModal(event) {
+      if (event.target === modal || event === "close") {
+        modal.style.display = "none";
+        modal.dispatchEvent(new Event("modalClosed"));
+      }
+    }
+    modal.addEventListener("modalOpened", () => {
+      document.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("modalClosed", () => {
+      document.removeEventListener("click", closeModal);
+      exportModalContent.innerHTML = "";
+    });
+    closeModalBtn.addEventListener("click", () => {
+      closeModal("close");
+    });
+
+    function modalIsOpen() {
+      return modal.style.display === "block";
+    }
+    alert(4);
   </script>
 </body>
 
