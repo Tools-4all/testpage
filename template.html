@@ -1157,17 +1157,20 @@
       margin-top: 10px;
     }
 
-    /* Rich Text Header styles */
+    /* ---------- Rich Header & Popover Styles ---------- */
+
+    /* The contenteditable header that appears in the export wrapper */
     .rich-header-wrapper {
-      position: relative;
       margin-bottom: 10px;
-      padding: 8px;
+      padding: 8px 36px 8px 8px;
+      /* leave space on the right for the toggle icon */
       border: 1px solid #ccc;
       background-color: #fafafa;
       min-height: 40px;
       font-family: Arial, sans-serif;
       font-size: 16px;
       color: #333;
+      position: relative;
     }
 
     .rich-header-wrapper.empty::before {
@@ -1176,38 +1179,59 @@
       pointer-events: none;
     }
 
-    /* Controls container – these will be positioned outside the export wrapper */
-    .rich-controls {
-      margin-bottom: 5px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap;
+    /* The toggle button icon that opens the popover (placed absolutely within a container outside the capture) */
+    .rich-header-toggle {
+      position: absolute;
+      right: -30px;
+      /* positioned outside the header wrapper */
+      top: 50%;
+      transform: translateY(-50%);
+      background: #007acc;
+      color: #fff;
+      border: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 24px;
+      text-align: center;
     }
 
-    .rich-controls label {
+    /* Popover container for the rich text controls */
+    .rich-header-popover {
+      position: absolute;
+      z-index: 1000;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 3px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .rich-header-popover label {
       font-size: 13px;
       color: #555;
+      margin-right: 4px;
     }
 
-    .rich-controls select,
-    .rich-controls input[type="color"],
-    .rich-controls input[type="number"] {
-      padding: 3px;
+    .rich-header-popover select,
+    .rich-header-popover input[type="color"],
+    .rich-header-popover input[type="number"] {
+      padding: 2px;
       font-size: 13px;
+      margin-right: 8px;
     }
 
-    .rich-controls button.toggle-controls {
-      background: #007acc;
-      color: white;
+    .rich-header-popover button.close-popover {
+      background: #cc0000;
+      color: #fff;
       border: none;
-      padding: 4px 8px;
+      padding: 2px 6px;
       cursor: pointer;
       border-radius: 3px;
-    }
-
-    .rich-controls button.toggle-controls:hover {
-      background: #005f99;
+      font-size: 12px;
     }
   </style>
 </head>
@@ -3045,49 +3069,73 @@ prompt("This is a prompt:");
       return wrapperDiv;
     }
 
-    // Creates a rich text header with controls.
-    // placeholder: string shown when no text is entered.
-    // idPrefix: identifier to differentiate between editor and output headers.
-    function createRichTextHeader(placeholder, idPrefix) {
-      // The header div that will be placed in the export wrapper.
+
+    // Create a rich header that returns two things:
+    // 1. A contenteditable header div (to be included in the export wrapper)
+    // 2. A toggle button that opens a floating popover with formatting controls
+    function createRichTextHeader(placeholder, headerId) {
+      // Create the header (contenteditable) element
       const headerDiv = document.createElement('div');
       headerDiv.classList.add('rich-header-wrapper', 'empty');
       headerDiv.contentEditable = true;
       headerDiv.setAttribute('data-placeholder', placeholder);
+      headerDiv.id = headerId; // assign an ID for positioning
+
       headerDiv.addEventListener('input', () => {
-        // Remove "empty" class if there is content, add it when empty.
         headerDiv.classList.toggle('empty', headerDiv.innerText.trim() === '');
       });
 
-      // Create the controls container (to be placed OUTSIDE the wrapper)
-      const controlsDiv = document.createElement('div');
-      controlsDiv.classList.add('rich-controls');
-      controlsDiv.id = idPrefix + '-controls';
-
-      // Toggle button to show/hide controls.
+      // Create the toggle button that will open the popover.
+      // Note: This toggle button will be positioned absolutely outside the export wrapper.
       const toggleBtn = document.createElement('button');
-      toggleBtn.classList.add('toggle-controls');
-      toggleBtn.textContent = "Hide Controls";
-      toggleBtn.addEventListener('click', () => {
-        const isVisible = controlsDiv.getAttribute('data-visible') !== 'false';
-        if (isVisible) {
-          // Hide all controls except the toggle button.
-          Array.from(controlsDiv.children).forEach(el => {
-            if (el !== toggleBtn) el.style.display = 'none';
-          });
-          toggleBtn.textContent = "Show Controls";
-          controlsDiv.setAttribute('data-visible', 'false');
+      toggleBtn.classList.add('rich-header-toggle');
+      toggleBtn.innerHTML = '&#9998;'; // pencil icon
+      // When clicked, it toggles the popover (see below)
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Toggle visibility of the popover for this header.
+        const popover = getOrCreatePopoverFor(headerDiv);
+        if (popover.style.display === 'block') {
+          popover.style.display = 'none';
         } else {
-          Array.from(controlsDiv.children).forEach(el => {
-            el.style.display = '';
-          });
-          toggleBtn.textContent = "Hide Controls";
-          controlsDiv.setAttribute('data-visible', 'true');
+          positionPopover(popover, headerDiv);
+          popover.style.display = 'block';
         }
       });
-      controlsDiv.appendChild(toggleBtn);
 
-      // Font family selector
+      // Append the toggle button to a container outside the export wrapper.
+      // For our creative solution, we will append it directly to document.body
+      // and update its position when the export modal is shown.
+      document.body.appendChild(toggleBtn);
+
+      // Return both the headerDiv and the toggle button.
+      // (Your export function will include headerDiv in the capture wrapper.)
+      return { headerDiv, toggleBtn };
+    }
+
+    // Create or get a floating popover for a given header.
+    // The popover is created once per header (its id will be based on the header's id).
+    function getOrCreatePopoverFor(headerDiv) {
+      let popover = document.getElementById(headerDiv.id + '-popover');
+      if (popover) {
+        return popover;
+      }
+      // Create the popover element
+      popover = document.createElement('div');
+      popover.classList.add('rich-header-popover');
+      popover.id = headerDiv.id + '-popover';
+
+      // Create a close button inside the popover
+      const closeBtn = document.createElement('button');
+      closeBtn.classList.add('close-popover');
+      closeBtn.textContent = 'Close';
+      closeBtn.addEventListener('click', (e) => {
+        popover.style.display = 'none';
+      });
+      popover.appendChild(closeBtn);
+
+      // Create controls: Font family, font size, text color, background color.
+      // Font Family
       const fontFamilyLabel = document.createElement('label');
       fontFamilyLabel.textContent = "Font:";
       const fontFamilySelect = document.createElement('select');
@@ -3101,10 +3149,10 @@ prompt("This is a prompt:");
       fontFamilySelect.addEventListener('change', () => {
         headerDiv.style.fontFamily = fontFamilySelect.value;
       });
-      controlsDiv.appendChild(fontFamilyLabel);
-      controlsDiv.appendChild(fontFamilySelect);
+      popover.appendChild(fontFamilyLabel);
+      popover.appendChild(fontFamilySelect);
 
-      // Font size selector
+      // Font Size
       const fontSizeLabel = document.createElement('label');
       fontSizeLabel.textContent = "Size:";
       const fontSizeInput = document.createElement('input');
@@ -3116,89 +3164,98 @@ prompt("This is a prompt:");
       fontSizeInput.addEventListener('change', () => {
         headerDiv.style.fontSize = fontSizeInput.value + "px";
       });
-      controlsDiv.appendChild(fontSizeLabel);
-      controlsDiv.appendChild(fontSizeInput);
+      popover.appendChild(fontSizeLabel);
+      popover.appendChild(fontSizeInput);
 
-      // Font color picker
-      const fontColorLabel = document.createElement('label');
-      fontColorLabel.textContent = "Text Color:";
-      const fontColorInput = document.createElement('input');
-      fontColorInput.type = "color";
-      fontColorInput.value = "#333333";
-      fontColorInput.addEventListener('change', () => {
-        headerDiv.style.color = fontColorInput.value;
+      // Text Color
+      const textColorLabel = document.createElement('label');
+      textColorLabel.textContent = "Text:";
+      const textColorInput = document.createElement('input');
+      textColorInput.type = "color";
+      textColorInput.value = "#333333";
+      textColorInput.addEventListener('change', () => {
+        headerDiv.style.color = textColorInput.value;
       });
-      controlsDiv.appendChild(fontColorLabel);
-      controlsDiv.appendChild(fontColorInput);
+      popover.appendChild(textColorLabel);
+      popover.appendChild(textColorInput);
 
-      // Background color picker
+      // Background Color
       const bgColorLabel = document.createElement('label');
-      bgColorLabel.textContent = "BG Color:";
+      bgColorLabel.textContent = "BG:";
       const bgColorInput = document.createElement('input');
       bgColorInput.type = "color";
       bgColorInput.value = "#fafafa";
       bgColorInput.addEventListener('change', () => {
         headerDiv.style.backgroundColor = bgColorInput.value;
       });
-      controlsDiv.appendChild(bgColorLabel);
-      controlsDiv.appendChild(bgColorInput);
+      popover.appendChild(bgColorLabel);
+      popover.appendChild(bgColorInput);
 
-      // Return both header and its controls.
-      return { headerDiv, controlsDiv };
+      // Append the popover to document.body so it is not captured in exports.
+      document.body.appendChild(popover);
+
+      return popover;
     }
 
+    // Reposition the popover relative to the header element.
+    // This function positions the popover below the header toggle button.
+    function positionPopover(popover, headerDiv) {
+      // Get header's bounding rect
+      const rect = headerDiv.getBoundingClientRect();
+      // Find the corresponding toggle button (assumed to be next to the header)
+      const toggleBtn = document.querySelector('.rich-header-toggle[aria-header="' + headerDiv.id + '"]') ||
+        document.querySelector('.rich-header-toggle:not([aria-header])');
+      // In our implementation, we stored the toggle button outside.
+      // Here we simply position the popover relative to the header.
+      popover.style.top = (rect.top + window.scrollY) + 30 + "px"; // 30px below header top
+      popover.style.left = (rect.left + window.scrollX) + "px";
+    }
 
+    // OPTIONAL: Reposition all popovers on window resize
+    window.addEventListener('resize', () => {
+      document.querySelectorAll('.rich-header-popover').forEach(popover => {
+        const headerId = popover.id.replace('-popover', '');
+        const headerDiv = document.getElementById(headerId);
+        if (headerDiv && popover.style.display === 'block') {
+          positionPopover(popover, headerDiv);
+        }
+      });
+    });
 
+    /* ----- EXAMPLE USAGE IN EXPORT FUNCTIONS ----- */
+
+    // In your exportImage function, for instance:
     async function exportImage() {
-      // Create a container that will be captured
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Create a rich header for the editor (top of the image)
-      const { headerDiv: editorHeader, controlsDiv: editorControls } = createRichTextHeader("Enter your remarks for the editor here...", "editorHeader");
-      // Place the header inside the capture wrapper.
+      // Create the rich header for the editor section
+      const { headerDiv: editorHeader, toggleBtn: editorToggle } = createRichTextHeader(
+        "Enter your editor remarks here...", "editor-header"
+      );
+      // Position the toggle button next to the export wrapper.
+      // For creative placement, here we append it to document.body and reposition later.
+      // (You may later style it to appear near your export modal.)
+
+      // Append the header (editor remarks) into the export container.
       wrapperBoth.appendChild(editorHeader);
 
-      // (Place your rich header controls outside the wrapper)
-      // For example, append them to a container above the wrapper in your modal.
-      // Assuming you have a container with id "richControlsContainer" in your export modal.
-      let richControlsContainer = document.getElementById("richControlsContainer-editor");
-      if (!richControlsContainer) {
-        richControlsContainer = document.createElement("div");
-        richControlsContainer.id = "richControlsContainer-editor";
-        // Insert this container above wrapperBoth so that it is not captured.
-        exportModalContent.parentElement.insertBefore(richControlsContainer, exportModalContent);
-      }
-      richControlsContainer.innerHTML = ""; // clear previous controls if any
-      richControlsContainer.appendChild(editorControls);
-
-      // Append the editor div (the code area) below the header.
+      // Append the editor div (code area) below the header.
       wrapperBoth.appendChild(await getEditorDiv());
 
-      // Continue as before with export buttons etc.
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add("exportBtnsWrapper");
-
-      // (Optional: If there is output content to add)
+      // (Optionally add output section if available)
       if (currentTab.outputElement.innerHTML.trim()) {
-        const { headerDiv: outputHeader, controlsDiv: outputControls } = createRichTextHeader("Enter output remarks here...", "outputHeader");
-        // Append output header and then output clone
+        const { headerDiv: outputHeader, toggleBtn: outputToggle } = createRichTextHeader(
+          "Enter your output remarks here...", "output-header"
+        );
         wrapperBoth.appendChild(outputHeader);
-
-        let richControlsContainerOut = document.getElementById("richControlsContainer-output");
-        if (!richControlsContainerOut) {
-          richControlsContainerOut = document.createElement("div");
-          richControlsContainerOut.id = "richControlsContainer-output";
-          exportModalContent.parentElement.insertBefore(richControlsContainerOut, exportModalContent);
-        }
-        richControlsContainerOut.innerHTML = "";
-        richControlsContainerOut.appendChild(outputControls);
-
         wrapperBoth.appendChild(await getOutputDivClone());
       }
 
       exportModalContent.appendChild(wrapperBoth);
 
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
@@ -3213,11 +3270,9 @@ prompt("This is a prompt:");
         closeModal("close");
         const bothImg = new Image();
         bothImg.src = imgSrc;
-        let theyReady = false;
-        bothImg.onload = () => { theyReady = true; };
-        while (!theyReady) {
-          await new Promise((resolve) => setTimeout(resolve, 150));
-        }
+        await new Promise(resolve => {
+          bothImg.onload = resolve;
+        });
         canvas.width = bothImg.width;
         canvas.height = bothImg.height;
         ctx.drawImage(bothImg, 0, 0);
@@ -3229,43 +3284,22 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-
-
+    // Similarly, in exportPDF:
     async function exportPDF() {
-      // Create a container for export PDF
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Create rich header for the editor section
-      const { headerDiv: editorHeader, controlsDiv: editorControls } = createRichTextHeader("Enter your remarks for the editor here...", "editorHeader");
+      const { headerDiv: editorHeader } = createRichTextHeader(
+        "Enter your editor remarks here...", "editor-header"
+      );
       wrapBoth.appendChild(editorHeader);
-
-      let richControlsContainer = document.getElementById("richControlsContainer-editor");
-      if (!richControlsContainer) {
-        richControlsContainer = document.createElement("div");
-        richControlsContainer.id = "richControlsContainer-editor";
-        exportModalContent.parentElement.insertBefore(richControlsContainer, exportModalContent);
-      }
-      richControlsContainer.innerHTML = "";
-      richControlsContainer.appendChild(editorControls);
-
-      // Append the editor div below the header.
       wrapBoth.appendChild(await getEditorDiv());
 
-      // If there is output content, create its header and output clone.
       if (currentTab.outputElement.innerHTML.trim()) {
-        const { headerDiv: outputHeader, controlsDiv: outputControls } = createRichTextHeader("Enter your remarks for the output here...", "outputHeader");
+        const { headerDiv: outputHeader } = createRichTextHeader(
+          "Enter your output remarks here...", "output-header"
+        );
         wrapBoth.appendChild(outputHeader);
-
-        let richControlsContainerOut = document.getElementById("richControlsContainer-output");
-        if (!richControlsContainerOut) {
-          richControlsContainerOut = document.createElement("div");
-          richControlsContainerOut.id = "richControlsContainer-output";
-          exportModalContent.parentElement.insertBefore(richControlsContainerOut, exportModalContent);
-        }
-        richControlsContainerOut.innerHTML = "";
-        richControlsContainerOut.appendChild(outputControls);
-
         wrapBoth.appendChild(await getOutputDivClone());
       }
 
@@ -3297,10 +3331,8 @@ prompt("This is a prompt:");
           });
         });
         closeModal("close");
-        if (doc.internal.getNumberOfPages() > 1) {
-          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-            doc.deletePage(i);
-          }
+        while (doc.internal.getNumberOfPages() > 1) {
+          doc.deletePage(doc.internal.getNumberOfPages());
         }
         doc.save(`${currentTab.name}.pdf`);
       }
