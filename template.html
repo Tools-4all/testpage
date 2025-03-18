@@ -2251,6 +2251,7 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
+        // Lists remain unchanged.
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2275,11 +2276,32 @@ prompt("This is a prompt:");
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
+        // A pattern to match a sequence of operator characters.
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
         tokenizer: {
           root: [
-            // Identifiers & keywords
+            // Whitespace
+            [/[ \t\r\n]+/, 'white'],
+
+            // Comments (flat – no nested states)
+            [/\/\*[\s\S]*?\*\//, 'comment'],
+            [/\/\/.*$/, 'comment'],
+
+            // Attribute access: a dot followed by an identifier.
+            // We split the dot (as a delimiter) and the identifier (as attribute).
+            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
+
+            // Method calls: an identifier immediately followed by '('.
+            [/[a-zA-Z_$][\w$]*(?=\()/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@builtins': 'function',
+                '@default': 'method'
+              }
+            }],
+
+            // General identifiers & keywords.
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2288,8 +2310,26 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Brackets & operators
+            // Numbers – flat matching for hex, binary, octal and decimals.
+            [/\b0x[0-9A-Fa-f]+\b/, 'number.hex'],
+            [/\b0b[01]+\b/, 'number.binary'],
+            [/\b0o[0-7]+\b/, 'number.octal'],
+            [/\b\d+(\.\d+)?([eE][\-+]?\d+)?\b/, 'number'],
+
+            // Strings – match the entire string (without breaking out escapes).
+            [/\"([^"\\]|\\.)*\"/, 'string'],
+            [/\'([^'\\]|\\.)*\'/, 'string'],
+
+            // Regular expressions – a simple (flat) pattern.
+            [/\/([^\/\\]|\\.)+\/[gimuy]*/, 'regexp'],
+
+            // Brackets
             [/[{}()\[\]]/, '@brackets'],
+
+            // Delimiters (e.g. semicolon, comma, dot – note that dot is already handled above)
+            [/[;,.]/, 'delimiter'],
+
+            // Operators and symbols.
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2297,31 +2337,13 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Delimiters
-            [/[;,.]/, 'delimiter'],
-
-            // Simple numbers (decimals & hex)
-            [/\b0x[0-9A-Fa-f]+\b/, 'number.hex'],
-            [/\b\d+(\.\d+)?\b/, 'number'],
-
-            // Simple strings (double & single quoted)
-            [/\"([^"\\]|\\.)*\"/, 'string'],
-            [/\'([^'\\]|\\.)*\'/, 'string'],
-
-            // Simple regex literals (with optional flags)
-            [/\/([^\/\\]|\\.)*\/[gimuy]*/, 'regexp'],
-
-            // Whitespace and comments
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\/.*$/, 'comment'],
-            [/\/\*.*\*\//, 'comment'],
-
-            // Fallback
-            [/.+/, '']
+            // Fallback: match any single character.
+            [/.*/, '']
           ]
         }
       });
 
+      // The theme remains unchanged.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
