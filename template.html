@@ -2276,6 +2276,11 @@ prompt("This is a prompt:");
         ],
 
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
+        digits: /\d+(_+\d+)*/,
+        octaldigits: /[0-7]+(_+[0-7]+)*/,
+        binarydigits: /[0-1]+(_+[0-1]+)*/,
+        hexdigits: /[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
 
         tokenizer: {
           root: [
@@ -2288,18 +2293,7 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Minimal string matching (double & single quotes)
-            [/"([^"\\]|\\.)*"/, 'string'],
-            [/'([^'\\]|\\.)*'/, 'string'],
-
-            // Minimal number matching
-            [/\b\d+(\.\d+)?\b/, 'number'],
-
-            // Minimal regex literal matching
-            [/\/[^\/\n]+\/[gimsuy]*/, 'regexp'],
-
-            // Minimal whitespace matching
-            [/\s+/, 'white'],
+            { include: '@whitespace' },
 
             // Brackets & operators
             [/[{}()\[\]]/, '@brackets'],
@@ -2310,8 +2304,112 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Delimiters
+            // Numbers
+            [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
+            [/@digits+/, 'number'],
+            [/0x(@hexdigits)/, 'number.hex'],
+            [/0b(@binarydigits)/, 'number.binary'],
+            [/0o(@octaldigits)/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
+
+            // Strings
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            [/"/, { token: 'string.quote', next: '@stringDouble' }],
+            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+
+            // Template strings (backticks)
+            [/`/, { token: 'string.quote', next: '@templateString' }],
+
+            // Regex literals
+            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+          ],
+
+          // Regular expressions
+          regexp: [
+            { include: '@regexrange' },
+            [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
+            [/[()]/, 'regexp.escape.control'],
+            [/[\^$|?*+\.]/, 'regexp.escape.control'],
+            [/[^\{(\^$|?*+\.]+/, 'regexp'],
+            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
+          ],
+          regexpBraces: [
+            [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
+            { include: '@regexrange' },
+            [/.*/, 'regexp']
+          ],
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.escape.control'],
+            [/\[/, 'regexp.escape.control'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/\\./, 'regexp.escape'],
+            [/./, 'regexp']
+          ],
+
+          // Double-quoted strings
+          stringDouble: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, { token: 'string.quote', next: '@pop' }]
+          ],
+
+          // Single-quoted strings
+          stringSingle: [
+            [/[^\\']+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, { token: 'string.quote', next: '@pop' }]
+          ],
+
+          // Template string state
+          templateString: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
+            [/`/, { token: 'string.quote', next: '@pop' }],
+            [/[^\\`$]+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/\$/, 'string']
+          ],
+
+          // Template string interpolation state:
+          // Note: We pop the state when encountering a closing curly bracket.
+          templateStringInterp: [
+            [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
+            { include: '@innerJS' }
+          ],
+
+          // Inner JS state for interpolation (excludes template string starts)
+          innerJS: [
+            [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
+            { include: '@whitespace' },
+            [/[{}()\[\]]/, '@brackets'],
+            [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
+            [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
+            [/@digits+/, 'number'],
+            [/0x(@hexdigits)/, 'number.hex'],
+            [/0b(@binarydigits)/, 'number.binary'],
+            [/0o(@octaldigits)/, 'number.octal'],
+            [/[;,.]/, 'delimiter'],
+            [/"/, { token: 'string.quote', next: '@stringDouble' }],
+            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+            { include: '@whitespace' }
+          ],
+
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            // Uncomment next line to allow nested comments:
+            // [/\/\*/, 'comment', '@push'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
           ]
         }
       });
@@ -2324,8 +2422,9 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'function', foreground: '4EC9B0' },
+          { token: 'method', foreground: '4EC9B0' },
           { token: 'attribute', foreground: 'CE9178' },
+          { token: 'function', foreground: 'DCDCAA' },
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' },
@@ -2341,7 +2440,6 @@ prompt("This is a prompt:");
       // Initialize your editor (or call your tab creation function)
       createTab();
     });
-
 
 
     function updateStatusPosition() {
