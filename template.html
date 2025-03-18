@@ -2319,6 +2319,7 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
             // Template strings (backticks)
+            [/`/, { token: 'string.quote', next: '@templateString' }],
 
             // Regex literals
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
@@ -2363,11 +2364,39 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
+          // Template string state
+          templateString: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
+            [/`/, { token: 'string.quote', next: '@pop' }],
+            [/[^\\`$]+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/\$/, 'string']
+          ],
 
           // Template string interpolation state:
           // Note: We pop the state when encountering a closing curly bracket.
+          templateStringInterp: [
+            [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
+            { include: '@innerJS' }
+          ],
 
           // Inner JS state for interpolation (excludes template string starts)
+          innerJS: [
+            [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
+            { include: '@whitespace' },
+            [/[{}()\[\]]/, '@brackets'],
+            [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
+            [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
+            [/@digits+/, 'number'],
+            [/0x(@hexdigits)/, 'number.hex'],
+            [/0b(@binarydigits)/, 'number.binary'],
+            [/0o(@octaldigits)/, 'number.octal'],
+            [/[;,.]/, 'delimiter'],
+            [/"/, { token: 'string.quote', next: '@stringDouble' }],
+            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+            { include: '@whitespace' }
+          ],
 
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
