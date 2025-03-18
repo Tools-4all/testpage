@@ -2266,9 +2266,9 @@ prompt("This is a prompt:");
 
         // Keywords that get the special color (#569cd6) in VS Code Dark Modern
         specialKeywords: [
-          'let', 'const', 'var',
+          'let', 'const', 'var', 'function',
           'null', 'undefined', 'true', 'false', 'void', 'typeof',
-          'new', 'delete', 'instanceof', "async function"
+          'new', 'delete', 'instanceof'
         ],
 
         typeKeywords: [
@@ -2302,6 +2302,8 @@ prompt("This is a prompt:");
           common: [
             // Explicitly match the arrow operator (=>)
             [/=>/, 'arrow'],
+
+            [/\basync(?=\s+function\b)/, 'special.keyword'],
 
             // Dot-prefixed methods: a dot followed by an identifier with a lookahead for '('.
             [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
