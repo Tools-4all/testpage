@@ -3082,7 +3082,7 @@ prompt("This is a prompt:");
         exportCheckbox.checked = true;
         exportCheckbox.addEventListener("change", () => {
           outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.display = exportCheckbox.checked ? "block" : "visible";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
         });
       }
       const exportBtn = document.createElement('button');
