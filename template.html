@@ -2251,6 +2251,7 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
+        // list of keywords and builtins as in VS Code
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2275,6 +2276,7 @@ prompt("This is a prompt:");
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
+        // regex for symbols and escapes
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
         escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
         digits: /\d+(_+\d+)*/,
@@ -2284,7 +2286,7 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
-            // Identifiers & keywords
+            // identifiers and keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2294,7 +2296,7 @@ prompt("This is a prompt:");
             }],
             { include: '@whitespace' },
 
-            // Brackets & operators
+            // brackets and operators
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, {
               cases: {
@@ -2303,7 +2305,7 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Numbers
+            // numbers
             [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
             [/0x(@hexdigits)/, 'number.hex'],
@@ -2311,30 +2313,30 @@ prompt("This is a prompt:");
             [/0o(@octaldigits)/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
 
-            // String literals (remove unterminated string rules)
+            // strings: note we do not use unterminated-string rules here
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
-            // Template strings (backticks)
-            [/`/, { token: 'string.quote', next: '@templateString' }],
+            // template (backtick) strings
+            [/`/, { token: 'string.quote', next: '@stringBacktick' }],
 
-            // Regex literals
+            // regex literals (make sure a slash is not confused with division)
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
+          // whitespace and comments
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
             [/\/\/.*$/, 'comment']
           ],
-
           comment: [
             [/[^\/*]+/, 'comment'],
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ],
 
-          // Double-quoted strings
+          // double-quoted strings
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2342,7 +2344,7 @@ prompt("This is a prompt:");
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Single-quoted strings
+          // single-quoted strings
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2350,21 +2352,22 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Template string state that accepts newlines
-          templateString: [
+          // backtick (template) strings – allow newlines and handle interpolation
+          stringBacktick: [
             [/`/, { token: 'string.quote', next: '@pop' }],
-            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
+            [/\$\{/, { token: 'delimiter.bracket', next: '@interpolation' }],
+            [/[^\\`$]+/, 'string'],
             [/\\./, 'string.escape'],
-            [/.|\n/, 'string']
+            [/\$/, 'string']
           ],
 
-          // Interpolation state: pop on }
-          templateStringInterp: [
+          // interpolation inside template strings: delegate to the root rules
+          interpolation: [
             [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
-            { include: '@root' }
+            { include: 'root' }
           ],
 
-          // Regular expression state
+          // regular expression literals
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
@@ -2373,13 +2376,11 @@ prompt("This is a prompt:");
             [/[^\{(\^$|?*+\.]+/, 'regexp'],
             [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
-
           regexpBraces: [
             [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
             { include: '@regexrange' },
             [/.*/, 'regexp']
           ],
-
           regexrange: [
             [/-/, 'regexp.escape.control'],
             [/\^/, 'regexp.escape.control'],
@@ -2414,7 +2415,7 @@ prompt("This is a prompt:");
         }
       });
 
-      // Initialize your editor (or call your tab creation function)
+      // Initialize your editor (or your tab creation function)
       createTab();
     });
 
