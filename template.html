@@ -2246,22 +2246,108 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      monaco.editor.defineTheme("custom-dark", {
-        base: "vs-dark",
-        inherit: true,
-        rules: [
-          { token: "keyword", foreground: "C586C0" },
-          { token: "identifier", foreground: "9CDCFE" },
-          { token: "string", foreground: "CE9178" },
-          { token: "comment", foreground: "6A9955" },
-          { token: "number", foreground: "B5CEA8" }
+      // Define a custom Monarch tokenizer for JavaScript that highlights method calls.
+      monaco.languages.setMonarchTokensProvider('javascript', {
+        defaultToken: '',
+        tokenPostfix: '.js',
+
+        // Keywords, operators, etc. (you can add more if needed)
+        keywords: [
+          'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
+          'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
+          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield'
         ],
-        colors: {
-          "editor.background": "#1E1E1E"
+        operators: [
+          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||', '++', '--',
+          '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>', '+=', '-=', '*=',
+          '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
+        ],
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+        // The tokenizer rules.
+        tokenizer: {
+          root: [
+            // Highlight method calls: detect "console.log(" pattern.
+            [/(console)(\.)(log)(\()/, [
+              'identifier', // console
+              'delimiter',  // .
+              'method',     // log (custom token)
+              { token: 'delimiter', next: '@arguments' } // (
+            ]],
+            // Recognize identifiers and check for keywords.
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@default': 'identifier'
+              }
+            }],
+            // Whitespace and comments.
+            { include: '@whitespace' },
+            // Brackets.
+            [/[{}()\[\]]/, '@brackets'],
+            // Operators.
+            [/@symbols/, {
+              cases: {
+                '@operators': 'operator',
+                '@default': ''
+              }
+            }],
+            // Strings.
+            [/"/, { token: 'string.quote', next: '@string' }],
+            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+            // Numbers.
+            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+            [/\d+/, 'number'],
+          ],
+          arguments: [
+            [/\)/, { token: 'delimiter', next: '@pop' }],
+            { include: 'root' }
+          ],
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ],
+          string: [
+            [/[^\\"]+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/"/, { token: 'string.quote', next: '@pop' }]
+          ],
+          stringSingle: [
+            [/[^\\']+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/'/, { token: 'string.quote', next: '@pop' }]
+          ]
         }
       });
+
+      // Define a custom theme that maps our custom tokens (like 'method') to colors.
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'method', foreground: '4EC9B0' },  // Methods get a distinct color.
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' }
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
+        }
+      });
+
       createTab();
     });
+
     function updateStatusPosition() {
       if (activeTabId === null) {
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
