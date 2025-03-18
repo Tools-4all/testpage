@@ -2252,6 +2252,7 @@ prompt("This is a prompt:");
           defaultToken: '',
           tokenPostfix: '.js',
 
+          // Keywords, builtins, operators, etc.
           keywords: [
             'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
             'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2278,7 +2279,8 @@ prompt("This is a prompt:");
 
           symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
-          escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
+          // Improved escapes: supports \b, \f, \n, \r, \t, \v, quotes, backslash, hex and Unicode escapes.
+          escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{2}|u(?:[0-9A-Fa-f]{4}|{[0-9A-Fa-f]+}))/,
 
           digits: /\d+(_+\d+)*/,
           octaldigits: /[0-7]+(_+[0-7]+)*/,
@@ -2315,94 +2317,14 @@ prompt("This is a prompt:");
               [/0o(@octaldigits)/, 'number.octal'],
               [/[;,.]/, 'delimiter'],
 
-              // Strings
-              [/"([^"\\]|\\.)*$/, 'string.invalid'],
-              [/'([^'\\]|\\.)*$/, 'string.invalid'],
+              // Strings – now simply enter the string states.
               [/"/, { token: 'string.quote', next: '@stringDouble' }],
               [/'/, { token: 'string.quote', next: '@stringSingle' }],
-
-              // Template strings (backticks)
               [/`/, { token: 'string.quote', next: '@templateString' }],
 
-              // Regex literals
-              [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
-            ],
-
-            // Regular expressions
-            regexp: [
-              { include: '@regexrange' },
-              [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
-              [/[()]/, 'regexp.escape.control'],
-              [/[\^$|?*+\.]/, 'regexp.escape.control'],
-              [/[^\{(\^$|?*+\.]+/, 'regexp'],
-              [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
-            ],
-            regexpBraces: [
-              [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
-              { include: '@regexrange' },
-              [/.*/, 'regexp']
-            ],
-            regexrange: [
-              [/-/, 'regexp.escape.control'],
-              [/\^/, 'regexp.escape.control'],
-              [/\[/, 'regexp.escape.control'],
-              [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
-              [/\\./, 'regexp.escape'],
-              [/./, 'regexp']
-            ],
-
-            // Double-quoted strings
-            stringDouble: [
-              [/[^\\"]+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/"/, { token: 'string.quote', next: '@pop' }],
-              // Added: if a newline is encountered, mark string as invalid and pop state
-              [/\n/, { token: 'string.invalid', next: '@pop' }]
-            ],
-
-            // Single-quoted strings
-            stringSingle: [
-              [/[^\\']+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/'/, { token: 'string.quote', next: '@pop' }],
-              // Added: if a newline is encountered, mark string as invalid and pop state
-              [/\n/, { token: 'string.invalid', next: '@pop' }]
-            ],
-
-            // Template string state
-            templateString: [
-              [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
-              [/`/, { token: 'string.quote', next: '@pop' }],
-              [/[^\\`$]+/, 'string'],
-              [/\\./, 'string.escape'],
-              [/\$/, 'string']
-            ],
-
-            // Template string interpolation state:
-            // Note: We pop the state when encountering a closing curly bracket.
-            templateStringInterp: [
-              [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
-              { include: '@innerJS' }
-            ],
-
-            // Inner JS state for interpolation (excludes template string starts)
-            innerJS: [
-              [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
-              { include: '@whitespace' },
-              [/[{}()\[\]]/, '@brackets'],
-              [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
-              [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
-              [/@digits+/, 'number'],
-              [/0x(@hexdigits)/, 'number.hex'],
-              [/0b(@binarydigits)/, 'number.binary'],
-              [/0o(@octaldigits)/, 'number.octal'],
-              [/[;,.]/, 'delimiter'],
-              [/"/, { token: 'string.quote', next: '@stringDouble' }],
-              [/'/, { token: 'string.quote', next: '@stringSingle' }],
-              [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
-              { include: '@whitespace' }
+              // Regular expression literal: detect start and push regex state.
+              // (This pattern checks that the slash is followed by at least one non‑slash or an escaped char, then a closing slash.)
+              [/\/(?=([^\\\/]|\\.)+\/)/, { token: 'regexp', next: '@regexp' }]
             ],
 
             whitespace: [
@@ -2413,10 +2335,58 @@ prompt("This is a prompt:");
 
             comment: [
               [/[^\/*]+/, 'comment'],
-              // Uncomment next line to allow nested comments:
-              // [/\/\*/, 'comment', '@push'],
               [/\*\//, 'comment', '@pop'],
               [/[\/*]/, 'comment']
+            ],
+
+            // Double-quoted string state.
+            stringDouble: [
+              [/[^\\"]+/, 'string'],
+              [/@escapes/, 'string.escape'],
+              [/\\./, 'string.escape.invalid'],
+              [/"/, { token: 'string.quote', next: '@pop' }],
+              // Unterminated string: if end-of-line reached, mark as invalid.
+              [/$/, { token: 'string.invalid', next: '@pop' }]
+            ],
+
+            // Single-quoted string state.
+            stringSingle: [
+              [/[^\\']+/, 'string'],
+              [/@escapes/, 'string.escape'],
+              [/\\./, 'string.escape.invalid'],
+              [/'/, { token: 'string.quote', next: '@pop' }],
+              [/$/, { token: 'string.invalid', next: '@pop' }]
+            ],
+
+            // Template string state.
+            templateString: [
+              [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
+              [/`/, { token: 'string.quote', next: '@pop' }],
+              [/[^\\`$]+/, 'string'],
+              [/\\./, 'string.escape'],
+              [/\$/, 'string']
+            ],
+
+            // Template string interpolation state.
+            templateStringInterp: [
+              [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
+              { include: '@root' }
+            ],
+
+            // Revised regular expression literal handling.
+            regexp: [
+              // Recognize valid escapes inside regex literals.
+              [/@escapes/, 'regexp.escape'],
+              // Character classes (simplified): from [ to the closing ]
+              [/\[(?:@escapes|[^\]\\])*\]/, 'regexp'],
+              // Match any sequence of non-escape, non-[/] characters.
+              [/[^\[\\\/]+/, 'regexp'],
+              // A closing slash ends the regex literal.
+              [/\//, { token: 'regexp', next: '@pop' }],
+              // If an invalid escape is encountered.
+              [/\\./, 'regexp.escape.invalid'],
+              // Catch-all.
+              [/.*/, 'regexp']
             ]
           }
         });
@@ -2447,6 +2417,7 @@ prompt("This is a prompt:");
         // Initialize your editor (or call your tab creation function)
         createTab();
       });
+
     });
 
 
