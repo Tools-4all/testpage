@@ -1157,8 +1157,53 @@
       margin-top: 10px;
     }
 
-    .headerText {
-      background-color: white;
+    .rich-header-container {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #fafafa;
+    }
+
+    .rich-header-toolbar {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    .rich-header-toolbar select,
+    .rich-header-toolbar input[type="color"] {
+      padding: 3px;
+      border: 1px solid #aaa;
+      border-radius: 3px;
+      background: #fff;
+    }
+
+    .rich-header-textarea {
+      width: 100%;
+      min-height: 60px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+      background-color: inherit;
+      resize: vertical;
+    }
+
+    .hide-header {
+      display: none;
+    }
+
+    .header-toggle-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .header-toggle-container label {
+      margin-left: 5px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -2996,21 +3041,16 @@ prompt("This is a prompt:");
       return wrapperDiv;
     }
 
-    function createRichTextHeader() {
-      const container = document.createElement('div');
-      container.style.border = "1px solid #ccc";
-      container.style.padding = "10px";
-      container.style.marginBottom = "10px";
-      container.style.display = "flex";
-      container.style.flexDirection = "column";
-      container.style.backgroundColor = "#fafafa";
+
+    function createRichHeader() {
+      const headerContainer = document.createElement('div');
+      headerContainer.className = 'rich-header-container';
 
       const toolbar = document.createElement('div');
-      toolbar.style.display = "flex";
-      toolbar.style.gap = "5px";
-      toolbar.style.marginBottom = "5px";
+      toolbar.className = 'rich-header-toolbar';
 
       const fontFamilySelect = document.createElement('select');
+      fontFamilySelect.className = 'rich-header-font-family';
       ['Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana'].forEach(family => {
         const option = document.createElement('option');
         option.value = family;
@@ -3020,69 +3060,81 @@ prompt("This is a prompt:");
       toolbar.appendChild(fontFamilySelect);
 
       const fontSizeSelect = document.createElement('select');
+      fontSizeSelect.className = 'rich-header-font-size';
       [12, 14, 16, 18, 20, 24, 28].forEach(size => {
         const option = document.createElement('option');
-        option.value = size;
+        option.value = size + "px";
         option.textContent = size + "px";
         fontSizeSelect.appendChild(option);
       });
       toolbar.appendChild(fontSizeSelect);
 
-      const textColorInput = document.createElement('input');
-      textColorInput.type = "color";
-      textColorInput.value = "#000000";
-      toolbar.appendChild(textColorInput);
+      const textColorPicker = document.createElement('input');
+      textColorPicker.type = 'color';
+      textColorPicker.className = 'rich-header-text-color';
+      textColorPicker.value = '#000000';
+      toolbar.appendChild(textColorPicker);
 
-      const bgColorInput = document.createElement('input');
-      bgColorInput.type = "color";
-      bgColorInput.value = "#ffffff";
-      toolbar.appendChild(bgColorInput);
+      const bgColorPicker = document.createElement('input');
+      bgColorPicker.type = 'color';
+      bgColorPicker.className = 'rich-header-bg-color';
+      bgColorPicker.value = '#ffffff';
+      toolbar.appendChild(bgColorPicker);
 
-      container.appendChild(toolbar);
-
-      const editor = document.createElement('div');
-      editor.contentEditable = true;
-      editor.style.minHeight = "50px";
-      editor.style.border = "1px solid #ccc";
-      editor.style.padding = "5px";
-      editor.style.fontFamily = fontFamilySelect.value;
-      editor.style.fontSize = fontSizeSelect.value + "px";
-      editor.style.color = textColorInput.value;
-      editor.style.backgroundColor = bgColorInput.value;
-      editor.style.outline = "none";
-      editor.textContent = "Enter your remarks here...";
-
-      fontFamilySelect.addEventListener("change", function () {
-        editor.style.fontFamily = this.value;
+      headerContainer.appendChild(toolbar);
+      const textarea = document.createElement('textarea');
+      textarea.className = 'rich-header-textarea';
+      textarea.placeholder = "Enter your remarks here...";
+      headerContainer.appendChild(textarea);
+      fontFamilySelect.addEventListener('change', function () {
+        textarea.style.fontFamily = this.value;
       });
-      fontSizeSelect.addEventListener("change", function () {
-        editor.style.fontSize = this.value + "px";
+      fontSizeSelect.addEventListener('change', function () {
+        textarea.style.fontSize = this.value;
       });
-      textColorInput.addEventListener("change", function () {
-        editor.style.color = this.value;
+      textColorPicker.addEventListener('change', function () {
+        textarea.style.color = this.value;
       });
-      bgColorInput.addEventListener("change", function () {
-        editor.style.backgroundColor = this.value;
+      bgColorPicker.addEventListener('change', function () {
+        textarea.style.backgroundColor = this.value;
       });
 
-      container.appendChild(editor);
-      return container;
+      return headerContainer;
     }
-
 
 
     async function exportImage() {
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const richHeader = createRichTextHeader();
+      const headerToggleContainer = document.createElement('div');
+      headerToggleContainer.className = 'header-toggle-container';
+      const headerCheckbox = document.createElement('input');
+      headerCheckbox.type = 'checkbox';
+      headerCheckbox.checked = true;
+      headerCheckbox.id = 'headerToggle';
+      const headerLabel = document.createElement('label');
+      headerLabel.htmlFor = 'headerToggle';
+      headerLabel.textContent = "Include Remarks Header";
+      headerToggleContainer.appendChild(headerCheckbox);
+      headerToggleContainer.appendChild(headerLabel);
+      wrapperBoth.appendChild(headerToggleContainer);
+      const richHeader = createRichHeader();
+      richHeader.id = 'richHeader';
       wrapperBoth.appendChild(richHeader);
+      headerCheckbox.addEventListener('change', function () {
+        if (this.checked) {
+          richHeader.classList.remove('hide-header');
+        } else {
+          richHeader.classList.add('hide-header');
+        }
+      });
       wrapperBoth.appendChild(await getEditorDiv());
-
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapperBoth.appendChild(await getOutputDivClone());
       }
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      exportModalContent.innerHTML = "";
       exportModalContent.appendChild(wrapperBoth);
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
@@ -3118,15 +3170,37 @@ prompt("This is a prompt:");
     async function exportPDF() {
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const richHeader = createRichTextHeader();
+      const headerToggleContainer = document.createElement('div');
+      headerToggleContainer.className = 'header-toggle-container';
+      const headerCheckbox = document.createElement('input');
+      headerCheckbox.type = 'checkbox';
+      headerCheckbox.checked = true;
+      headerCheckbox.id = 'headerTogglePDF';
+      const headerLabel = document.createElement('label');
+      headerLabel.htmlFor = 'headerTogglePDF';
+      headerLabel.textContent = "Include Remarks Header";
+      headerToggleContainer.appendChild(headerCheckbox);
+      headerToggleContainer.appendChild(headerLabel);
+      wrapBoth.appendChild(headerToggleContainer);
+      const richHeader = createRichHeader();
+      richHeader.id = 'richHeaderPDF';
       wrapBoth.appendChild(richHeader);
+
+      headerCheckbox.addEventListener('change', function () {
+        if (this.checked) {
+          richHeader.classList.remove('hide-header');
+        } else {
+          richHeader.classList.add('hide-header');
+        }
+      });
       wrapBoth.appendChild(await getEditorDiv());
-      exportModalContent.appendChild(wrapBoth);
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       if (currentTab.outputElement.innerHTML.trim()) {
         wrapBoth.appendChild(await getOutputDivClone());
       }
+      exportModalContent.innerHTML = "";
+      exportModalContent.appendChild(wrapBoth);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
@@ -3160,6 +3234,7 @@ prompt("This is a prompt:");
       }
       displayModal();
     }
+
 
     function exportCurrent() {
       if (activeTabId === null) {
