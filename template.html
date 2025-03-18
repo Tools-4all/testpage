@@ -2273,7 +2273,6 @@ prompt("This is a prompt:");
           '^=', '@'
         ],
 
-        // we include these common regular expressions
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
         digits: /\d+(_+\d+)*/,
@@ -2290,13 +2289,13 @@ prompt("This is a prompt:");
           ],
 
           common: [
-            // Match identifiers that are immediately followed by a '(' as methods
+            // Match identifiers immediately followed by '(' as methods.
             [/[a-z_$][\w$]*(?=\s*\()/, 'method'],
-            // Match dot-prefixed identifiers as attributes
+            // Match dot-prefixed identifiers as attributes.
             [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
-            // Match the arrow function operator with its own token
+            // Match the arrow function operator with its own token.
             [/=>/, 'arrow'],
-            // Identifiers and keywords
+            // Identifiers and keywords.
             [/[a-z_$][\w$]*/, {
               cases: {
                 '@typeKeywords': 'keyword',
@@ -2306,13 +2305,10 @@ prompt("This is a prompt:");
             }],
             [/[A-Z][\w\$]*/, 'type.identifier'],
 
-            // Whitespace
             { include: '@whitespace' },
 
-            // Regular expression: ensure it is terminated before beginning (otherwise it is an operator)
             [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
 
-            // Delimiters and operators
             [/[()\[\]]/, '@brackets'],
             [/[<>](?!@symbols)/, '@brackets'],
             [/@symbols/, {
@@ -2322,7 +2318,6 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Numbers
             [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
             [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
             [/0[xX](@hexdigits)/, 'number.hex'],
@@ -2330,12 +2325,10 @@ prompt("This is a prompt:");
             [/0[bB](@binarydigits)/, 'number.binary'],
             [/(@digits)/, 'number'],
 
-            // Delimiter: after number because of .\d floats
             [/[;,.]/, 'delimiter'],
 
-            // Strings
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
             [/"/, 'string', '@string_double'],
             [/'/, 'string', '@string_single'],
             [/`/, 'string', '@string_backtick']
@@ -2418,8 +2411,9 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'd4c8a9' },
+          // Set method token to the same light blue as identifier/var.
+          { token: 'method', foreground: '9CDCFE' },
+          { token: 'attribute', foreground: 'CE9178' },
           { token: 'arrow', foreground: 'FF00FF' },
           { token: 'function', foreground: 'DCDCAA' },
           { token: 'comment', foreground: '6A9955' },
