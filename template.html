@@ -2251,7 +2251,6 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // Lists remain unchanged.
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2276,32 +2275,11 @@ prompt("This is a prompt:");
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
-        // A pattern to match a sequence of operator characters.
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
         tokenizer: {
           root: [
-            // Whitespace
-            [/[ \t\r\n]+/, 'white'],
-
-            // Comments (flat – no nested states)
-            [/\/\*[\s\S]*?\*\//, 'comment'],
-            [/\/\/.*$/, 'comment'],
-
-            // Attribute access: a dot followed by an identifier.
-            // We split the dot (as a delimiter) and the identifier (as attribute).
-            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
-
-            // Method calls: an identifier immediately followed by '('.
-            [/[a-zA-Z_$][\w$]*(?=\()/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtins': 'function',
-                '@default': 'method'
-              }
-            }],
-
-            // General identifiers & keywords.
+            // Identifiers & keywords (unchanged)
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2310,26 +2288,45 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Numbers – flat matching for hex, binary, octal and decimals.
-            [/\b0x[0-9A-Fa-f]+\b/, 'number.hex'],
-            [/\b0b[01]+\b/, 'number.binary'],
-            [/\b0o[0-7]+\b/, 'number.octal'],
-            [/\b\d+(\.\d+)?([eE][\-+]?\d+)?\b/, 'number'],
+            // Whitespace & comments (flattened)
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*[\s\S]*?\*\//, 'comment'],
+            [/\/\/.*$/, 'comment'],
 
-            // Strings – match the entire string (without breaking out escapes).
+            // Attribute access: a dot followed by an identifier.
+            // This rule splits the dot (as delimiter) and the property name (as attribute).
+            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
+
+            // Method calls: an identifier immediately followed by '('
+            [/[a-zA-Z_$][\w$]*(?=\()/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@builtins': 'function',
+                '@default': 'method'
+              }
+            }],
+
+            // Numbers (flattened version)
+            [/0x[0-9A-Fa-f]+/, 'number.hex'],
+            [/0b[01]+/, 'number.binary'],
+            [/0o[0-7]+/, 'number.octal'],
+            [/\d+(\.\d+)?([eE][\-+]?\d+)?/, 'number'],
+
+            // Strings (flattened: match entire string literals)
             [/\"([^"\\]|\\.)*\"/, 'string'],
             [/\'([^'\\]|\\.)*\'/, 'string'],
+            [/`([^`\\]|\\.)*`/, 'string'],
 
-            // Regular expressions – a simple (flat) pattern.
-            [/\/([^\/\\]|\\.)+\/[gimuy]*/, 'regexp'],
+            // Regular expressions (flattened)
+            [/\/([^\\\/]|\\.)+\/[gimuy]*/, 'regexp'],
 
-            // Brackets
+            // Brackets (unchanged)
             [/[{}()\[\]]/, '@brackets'],
 
-            // Delimiters (e.g. semicolon, comma, dot – note that dot is already handled above)
+            // Delimiters (unchanged)
             [/[;,.]/, 'delimiter'],
 
-            // Operators and symbols.
+            // Operators & symbols – arrow operators (=>) etc. are matched here.
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2337,13 +2334,12 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Fallback: match any single character.
+            // Fallback for any other character.
             [/.*/, '']
           ]
         }
       });
 
-      // The theme remains unchanged.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
