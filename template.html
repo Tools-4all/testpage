@@ -2247,178 +2247,98 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      require(["vs/editor/editor.main"], function () {
-        monaco.languages.setMonarchTokensProvider('javascript', {
-          defaultToken: '',
-          tokenPostfix: '.js',
+      // By setting a minimal Monarch tokens provider for JavaScript we override only parts we care about.
+      // Note: We do NOT provide custom rules for strings, numbers, or regex so that Monaco’s native logic handles them.
+      monaco.languages.setMonarchTokensProvider('javascript', {
+        defaultToken: '',
+        tokenPostfix: '.js',
 
-          // Keywords, builtins, operators, etc.
-          keywords: [
-            'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
-            'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
-            'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
-            'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
-            'var', 'void', 'while', 'with', 'yield'
+        keywords: [
+          'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
+          'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
+          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
+          'var', 'void', 'while', 'with', 'yield'
+        ],
+
+        builtins: [
+          'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
+          'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
+          'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
+          'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
+          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
+        ],
+
+        // We leave handling of strings, numbers, and regex to Monaco's native implementation.
+        tokenizer: {
+          root: [
+            // Identifiers & keywords.
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@builtins': 'function',
+                '@default': 'identifier'
+              }
+            }],
+
+            { include: '@whitespace' },
+
+            // Brackets.
+            [/[{}()\[\]]/, '@brackets'],
+
+            // Operators.
+            [/@symbols/, {
+              cases: {
+                '@operators': 'operator',
+                '@default': ''
+              }
+            }],
+
+            // Do not define any custom rules here for strings, numbers, or regex.
+            // The native JavaScript tokenizer will handle them.
           ],
 
-          builtins: [
-            'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
-            'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
-            'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
-            'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
-            'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
           ],
 
-          operators: [
-            '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
-            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
-            '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-            '^=', '%=', '<<=', '>>=', '>>>='
-          ],
-
-          symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
-          // Improved escapes: supports \b, \f, \n, \r, \t, \v, quotes, backslash, hex and Unicode escapes.
-          escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{2}|u(?:[0-9A-Fa-f]{4}|{[0-9A-Fa-f]+}))/,
-
-          digits: /\d+(_+\d+)*/,
-          octaldigits: /[0-7]+(_+[0-7]+)*/,
-          binarydigits: /[0-1]+(_+[0-1]+)*/,
-          hexdigits: /[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
-
-          tokenizer: {
-            root: [
-              // Identifiers & keywords
-              [/[a-zA-Z_$][\w$]*/, {
-                cases: {
-                  '@keywords': 'keyword',
-                  '@builtins': 'function',
-                  '@default': 'identifier'
-                }
-              }],
-
-              { include: '@whitespace' },
-
-              // Brackets & operators
-              [/[{}()\[\]]/, '@brackets'],
-              [/@symbols/, {
-                cases: {
-                  '@operators': 'operator',
-                  '@default': ''
-                }
-              }],
-
-              // Numbers
-              [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
-              [/@digits+/, 'number'],
-              [/0x(@hexdigits)/, 'number.hex'],
-              [/0b(@binarydigits)/, 'number.binary'],
-              [/0o(@octaldigits)/, 'number.octal'],
-              [/[;,.]/, 'delimiter'],
-
-              // Strings – now simply enter the string states.
-              [/"/, { token: 'string.quote', next: '@stringDouble' }],
-              [/'/, { token: 'string.quote', next: '@stringSingle' }],
-              [/`/, { token: 'string.quote', next: '@templateString' }],
-
-              // Regular expression literal: detect start and push regex state.
-              // (This pattern checks that the slash is followed by at least one non‑slash or an escaped char, then a closing slash.)
-              [/\/(?=([^\\\/]|\\.)+\/)/, { token: 'regexp', next: '@regexp' }]
-            ],
-
-            whitespace: [
-              [/[ \t\r\n]+/, 'white'],
-              [/\/\*/, 'comment', '@comment'],
-              [/\/\/.*$/, 'comment']
-            ],
-
-            comment: [
-              [/[^\/*]+/, 'comment'],
-              [/\*\//, 'comment', '@pop'],
-              [/[\/*]/, 'comment']
-            ],
-
-            // Double-quoted string state.
-            stringDouble: [
-              [/[^\\"]+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/"/, { token: 'string.quote', next: '@pop' }],
-              // Unterminated string: if end-of-line reached, mark as invalid.
-              [/$/, { token: 'string.invalid', next: '@pop' }]
-            ],
-
-            // Single-quoted string state.
-            stringSingle: [
-              [/[^\\']+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/'/, { token: 'string.quote', next: '@pop' }],
-              [/$/, { token: 'string.invalid', next: '@pop' }]
-            ],
-
-            // Template string state.
-            templateString: [
-              [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
-              [/`/, { token: 'string.quote', next: '@pop' }],
-              [/[^\\`$]+/, 'string'],
-              [/\\./, 'string.escape'],
-              [/\$/, 'string']
-            ],
-
-            // Template string interpolation state.
-            templateStringInterp: [
-              [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
-              { include: '@root' }
-            ],
-
-            // Revised regular expression literal handling.
-            regexp: [
-              // Recognize valid escapes inside regex literals.
-              [/@escapes/, 'regexp.escape'],
-              // Character classes (simplified): from [ to the closing ]
-              [/\[(?:@escapes|[^\]\\])*\]/, 'regexp'],
-              // Match any sequence of non-escape, non-[/] characters.
-              [/[^\[\\\/]+/, 'regexp'],
-              // A closing slash ends the regex literal.
-              [/\//, { token: 'regexp', next: '@pop' }],
-              // If an invalid escape is encountered.
-              [/\\./, 'regexp.escape.invalid'],
-              // Catch-all.
-              [/.*/, 'regexp']
-            ]
-          }
-        });
-
-        monaco.editor.defineTheme('custom-dark', {
-          base: 'vs-dark',
-          inherit: true,
-          rules: [
-            { token: 'keyword', foreground: 'C586C0' },
-            { token: 'identifier', foreground: '9CDCFE' },
-            { token: 'delimiter', foreground: 'D4D4D4' },
-            { token: 'operator', foreground: 'D4D4D4' },
-            { token: 'method', foreground: '4EC9B0' },
-            { token: 'attribute', foreground: 'CE9178' },
-            { token: 'function', foreground: 'DCDCAA' },
-            { token: 'comment', foreground: '6A9955' },
-            { token: 'string', foreground: 'CE9178' },
-            { token: 'number', foreground: 'B5CEA8' },
-            { token: 'regexp', foreground: 'D16969' },
-            { token: 'string.escape', foreground: 'd7ba7d' },
-            { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
-          ],
-          colors: {
-            'editor.background': '#1E1E1E'
-          }
-        });
-
-        // Initialize your editor (or call your tab creation function)
-        createTab();
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ]
+        }
       });
 
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'C586C0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: '4EC9B0' },
+          { token: 'attribute', foreground: 'CE9178' },
+          { token: 'function', foreground: 'DCDCAA' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string.escape', foreground: 'd7ba7d' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
+        }
+      });
+
+      // Initialize your editor (or call your tab creation function)
+      createTab();
     });
+
 
 
     function updateStatusPosition() {
