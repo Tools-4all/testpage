@@ -2273,6 +2273,7 @@ prompt("This is a prompt:");
           '^=', '@'
         ],
 
+        // Common regex parts.
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
         digits: /\d+(_+\d+)*/,
@@ -2289,13 +2290,13 @@ prompt("This is a prompt:");
           ],
 
           common: [
-            // Match identifiers immediately followed by '(' as methods.
-            [/[a-z_$][\w$]*(?=\s*\()/, 'method'],
-            // Match dot-prefixed identifiers as attributes.
+            // First, match attributes: a dot followed by an identifier.
             [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
-            // Match the arrow function operator with its own token.
-            [/=>/, 'arrow'],
-            // Identifiers and keywords.
+
+            // Next, match methods: capture an identifier followed by optional whitespace and a '('.
+            [/([a-z_$][\w$]*)(\s*)(?=\()/, ['method', '']],
+
+            // Then general identifiers:
             [/[a-z_$][\w$]*/, {
               cases: {
                 '@typeKeywords': 'keyword',
@@ -2307,6 +2308,7 @@ prompt("This is a prompt:");
 
             { include: '@whitespace' },
 
+            // Regular expression: match a forward slash beginning a regex literal.
             [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
 
             [/[()\[\]]/, '@brackets'],
@@ -2327,8 +2329,8 @@ prompt("This is a prompt:");
 
             [/[;,.]/, 'delimiter'],
 
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string.
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string.
             [/"/, 'string', '@string_double'],
             [/'/, 'string', '@string_single'],
             [/`/, 'string', '@string_backtick']
@@ -2411,10 +2413,11 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          // Set method token to the same light blue as identifier/var.
+          // Use the same light blue for methods as identifiers.
           { token: 'method', foreground: '9CDCFE' },
           { token: 'attribute', foreground: 'CE9178' },
           { token: 'arrow', foreground: 'FF00FF' },
+          { token: 'type.identifier', foreground: '4EC9B0' },
           { token: 'function', foreground: 'DCDCAA' },
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
