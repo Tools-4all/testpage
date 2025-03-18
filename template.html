@@ -2364,14 +2364,9 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Template string state
-          templateString: [
-            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
-            [/`/, { token: 'string.quote', next: '@pop' }],
-            [/[^\\`$]+/, 'string'],
-            [/\\./, 'string.escape'],
-            [/\$/, 'string']
-          ],
+
+          // Template string interpolation state:
+          // Note: We pop the state when encountering a closing curly bracket.
 
           // Inner JS state for interpolation (excludes template string starts)
 
