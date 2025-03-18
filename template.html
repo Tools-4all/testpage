@@ -1205,8 +1205,6 @@
       margin-left: 5px;
       font-size: 14px;
     }
-
-    .no-export {}
   </style>
 </head>
 
@@ -3045,40 +3043,12 @@ prompt("This is a prompt:");
 
 
     function createRichHeader() {
-      // Container for the header (this will be exported)
-      const headerContent = document.createElement('div');
-      headerContent.className = 'rich-header-content';
-      headerContent.style.border = "1px solid #ccc";
-      headerContent.style.padding = "10px";
-      headerContent.style.backgroundColor = "#fafafa";
+      const headerContainer = document.createElement('div');
+      headerContainer.className = 'rich-header-container';
 
-      // Create a textarea for the remarks (this is what will appear in the export)
-      const textarea = document.createElement('textarea');
-      textarea.className = 'rich-header-textarea';
-      textarea.placeholder = "Enter your remarks here...";
-      textarea.style.width = "100%";
-      textarea.style.minHeight = "60px";
-      textarea.style.padding = "10px";
-      textarea.style.border = "1px solid #ccc";
-      textarea.style.borderRadius = "4px";
-      textarea.style.resize = "vertical";
-      // Default styling (can be updated by toolbar actions)
-      textarea.style.fontFamily = "Arial, sans-serif";
-      textarea.style.fontSize = "14px";
-      textarea.style.color = "#000";
-      textarea.style.backgroundColor = "#fff";
+      const toolbar = document.createElement('div');
+      toolbar.className = 'rich-header-toolbar';
 
-      headerContent.appendChild(textarea);
-
-      // Now, create a separate UI container for the toolbar.
-      // This container is marked as no-export so it won't be included in the final PDF/image.
-      const toolbarContainer = document.createElement('div');
-      toolbarContainer.className = 'rich-header-toolbar no-export';
-      toolbarContainer.style.display = "flex";
-      toolbarContainer.style.gap = "5px";
-      toolbarContainer.style.marginBottom = "5px";
-
-      // Font family select
       const fontFamilySelect = document.createElement('select');
       fontFamilySelect.className = 'rich-header-font-family';
       ['Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana'].forEach(family => {
@@ -3087,9 +3057,8 @@ prompt("This is a prompt:");
         option.textContent = family;
         fontFamilySelect.appendChild(option);
       });
-      toolbarContainer.appendChild(fontFamilySelect);
+      toolbar.appendChild(fontFamilySelect);
 
-      // Font size select
       const fontSizeSelect = document.createElement('select');
       fontSizeSelect.className = 'rich-header-font-size';
       [12, 14, 16, 18, 20, 24, 28].forEach(size => {
@@ -3098,23 +3067,25 @@ prompt("This is a prompt:");
         option.textContent = size + "px";
         fontSizeSelect.appendChild(option);
       });
-      toolbarContainer.appendChild(fontSizeSelect);
+      toolbar.appendChild(fontSizeSelect);
 
-      // Text color picker
       const textColorPicker = document.createElement('input');
       textColorPicker.type = 'color';
       textColorPicker.className = 'rich-header-text-color';
       textColorPicker.value = '#000000';
-      toolbarContainer.appendChild(textColorPicker);
+      toolbar.appendChild(textColorPicker);
 
-      // Background color picker
       const bgColorPicker = document.createElement('input');
       bgColorPicker.type = 'color';
       bgColorPicker.className = 'rich-header-bg-color';
       bgColorPicker.value = '#ffffff';
-      toolbarContainer.appendChild(bgColorPicker);
+      toolbar.appendChild(bgColorPicker);
 
-      // Hook up toolbar actions to update the textarea styles
+      headerContainer.appendChild(toolbar);
+      const textarea = document.createElement('textarea');
+      textarea.className = 'rich-header-textarea';
+      textarea.placeholder = "Enter your remarks here...";
+      headerContainer.appendChild(textarea);
       fontFamilySelect.addEventListener('change', function () {
         textarea.style.fontFamily = this.value;
       });
@@ -3128,53 +3099,52 @@ prompt("This is a prompt:");
         textarea.style.backgroundColor = this.value;
       });
 
-      // Create a container for the entire header component.
-      // It includes both the toolbar (non-exported) and the header content (exported)
-      const headerContainer = document.createElement('div');
-      headerContainer.className = 'rich-header-container';
-      headerContainer.appendChild(toolbarContainer);
-      headerContainer.appendChild(headerContent);
-
       return headerContainer;
-    }
-
-    function prepareForExport(originalContainer) {
-      originalContainer.querySelectorAll('.no-export').forEach(el => el.remove());
     }
 
 
     async function exportImage() {
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const headerToggleContainer = document.createElement('div');
-      headerToggleContainer.className = 'header-toggle-container';
-      const headerCheckbox = document.createElement('input');
-      headerCheckbox.type = 'checkbox';
-      headerCheckbox.checked = true;
-      headerCheckbox.id = 'headerToggle';
-      const headerLabel = document.createElement('label');
-      headerLabel.htmlFor = 'headerToggle';
-      headerLabel.textContent = "Include Remarks Header";
-      headerToggleContainer.appendChild(headerCheckbox);
-      headerToggleContainer.appendChild(headerLabel);
-      wrapperBoth.appendChild(headerToggleContainer);
-      const richHeader = createRichHeader();
-      richHeader.id = 'richHeader';
-      wrapperBoth.appendChild(richHeader);
-      headerCheckbox.addEventListener('change', function () {
-        if (this.checked) {
-          richHeader.classList.remove('hide-header');
-        } else {
-          richHeader.classList.add('hide-header');
-        }
-      });
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapperBoth.appendChild(editorTextDiv);
       wrapperBoth.appendChild(await getEditorDiv());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        wrapperBoth.appendChild(await getOutputDivClone());
-      }
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      exportModalContent.innerHTML = "";
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapperBoth.appendChild(textDiv);
+        wrapperBoth.appendChild(await getOutputDivClone());
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
+      }
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
       exportModalContent.appendChild(wrapperBoth);
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
@@ -3185,63 +3155,80 @@ prompt("This is a prompt:");
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        prepareForExport(wrapperBoth);
         const imgSrc = await takeImage(wrapperBoth);
         closeModal("close");
         const bothImg = new Image();
         bothImg.src = imgSrc;
         let theyReady = false;
-        bothImg.onload = () => { theyReady = true; };
+
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
         while (!theyReady) {
           await new Promise((resolve) => setTimeout(resolve, 150));
         }
+
         canvas.width = bothImg.width;
-        canvas.height = bothImg.height;
+        canvas.height = bothImg.height
         ctx.drawImage(bothImg, 0, 0);
+
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
         a.click();
       }
-      displayModal();
+
+      displayModal()
     }
 
 
-
     async function exportPDF() {
+      const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const headerToggleContainer = document.createElement('div');
-      headerToggleContainer.className = 'header-toggle-container';
-      const headerCheckbox = document.createElement('input');
-      headerCheckbox.type = 'checkbox';
-      headerCheckbox.checked = true;
-      headerCheckbox.id = 'headerTogglePDF';
-      const headerLabel = document.createElement('label');
-      headerLabel.htmlFor = 'headerTogglePDF';
-      headerLabel.textContent = "Include Remarks Header";
-      headerToggleContainer.appendChild(headerCheckbox);
-      headerToggleContainer.appendChild(headerLabel);
-      wrapBoth.appendChild(headerToggleContainer);
-      const richHeader = createRichHeader();
-      richHeader.id = 'richHeaderPDF';
-      wrapBoth.appendChild(richHeader);
-
-      headerCheckbox.addEventListener('change', function () {
-        if (this.checked) {
-          richHeader.classList.remove('hide-header');
-        } else {
-          richHeader.classList.add('hide-header');
-        }
-      });
-      wrapBoth.appendChild(await getEditorDiv());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        wrapBoth.appendChild(await getOutputDivClone());
-      }
-      exportModalContent.innerHTML = "";
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapBoth.appendChild(editorTextDiv);
       exportModalContent.appendChild(wrapBoth);
+      wrapBoth.appendChild(editorDiv);
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputDiv = await getOutputDivClone();
+        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapBoth.appendChild(textDiv);
+        wrapBoth.appendChild(outputDiv);
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
+      }
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
@@ -3256,7 +3243,6 @@ prompt("This is a prompt:");
           unit: 'px',
           format: [contentWidth, contentHeight]
         });
-        prepareForExport(wrapBoth);
         await new Promise(resolve => {
           doc.html(wrapBoth, {
             callback: resolve,
@@ -3276,7 +3262,6 @@ prompt("This is a prompt:");
       }
       displayModal();
     }
-
 
     function exportCurrent() {
       if (activeTabId === null) {
