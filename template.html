@@ -2247,11 +2247,12 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      // By setting a minimal Monarch tokens provider for JavaScript we override only parts we care about.
-      // Note: We do NOT provide custom rules for strings, numbers, or regex so that Monaco’s native logic handles them.
       monaco.languages.setMonarchTokensProvider('javascript', {
         defaultToken: '',
         tokenPostfix: '.js',
+
+        // Add the symbols attribute so that @symbols works properly.
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
@@ -2286,7 +2287,7 @@ prompt("This is a prompt:");
             // Brackets.
             [/[{}()\[\]]/, '@brackets'],
 
-            // Operators.
+            // Operators. Uses the custom 'symbols' definition above.
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2294,8 +2295,7 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Do not define any custom rules here for strings, numbers, or regex.
-            // The native JavaScript tokenizer will handle them.
+            // We do not override strings, numbers, or regex, so Monaco's native logic is used.
           ],
 
           whitespace: [
@@ -2309,7 +2309,16 @@ prompt("This is a prompt:");
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ]
-        }
+        },
+
+        // Optionally, you can define a list of operators if you want to style them.
+        operators: [
+          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
+          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
+          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
+          '^=', '%=', '<<=', '>>=', '>>>='
+        ]
       });
 
       monaco.editor.defineTheme('custom-dark', {
