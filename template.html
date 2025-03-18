@@ -2292,7 +2292,6 @@ prompt("This is a prompt:");
                 '@default': 'identifier'
               }
             }],
-
             { include: '@whitespace' },
 
             // Brackets & operators
@@ -2312,9 +2311,7 @@ prompt("This is a prompt:");
             [/0o(@octaldigits)/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
 
-            // Strings
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            // String literals (remove unterminated string rules)
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
@@ -2325,27 +2322,16 @@ prompt("This is a prompt:");
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
-          // Regular expressions
-          regexp: [
-            { include: '@regexrange' },
-            [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
-            [/[()]/, 'regexp.escape.control'],
-            [/[\^$|?*+\.]/, 'regexp.escape.control'],
-            [/[^\{(\^$|?*+\.]+/, 'regexp'],
-            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
           ],
-          regexpBraces: [
-            [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
-            { include: '@regexrange' },
-            [/.*/, 'regexp']
-          ],
-          regexrange: [
-            [/-/, 'regexp.escape.control'],
-            [/\^/, 'regexp.escape.control'],
-            [/\[/, 'regexp.escape.control'],
-            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
-            [/\\./, 'regexp.escape'],
-            [/./, 'regexp']
+
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
           ],
 
           // Double-quoted strings
@@ -2364,52 +2350,43 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Template string state
+          // Template string state that accepts newlines
           templateString: [
-            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
             [/`/, { token: 'string.quote', next: '@pop' }],
-            [/[^\\`$]+/, 'string'],
+            [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
             [/\\./, 'string.escape'],
-            [/\$/, 'string']
+            [/.|\n/, 'string']
           ],
 
-          // Template string interpolation state:
-          // Note: We pop the state when encountering a closing curly bracket.
+          // Interpolation state: pop on }
           templateStringInterp: [
             [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
-            { include: '@innerJS' }
+            { include: '@root' }
           ],
 
-          // Inner JS state for interpolation (excludes template string starts)
-          innerJS: [
-            [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
-            { include: '@whitespace' },
-            [/[{}()\[\]]/, '@brackets'],
-            [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
-            [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
-            [/@digits+/, 'number'],
-            [/0x(@hexdigits)/, 'number.hex'],
-            [/0b(@binarydigits)/, 'number.binary'],
-            [/0o(@octaldigits)/, 'number.octal'],
-            [/[;,.]/, 'delimiter'],
-            [/"/, { token: 'string.quote', next: '@stringDouble' }],
-            [/'/, { token: 'string.quote', next: '@stringSingle' }],
-            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
-            { include: '@whitespace' }
+          // Regular expression state
+          regexp: [
+            { include: '@regexrange' },
+            [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
+            [/[()]/, 'regexp.escape.control'],
+            [/[\^$|?*+\.]/, 'regexp.escape.control'],
+            [/[^\{(\^$|?*+\.]+/, 'regexp'],
+            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
 
-          whitespace: [
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment']
+          regexpBraces: [
+            [/\}/, { token: 'regexp.escape.control', next: '@regexp' }],
+            { include: '@regexrange' },
+            [/.*/, 'regexp']
           ],
 
-          comment: [
-            [/[^\/*]+/, 'comment'],
-            // Uncomment next line to allow nested comments:
-            // [/\/\*/, 'comment', '@push'],
-            [/\*\//, 'comment', '@pop'],
-            [/[\/*]/, 'comment']
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.escape.control'],
+            [/\[/, 'regexp.escape.control'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/\\./, 'regexp.escape'],
+            [/./, 'regexp']
           ]
         }
       });
@@ -2440,6 +2417,7 @@ prompt("This is a prompt:");
       // Initialize your editor (or call your tab creation function)
       createTab();
     });
+
 
 
     function updateStatusPosition() {
