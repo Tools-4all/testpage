@@ -2462,8 +2462,7 @@ prompt("This is a prompt:");
       if (!t) return;
       let pos = t.editorInstance.getPosition();
       if (pos) {
-        document.getElementById("statusPosition").textContent =
-          `Ln ${pos.lineNumber}, Col ${pos.column}`;
+        document.getElementById("statusPosition").textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
     document.getElementById('addTabButton').addEventListener("click", () => {

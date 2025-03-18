@@ -929,6 +929,13 @@ self.addEventListener("message", (event) => {
                 }
             }
         };
+
+        self.onerror = (e) => {
+            self.postMessage({ type: "error", message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`, forceUse: true });
+            if (flexSwitchCheckDefault) {
+                self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+            }
+        }
         try {
             executeCode(code);
         } catch (e) {
