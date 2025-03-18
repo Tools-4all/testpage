@@ -2251,7 +2251,7 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // Custom rules only for identifiers, keywords, builtins, operators, symbols and delimiters.
+        // Our custom lists for keywords, builtins, operators, and symbols
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2276,10 +2276,13 @@ prompt("This is a prompt:");
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
+        // This regex will catch multi-character operators (like "=>")
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
-        // No custom rules for strings, numbers, regex, or whitespace.
-        // This means Monaco’s default tokenization for those elements will be used.
+        // The tokenizer below is based on the default JS Monarch rules.
+        // We keep our custom rule for identifiers (so that keywords and builtins are styled)
+        // and for brackets/operators/delimiters, but we copy in the default rules for strings,
+        // numbers, regex, and whitespace.
         tokenizer: {
           root: [
             // Identifiers & keywords
@@ -2291,8 +2294,13 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Brackets & operators
+            // Whitespace
+            { include: '@whitespace' },
+
+            // Brackets
             [/[{}()\[\]]/, '@brackets'],
+
+            // Operators and symbols (operators like "=>" will be matched here)
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2300,16 +2308,77 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Delimiters (semicolon, comma, period)
-            [/[;,.]/, 'delimiter'],
+            // Numbers
+            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+            [/\d+/, 'number'],
 
-            // Fallback: let the default tokenization handle the rest (e.g. strings, numbers, regex, whitespace)
-            [/.+/, '']
+            // Strings (double, single, and template strings)
+            [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+            [/"/, { token: 'string.quote', next: '@string_double' }],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+            [/'/, { token: 'string.quote', next: '@string_single' }],
+            [/`/, { token: 'string.quote', next: '@string_backtick' }],
+
+            // Regular expression literal (only when appropriate)
+            [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+
+            [/.+/, ''] // catch-all (should not really get here)
+          ],
+
+          // Whitespace and comments (default behavior)
+          whitespace: [
+            [/[ \t\r\n]+/, 'white'],
+            [/\/\*.*\*\//, 'comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+
+          // Double-quoted strings
+          string_double: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, { token: 'string.quote', next: '@pop' }],
+            [/$/, 'string.invalid']
+          ],
+
+          // Single-quoted strings
+          string_single: [
+            [/[^\\']+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, { token: 'string.quote', next: '@pop' }],
+            [/$/, 'string.invalid']
+          ],
+
+          // Template strings (backticks)
+          string_backtick: [
+            [/[^\\`]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/`/, { token: 'string.quote', next: '@pop' }],
+            [/$/, 'string.invalid']
+          ],
+
+          // Regular expressions
+          regexp: [
+            [/@escapes/, 'regexp.escape'],
+            [/\[/, { token: 'regexp.escape.control', next: '@regexp_charset' }],
+            [/\\./, 'regexp.escape.invalid'],
+            [/[^\[\]\\]+/, 'regexp'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/\/[gimsuy]*/, { token: 'regexp', next: '@pop' }]
+          ],
+
+          regexp_charset: [
+            [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/@escapes/, 'regexp.escape'],
+            [/./, 'regexp']
           ]
         }
       });
 
-      // Keep your custom theme unchanged.
+      // Our theme stays the same so that every token—whether produced by our custom rules or the default ones—
+      // is styled as before.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
