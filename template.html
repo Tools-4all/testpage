@@ -2279,7 +2279,7 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
-            // Identifiers & keywords (unchanged)
+            // Identifiers & keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2288,45 +2288,21 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Whitespace & comments (flattened)
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\*[\s\S]*?\*\//, 'comment'],
-            [/\/\/.*$/, 'comment'],
+            // Minimal string matching (double & single quotes)
+            [/"([^"\\]|\\.)*"/, 'string'],
+            [/'([^'\\]|\\.)*'/, 'string'],
 
-            // Attribute access: a dot followed by an identifier.
-            // This rule splits the dot (as delimiter) and the property name (as attribute).
-            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
+            // Minimal number matching
+            [/\b\d+(\.\d+)?\b/, 'number'],
 
-            // Method calls: an identifier immediately followed by '('
-            [/[a-zA-Z_$][\w$]*(?=\()/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtins': 'function',
-                '@default': 'method'
-              }
-            }],
+            // Minimal regex literal matching
+            [/\/[^\/\n]+\/[gimsuy]*/, 'regexp'],
 
-            // Numbers (flattened version)
-            [/0x[0-9A-Fa-f]+/, 'number.hex'],
-            [/0b[01]+/, 'number.binary'],
-            [/0o[0-7]+/, 'number.octal'],
-            [/\d+(\.\d+)?([eE][\-+]?\d+)?/, 'number'],
+            // Minimal whitespace matching
+            [/\s+/, 'white'],
 
-            // Strings (flattened: match entire string literals)
-            [/\"([^"\\]|\\.)*\"/, 'string'],
-            [/\'([^'\\]|\\.)*\'/, 'string'],
-            [/`([^`\\]|\\.)*`/, 'string'],
-
-            // Regular expressions (flattened)
-            [/\/([^\\\/]|\\.)+\/[gimuy]*/, 'regexp'],
-
-            // Brackets (unchanged)
+            // Brackets & operators
             [/[{}()\[\]]/, '@brackets'],
-
-            // Delimiters (unchanged)
-            [/[;,.]/, 'delimiter'],
-
-            // Operators & symbols – arrow operators (=>) etc. are matched here.
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
@@ -2334,8 +2310,8 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Fallback for any other character.
-            [/.*/, '']
+            // Delimiters
+            [/[;,.]/, 'delimiter'],
           ]
         }
       });
@@ -2348,9 +2324,8 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
+          { token: 'function', foreground: '4EC9B0' },
           { token: 'attribute', foreground: 'CE9178' },
-          { token: 'function', foreground: 'DCDCAA' },
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' },
