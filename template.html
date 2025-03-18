@@ -2246,14 +2246,16 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      // --- 1) Define a more comprehensive Monarch tokenizer for JavaScript ---
+      // ----------------------------------------------------------------
+      // 1) Define a more comprehensive Monarch tokenizer for JavaScript
+      //    with special rules for function calls, method calls, arrow (=>).
+      // ----------------------------------------------------------------
       monaco.languages.setMonarchTokensProvider('javascript', {
-        // Default token and file extension
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // Extended keyword list (added async, await, of, static, as, from, etc.)
         keywords: [
+          // Extended keywords
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
           'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
@@ -2262,8 +2264,8 @@ prompt("This is a prompt:");
           'static', 'as', 'from'
         ],
 
-        // Expanded builtins (added undefined, globalThis, setTimeout, fetch, etc.)
         builtins: [
+          // Extended builtins
           'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
           'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
           'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
@@ -2273,9 +2275,9 @@ prompt("This is a prompt:");
           'requestAnimationFrame', 'cancelAnimationFrame', 'fetch'
         ],
 
-        // Operators: added '...' for rest/spread
         operators: [
-          '===', '!==', '=>', '**', '**=', '?.', '??', '??=', '...', // added '...'
+          // Include =>, ??, ?. etc.
+          '===', '!==', '=>', '**', '**=', '?.', '??', '??=', '...',
           '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
           '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
           '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
@@ -2291,15 +2293,26 @@ prompt("This is a prompt:");
         hexdigits: /[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
 
         tokenizer: {
-          // --------------------------------------
-          // Main entry: the "root" tokenizer
-          // --------------------------------------
           root: [
-            // Identifiers and keywords
+            // --- Highlight method calls like console.error() ---
+            //     e.g. "console" as 'identifier', "." as 'delimiter', "error" as 'method'
+            [/\b([a-zA-Z_$][\w$]*)(\.)([a-zA-Z_$][\w$]*)(?=\()/, ['identifier', 'delimiter', 'method']],
+
+            // --- Highlight direct function calls like myFunc(...) ---
+            [/\b([a-zA-Z_$][\w$]*)(?=\()/, 'function'],
+
+            // --- Special token for arrow operator => ---
+            [/(=>)/, 'arrow'],
+
+            // ----------------------------------------------------------------
+            // Everything else follows the typical JS patterns:
+            // ----------------------------------------------------------------
+
+            // Identifiers & keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
-                '@builtins': 'function', // highlight built-ins as a "function" color
+                '@builtins': 'function', // color builtins as if they’re functions
                 '@default': 'identifier'
               }
             }],
@@ -2316,16 +2329,14 @@ prompt("This is a prompt:");
               }
             }],
 
-            // Numbers (handle big-int suffix `n`, hex, binary, etc.)
-            // Big-int examples: 123n, 0xFFn, 0b101n, etc.
-            // Floats: 123.45, 123.45e+10, etc.
+            // Numbers, including BigInt and decimal
             [/(0[xX](@hexdigits))n/, 'number.hex'],
             [/(0[xX](@hexdigits))/, 'number.hex'],
             [/(0[bB](@binarydigits))n/, 'number.binary'],
             [/(0[bB](@binarydigits))/, 'number.binary'],
             [/(0[oO](@octaldigits))n/, 'number.octal'],
             [/(0[oO](@octaldigits))/, 'number.octal'],
-            [/@digits+n/, 'number'], // big-int decimal
+            [/@digits+n/, 'number'],
             [/@digits*\.@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
 
@@ -2333,19 +2344,17 @@ prompt("This is a prompt:");
             [/[;,.]/, 'delimiter'],
 
             // String starts (including template strings)
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
             [/`/, { token: 'string.quote', next: '@templateString' }],
 
-            // Regex literal start (avoid matching /*... as a comment)
+            // Regex literal
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
-          // --------------------------------------
           // Whitespace & comments
-          // --------------------------------------
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
@@ -2357,9 +2366,7 @@ prompt("This is a prompt:");
             [/[\/*]/, 'comment']
           ],
 
-          // --------------------------------------
           // Strings
-          // --------------------------------------
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2384,9 +2391,7 @@ prompt("This is a prompt:");
             { include: 'root' }
           ],
 
-          // --------------------------------------
-          // Regular Expressions
-          // --------------------------------------
+          // Regex
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
@@ -2411,24 +2416,32 @@ prompt("This is a prompt:");
         }
       });
 
-      // --- 2) Keep your custom-dark theme ---
+      // ----------------------------------------------------------------
+      // 2) Define a “custom-dark” theme that mimics modern VSCode Dark
+      //    but uses the colors you requested:
+      //      - keywords, arrow => => #569CD6 (blue)
+      //      - identifiers => #9CDCFE (light blue)
+      //      - functions, methods => #DCDCAA (yellow)
+      //      - operators => #D4D4D4
+      //      - etc.
+      // ----------------------------------------------------------------
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-          { token: 'keyword', foreground: 'C586C0' },
-          { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'keyword', foreground: '569CD6' }, // e.g. const, import
+          { token: 'arrow', foreground: '569CD6' }, // => operator
+          { token: 'function', foreground: 'DCDCAA' }, // direct function calls
+          { token: 'method', foreground: 'DCDCAA' }, // .method() calls
+          { token: 'identifier', foreground: '9CDCFE' }, // e.g. console
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'CE9178' },
-          { token: 'function', foreground: 'DCDCAA' },
-          { token: 'comment', foreground: '6A9955' },
-          { token: 'string', foreground: 'CE9178' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'number', foreground: 'B5CEA8' },
-          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string', foreground: 'CE9178' },
           { token: 'string.escape', foreground: 'd7ba7d' },
           { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'regexp', foreground: 'd16969' },
           { token: 'brackets', foreground: 'D4D4D4' }
         ],
         colors: {
