@@ -2246,109 +2246,219 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
+
+      /***************************************************************
+       * 1. REGISTER THE JAVASCRIPT LANGUAGE
+       ***************************************************************/
+      monaco.languages.register({ id: 'javascript' });
+
+      /***************************************************************
+       * 2. LANGUAGE CONFIGURATION (BRACKETS, COMMENTS, ETC.)
+       *    Sourced from https://github.com/microsoft/monaco-languages/blob/main/src/javascript/javascript.ts
+       ***************************************************************/
+      monaco.languages.setLanguageConfiguration('javascript', {
+        comments: {
+          lineComment: '//',
+          blockComment: ['/*', '*/']
+        },
+        brackets: [
+          ['{', '}'],
+          ['[', ']'],
+          ['(', ')']
+        ],
+        autoClosingPairs: [
+          { open: '{', close: '}' },
+          { open: '[', close: ']' },
+          { open: '(', close: ')' },
+          { open: '"', close: '"', notIn: ['string'] },
+          { open: '\'', close: '\'', notIn: ['string', 'comment'] },
+          { open: '`', close: '`', notIn: ['string', 'comment'] },
+        ],
+        surroundingPairs: [
+          { open: '{', close: '}' },
+          { open: '[', close: ']' },
+          { open: '(', close: ')' },
+          { open: '"', close: '"' },
+          { open: '\'', close: '\'' },
+          { open: '`', close: '`' },
+        ],
+        folding: {
+          markers: {
+            start: new RegExp('^\\s*//\\s*#region'),
+            end: new RegExp('^\\s*//\\s*#endregion')
+          }
+        }
+      });
+
+      /***************************************************************
+       * 3. MONARCH TOKEN PROVIDER (ACTUAL SYNTAX HIGHLIGHTING)
+       *    Also from https://github.com/microsoft/monaco-languages/blob/main/src/javascript/javascript.ts
+       *    This matches VS Code’s built-in JS grammar as closely as possible.
+       ***************************************************************/
       monaco.languages.setMonarchTokensProvider('javascript', {
-        defaultToken: '',
+        // Set defaultToken to invalid to see what you do not tokenize yet
+        defaultToken: 'invalid',
         tokenPostfix: '.js',
 
         keywords: [
-          'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
-          'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
-          'for', 'function', 'if', 'import', 'in', 'instanceof', 'let', 'new',
-          'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield'
+          'break', 'case', 'catch', 'class', 'continue', 'const', 'constructor', 'debugger', 'default', 'delete', 'do',
+          'else', 'export', 'extends', 'false', 'finally', 'for', 'from', 'function', 'get', 'if', 'import', 'in', 'instanceof',
+          'let', 'new', 'null', 'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw', 'true', 'try', 'typeof', 'undefined',
+          'var', 'void', 'while', 'with', 'yield', 'async', 'await', 'of'
         ],
 
-        // Optionally define built-in functions if you want them to be highlighted differently.
-        builtins: [
-          'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
-          'decodeURI', 'encodeURI'
-        ],
+        typeKeywords: [],
 
         operators: [
-          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=', '&&', '||', '++', '--',
-          '+', '-', '*', '/', '&', '|', '^', '%', '<<', '>>', '>>>', '+=', '-=', '*=',
-          '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
+          '<', '>', '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**', '*', '/', '%', '++', '--',
+          '<<', '>>', '>>>', '&', '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=', '*=', '**=', '/=', '%=',
+          '<<=', '>>=', '>>>=', '&=', '|=', '^=', '@'
         ],
 
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        // we include these common regular expressions
+        symbols: /[=><!~?:&|+\-*/^%]+/,
+        escapes: /\\(?:[abfnrtv\\"'n]|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]+\})/,
 
+        // The main tokenizer for our languages
         tokenizer: {
           root: [
-            // Dot access: if an identifier follows a dot and is immediately followed by '(' then it's a method.
-            [/(\.)([a-zA-Z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
-            // Dot access as attribute: identifier following a dot without an immediate '('.
-            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
-            // Global identifiers.
-            // Optionally, you can mark built-in functions as "function" if desired.
+            // identifiers and keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
-                '@builtins': 'function',
                 '@default': 'identifier'
               }
             }],
-            // Numbers.
-            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-            [/\d+/, 'number'],
-            // Whitespace and comments.
+
+            // whitespace
             { include: '@whitespace' },
-            // Brackets.
+
+            // regular expression: ensure it is terminated before beginning (otherwise it is an opeator)
+            [/\/(?=([^*]|[*][^/]))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+
+            // delimiters and operators
             [/[{}()\[\]]/, '@brackets'],
-            // Operators.
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
                 '@default': ''
               }
             }],
-            // Strings.
-            [/"/, { token: 'string.quote', next: '@string' }],
-            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+
+            // numbers
+            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+            [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+            [/0[oO]?[0-7]+/, 'number.oct'],
+            [/0[bB][0-1]+/, 'number.bin'],
+            [/\d+/, 'number'],
+
+            // delimiter: after number because of .\d floats
+            [/[;,.]/, 'delimiter'],
+
+            // strings
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+            [/"/, 'string', '@string_double'],
+            [/'/, 'string', '@string_single'],
+            [/\`/, 'string', '@string_backtick'],
           ],
 
           whitespace: [
-            [/[ \t\r\n]+/, 'white'],
+            [/[ \t\r\n]+/, ''],
+            [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
             [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment']
+            [/\/\/.*$/, 'comment'],
           ],
 
           comment: [
             [/[^\/*]+/, 'comment'],
+            // [/\/\*/, 'comment', '@push' ],    // nested comment  not allowed :-(
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ],
-
-          string: [
-            [/[^\\"]+/, 'string'],
-            [/\\./, 'string.escape'],
-            [/"/, { token: 'string.quote', next: '@pop' }]
+          //Identical copy of comment rules, except for the addition of .doc
+          jsdoc: [
+            [/[^\/*]+/, 'comment.doc'],
+            [/\*\//, 'comment.doc', '@pop'],
+            [/[\/*]/, 'comment.doc']
           ],
 
-          stringSingle: [
+          string_double: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, 'string', '@pop']
+          ],
+
+          string_single: [
             [/[^\\']+/, 'string'],
-            [/\\./, 'string.escape'],
-            [/'/, { token: 'string.quote', next: '@pop' }]
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, 'string', '@pop']
+          ],
+
+          string_backtick: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
+            [/[^\\`]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/\`/, 'string', '@pop']
+          ],
+
+          bracketCounting: [
+            [/\{/, 'delimiter.bracket', '@bracketCounting'],
+            [/\}/, 'delimiter.bracket', '@pop'],
+            { include: 'root' }
+          ],
+
+          regexp: [
+            [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
+            [/(\[)(\^?)(?=(?:[^\]\\]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
+            [/(\()(\?:|\?=|\?!)/, ['regexp.escape.control', 'regexp.escape.control']],
+            [/[()]/, 'regexp.escape.control'],
+            [/@symbols/, 'regexp.escape.control'],
+            [/\\./, 'regexp.escape'],
+            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']],
+            [/./, 'regexp']
+          ],
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.invalid'],
+            [/\\./, 'regexp.escape'],
+            [/[^\]]/, 'regexp'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
           ]
         }
       });
 
-      // Define a custom theme mapping our tokens to colors.
+      /***************************************************************
+       * 4. DEFINE A THEME THAT MIMICS VS CODE DARK+ COLORS
+       ***************************************************************/
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
+          { token: 'invalid', foreground: 'ff0000' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'comment.doc', foreground: '6A9955' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'B46695' },
+          { token: 'operator', foreground: 'D4D4D4' },
           { token: 'keyword', foreground: 'C586C0' },
           { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'delimiter', foreground: 'D4D4D4' },
-          { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },    // Dot-based method calls.
-          { token: 'attribute', foreground: 'CE9178' }, // Dot-based attribute access.
-          { token: 'function', foreground: 'DCDCAA' },  // Built-in functions (if matched via @builtins).
-          { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
-          { token: 'number', foreground: 'B5CEA8' }
+          { token: 'string.escape', foreground: 'D7BA7D' },
+          { token: 'string.escape.invalid', foreground: 'F44747' },
+          { token: 'method', foreground: '4EC9B0' },
+          { token: 'attribute', foreground: 'CE9178' },
+          { token: 'function', foreground: 'DCDCAA' }
         ],
         colors: {
-          'editor.background': '#1E1E1E'
+          'editor.background': '#1E1E1E',
+          'editorLineNumber.foreground': '#858585',
+          'editor.selectionBackground': '#264F78',
+          'editorCursor.foreground': '#AEAFAD'
         }
       });
 
