@@ -2294,7 +2294,10 @@ prompt("This is a prompt:");
           ],
 
           common: [
-            // First, match dot-prefixed methods: a dot followed by an identifier and lookahead for '('.
+            // First, explicitly match the arrow operator (=>)
+            [/=>/, 'arrow'],
+
+            // Next, match dot-prefixed methods: a dot followed by an identifier and lookahead for '('.
             [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
             // Then, match standalone methods: identifier immediately followed by '('.
             [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
@@ -2420,9 +2423,8 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          // Use light blue (9CDCFE) for methods.
+          // Methods get the same light blue as identifiers.
           { token: 'method', foreground: '9CDCFE' },
-          // Attributes can have a different color.
           { token: 'attribute', foreground: 'CE9178' },
           { token: 'arrow', foreground: 'FF00FF' },
           { token: 'type.identifier', foreground: '4EC9B0' },
