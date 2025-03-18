@@ -1156,8 +1156,58 @@
       justify-content: space-between;
       margin-top: 10px;
     }
-    .headerText {
-      background-color: white;
+
+    /* Rich Text Header styles */
+    .rich-header-wrapper {
+      position: relative;
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      background-color: #fafafa;
+      min-height: 40px;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .rich-header-wrapper.empty::before {
+      content: attr(data-placeholder);
+      color: #aaa;
+      pointer-events: none;
+    }
+
+    /* Controls container – these will be positioned outside the export wrapper */
+    .rich-controls {
+      margin-bottom: 5px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .rich-controls label {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .rich-controls select,
+    .rich-controls input[type="color"],
+    .rich-controls input[type="number"] {
+      padding: 3px;
+      font-size: 13px;
+    }
+
+    .rich-controls button.toggle-controls {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+    }
+
+    .rich-controls button.toggle-controls:hover {
+      background: #005f99;
     }
   </style>
 </head>
@@ -2995,55 +3045,166 @@ prompt("This is a prompt:");
       return wrapperDiv;
     }
 
+    // Creates a rich text header with controls.
+    // placeholder: string shown when no text is entered.
+    // idPrefix: identifier to differentiate between editor and output headers.
+    function createRichTextHeader(placeholder, idPrefix) {
+      // The header div that will be placed in the export wrapper.
+      const headerDiv = document.createElement('div');
+      headerDiv.classList.add('rich-header-wrapper', 'empty');
+      headerDiv.contentEditable = true;
+      headerDiv.setAttribute('data-placeholder', placeholder);
+      headerDiv.addEventListener('input', () => {
+        // Remove "empty" class if there is content, add it when empty.
+        headerDiv.classList.toggle('empty', headerDiv.innerText.trim() === '');
+      });
+
+      // Create the controls container (to be placed OUTSIDE the wrapper)
+      const controlsDiv = document.createElement('div');
+      controlsDiv.classList.add('rich-controls');
+      controlsDiv.id = idPrefix + '-controls';
+
+      // Toggle button to show/hide controls.
+      const toggleBtn = document.createElement('button');
+      toggleBtn.classList.add('toggle-controls');
+      toggleBtn.textContent = "Hide Controls";
+      toggleBtn.addEventListener('click', () => {
+        const isVisible = controlsDiv.getAttribute('data-visible') !== 'false';
+        if (isVisible) {
+          // Hide all controls except the toggle button.
+          Array.from(controlsDiv.children).forEach(el => {
+            if (el !== toggleBtn) el.style.display = 'none';
+          });
+          toggleBtn.textContent = "Show Controls";
+          controlsDiv.setAttribute('data-visible', 'false');
+        } else {
+          Array.from(controlsDiv.children).forEach(el => {
+            el.style.display = '';
+          });
+          toggleBtn.textContent = "Hide Controls";
+          controlsDiv.setAttribute('data-visible', 'true');
+        }
+      });
+      controlsDiv.appendChild(toggleBtn);
+
+      // Font family selector
+      const fontFamilyLabel = document.createElement('label');
+      fontFamilyLabel.textContent = "Font:";
+      const fontFamilySelect = document.createElement('select');
+      const families = ["Arial, sans-serif", "Georgia, serif", "Courier New, monospace", "Tahoma, sans-serif"];
+      families.forEach(family => {
+        const opt = document.createElement('option');
+        opt.value = family;
+        opt.textContent = family.split(',')[0];
+        fontFamilySelect.appendChild(opt);
+      });
+      fontFamilySelect.addEventListener('change', () => {
+        headerDiv.style.fontFamily = fontFamilySelect.value;
+      });
+      controlsDiv.appendChild(fontFamilyLabel);
+      controlsDiv.appendChild(fontFamilySelect);
+
+      // Font size selector
+      const fontSizeLabel = document.createElement('label');
+      fontSizeLabel.textContent = "Size:";
+      const fontSizeInput = document.createElement('input');
+      fontSizeInput.type = "number";
+      fontSizeInput.min = 10;
+      fontSizeInput.max = 48;
+      fontSizeInput.value = 16;
+      fontSizeInput.style.width = "50px";
+      fontSizeInput.addEventListener('change', () => {
+        headerDiv.style.fontSize = fontSizeInput.value + "px";
+      });
+      controlsDiv.appendChild(fontSizeLabel);
+      controlsDiv.appendChild(fontSizeInput);
+
+      // Font color picker
+      const fontColorLabel = document.createElement('label');
+      fontColorLabel.textContent = "Text Color:";
+      const fontColorInput = document.createElement('input');
+      fontColorInput.type = "color";
+      fontColorInput.value = "#333333";
+      fontColorInput.addEventListener('change', () => {
+        headerDiv.style.color = fontColorInput.value;
+      });
+      controlsDiv.appendChild(fontColorLabel);
+      controlsDiv.appendChild(fontColorInput);
+
+      // Background color picker
+      const bgColorLabel = document.createElement('label');
+      bgColorLabel.textContent = "BG Color:";
+      const bgColorInput = document.createElement('input');
+      bgColorInput.type = "color";
+      bgColorInput.value = "#fafafa";
+      bgColorInput.addEventListener('change', () => {
+        headerDiv.style.backgroundColor = bgColorInput.value;
+      });
+      controlsDiv.appendChild(bgColorLabel);
+      controlsDiv.appendChild(bgColorInput);
+
+      // Return both header and its controls.
+      return { headerDiv, controlsDiv };
+    }
+
+
 
     async function exportImage() {
+      // Create a container that will be captured
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
-      editorTextDiv.contentEditable = true;
-      wrapperBoth.appendChild(editorTextDiv);
+
+      // Create a rich header for the editor (top of the image)
+      const { headerDiv: editorHeader, controlsDiv: editorControls } = createRichTextHeader("Enter your remarks for the editor here...", "editorHeader");
+      // Place the header inside the capture wrapper.
+      wrapperBoth.appendChild(editorHeader);
+
+      // (Place your rich header controls outside the wrapper)
+      // For example, append them to a container above the wrapper in your modal.
+      // Assuming you have a container with id "richControlsContainer" in your export modal.
+      let richControlsContainer = document.getElementById("richControlsContainer-editor");
+      if (!richControlsContainer) {
+        richControlsContainer = document.createElement("div");
+        richControlsContainer.id = "richControlsContainer-editor";
+        // Insert this container above wrapperBoth so that it is not captured.
+        exportModalContent.parentElement.insertBefore(richControlsContainer, exportModalContent);
+      }
+      richControlsContainer.innerHTML = ""; // clear previous controls if any
+      richControlsContainer.appendChild(editorControls);
+
+      // Append the editor div (the code area) below the header.
       wrapperBoth.appendChild(await getEditorDiv());
+
+      // Continue as before with export buttons etc.
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
+
+      // (Optional: If there is output content to add)
       if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
-        textDiv.contentEditable = true;
-        wrapperBoth.appendChild(textDiv);
+        const { headerDiv: outputHeader, controlsDiv: outputControls } = createRichTextHeader("Enter output remarks here...", "outputHeader");
+        // Append output header and then output clone
+        wrapperBoth.appendChild(outputHeader);
+
+        let richControlsContainerOut = document.getElementById("richControlsContainer-output");
+        if (!richControlsContainerOut) {
+          richControlsContainerOut = document.createElement("div");
+          richControlsContainerOut.id = "richControlsContainer-output";
+          exportModalContent.parentElement.insertBefore(richControlsContainerOut, exportModalContent);
+        }
+        richControlsContainerOut.innerHTML = "";
+        richControlsContainerOut.appendChild(outputControls);
+
         wrapperBoth.appendChild(await getOutputDivClone());
-        const headerTextCheckbox = document.createElement("input");
-        headerTextCheckbox.type = "checkbox";
-        headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-        });
-        const exportCheckbox = document.createElement("input");
-        exportCheckbox.type = "checkbox";
-        exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener("change", () => {
-          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-        });
       }
-      const editorHeaderCheckbox = document.createElement("input");
-      editorHeaderCheckbox.type = "checkbox";
-      editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener("change", () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
-      });
+
       exportModalContent.appendChild(wrapperBoth);
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
       exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
@@ -3053,80 +3214,70 @@ prompt("This is a prompt:");
         const bothImg = new Image();
         bothImg.src = imgSrc;
         let theyReady = false;
-
-        bothImg.onload = () => {
-          theyReady = true;
-        };
-
+        bothImg.onload = () => { theyReady = true; };
         while (!theyReady) {
           await new Promise((resolve) => setTimeout(resolve, 150));
         }
-
         canvas.width = bothImg.width;
-        canvas.height = bothImg.height
+        canvas.height = bothImg.height;
         ctx.drawImage(bothImg, 0, 0);
-
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
         a.click();
       }
-
-      displayModal()
+      displayModal();
     }
 
 
+
     async function exportPDF() {
-      const editorDiv = await getEditorDiv();
+      // Create a container for export PDF
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
-      editorTextDiv.contentEditable = true;
-      wrapBoth.appendChild(editorTextDiv);
+
+      // Create rich header for the editor section
+      const { headerDiv: editorHeader, controlsDiv: editorControls } = createRichTextHeader("Enter your remarks for the editor here...", "editorHeader");
+      wrapBoth.appendChild(editorHeader);
+
+      let richControlsContainer = document.getElementById("richControlsContainer-editor");
+      if (!richControlsContainer) {
+        richControlsContainer = document.createElement("div");
+        richControlsContainer.id = "richControlsContainer-editor";
+        exportModalContent.parentElement.insertBefore(richControlsContainer, exportModalContent);
+      }
+      richControlsContainer.innerHTML = "";
+      richControlsContainer.appendChild(editorControls);
+
+      // Append the editor div below the header.
+      wrapBoth.appendChild(await getEditorDiv());
+
+      // If there is output content, create its header and output clone.
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const { headerDiv: outputHeader, controlsDiv: outputControls } = createRichTextHeader("Enter your remarks for the output here...", "outputHeader");
+        wrapBoth.appendChild(outputHeader);
+
+        let richControlsContainerOut = document.getElementById("richControlsContainer-output");
+        if (!richControlsContainerOut) {
+          richControlsContainerOut = document.createElement("div");
+          richControlsContainerOut.id = "richControlsContainer-output";
+          exportModalContent.parentElement.insertBefore(richControlsContainerOut, exportModalContent);
+        }
+        richControlsContainerOut.innerHTML = "";
+        richControlsContainerOut.appendChild(outputControls);
+
+        wrapBoth.appendChild(await getOutputDivClone());
+      }
+
       exportModalContent.appendChild(wrapBoth);
-      wrapBoth.appendChild(editorDiv);
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const outputDiv = await getOutputDivClone();
-        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
-        textDiv.contentEditable = true;
-        wrapBoth.appendChild(textDiv);
-        wrapBoth.appendChild(outputDiv);
-        const headerTextCheckbox = document.createElement("input");
-        headerTextCheckbox.type = "checkbox";
-        headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-        });
-        const exportCheckbox = document.createElement("input");
-        exportCheckbox.type = "checkbox";
-        exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener("change", () => {
-          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-        });
-      }
-      const editorHeaderCheckbox = document.createElement("input");
-      editorHeaderCheckbox.type = "checkbox";
-      editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener("change", () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
-      });
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
       exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const contentWidth = wrapBoth.offsetWidth;
@@ -3155,6 +3306,7 @@ prompt("This is a prompt:");
       }
       displayModal();
     }
+
 
     function exportCurrent() {
       if (activeTabId === null) {
