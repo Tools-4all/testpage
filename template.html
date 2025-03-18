@@ -2246,67 +2246,61 @@ prompt("This is a prompt:");
         workerBlobURL = URL.createObjectURL(blob);
       }
     }
-    require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
-      // Remove the custom rules for strings, numbers, regex, and whitespace
-      // from the default tokenizer so that Monaco’s built-in behavior is used.
-      jsDefaults.tokenizer.root = jsDefaults.tokenizer.root.filter(function (rule) {
-        if (!Array.isArray(rule)) {
+    require(["vs/editor/editor.main"], function () {
+      require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
+        // Remove the custom retokenization for strings, numbers, regex, and whitespace
+        jsDefaults.tokenizer.root = jsDefaults.tokenizer.root.filter(function (rule) {
+          if (!Array.isArray(rule)) {
+            return true;
+          }
+          const pattern = rule[0].toString();
+          if (
+            pattern.indexOf('"') >= 0 ||
+            pattern.indexOf("'") >= 0 ||
+            pattern.indexOf("`") >= 0 ||
+            pattern.indexOf("\\d") >= 0 ||
+            pattern.indexOf("\\s") >= 0 ||
+            (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)
+          ) {
+            return false;
+          }
           return true;
-        }
-        // Remove rules that match string literals (", ', `), numbers, regex literals, or whitespace.
-        const pattern = rule[0].toString();
-        // Remove any rule that contains a double quote, single quote, or backtick,
-        // or that looks like it’s matching numbers (\d) or whitespace (\s),
-        // or the regex literal start (using lookahead, e.g. /\/(?=...)/).
-        if (pattern.indexOf('"') >= 0 ||
-          pattern.indexOf("'") >= 0 ||
-          pattern.indexOf("`") >= 0 ||
-          pattern.indexOf("\\d") >= 0 ||
-          pattern.indexOf("\\s") >= 0 ||
-          (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)) {
-          return false;
-        }
-        return true;
+        });
+        delete jsDefaults.tokenizer.whitespace;
+        delete jsDefaults.tokenizer.comment;
+        delete jsDefaults.tokenizer.stringDouble;
+        delete jsDefaults.tokenizer.stringSingle;
+        delete jsDefaults.tokenizer.templateString;
+        delete jsDefaults.tokenizer.templateStringInterp;
+        delete jsDefaults.tokenizer.regexp;
+
+        monaco.languages.setMonarchTokensProvider('javascript', jsDefaults);
+
+        monaco.editor.defineTheme('custom-dark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [
+            { token: 'keyword', foreground: 'C586C0' },
+            { token: 'identifier', foreground: '9CDCFE' },
+            { token: 'delimiter', foreground: 'D4D4D4' },
+            { token: 'operator', foreground: 'D4D4D4' },
+            { token: 'function', foreground: 'DCDCAA' },
+            { token: 'attribute', foreground: 'CE9178' },
+            { token: 'string', foreground: 'CE9178' },
+            { token: 'number', foreground: 'B5CEA8' },
+            { token: 'regexp', foreground: 'D16969' },
+            { token: 'string.escape', foreground: 'd7ba7d' },
+            { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+            { token: 'comment', foreground: '6A9955' }
+          ],
+          colors: {
+            'editor.background': '#1E1E1E'
+          }
+        });
+
+        // Now you can safely initialize your editor (or call your tab creation function)
+        createTab();
       });
-      // Remove the related additional states for strings, whitespace, and regex.
-      delete jsDefaults.tokenizer.whitespace;
-      delete jsDefaults.tokenizer.comment;
-      delete jsDefaults.tokenizer.stringDouble;
-      delete jsDefaults.tokenizer.stringSingle;
-      delete jsDefaults.tokenizer.templateString;
-      delete jsDefaults.tokenizer.templateStringInterp;
-      delete jsDefaults.tokenizer.regexp;
-
-      // Set the modified provider
-      monaco.languages.setMonarchTokensProvider('javascript', jsDefaults);
-
-      // Define your theme so that the tokens you DO want to override keep their colors.
-      monaco.editor.defineTheme('custom-dark', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'keyword', foreground: 'C586C0' },
-          { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'delimiter', foreground: 'D4D4D4' },
-          { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'function', foreground: 'DCDCAA' },
-          { token: 'attribute', foreground: 'CE9178' },
-          // These rules won’t be applied by our tokenizer now,
-          // so the default JS handling for strings, numbers, regex, and comments will take over.
-          { token: 'string', foreground: 'CE9178' },
-          { token: 'number', foreground: 'B5CEA8' },
-          { token: 'regexp', foreground: 'D16969' },
-          { token: 'string.escape', foreground: 'd7ba7d' },
-          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
-          { token: 'comment', foreground: '6A9955' }
-        ],
-        colors: {
-          'editor.background': '#1E1E1E'
-        }
-      });
-
-      // Initialize your editor (or call your tab creation function)
-      createTab();
     });
 
 
