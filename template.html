@@ -2255,22 +2255,20 @@ prompt("This is a prompt:");
         defaultToken: 'invalid',
         tokenPostfix: '.js',
 
-        // Split keywords into two groups:
-        // Special keywords (e.g., let, function, const, var) get one color
-        // Other keywords get a different color
+        // Group of keywords that will receive the default keyword color (#c586c0)
         keywords: [
-          'break', 'case', 'catch', 'class', 'continue', 'constructor', 'debugger',
-          'default', 'delete', 'do', 'else', 'export', 'extends', 'false', 'finally',
-          'catch', 'default', 'delete', 'do', 'else', 'export', 'extends', 'false',
-          'finally', 'for', 'from', 'get', 'if', 'import', 'in', 'instanceof', 'new',
-          'null', 'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw',
-          'true', 'try', 'typeof', 'undefined', 'void', 'while', 'with', 'yield',
-          'async', 'await', 'of'
+          'break', 'case', 'catch', 'class', 'continue', 'debugger',
+          'default', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'from', 'get', 'if', 'import', 'in', 'set', 'super',
+          'switch', 'symbol', 'this', 'throw', 'try', 'while', 'with',
+          'yield', 'async', 'await', 'of'
         ],
 
-        // Special keywords that should be highlighted with a different color
+        // Keywords that get the special color (#569cd6) in VS Code Dark Modern
         specialKeywords: [
-          'let', 'function', 'const', 'var'
+          'let', 'const', 'var', 'function',
+          'null', 'undefined', 'true', 'false', 'void', 'typeof',
+          'new', 'delete', 'instanceof'
         ],
 
         typeKeywords: [
@@ -2302,22 +2300,22 @@ prompt("This is a prompt:");
           ],
 
           common: [
-            // First, explicitly match the arrow operator (=>)
+            // Explicitly match the arrow operator (=>)
             [/=>/, 'arrow'],
 
-            // Next, match dot-prefixed methods: a dot followed by an identifier and lookahead for '('.
+            // Dot-prefixed methods: a dot followed by an identifier with a lookahead for '('.
             [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
-            // Then, match standalone methods: identifier immediately followed by '('.
+            // Standalone methods: identifier immediately followed by '('.
             [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
-            // Next, match attributes: a dot followed by an identifier.
+            // Attributes: a dot followed by an identifier.
             [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
 
-            // Then, general identifiers.
+            // General identifiers.
             [/[a-z_$][\w$]*/, {
               cases: {
-                '@typeKeywords': 'keyword',
                 '@specialKeywords': 'special.keyword',
                 '@keywords': 'keyword',
+                '@typeKeywords': 'keyword',
                 '@default': 'identifier'
               }
             }],
@@ -2348,8 +2346,8 @@ prompt("This is a prompt:");
             [/[;,.]/, 'delimiter'],
 
             // Strings.
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string.
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string.
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // Non-terminated string.
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // Non-terminated string.
             [/"/, 'string', '@string_double'],
             [/'/, 'string', '@string_single'],
             [/`/, 'string', '@string_backtick']
@@ -2428,14 +2426,14 @@ prompt("This is a prompt:");
         base: 'vs-dark',
         inherit: true,
         rules: [
-          // Special keywords (let, function, const, var) get color #569cd6
+          // Special keywords styled with #569cd6
           { token: 'special.keyword', foreground: '569cd6' },
-          // Other keywords get color #c586c0
+          // Regular keywords styled with #c586c0
           { token: 'keyword', foreground: 'c586c0' },
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          // Methods get the same light blue as identifiers.
+          // Methods use a slightly different light color.
           { token: 'method', foreground: 'd4c8a9' },
           { token: 'attribute', foreground: 'CE9178' },
           { token: 'arrow', foreground: '#569cd6' },
