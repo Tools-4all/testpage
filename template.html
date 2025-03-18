@@ -2319,7 +2319,6 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
             // Template strings (backticks)
-            [/`/, { token: 'string.quote', next: '@templateString' }],
 
             // Regex literals
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
