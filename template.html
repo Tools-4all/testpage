@@ -2248,33 +2248,38 @@ prompt("This is a prompt:");
     }
     require(["vs/editor/editor.main"], function () {
       require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
-        // Remove the custom retokenization for strings, numbers, regex, and whitespace
-        jsDefaults.tokenizer.root = jsDefaults.tokenizer.root.filter(function (rule) {
-          if (!Array.isArray(rule)) {
+        // Get the language definition from the module.
+        var jsLanguage = jsDefaults.language;
+        if (jsLanguage && jsLanguage.tokenizer && jsLanguage.tokenizer.root) {
+          jsLanguage.tokenizer.root = jsLanguage.tokenizer.root.filter(function (rule) {
+            if (!Array.isArray(rule)) {
+              return true;
+            }
+            var pattern = rule[0].toString();
+            // Remove rules handling strings, numbers, regex, or whitespace.
+            if (
+              pattern.indexOf('"') >= 0 ||
+              pattern.indexOf("'") >= 0 ||
+              pattern.indexOf("`") >= 0 ||
+              pattern.indexOf("\\d") >= 0 ||
+              pattern.indexOf("\\s") >= 0 ||
+              (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)
+            ) {
+              return false;
+            }
             return true;
-          }
-          const pattern = rule[0].toString();
-          if (
-            pattern.indexOf('"') >= 0 ||
-            pattern.indexOf("'") >= 0 ||
-            pattern.indexOf("`") >= 0 ||
-            pattern.indexOf("\\d") >= 0 ||
-            pattern.indexOf("\\s") >= 0 ||
-            (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)
-          ) {
-            return false;
-          }
-          return true;
-        });
-        delete jsDefaults.tokenizer.whitespace;
-        delete jsDefaults.tokenizer.comment;
-        delete jsDefaults.tokenizer.stringDouble;
-        delete jsDefaults.tokenizer.stringSingle;
-        delete jsDefaults.tokenizer.templateString;
-        delete jsDefaults.tokenizer.templateStringInterp;
-        delete jsDefaults.tokenizer.regexp;
-
-        monaco.languages.setMonarchTokensProvider('javascript', jsDefaults);
+          });
+          // Remove the additional states for strings, whitespace, and regex.
+          delete jsLanguage.tokenizer.whitespace;
+          delete jsLanguage.tokenizer.comment;
+          delete jsLanguage.tokenizer.stringDouble;
+          delete jsLanguage.tokenizer.stringSingle;
+          delete jsLanguage.tokenizer.templateString;
+          delete jsLanguage.tokenizer.templateStringInterp;
+          delete jsLanguage.tokenizer.regexp;
+        }
+        // Set the modified tokens provider.
+        monaco.languages.setMonarchTokensProvider('javascript', jsLanguage);
 
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
@@ -2298,7 +2303,7 @@ prompt("This is a prompt:");
           }
         });
 
-        // Now you can safely initialize your editor (or call your tab creation function)
+        // Now initialize your editor (or call your tab creation function).
         createTab();
       });
     });
