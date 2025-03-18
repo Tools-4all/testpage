@@ -1156,54 +1156,8 @@
       justify-content: space-between;
       margin-top: 10px;
     }
-
-    .rich-header-container {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      background-color: #fafafa;
-    }
-
-    .rich-header-toolbar {
-      display: flex;
-      gap: 5px;
-      margin-bottom: 5px;
-    }
-
-    .rich-header-toolbar select,
-    .rich-header-toolbar input[type="color"] {
-      padding: 3px;
-      border: 1px solid #aaa;
-      border-radius: 3px;
-      background: #fff;
-    }
-
-    .rich-header-textarea {
-      width: 100%;
-      min-height: 60px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-family: inherit;
-      font-size: inherit;
-      color: inherit;
-      background-color: inherit;
-      resize: vertical;
-    }
-
-    .hide-header {
-      display: none;
-    }
-
-    .header-toggle-container {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .header-toggle-container label {
-      margin-left: 5px;
-      font-size: 14px;
+    .headerText {
+      background-color: white;
     }
   </style>
 </head>
@@ -3039,67 +2993,6 @@ prompt("This is a prompt:");
         wrapperDiv.appendChild(lineWrapper);
       });
       return wrapperDiv;
-    }
-
-
-    function createRichHeader() {
-      const headerContainer = document.createElement('div');
-      headerContainer.className = 'rich-header-container';
-
-      const toolbar = document.createElement('div');
-      toolbar.className = 'rich-header-toolbar';
-
-      const fontFamilySelect = document.createElement('select');
-      fontFamilySelect.className = 'rich-header-font-family';
-      ['Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana'].forEach(family => {
-        const option = document.createElement('option');
-        option.value = family;
-        option.textContent = family;
-        fontFamilySelect.appendChild(option);
-      });
-      toolbar.appendChild(fontFamilySelect);
-
-      const fontSizeSelect = document.createElement('select');
-      fontSizeSelect.className = 'rich-header-font-size';
-      [12, 14, 16, 18, 20, 24, 28].forEach(size => {
-        const option = document.createElement('option');
-        option.value = size + "px";
-        option.textContent = size + "px";
-        fontSizeSelect.appendChild(option);
-      });
-      toolbar.appendChild(fontSizeSelect);
-
-      const textColorPicker = document.createElement('input');
-      textColorPicker.type = 'color';
-      textColorPicker.className = 'rich-header-text-color';
-      textColorPicker.value = '#000000';
-      toolbar.appendChild(textColorPicker);
-
-      const bgColorPicker = document.createElement('input');
-      bgColorPicker.type = 'color';
-      bgColorPicker.className = 'rich-header-bg-color';
-      bgColorPicker.value = '#ffffff';
-      toolbar.appendChild(bgColorPicker);
-
-      headerContainer.appendChild(toolbar);
-      const textarea = document.createElement('textarea');
-      textarea.className = 'rich-header-textarea';
-      textarea.placeholder = "Enter your remarks here...";
-      headerContainer.appendChild(textarea);
-      fontFamilySelect.addEventListener('change', function () {
-        textarea.style.fontFamily = this.value;
-      });
-      fontSizeSelect.addEventListener('change', function () {
-        textarea.style.fontSize = this.value;
-      });
-      textColorPicker.addEventListener('change', function () {
-        textarea.style.color = this.value;
-      });
-      bgColorPicker.addEventListener('change', function () {
-        textarea.style.backgroundColor = this.value;
-      });
-
-      return headerContainer;
     }
 
 
