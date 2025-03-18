@@ -2246,11 +2246,8 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-<<<<<<< HEAD
       // Set a Monarch tokenizer that replicates the default JavaScript grammar
       // similar to VS Code’s Dark+ without extra method/attribute logic.
-=======
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       monaco.languages.setMonarchTokensProvider('javascript', {
         defaultToken: '',
         tokenPostfix: '.js',
@@ -2275,16 +2272,11 @@ prompt("This is a prompt:");
           '+=', '-=', '*=', '/=', '&=', '|=', '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
-<<<<<<< HEAD
         // Define common symbol characters.
         symbols: /[=><!~?:&|+\-*/^%]+/,
-=======
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
 
         tokenizer: {
           root: [
-<<<<<<< HEAD
             // Whitespace and comments.
             { include: '@whitespace' },
 
@@ -2292,45 +2284,20 @@ prompt("This is a prompt:");
             [/[{}()[\]]/, '@brackets'],
 
             // Numbers.
-=======
-            // Dot access: if an identifier follows a dot and is immediately followed by '(' then it's a method.
-            [/(\.)([a-zA-Z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
-            // Dot access as attribute: identifier following a dot without an immediate '('.
-            [/(\.)([a-zA-Z_$][\w$]*)/, ['delimiter', 'attribute']],
-            // Global identifiers.
-            // Optionally, you can mark built-in functions as "function" if desired.
-            [/[a-zA-Z_$][\w$]*/, {
-              cases: {
-                '@keywords': 'keyword',
-                '@builtins': 'function',
-                '@default': 'identifier'
-              }
-            }],
-            // Numbers.
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
             [/\d+/, 'number'],
-<<<<<<< HEAD
 
             // Strings: handle non-terminated strings as invalid.
             [/"/, { token: 'string.quote', next: '@string_dq' }],
             [/'/, { token: 'string.quote', next: '@string_sq' }],
 
             // Operators & delimiters.
-=======
-            // Whitespace and comments.
-            { include: '@whitespace' },
-            // Brackets.
-            [/[{}()\[\]]/, '@brackets'],
-            // Operators.
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
                 '@default': ''
               }
             }],
-<<<<<<< HEAD
             [/[;,.]/, 'delimiter'],
 
             // Identifiers and keywords.
@@ -2340,42 +2307,17 @@ prompt("This is a prompt:");
                 '@default': 'identifier'
               }
             }],
-=======
-            // Strings.
-            [/"/, { token: 'string.quote', next: '@string' }],
-            [/'/, { token: 'string.quote', next: '@stringSingle' }],
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
           ],
 
-<<<<<<< HEAD
           // Double-quoted strings.
           string_dq: [
-=======
-          whitespace: [
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment']
-          ],
-
-          comment: [
-            [/[^\/*]+/, 'comment'],
-            [/\*\//, 'comment', '@pop'],
-            [/[\/*]/, 'comment']
-          ],
-
-          string: [
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/[^\\"]+/, 'string'],
             [/\\./, 'string.escape'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
 
-<<<<<<< HEAD
           // Single-quoted strings.
           string_sq: [
-=======
-          stringSingle: [
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
             [/[^\\']+/, 'string'],
             [/\\./, 'string.escape'],
             [/'/, { token: 'string.quote', next: '@pop' }]
@@ -2397,27 +2339,13 @@ prompt("This is a prompt:");
         }
       });
 
-<<<<<<< HEAD
       // Define a custom theme named "custom-dark" that replicates VS Code Dark+ colors.
-=======
-      // Define a custom theme mapping our tokens to colors.
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
         rules: [
-<<<<<<< HEAD
           { token: '', foreground: 'D4D4D4', background: '1E1E1E' },
           { token: 'invalid', foreground: 'F44747' },
-=======
-          { token: 'keyword', foreground: 'C586C0' },
-          { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'delimiter', foreground: 'D4D4D4' },
-          { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },    // Dot-based method calls.
-          { token: 'attribute', foreground: 'CE9178' }, // Dot-based attribute access.
-          { token: 'function', foreground: 'DCDCAA' },  // Built-in functions (if matched via @builtins).
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'string.escape', foreground: 'D7BA7D' },
@@ -2437,11 +2365,7 @@ prompt("This is a prompt:");
         }
       });
 
-<<<<<<< HEAD
       // Create the editor instance (e.g., via createTab()) using the "custom-dark" theme.
-=======
-      // Create the editor instance (e.g. via createTab()) using the custom theme.
->>>>>>> eca29c9a83c52a32fcddf47f52523d74f4dd77e1
       createTab();
     });
 
