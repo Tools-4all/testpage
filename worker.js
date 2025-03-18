@@ -900,8 +900,8 @@ self.addEventListener("message", (event) => {
         }
 
         {
-            let names = ["prompt", "alert", "console", "log", "error", "warn", "info", "debug", "clear", "table", "count", "countReset", "assert", "dir", "dirxml", "timeStamp", "trace", "group", "groupCollapsed", "groupEnd", "profile", "profileEnd", "time", "timeEnd", "timeLog", "CustomError"];
-            let funcs = [customAlert, customPrompt, customConsole, customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog,  CustomError];
+            let names = ["prompt", "alert", "console", "log", "error", "warn", "info", "debug", "clear", "table", "count", "countReset", "assert", "dir", "dirxml", "timeStamp", "trace", "group", "groupCollapsed", "groupEnd", "profile", "profileEnd", "time", "timeEnd", "timeLog", "Error"];
+            let funcs = [customAlert, customPrompt, customConsole, customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog, CustomError];
             for (let i = 0; i < names.length; i++) {
                 let name = names[i];
                 let func = funcs[i];
@@ -931,11 +931,36 @@ self.addEventListener("message", (event) => {
         };
 
         self.onerror = (e) => {
-            self.postMessage({ type: "error", message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`, forceUse: true });
+            self.postMessage({
+                type: "error",
+                message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`,
+                forceUse: true
+            });
             if (flexSwitchCheckDefault) {
-                self.postMessage({ type: "log", message: "Script finished with exit code 1.", forceUse: true });
+                self.postMessage({
+                    type: "log",
+                    message: "Script finished with exit code 1.",
+                    forceUse: true
+                });
             }
-        }
+        };
+
+        self.addEventListener("unhandledrejection", (e) => {
+            e.preventDefault();
+            self.postMessage({
+                type: "error",
+                message: `Uncaught (in promise) ${e.reason.name}: ${e.reason.message}\n${relativeStack(e.reason)}`,
+                forceUse: true
+            });
+            if (flexSwitchCheckDefault) {
+                self.postMessage({
+                    type: "log",
+                    message: "Script finished with exit code 1.",
+                    forceUse: true
+                });
+            }
+        });
+
         try {
             executeCode(code);
         } catch (e) {
