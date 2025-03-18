@@ -2248,39 +2248,10 @@ prompt("This is a prompt:");
     }
     require(["vs/editor/editor.main"], function () {
       require(["vs/basic-languages/javascript/javascript"], function (jsDefaults) {
-        // Get the language definition from the module.
-        var jsLanguage = jsDefaults.language;
-        if (jsLanguage && jsLanguage.tokenizer && jsLanguage.tokenizer.root) {
-          jsLanguage.tokenizer.root = jsLanguage.tokenizer.root.filter(function (rule) {
-            if (!Array.isArray(rule)) {
-              return true;
-            }
-            var pattern = rule[0].toString();
-            // Remove rules handling strings, numbers, regex, or whitespace.
-            if (
-              pattern.indexOf('"') >= 0 ||
-              pattern.indexOf("'") >= 0 ||
-              pattern.indexOf("`") >= 0 ||
-              pattern.indexOf("\\d") >= 0 ||
-              pattern.indexOf("\\s") >= 0 ||
-              (pattern.indexOf('(?=') >= 0 && pattern.indexOf('\\/') >= 0)
-            ) {
-              return false;
-            }
-            return true;
-          });
-          // Remove the additional states for strings, whitespace, and regex.
-          delete jsLanguage.tokenizer.whitespace;
-          delete jsLanguage.tokenizer.comment;
-          delete jsLanguage.tokenizer.stringDouble;
-          delete jsLanguage.tokenizer.stringSingle;
-          delete jsLanguage.tokenizer.templateString;
-          delete jsLanguage.tokenizer.templateStringInterp;
-          delete jsLanguage.tokenizer.regexp;
-        }
-        // Set the modified tokens provider.
-        monaco.languages.setMonarchTokensProvider('javascript', jsLanguage);
+        // Use the default language definition as provided.
+        monaco.languages.setMonarchTokensProvider('javascript', jsDefaults.language);
 
+        // Define your custom theme. This will override token colors for keywords, builtins, etc.
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
           inherit: true,
@@ -2290,20 +2261,15 @@ prompt("This is a prompt:");
             { token: 'delimiter', foreground: 'D4D4D4' },
             { token: 'operator', foreground: 'D4D4D4' },
             { token: 'function', foreground: 'DCDCAA' },
-            { token: 'attribute', foreground: 'CE9178' },
-            { token: 'string', foreground: 'CE9178' },
-            { token: 'number', foreground: 'B5CEA8' },
-            { token: 'regexp', foreground: 'D16969' },
-            { token: 'string.escape', foreground: 'd7ba7d' },
-            { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
-            { token: 'comment', foreground: '6A9955' }
+            { token: 'attribute', foreground: 'CE9178' }
+            // Do not override the defaults for string, number, regexp, whitespace, etc.
           ],
           colors: {
             'editor.background': '#1E1E1E'
           }
         });
 
-        // Now initialize your editor (or call your tab creation function).
+        // Now initialize your editor (or call your tab creation function)
         createTab();
       });
     });
