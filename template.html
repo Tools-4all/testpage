@@ -2251,7 +2251,7 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // keywords and builtins from VS Code
+        // Keywords and built-ins (as in VS Code)
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2259,6 +2259,7 @@ prompt("This is a prompt:");
           'return', 'super', 'switch', 'this', 'throw', 'try', 'typeof',
           'var', 'void', 'while', 'with', 'yield'
         ],
+
         builtins: [
           'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
           'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
@@ -2266,51 +2267,60 @@ prompt("This is a prompt:");
           'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
           'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError'
         ],
+
         operators: [
-          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
-          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
-          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-          '^=', '%=', '<<=', '>>=', '>>>='
+          '=', '>', '<', '!', '~', '?', ':',
+          '==', '<=', '>=', '!=', '&&', '||', '++', '--', '+', '-', '*', '/', '%',
+          '**', '+=', '-=', '*=', '/=', '%=', '**=', '&=', '|=', '^=', '<<=', '>>=', '>>>=',
+          '&', '|', '^', '<<', '>>', '>>>'
         ],
 
-        // Note: We remove unterminated-string rules so that only complete strings are allowed.
+        // We only match complete strings (no unterminated string rules)
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
-        // Revised escapes: match a backslash followed by one of the allowed characters.
+        // Match a backslash then one of the allowed characters (including octal sequences)
         escapes: /\\(?:[abfnrtv"'\0-9xuU]|[0-7]{1,3})/,
         digits: /\d+(_+\d+)*/,
-        octaldigits: /[0-7]+(_+[0-7]+)*/,
-        binarydigits: /[0-1]+(_+[0-1]+)*/,
-        hexdigits: /[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
+        octaldigits: /0[0-7]+/,
+        binarydigits: /0b[01]+/,
+        hexdigits: /0x[0-9A-Fa-f]+/,
 
         tokenizer: {
           root: [
-            // identifiers and keywords
-            [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
+            // Identifiers and keywords
+            [/[a-zA-Z_$][\w$]*/, {
+              cases: {
+                '@keywords': 'keyword',
+                '@default': 'identifier'
+              }
+            }],
             { include: '@whitespace' },
 
-            // brackets and operators
+            // Brackets and operators
             [/[{}()\[\]]/, '@brackets'],
-            [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
+            [/@symbols/, {
+              cases: {
+                '@operators': 'operator',
+                '@default': ''
+              }
+            }],
 
-            // numbers
+            // Numbers
             [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
-            [/0x(@hexdigits)/, 'number.hex'],
-            [/0b(@binarydigits)/, 'number.binary'],
-            [/0o(@octaldigits)/, 'number.octal'],
+            [/0x[0-9A-Fa-f]+/, 'number.hex'],
+            [/0b[01]+/, 'number.binary'],
+            [/0o[0-7]+/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
 
-            // strings – only complete strings; unterminated strings are not allowed here
-            [/"/, { token: 'string.quote', next: '@stringDouble' }],
-            [/'/, { token: 'string.quote', next: '@stringSingle' }],
+            // Strings (only complete strings)
+            [/"/, { token: 'string.quote', next: '@string_double' }],
+            [/'/, { token: 'string.quote', next: '@string_single' }],
 
-            // template (backtick) strings with interpolation support
-            [/`/, { token: 'string.quote', next: '@stringBacktick' }],
+            // Template (backtick) strings with interpolation
+            [/`/, { token: 'string.quote', next: '@string_backtick' }],
 
-            // regex literal – note this simplified rule assumes that a slash at a point
-            // where a regex is expected starts a regex literal.
-            [/\/(?=[^\/])/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+            // Regex literal – (this simplified rule assumes that a "/" in this context starts a regex)
+            [/\/(?=[^\/\*])/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
           // Whitespace and comments
@@ -2319,15 +2329,16 @@ prompt("This is a prompt:");
             [/\/\*/, 'comment', '@comment'],
             [/\/\/.*$/, 'comment']
           ],
-          // For block comments, use a rule that consumes everything until the first "*/"
+
+          // Block comments: match anything until the closing "*/"
           comment: [
             [/[^*]+/, 'comment'],
-            [/\*+\//, 'comment', '@pop'],
-            [/\*+/, 'comment']
+            [/\*+([^/*][^*]*)?/, 'comment'],
+            [/\*+\//, 'comment', '@pop']
           ],
 
           // Double-quoted strings
-          stringDouble: [
+          string_double: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
@@ -2335,15 +2346,15 @@ prompt("This is a prompt:");
           ],
 
           // Single-quoted strings
-          stringSingle: [
+          string_single: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
-          // Backtick (template) strings – allow newlines and handle ${ ... } interpolation
-          stringBacktick: [
+          // Backtick (template) strings – allow newlines and handle ${…} interpolation
+          string_backtick: [
             [/`/, { token: 'string.quote', next: '@pop' }],
             [/\$\{/, { token: 'delimiter.bracket', next: '@interpolation' }],
             [/[^\\`$]+/, 'string'],
@@ -2351,21 +2362,21 @@ prompt("This is a prompt:");
             [/\$/, 'string']
           ],
 
-          // Interpolation: when encountering a "}" return to the template string state.
+          // Interpolation inside template strings: return to template string state on "}"
           interpolation: [
             [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
             { include: 'root' }
           ],
 
-          // Regex literal state – more robust handling of character classes
+          // Regular expression literal state
           regexp: [
-            [/\[/, { token: 'regexp.escape.control', next: '@regexpCharacterClass' }],
+            [/\[/, { token: 'regexp.escape.control', next: '@regexp_charclass' }],
             [/@escapes/, 'regexp.escape'],
             [/[^\\\[\]/]+/, 'regexp'],
             [/\\./, 'regexp.escape.invalid'],
             [/\/[gimsuy]*/, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
-          regexpCharacterClass: [
+          regexp_charclass: [
             [/\]/, { token: 'regexp.escape.control', next: '@pop' }],
             [/@escapes/, 'regexp.escape'],
             [/\\./, 'regexp.escape.invalid'],
@@ -2382,13 +2393,10 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'CE9178' },
-          { token: 'function', foreground: 'DCDCAA' },
-          { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' },
           { token: 'regexp', foreground: 'D16969' },
+          { token: 'comment', foreground: '6A9955' },
           { token: 'string.escape', foreground: 'd7ba7d' },
           { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' }
         ],
@@ -2397,6 +2405,7 @@ prompt("This is a prompt:");
         }
       });
 
+      // Initialize your editor (or tab creation function)
       createTab();
     });
 
