@@ -3001,7 +3001,7 @@ prompt("This is a prompt:");
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText")
-      editorTextDiv.textContent = "Editor";
+      editorTextDiv.contentEditable = true;
       wrapperBoth.appendChild(editorTextDiv);
       wrapperBoth.appendChild(await getEditorDiv());
       const exportBtnsWrapper = document.createElement('div');
