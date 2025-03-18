@@ -3003,7 +3003,19 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       if (currentTab.outputElement.innerHTML.trim()) {
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapperBoth.appendChild(textDiv);
         wrapperBoth.appendChild(await getOutputDivClone());
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -3011,6 +3023,7 @@ prompt("This is a prompt:");
         exportCheckbox.checked = true;
         exportCheckbox.addEventListener("change", () => {
           tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
         });
       }
       exportModalContent.appendChild(wrapperBoth);
