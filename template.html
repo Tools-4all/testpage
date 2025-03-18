@@ -2251,9 +2251,6 @@ prompt("This is a prompt:");
         defaultToken: '',
         tokenPostfix: '.js',
 
-        // Add the symbols attribute so that @symbols works properly.
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
         keywords: [
           'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
           'default', 'delete', 'do', 'else', 'export', 'extends', 'finally',
@@ -2270,10 +2267,19 @@ prompt("This is a prompt:");
           'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
         ],
 
-        // We leave handling of strings, numbers, and regex to Monaco's native implementation.
+        operators: [
+          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
+          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
+          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
+          '^=', '%=', '<<=', '>>=', '>>>='
+        ],
+
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
         tokenizer: {
           root: [
-            // Identifiers & keywords.
+            // Identifiers & keywords
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
@@ -2281,32 +2287,20 @@ prompt("This is a prompt:");
                 '@default': 'identifier'
               }
             }],
-
-            // Brackets.
+            // Brackets
             [/[{}()\[\]]/, '@brackets'],
-
-            // Operators. Uses the custom 'symbols' definition above.
+            // Operators / symbols
             [/@symbols/, {
               cases: {
                 '@operators': 'operator',
                 '@default': ''
               }
             }],
-
-            // We do not override strings, numbers, or regex, so Monaco's native logic is used.
-          ],
-
-
-        },
-
-        // Optionally, you can define a list of operators if you want to style them.
-        operators: [
-          '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
-          '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-          '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^',
-          '%', '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-          '^=', '%=', '<<=', '>>=', '>>>='
-        ]
+            // Delimiters
+            [/[;,.]/, 'delimiter']
+            // NOTE: Custom retokenization for strings, numbers, regex, and whitespace has been removed.
+          ]
+        }
       });
 
       monaco.editor.defineTheme('custom-dark', {
