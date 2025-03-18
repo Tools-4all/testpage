@@ -7,5 +7,5 @@ prompt("This is a prompt:");
 Promise(resolve => resolve).then()
 alert()
 window.AbortController.apply()
-
+const thisIsAFunction = () => {}
 //this is in visual studio code
