@@ -2246,78 +2246,72 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-
-      /***************************************************************
-       * 1. REGISTER THE JAVASCRIPT LANGUAGE
-       ***************************************************************/
-      monaco.languages.register({ id: 'javascript' });
-
-      /***************************************************************
-       * 2. LANGUAGE CONFIGURATION (BRACKETS, COMMENTS, ETC.)
-       *    Sourced from https://github.com/microsoft/monaco-languages/blob/main/src/javascript/javascript.ts
-       ***************************************************************/
-      monaco.languages.setLanguageConfiguration('javascript', {
+      // ---------------------------------------------------------------------------
+      // 1) Official JavaScript Language Configuration (from monaco-languages)
+      //    This config is used to handle brackets, auto-indentation, comments, etc.
+      // ---------------------------------------------------------------------------
+      const jsConf = {
         comments: {
           lineComment: '//',
           blockComment: ['/*', '*/']
         },
         brackets: [
-          ['{', '}'],
+          ['(', ')'],
           ['[', ']'],
-          ['(', ')']
+          ['{', '}']
         ],
         autoClosingPairs: [
           { open: '{', close: '}' },
           { open: '[', close: ']' },
           { open: '(', close: ')' },
           { open: '"', close: '"', notIn: ['string'] },
-          { open: '\'', close: '\'', notIn: ['string', 'comment'] },
-          { open: '`', close: '`', notIn: ['string', 'comment'] },
+          { open: "'", close: "'", notIn: ['string', 'comment'] },
+          { open: '`', close: '`', notIn: ['string', 'comment'] }
         ],
         surroundingPairs: [
           { open: '{', close: '}' },
           { open: '[', close: ']' },
           { open: '(', close: ')' },
           { open: '"', close: '"' },
-          { open: '\'', close: '\'' },
-          { open: '`', close: '`' },
+          { open: "'", close: "'" },
+          { open: '`', close: '`' }
         ],
+        // VS Code-like auto-closing for JSX tags is more advanced; not included by default in Monarch
         folding: {
           markers: {
             start: new RegExp('^\\s*//\\s*#region'),
             end: new RegExp('^\\s*//\\s*#endregion')
           }
         }
-      });
+      };
 
-      /***************************************************************
-       * 3. MONARCH TOKEN PROVIDER (ACTUAL SYNTAX HIGHLIGHTING)
-       *    Also from https://github.com/microsoft/monaco-languages/blob/main/src/javascript/javascript.ts
-       *    This matches VS Code’s built-in JS grammar as closely as possible.
-       ***************************************************************/
-      monaco.languages.setMonarchTokensProvider('javascript', {
-        // Set defaultToken to invalid to see what you do not tokenize yet
-        defaultToken: 'invalid',
+      // ---------------------------------------------------------------------------
+      // 2) Official JavaScript Monarch Tokens Provider (from monaco-languages)
+      //    This handles keywords, strings, operators, etc. to mimic VS Code’s defaults.
+      // ---------------------------------------------------------------------------
+      const jsLanguage = {
+        defaultToken: '',
         tokenPostfix: '.js',
 
         keywords: [
-          'break', 'case', 'catch', 'class', 'continue', 'const', 'constructor', 'debugger', 'default', 'delete', 'do',
-          'else', 'export', 'extends', 'false', 'finally', 'for', 'from', 'function', 'get', 'if', 'import', 'in', 'instanceof',
-          'let', 'new', 'null', 'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw', 'true', 'try', 'typeof', 'undefined',
-          'var', 'void', 'while', 'with', 'yield', 'async', 'await', 'of'
+          'break', 'case', 'catch', 'class', 'continue', 'const', 'constructor', 'debugger',
+          'default', 'delete', 'do', 'else', 'export', 'extends', 'false', 'finally', 'for',
+          'from', 'function', 'get', 'if', 'import', 'in', 'instanceof', 'let', 'new', 'null',
+          'return', 'set', 'super', 'switch', 'symbol', 'this', 'throw', 'true', 'try', 'typeof',
+          'undefined', 'var', 'void', 'while', 'with', 'yield', 'async', 'await', 'of'
         ],
 
         typeKeywords: [],
 
         operators: [
-          '<', '>', '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**', '*', '/', '%', '++', '--',
-          '<<', '>>', '>>>', '&', '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=', '*=', '**=', '/=', '%=',
-          '<<=', '>>=', '>>>=', '&=', '|=', '^=', '@'
+          '<', '>', '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**', '*', '/', '%',
+          '++', '--', '<<', '>>', '>>>', '&', '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=',
+          '-=', '*=', '**=', '/=', '%=', '<<=', '>>=', '>>>=', '&=', '|=', '^=', '@'
         ],
 
         // we include these common regular expressions
         symbols: /[=><!~?:&|+\-*/^%]+/,
-        escapes: /\\(?:[abfnrtv\\"'n]|x[0-9A-Fa-f]{1,2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]+\})/,
+        escapes: /\\(?:[abfnrtv\\"'0-9xuU])/,
 
         // The main tokenizer for our languages
         tokenizer: {
@@ -2334,7 +2328,7 @@ prompt("This is a prompt:");
             { include: '@whitespace' },
 
             // regular expression: ensure it is terminated before beginning (otherwise it is an opeator)
-            [/\/(?=([^*]|[*][^/]))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+            [/\/(?=([^\\/]|\\.)+\/)/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
 
             // delimiters and operators
             [/[{}()\[\]]/, '@brackets'],
@@ -2352,19 +2346,58 @@ prompt("This is a prompt:");
             [/0[bB][0-1]+/, 'number.bin'],
             [/\d+/, 'number'],
 
-            // delimiter: after number because of .\d floats
-            [/[;,.]/, 'delimiter'],
-
             // strings
-            [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
-            [/'([^'\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
-            [/"/, 'string', '@string_double'],
-            [/'/, 'string', '@string_single'],
-            [/\`/, 'string', '@string_backtick'],
+            [/['](?=.*['])/, { token: 'string', bracket: '@open', next: '@string_sq' }],
+            [/["](?=.*["])/, { token: 'string', bracket: '@open', next: '@string_dq' }],
+
+            // template strings
+            [/[`]/, { token: 'string', bracket: '@open', next: '@string_bt' }],
+          ],
+
+          /* Handle string interpolation: backtick-strings with embedded ${} expressions. */
+          string_dq: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, { token: 'string', bracket: '@close', next: '@pop' }]
+          ],
+          string_sq: [
+            [/[^\\']+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, { token: 'string', bracket: '@close', next: '@pop' }]
+          ],
+          string_bt: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
+            [/[^\\`]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/`/, { token: 'string', bracket: '@close', next: '@pop' }]
+          ],
+          bracketCounting: [
+            [/\{/, 'delimiter.bracket', '@bracketCounting'],
+            [/\}/, 'delimiter.bracket', '@pop'],
+            { include: 'root' }
+          ],
+
+          /* We match regular expression quite simplistically, and then pop */
+          regexp: [
+            [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
+            [/(\[)(\^?)(?=(?:[^\]\\]|\\.)+\])/, ['regexp.escape.control', 'regexp.escape.control']],
+            [/\(\?:/, 'regexp.escape.control'],
+            [/\(\?=/, 'regexp.escape.control'],
+            [/\(\?!/, 'regexp.escape.control'],
+            [/[()]/, 'regexp.escape.control'],
+            [/@escapes/, 'regexp.escape'],
+            [/\\./, 'regexp.escape'],
+            [/@symbols/, 'regexp'],
+            [/\s+/, 'regexp'],
+            [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }],
+            [/./, 'regexp']
           ],
 
           whitespace: [
-            [/[ \t\r\n]+/, ''],
+            [/[ \t\r\n]+/, 'white'],
             [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
             [/\/\*/, 'comment', '@comment'],
             [/\/\/.*$/, 'comment'],
@@ -2372,7 +2405,7 @@ prompt("This is a prompt:");
 
           comment: [
             [/[^\/*]+/, 'comment'],
-            // [/\/\*/, 'comment', '@push' ],    // nested comment  not allowed :-(
+            // [/\/\*/,    'comment', '@comment' ],  // nested comment not allowed :-(
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ],
@@ -2382,85 +2415,14 @@ prompt("This is a prompt:");
             [/\*\//, 'comment.doc', '@pop'],
             [/[\/*]/, 'comment.doc']
           ],
+        },
+      };
 
-          string_double: [
-            [/[^\\"]+/, 'string'],
-            [/@escapes/, 'string.escape'],
-            [/\\./, 'string.escape.invalid'],
-            [/"/, 'string', '@pop']
-          ],
+      // Register the language + config:
+      monaco.languages.register({ id: 'javascript' });
+      monaco.languages.setLanguageConfiguration('javascript', jsConf);
+      monaco.languages.setMonarchTokensProvider('javascript', jsLanguage);
 
-          string_single: [
-            [/[^\\']+/, 'string'],
-            [/@escapes/, 'string.escape'],
-            [/\\./, 'string.escape.invalid'],
-            [/'/, 'string', '@pop']
-          ],
-
-          string_backtick: [
-            [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
-            [/[^\\`]+/, 'string'],
-            [/@escapes/, 'string.escape'],
-            [/\\./, 'string.escape.invalid'],
-            [/\`/, 'string', '@pop']
-          ],
-
-          bracketCounting: [
-            [/\{/, 'delimiter.bracket', '@bracketCounting'],
-            [/\}/, 'delimiter.bracket', '@pop'],
-            { include: 'root' }
-          ],
-
-          regexp: [
-            [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
-            [/(\[)(\^?)(?=(?:[^\]\\]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
-            [/(\()(\?:|\?=|\?!)/, ['regexp.escape.control', 'regexp.escape.control']],
-            [/[()]/, 'regexp.escape.control'],
-            [/@symbols/, 'regexp.escape.control'],
-            [/\\./, 'regexp.escape'],
-            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']],
-            [/./, 'regexp']
-          ],
-          regexrange: [
-            [/-/, 'regexp.escape.control'],
-            [/\^/, 'regexp.invalid'],
-            [/\\./, 'regexp.escape'],
-            [/[^\]]/, 'regexp'],
-            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
-          ]
-        }
-      });
-
-      /***************************************************************
-       * 4. DEFINE A THEME THAT MIMICS VS CODE DARK+ COLORS
-       ***************************************************************/
-      monaco.editor.defineTheme('custom-dark', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'invalid', foreground: 'ff0000' },
-          { token: 'comment', foreground: '6A9955' },
-          { token: 'comment.doc', foreground: '6A9955' },
-          { token: 'delimiter', foreground: 'D4D4D4' },
-          { token: 'number', foreground: 'B5CEA8' },
-          { token: 'regexp', foreground: 'B46695' },
-          { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'keyword', foreground: 'C586C0' },
-          { token: 'identifier', foreground: '9CDCFE' },
-          { token: 'string', foreground: 'CE9178' },
-          { token: 'string.escape', foreground: 'D7BA7D' },
-          { token: 'string.escape.invalid', foreground: 'F44747' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'CE9178' },
-          { token: 'function', foreground: 'DCDCAA' }
-        ],
-        colors: {
-          'editor.background': '#1E1E1E',
-          'editorLineNumber.foreground': '#858585',
-          'editor.selectionBackground': '#264F78',
-          'editorCursor.foreground': '#AEAFAD'
-        }
-      });
 
       // Create the editor instance (e.g. via createTab()) using the custom theme.
       createTab();
