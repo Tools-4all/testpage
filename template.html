@@ -1205,6 +1205,8 @@
       margin-left: 5px;
       font-size: 14px;
     }
+
+    .no-export {}
   </style>
 </head>
 
@@ -3043,12 +3045,40 @@ prompt("This is a prompt:");
 
 
     function createRichHeader() {
-      const headerContainer = document.createElement('div');
-      headerContainer.className = 'rich-header-container';
+      // Container for the header (this will be exported)
+      const headerContent = document.createElement('div');
+      headerContent.className = 'rich-header-content';
+      headerContent.style.border = "1px solid #ccc";
+      headerContent.style.padding = "10px";
+      headerContent.style.backgroundColor = "#fafafa";
 
-      const toolbar = document.createElement('div');
-      toolbar.className = 'rich-header-toolbar';
+      // Create a textarea for the remarks (this is what will appear in the export)
+      const textarea = document.createElement('textarea');
+      textarea.className = 'rich-header-textarea';
+      textarea.placeholder = "Enter your remarks here...";
+      textarea.style.width = "100%";
+      textarea.style.minHeight = "60px";
+      textarea.style.padding = "10px";
+      textarea.style.border = "1px solid #ccc";
+      textarea.style.borderRadius = "4px";
+      textarea.style.resize = "vertical";
+      // Default styling (can be updated by toolbar actions)
+      textarea.style.fontFamily = "Arial, sans-serif";
+      textarea.style.fontSize = "14px";
+      textarea.style.color = "#000";
+      textarea.style.backgroundColor = "#fff";
 
+      headerContent.appendChild(textarea);
+
+      // Now, create a separate UI container for the toolbar.
+      // This container is marked as no-export so it won't be included in the final PDF/image.
+      const toolbarContainer = document.createElement('div');
+      toolbarContainer.className = 'rich-header-toolbar no-export';
+      toolbarContainer.style.display = "flex";
+      toolbarContainer.style.gap = "5px";
+      toolbarContainer.style.marginBottom = "5px";
+
+      // Font family select
       const fontFamilySelect = document.createElement('select');
       fontFamilySelect.className = 'rich-header-font-family';
       ['Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Verdana'].forEach(family => {
@@ -3057,8 +3087,9 @@ prompt("This is a prompt:");
         option.textContent = family;
         fontFamilySelect.appendChild(option);
       });
-      toolbar.appendChild(fontFamilySelect);
+      toolbarContainer.appendChild(fontFamilySelect);
 
+      // Font size select
       const fontSizeSelect = document.createElement('select');
       fontSizeSelect.className = 'rich-header-font-size';
       [12, 14, 16, 18, 20, 24, 28].forEach(size => {
@@ -3067,25 +3098,23 @@ prompt("This is a prompt:");
         option.textContent = size + "px";
         fontSizeSelect.appendChild(option);
       });
-      toolbar.appendChild(fontSizeSelect);
+      toolbarContainer.appendChild(fontSizeSelect);
 
+      // Text color picker
       const textColorPicker = document.createElement('input');
       textColorPicker.type = 'color';
       textColorPicker.className = 'rich-header-text-color';
       textColorPicker.value = '#000000';
-      toolbar.appendChild(textColorPicker);
+      toolbarContainer.appendChild(textColorPicker);
 
+      // Background color picker
       const bgColorPicker = document.createElement('input');
       bgColorPicker.type = 'color';
       bgColorPicker.className = 'rich-header-bg-color';
       bgColorPicker.value = '#ffffff';
-      toolbar.appendChild(bgColorPicker);
+      toolbarContainer.appendChild(bgColorPicker);
 
-      headerContainer.appendChild(toolbar);
-      const textarea = document.createElement('textarea');
-      textarea.className = 'rich-header-textarea';
-      textarea.placeholder = "Enter your remarks here...";
-      headerContainer.appendChild(textarea);
+      // Hook up toolbar actions to update the textarea styles
       fontFamilySelect.addEventListener('change', function () {
         textarea.style.fontFamily = this.value;
       });
@@ -3099,7 +3128,18 @@ prompt("This is a prompt:");
         textarea.style.backgroundColor = this.value;
       });
 
+      // Create a container for the entire header component.
+      // It includes both the toolbar (non-exported) and the header content (exported)
+      const headerContainer = document.createElement('div');
+      headerContainer.className = 'rich-header-container';
+      headerContainer.appendChild(toolbarContainer);
+      headerContainer.appendChild(headerContent);
+
       return headerContainer;
+    }
+
+    function prepareForExport(originalContainer) {
+      originalContainer.querySelectorAll('.no-export').forEach(el => el.remove());
     }
 
 
@@ -3145,6 +3185,7 @@ prompt("This is a prompt:");
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        prepareForExport(wrapperBoth);
         const imgSrc = await takeImage(wrapperBoth);
         closeModal("close");
         const bothImg = new Image();
@@ -3215,6 +3256,7 @@ prompt("This is a prompt:");
           unit: 'px',
           format: [contentWidth, contentHeight]
         });
+        prepareForExport(wrapperBoth);
         await new Promise(resolve => {
           doc.html(wrapBoth, {
             callback: resolve,
