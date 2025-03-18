@@ -2409,7 +2409,9 @@ prompt("This is a prompt:");
             [/{\d+(?:,\d*)?}/, 'regexp.escape.control'],
             [/}/, { token: 'regexp.escape.control' }],
             [/~|@symbols/, 'regexp'],
-            [/[^\]/, 'regexp'],
+            [/[^\]]/, 'regexp'],
+            [/]/, { token: 'regexp.escape.control', next: '@pop' }],
+            [/$/, 'regexp'],
             // end of regex
             [/\//, { token: 'regexp', bracket: '@close', next: '@regexp_flags' }]
             ],
