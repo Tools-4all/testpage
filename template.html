@@ -2264,7 +2264,7 @@ prompt("This is a prompt:");
           'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
           'Function', 'Object', 'Array', 'Number', 'String', 'Boolean', 'Symbol',
           'Map', 'Set', 'WeakMap', 'WeakSet', 'RegExp', 'Date', 'Error', 'EvalError',
-          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
+          'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError'
         ],
 
         operators: [
@@ -2284,15 +2284,10 @@ prompt("This is a prompt:");
 
         tokenizer: {
           root: [
-            // Identifiers & keywords
             [/[a-zA-Z_$][\w$]*/, { cases: { '@keywords': 'keyword', '@builtins': 'function', '@default': 'identifier' } }],
             { include: '@whitespace' },
-
-            // Brackets & operators
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
-
-            // Numbers
             [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
             [/@digits+/, 'number'],
             [/0x(@hexdigits)/, 'number.hex'],
@@ -2300,18 +2295,17 @@ prompt("This is a prompt:");
             [/0o(@octaldigits)/, 'number.octal'],
             [/[;,.]/, 'delimiter'],
 
-            // Strings
+            // Complete string rules (no unterminated string rules)
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
-            // Template (backtick) strings with interpolation
+            // Template strings
             [/`/, { token: 'string.quote', next: '@stringBacktick' }],
 
-            // Regex literals – the closing slash consumes any flags
+            // Regex literal – note: this simplified rule does not distinguish division vs regex fully
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
-          // Whitespace & comments
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
@@ -2323,23 +2317,18 @@ prompt("This is a prompt:");
             [/[/*]/, 'comment']
           ],
 
-          // Double-quoted strings
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
-
-          // Single-quoted strings
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
-
-          // Backtick (template) strings
           stringBacktick: [
             [/`/, { token: 'string.quote', next: '@pop' }],
             [/\$\{/, { token: 'delimiter.bracket', next: '@interpolation' }],
@@ -2347,14 +2336,11 @@ prompt("This is a prompt:");
             [/\\./, 'string.escape'],
             [/\$/, 'string']
           ],
-
-          // Interpolation inside template strings
           interpolation: [
             [/\}/, { token: 'delimiter.bracket', next: '@pop' }],
             { include: 'root' }
           ],
 
-          // Regex literal state
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
@@ -2364,9 +2350,9 @@ prompt("This is a prompt:");
             [/\/[gimsuy]*/, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
           regexpBraces: [
-            [/\}/, { token: 'regexp.escape.control', next: '@pop' }], // Fixed: pop instead of '@regex'
+            [/\}/, { token: 'regexp.escape.control', next: '@pop' }],
             { include: '@regexrange' },
-            [/.*/, 'regexp']
+            [/./, 'regexp']
           ],
           regexrange: [
             [/-/, 'regexp.escape.control'],
