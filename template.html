@@ -2258,7 +2258,7 @@ prompt("This is a prompt:");
           'var', 'void', 'while', 'with', 'yield'
         ],
 
-        // Treat these as builtins as VS Code does (often highlighted like functions/types)
+        // Treat these like "built-in" or "special" identifiers. VS Code often highlights them like functions/types.
         builtins: [
           'alert', 'prompt', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'eval',
           'decodeURI', 'encodeURI', 'console', 'window', 'document', 'Promise', 'AbortController',
@@ -2267,7 +2267,7 @@ prompt("This is a prompt:");
           'RangeError', 'ReferenceError', 'SyntaxError', 'TypeError', 'URIError', 'NaN', 'Infinity'
         ],
 
-        // Extend operator list to match VS Code more closely
+        // Expand your operator list to match more of what VS Code highlights (e.g., ===, !==, ?., ??, etc.).
         operators: [
           '===', '!==', '=>', '**', '**=', '?.', '??', '??=',
           '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
@@ -2276,28 +2276,35 @@ prompt("This is a prompt:");
           '^=', '%=', '<<=', '>>=', '>>>='
         ],
 
+        // Common regex snippets for convenience.
         symbols: /[=><!~?:&|+\-*\/\^%]+/,
         escapes: /\\(?:[abfnrtv"'\\0-9xudUnN]|[0-7]{1,3})/,
         digits: /\d+(_+\d+)*/,
         octaldigits: /[0-7]+(_+[0-7]+)*/,
         binarydigits: /[0-1]+(_+[0-1]+)*/,
-        hexdigits: /[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
+        hexdigits: /[[0-9A-Fa-f]+(_+[0-9A-Fa-f]+)*/,
 
         tokenizer: {
           root: [
-            // IDENTIFIERS & KEYWORDS
+            // ----------------------------------------------------------------
+            // 1) IDENTIFIERS & KEYWORDS
+            // ----------------------------------------------------------------
             [/[a-zA-Z_$][\w$]*/, {
               cases: {
                 '@keywords': 'keyword',
-                '@builtins': 'function',
+                '@builtins': 'function', // highlight your builtins as "function" color
                 '@default': 'identifier'
               }
             }],
 
-            // WHITESPACE / COMMENTS
+            // ----------------------------------------------------------------
+            // 2) WHITESPACE / COMMENTS
+            // ----------------------------------------------------------------
             { include: '@whitespace' },
 
-            // DELIMITERS & OPERATORS
+            // ----------------------------------------------------------------
+            // 3) DELIMITERS & OPERATORS
+            // ----------------------------------------------------------------
             [/[{}()\[\]]/, '@brackets'],
             [/@symbols/, {
               cases: {
@@ -2306,36 +2313,51 @@ prompt("This is a prompt:");
               }
             }],
 
-            // NUMBERS
+            // ----------------------------------------------------------------
+            // 4) NUMBERS
+            // ----------------------------------------------------------------
+            // floating point
             [/(@digits*\.)@digits+([eE][\-+]?@digits+)?/, 'number.float'],
+            // regular integer
             [/@digits+/, 'number'],
+            // hex, binary, octal
             [/0x(@hexdigits)/, 'number.hex'],
             [/0b(@binarydigits)/, 'number.binary'],
             [/0o(@octaldigits)/, 'number.octal'],
+
+            // punctuation / delimiters
             [/[;,.]/, 'delimiter'],
 
-            // STRINGS
-            // unterminated strings
+            // ----------------------------------------------------------------
+            // 5) STRINGS
+            // ----------------------------------------------------------------
+            // unterminated string check
             [/"([^"\\]|\\.)*$/, 'string.invalid'],
             [/'([^'\\]|\\.)*$/, 'string.invalid'],
-            // regular strings
+            // normal strings
             [/"/, { token: 'string.quote', next: '@stringDouble' }],
             [/'/, { token: 'string.quote', next: '@stringSingle' }],
 
-            // TEMPLATE STRINGS (backticks)
+            // template strings (backtick)
             [/`/, { token: 'string.quote', next: '@templateString' }],
 
-            // REGEX LITERALS: If we see a slash not followed by * (comment), assume regex
+            // ----------------------------------------------------------------
+            // 6) REGEX LITERALS
+            // ----------------------------------------------------------------
+            // If we see a slash NOT followed by * (comment), we assume regex
             [/\/(?=([^*]|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
           ],
 
+          // --------------------------------------------------------------------
           // REGEX SUB-TOKENS
+          // --------------------------------------------------------------------
           regexp: [
             { include: '@regexrange' },
             [/\{/, { token: 'regexp.escape.control', next: '@regexpBraces' }],
             [/[()]/, 'regexp.escape.control'],
             [/[\^$|?*+\.]/, 'regexp.escape.control'],
             [/[^\{(\^$|?*+\.]+/, 'regexp'],
+            // closing / and optional flags
             [/\//, { token: 'regexp', bracket: '@close', next: '@pop' }]
           ],
           regexpBraces: [
@@ -2352,14 +2374,15 @@ prompt("This is a prompt:");
             [/./, 'regexp']
           ],
 
-          // DOUBLE-QUOTED STRINGS
+          // --------------------------------------------------------------------
+          // STRINGS
+          // --------------------------------------------------------------------
           stringDouble: [
             [/[^\\"]+/, 'string'],
             [/@escapes/, 'string.escape'],
             [/\\./, 'string.escape.invalid'],
             [/"/, { token: 'string.quote', next: '@pop' }]
           ],
-          // SINGLE-QUOTED STRINGS
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/@escapes/, 'string.escape'],
@@ -2367,28 +2390,24 @@ prompt("This is a prompt:");
             [/'/, { token: 'string.quote', next: '@pop' }]
           ],
 
+          // --------------------------------------------------------------------
           // TEMPLATE STRINGS
-          // Modified to better handle interpolation and ensure proper closing
+          // --------------------------------------------------------------------
           templateString: [
-            // When encountering an interpolation start, switch to the interp state
             [/\$\{/, { token: 'delimiter.bracket', next: '@templateStringInterp' }],
-            // Closing backtick ends the template string
             [/`/, { token: 'string.quote', next: '@pop' }],
-            // Match any sequence that doesn't include backslash, backtick, or $
-            [/[^\\`$]+/, 'string'],
-            // Handle escapes within the template
-            [/\\./, 'string.escape'],
-            // Isolated $ characters
-            [/\$/, 'string']
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/./, 'string']
           ],
           templateStringInterp: [
-            // When closing the interpolation, return to the template string state
             [/\}/, { token: 'delimiter.bracket', next: '@templateString' }],
-            // Delegate the rest to the root tokenizer
             { include: 'root' }
           ],
 
+          // --------------------------------------------------------------------
           // WHITESPACE / COMMENTS
+          // --------------------------------------------------------------------
           whitespace: [
             [/[ \t\r\n]+/, 'white'],
             [/\/\*/, 'comment', '@comment'],
@@ -2396,14 +2415,16 @@ prompt("This is a prompt:");
           ],
           comment: [
             [/[^\/*]+/, 'comment'],
-            // No nested comments by default; uncomment the next line to allow nesting
-            // [/\/\*/, 'comment', '@push'],
+            // No nested comments by default, remove the next line if you do want them:
+            // [/\/\*/,       'comment', '@push' ],
             [/\*\//, 'comment', '@pop'],
             [/[\/*]/, 'comment']
           ],
         }
       });
 
+      // Define your custom theme. We just added a few more token colors for
+      // regex, escapes, invalid, etc. to keep them consistent with typical VS Code.
       monaco.editor.defineTheme('custom-dark', {
         base: 'vs-dark',
         inherit: true,
@@ -2412,9 +2433,9 @@ prompt("This is a prompt:");
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          { token: 'method', foreground: '4EC9B0' },
-          { token: 'attribute', foreground: 'CE9178' },
-          { token: 'function', foreground: 'DCDCAA' },
+          { token: 'method', foreground: '4EC9B0' }, // from your dot-based method rule
+          { token: 'attribute', foreground: 'CE9178' }, // from your dot-based attribute rule
+          { token: 'function', foreground: 'DCDCAA' }, // for builtins
           { token: 'comment', foreground: '6A9955' },
           { token: 'string', foreground: 'CE9178' },
           { token: 'number', foreground: 'B5CEA8' },
@@ -2427,10 +2448,10 @@ prompt("This is a prompt:");
         }
       });
 
-      // Finally, initialize your editor (or call your tab creation function)
+      // Finally, create your editor (or call createTab()) using the custom theme.
+      // If you already do something like `createTab()`, just leave that call as-is.
       createTab();
     });
-
 
     function updateStatusPosition() {
       if (activeTabId === null) {
