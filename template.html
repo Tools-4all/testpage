@@ -2298,17 +2298,7 @@ prompt("This is a prompt:");
             // We do not override strings, numbers, or regex, so Monaco's native logic is used.
           ],
 
-          whitespace: [
-            [/[ \t\r\n]+/, 'white'],
-            [/\/\*/, 'comment', '@comment'],
-            [/\/\/.*$/, 'comment']
-          ],
 
-          comment: [
-            [/[^\/*]+/, 'comment'],
-            [/\*\//, 'comment', '@pop'],
-            [/[\/*]/, 'comment']
-          ]
         },
 
         // Optionally, you can define a list of operators if you want to style them.
