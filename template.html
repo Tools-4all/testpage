@@ -2005,8 +2005,8 @@ prompt("This is a prompt:");
       if (lineNumber > model.getLineCount()) {
         return;
       }
-      const position = { lineNumber, column: 1 };
-      currentTab.editorInstance.setPosition(position);
+      const column = model.getLineMaxColumn(lineNumber);
+      currentTab.editorInstance.setPosition({ lineNumber, column });
       currentTab.editorInstance.revealLineInCenter(lineNumber);
       currentTab.editorInstance.focus();
     }
