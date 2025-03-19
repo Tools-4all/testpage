@@ -359,7 +359,7 @@ function objectToStringForNode(obj) {
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
-    if (typeof obj === "string") {  // Add this check to wrap strings in quotes.
+    if (typeof obj === "string") {  .
         return `"${obj}"`;
     }
     if (typeof obj !== "object" || obj === null) {
