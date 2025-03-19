@@ -746,6 +746,39 @@ function getObjectOrStringForLog(...args) {
     });
     return objs
 }
+function formatMessageWithInteractive(formatStr, ...args) {
+    let interactiveObjects = [];
+    let argIndex = 0;
+    // Replace % tokens with proper substitution.
+    const formatted = formatStr.replace(/%[osd]/g, (token) => {
+        const arg = args[argIndex++];
+        if (token === '%o') {
+            // Instead of converting to string, collect its interactive node tree.
+            interactiveObjects.push(getObjectOrString(arg));
+            // Return a placeholder; you can choose to leave it as "%o" or an empty string.
+            return "%o";
+        } else if (token === '%s') {
+            return String(arg);
+        } else if (token === '%d') {
+            return Number(arg);
+        }
+        return token;
+    });
+    // If extra args remain, process them.
+    while (argIndex < args.length) {
+        const arg = args[argIndex++];
+        if (typeof arg === "object") {
+            interactiveObjects.push(getObjectOrString(arg));
+            // Append a placeholder for any extra object.
+            // (Alternatively, you could just append a marker.)
+            formatStr += " %o";
+        } else {
+            // For primitives, just append.
+            formatStr += " " + String(arg);
+        }
+    }
+    return { formatted, interactiveObjects };
+}
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
@@ -817,10 +850,29 @@ self.addEventListener("message", (event) => {
             },
             assert: (condition, ...args) => {
                 if (!condition) {
-                    args.unshift("Assertion failed:");
-                    const msg = getObjectOrString(...args);
-                    console.log(msg)
-                    self.postMessage({ type: "error", message: msg });
+                    // Check if the first argument is a format string containing % tokens.
+                    if (typeof args[0] === "string" && /%[osd]/.test(args[0])) {
+                        const { formatted, interactiveObjects } = formatMessageWithInteractive(...args);
+                        // Build an object that contains both the text and the interactive parts.
+                        const messageObj = {
+                            text: "Assertion failed: " + formatted,
+                            // interactiveObjects is an array of node tree objects
+                            interactive: interactiveObjects
+                        };
+                        // Use your logging mechanism (which handles interactive trees) to send the message.
+                        customConsole.log(messageObj);
+                        self.postMessage({ type: "error", message: messageObj, forceUse: false });
+                    } else {
+                        // Fallback for non-format strings: build the interactive tree as before.
+                        let message = args.map(arg => {
+                            return (typeof arg === "object")
+                                ? getObjectOrString(arg)
+                                : String(arg);
+                        });
+                        message.unshift("Assertion failed:");
+                        customConsole.log(message);
+                        self.postMessage({ type: "error", message, forceUse: false });
+                    }
                 }
             },
             dir: (obj) => {
