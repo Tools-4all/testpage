@@ -196,7 +196,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                 headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
                 try {
-                    headerText = JSON.stringify(value);
+                    headerText = objectToString(value);
                 } catch (e) {
                     headerText = "{}";
                 }
