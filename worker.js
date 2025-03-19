@@ -607,12 +607,17 @@ function getStack() {
 
 
     if (deduped.length) {
-        const last = deduped[deduped.length - 1];
-        if (!/userCode/.test(last.fn)) {
-            deduped.push({ fn: "userCode", line: last.line });
+        const lastFrame = deduped[deduped.length - 1];
+        if (lastFrame.fn === 'eval' || lastFrame.fn === '<anonymous>') {
+            deduped.pop();
+        }
+        const finalFrame = deduped[deduped.length - 1];
+        if (!finalFrame || !/userCode/.test(finalFrame.fn)) {
+            const lineForUserCode = finalFrame ? finalFrame.line : 0;
+            deduped.push({ fn: "userCode", line: lineForUserCode });
         }
     }
-
+    
 
     return deduped
         .map(f => `at ${f.fn} (js:${f.line})`)
