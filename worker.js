@@ -822,7 +822,7 @@ function formatConsoleString(format, ...args) {
 
             if (specifier === 'c') {
                 if (argIndex < args.length && typeof args[argIndex] === "string" && typeof args[argIndex + 1] === "string") {
-                    let styleArg = args[argIndex++]
+                    let styleArg = String(args[argIndex++]);
                     const filteredStyle = filterStyle(styleArg);
 
                     let styledText = "";
