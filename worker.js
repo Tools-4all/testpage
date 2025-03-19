@@ -732,6 +732,7 @@ function getObjectOrStringForLog(...args) {
     let objs = {}
     let num = 0
     args.forEach(arg => {
+        console.log("arg", arg, "isDomString", arg.isDomString)
         if ([Date, Error, Function].some(type => arg instanceof type)) {
             if (arg instanceof Error) {
                 objs[num] = [arg.stack, false]
