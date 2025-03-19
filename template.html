@@ -2198,15 +2198,18 @@ prompt("This is a prompt:");
         if (msg[key][1]) {
           subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
           subMsgDiv.style.marginRight = "8px";
-          div.appendChild(subMsgDiv);
+          wrapBoth.appendChild(subMsgDiv);
         } else {
           subMsgDiv = document.createElement("div");
           subMsgDiv.style.marginRight = "8px";
           subMsgDiv.innerText = msg[key][0]
-          div.appendChild(subMsgDiv);
+          wrapBoth.appendChild(subMsgDiv);
         }
       }
-      container.appendChild(div);
+      const wrapBoth = document.createElement("div");
+      wrapBoth.appendChild(div);
+      wrapBoth.style.display = "block";
+      container.appendChild(wrapBoth);
       container.scrollTop = container.scrollHeight;
     }
 
