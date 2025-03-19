@@ -854,9 +854,7 @@ self.addEventListener("message", (event) => {
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = `${serializedArgs}`;
-                self.postMessage({ type: "group", message, collapsed: true });
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...args), collapsed: true });
                 groupLevel++;
             },
             groupEnd: () => {
