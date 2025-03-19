@@ -1350,7 +1350,6 @@
         });
         monaco.editor.setTheme("custom-light");
 
-        // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
           let lines = tab.outputElement.querySelectorAll(".outputContent");
           lines.forEach(line => {
@@ -1392,7 +1391,6 @@
         });
         monaco.editor.setTheme("custom-dark");
 
-        // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
           let lines = tab.outputElement.querySelectorAll(".outputContent");
           lines.forEach(line => {
@@ -2075,7 +2073,6 @@ prompt("This is a prompt:");
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
 
-      // Determine the structure of the received table data.
       let tableData, headerOrder;
       if (
         tableInfo.table &&
@@ -2083,13 +2080,10 @@ prompt("This is a prompt:");
         "tableData" in tableInfo.table &&
         "headerOrder" in tableInfo.table
       ) {
-        // When buildTableData returns an object with tableData and headerOrder.
         tableData = tableInfo.table.tableData;
         headerOrder = tableInfo.table.headerOrder;
       } else if (tableInfo.table && typeof tableInfo.table === "object") {
-        // Fallback: when tableInfo.table is already the table data.
         tableData = tableInfo.table;
-        // Use the keys of tableData as header order; ensure "(index)" is first.
         headerOrder = Object.keys(tableData);
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
@@ -2097,7 +2091,6 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Validate the extracted tableData and headerOrder.
       if (
         !tableData ||
         !Array.isArray(tableData["(index)"]) ||
@@ -2117,7 +2110,6 @@ prompt("This is a prompt:");
       const table = document.createElement("table");
       table.classList.add("console-table");
 
-      // Create header row from headerOrder.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -2130,7 +2122,6 @@ prompt("This is a prompt:");
       thead.appendChild(headRow);
       table.appendChild(thead);
 
-      // Create table rows based on rowCount.
       const tbody = document.createElement("tbody");
       for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
@@ -2178,7 +2169,6 @@ prompt("This is a prompt:");
       }
       table.appendChild(tbody);
 
-      // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
       symbolDiv.classList.add("dontAllowSelect");
       symbolDiv.innerHTML = "[>]";
