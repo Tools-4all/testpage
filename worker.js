@@ -736,7 +736,7 @@ function objectToString(obj) {
     const keyValuePairs = keys.map((key, index) => {
         const isNumeric = /^\d+$/.test(key);
         const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
-        const formattedKey = isNumeric || isValidIdentifier ? key : `${key}"`;
+        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
         return `${formattedKey}: ${objectToString(obj[key])}`;
     });
     return `{${keyValuePairs.join(", ")}}`;
