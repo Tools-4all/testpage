@@ -748,6 +748,114 @@ function getObjectOrStringForLog(...args) {
     return objs
 }
 
+function formatConsoleString(format, ...args) {
+    let argIndex = 0;
+    const parts = [];
+    let currentString = "";
+    let i = 0;
+    
+    while (i < format.length) {
+        if (format[i] === '%') {
+            // Check for escaped percent %%
+            if (i + 1 < format.length && format[i + 1] === '%') {
+                currentString += '%';
+                i += 2;
+                continue;
+            }
+            
+            // Parse any number formatting options (like ".2" or "5")
+            let j = i + 1;
+            let formatting = "";
+            while (j < format.length && (format[j] === '.' || (format[j] >= '0' && format[j] <= '9'))) {
+                formatting += format[j];
+                j++;
+            }
+            if (j >= format.length) {
+                currentString += format[i];
+                i++;
+                continue;
+            }
+            
+            const specifier = format[j];
+            i = j + 1;
+            
+            if (specifier === 'c') {
+                // For %c, we expect a style string as the argument.
+                // Note: The original behavior reads until the next '%' is found,
+                // which means literal '%' inside the styled text will prematurely end it.
+                // (A more robust fix might allow escaping, but here we simply clarify the behavior.)
+                if (argIndex < args.length && typeof args[argIndex] === "string") {
+                    // Flush any accumulated text.
+                    if (currentString) {
+                        parts.push(currentString);
+                        currentString = "";
+                    }
+                    let styleArg = String(args[argIndex++]);
+                    const filteredStyle = filterStyle(styleArg);
+                    
+                    let styledText = "";
+                    while (i < format.length && format[i] !== '%') {
+                        // If you need to include a literal '%' in the styled text,
+                        // you must escape it (for example using "%%") because this loop stops at any '%'.
+                        styledText += format[i];
+                        i++;
+                    }
+                    parts.push(new DomeElement(`<span style="${filteredStyle}">${styledText}</span>`));
+                }
+            } else if (specifier === 'o' || specifier === 'O') {
+                // For object specifiers, flush the current string,
+                // then insert the object into the output array.
+                if (currentString) {
+                    parts.push(currentString);
+                    currentString = "";
+                }
+                if (argIndex < args.length) {
+                    // Instead of concatenating the JSON representation to the string,
+                    // we now insert the object as a separate element.
+                    parts.push(args[argIndex++]);
+                } else {
+                    // If no argument is available, keep the literal.
+                    parts.push(`%${formatting}${specifier}`);
+                }
+            } else {
+                // Handle other specifiers: %s, %d, %i, %f, etc.
+                if (argIndex < args.length) {
+                    const arg = args[argIndex++];
+                    let value;
+                    switch (specifier) {
+                        case 's':
+                            value = String(arg);
+                            break;
+                        case 'd':
+                        case 'i':
+                            value = parseInt(arg, 10);
+                            break;
+                        case 'f':
+                            value = parseFloat(arg);
+                            break;
+                        default:
+                            value = `%${formatting}${specifier}`;
+                    }
+                    currentString += value;
+                } else {
+                    currentString += `%${formatting}${specifier}`;
+                }
+            }
+        } else {
+            currentString += format[i];
+            i++;
+        }
+    }
+    if (currentString) {
+        parts.push(currentString);
+    }
+    // Append any extra arguments that weren't consumed by specifiers.
+    const extraArgs = args.slice(argIndex);
+    parts.push(...extraArgs);
+    return parts;
+}
+
+
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
@@ -759,7 +867,7 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                const objs = getObjectOrStringForLog(...args);
+                const objs = getObjectOrStringForLog(formatConsoleString(...args));
                 self.postMessage({ type: "log", message: objs });
             },
             error: (...args) => {
