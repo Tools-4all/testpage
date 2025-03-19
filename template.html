@@ -1854,10 +1854,23 @@ prompt("This is a prompt:");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
             summary.style.display = "flex"
-            if (typeof msg === "string" || typeof msg === "array" && !msg[0][0]) {
+            if (typeof msg === "string") {
               summary.textContent = msg;
-            } else {
-              summary.appendChild(lazyRenderTreeNode(null, msg[0][0]));
+            } else if (typeof msg === "object") {
+              let actualMsg = "";
+              let subMsgDiv
+              for (let key in msg) {
+                subMsgDiv = document.createElement("div");
+                if (msg[key][1]) {
+                  subMsgDiv = lazyRenderTreeNode(key, msg[key][0])
+                  subMsgDiv.style.marginRight = "8px";
+                  summary.appendChild(subMsgDiv);
+                } else {
+                  subMsgDiv = document.createElement("div");
+                  subMsgDiv.style.marginRight = "8px";
+                  subMsgDiv.innerText = key + ": " + msg[key][0]
+                  summary.appendChild(subMsgDiv);
+              }
             }
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?

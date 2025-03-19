@@ -848,12 +848,12 @@ self.addEventListener("message", (event) => {
                 args.push(stack);
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
-            group: (args) => {
-                self.postMessage({ type: "group", message: getObjectOrStringForLog(...[args]), collapsed: false });
+            group: (...args) => {
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...args), collapsed: false });
                 groupLevel++;
             },
-            groupCollapsed: (args) => {
-                self.postMessage({ type: "group", message: getObjectOrStringForLog(...[argss]), collapsed: true });
+            groupCollapsed: (...args) => {
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...argss), collapsed: true });
                 groupLevel++;
             },
             groupEnd: () => {
