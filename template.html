@@ -1853,6 +1853,7 @@ prompt("This is a prompt:");
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
+            summary.style.display = "block"
             if (typeof msg === "string") {
               summary.textContent = msg;
             } else {
