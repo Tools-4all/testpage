@@ -836,8 +836,7 @@ self.addEventListener("message", (event) => {
                 }
             },
             dir: (obj) => {
-                const html = getObjectOrString(obj);
-                self.postMessage({ type: "log", message: html });
+                self.postMessage({ type: "log", message: getObjectOrString(obj) });
             },
             dirxml: (obj) => {
                 self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
