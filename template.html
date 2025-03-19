@@ -2192,8 +2192,8 @@ prompt("This is a prompt:");
       div.appendChild(table);
       let actualMsg = "";
       let subMsgDiv
+      const wrapBoth = document.createElement("div");
       for (let key in msg) {
-        console.log(msg)
         subMsgDiv = document.createElement("div");
         if (msg[key][1]) {
           subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
@@ -2206,7 +2206,6 @@ prompt("This is a prompt:");
           wrapBoth.appendChild(subMsgDiv);
         }
       }
-      const wrapBoth = document.createElement("div");
       wrapBoth.appendChild(div);
       wrapBoth.style.display = "block";
       container.appendChild(wrapBoth);
