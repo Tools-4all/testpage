@@ -2000,7 +2000,16 @@ prompt("This is a prompt:");
     }
 
 
-
+    function gotoLine(lineNumber) {
+      const model = currentTab.editorInstance.getModel();
+      if (lineNumber > model.getLineCount()) {
+        return;
+      }
+      const position = { lineNumber, column: 1 };
+      currentTab.editorInstance.setPosition(position);
+      currentTab.editorInstance.revealLineInCenter(lineNumber);
+      currentTab.editorInstance.focus();
+    }
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
@@ -2031,6 +2040,13 @@ prompt("This is a prompt:");
       if (type === "error" && forceUse) {
         const lines = message.split("\n");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
+        const matches = message.match(/\(js:\d+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            const lineNumber = parseInt(match.match(/\d+/)[0]);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<a href="#" onclick="gotoLine(${lineNumber})">${match}</a>`);
+          });
+        }
       }
       else if (typeof message === "object") {
         let actualMsg = "";
