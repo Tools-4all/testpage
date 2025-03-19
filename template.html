@@ -2044,7 +2044,7 @@ prompt("This is a prompt:");
         if (matches) {
           matches.forEach(match => {
             const lineNumber = parseInt(match.match(/\d+/)[0]);
-            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<a href="#" onclick="gotoLine(${lineNumber})">${match}</a>`);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line" onclick="gotoLine(${lineNumber})">${match}</span>`);
           });
         }
       }
