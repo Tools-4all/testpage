@@ -770,9 +770,8 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "info", message: objs });
             },
             debug: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
+                const objs = getObjectOrStringForLog(...args);
+                self.postMessage({ type: "log", message: objs });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
