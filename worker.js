@@ -740,6 +740,8 @@ function getObjectOrStringForLog(...args) {
             }
         } else if (["object", "function"].includes(typeof arg) && arg !== null) {
             objs[num] = [createNodeObject(null, arg, new Set()), true]
+        } else if (typeof arg === "string" && arg.isDomString) {
+            objs[num] = [arg, "domObject"]
         } else {
             objs[num] = [objectToString(arg), false]
         }
@@ -876,6 +878,7 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
+                args = formatConsoleString(...args);
                 const objs = getObjectOrStringForLog(...args);
                 self.postMessage({ type: "log", message: objs });
             },
