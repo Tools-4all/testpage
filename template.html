@@ -1152,6 +1152,10 @@
     .headerText {
       background-color: white;
     }
+
+    .handPointer {
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -2044,7 +2048,7 @@ prompt("This is a prompt:");
         if (matches) {
           matches.forEach(match => {
             const lineNumber = parseInt(match.match(/\d+/)[0]);
-            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line" onclick="gotoLine(${lineNumber})">${match}</span>`);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
           });
         }
       }
