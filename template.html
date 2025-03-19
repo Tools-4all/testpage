@@ -1853,7 +1853,11 @@ prompt("This is a prompt:");
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
-            summary.textContent = msg;
+            if (typeof msg === "string") {
+              summary.textContent = msg;
+            } else {
+              summary.appendChild(lazyRenderTreeNode(null, msg));
+            }
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
               currentTab.groupStack[currentTab.groupStack.length - 1] :
