@@ -797,6 +797,7 @@ self.addEventListener("message", (event) => {
                     type: "table",
                     table: tableData,
                     object: getObjectOrString(data),
+                    message: getObjectOrStringForLog([data])[0]
                 });
             },
 

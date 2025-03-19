@@ -1879,7 +1879,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
-            appendTable(tab.outputElement, e.data);
+            appendTable(tab.outputElement, e.data, msg);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
             const isForce = e.data.forceUse;
@@ -2081,7 +2081,7 @@ prompt("This is a prompt:");
     }
 
 
-    function appendTable(outputElement, tableInfo) {
+    function appendTable(outputElement, tableInfo, msg) {
       let container = outputElement;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
@@ -2190,6 +2190,21 @@ prompt("This is a prompt:");
       symbolDiv.style.marginTop = "7px";
       div.appendChild(symbolDiv);
       div.appendChild(table);
+      let actualMsg = "";
+      let subMsgDiv
+      for (let key in msg) {
+        subMsgDiv = document.createElement("div");
+        if (msg[key][1]) {
+          subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+          subMsgDiv.style.marginRight = "8px";
+          div.appendChild(subMsgDiv);
+        } else {
+          subMsgDiv = document.createElement("div");
+          subMsgDiv.style.marginRight = "8px";
+          subMsgDiv.innerText = msg[key][0]
+          div.appendChild(subMsgDiv);
+        }
+      }
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
