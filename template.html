@@ -2057,7 +2057,11 @@ prompt("This is a prompt:");
         let subMsgDiv
         for (let key in message) {
           if (message[key][1]) {
-            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
+            if (message[key][1] === "domObject") {
+              subMsgDiv.innerHTML = message[key][0];
+            } else {
+              subMsgDiv = lazyRenderTreeNode(null, message[key][0])
+            }
             subMsgDiv.style.marginRight = "15px";
             messageDiv.appendChild(subMsgDiv);
           } else {

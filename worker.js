@@ -56,6 +56,7 @@ const wrapperPrefixLines = [
     'var headers = undefined;',
     'var flexSwitchCheckDefault = undefined;',
     'var customConsole = undefined;',
+    'var getObjectOrStringForLog = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -747,6 +748,124 @@ function getObjectOrStringForLog(...args) {
     return objs
 }
 
+const allowedProps = [
+    "background", "background-color", "background-image", "background-position", "background-size", "background-repeat",
+    "border", "border-width", "border-style", "border-color",
+    "border-radius",
+    "box-decoration-break",
+    "box-shadow",
+    "clear", "float",
+    "color",
+    "cursor",
+    "display",
+    "font", "font-size", "font-family", "font-weight", "font-style", "font-variant", "line-height",
+    "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+    "outline", "outline-width", "outline-style", "outline-color",
+    "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+    "text-align", "text-decoration", "text-transform", "text-shadow", "text-overflow",
+    "white-space",
+    "word-spacing", "word-break",
+    "writing-mode"
+];
+
+function filterStyle(styleStr) {
+    return styleStr.split(";")
+        .map(decl => decl.trim())
+        .filter(decl => {
+            if (!decl) return false;
+            const parts = decl.split(":");
+            if (parts.length !== 2) return false;
+            const prop = parts[0].trim().toLowerCase();
+            return allowedProps.includes(prop);
+        })
+        .map(decl => {
+            const parts = decl.split(":");
+            return parts[0].trim() + ": " + parts[1].trim();
+        })
+        .join("; ");
+}
+
+function formatConsoleString(format, ...args) {
+    let argIndex = 0;
+    let mainOutput = "";
+    const styledElements = [];
+
+    let i = 0;
+    while (i < format.length) {
+        if (format[i] === '%') {
+            if (i + 1 < format.length && format[i + 1] === '%') {
+                mainOutput += '%';
+                i += 2;
+                continue;
+            }
+            let j = i + 1;
+            let formatting = "";
+            while (j < format.length && (format[j] === '.' || (format[j] >= '0' && format[j] <= '9'))) {
+                formatting += format[j];
+                j++;
+            }
+            if (j >= format.length) {
+                mainOutput += format[i];
+                i++;
+                continue;
+            }
+            const specifier = format[j];
+            i = j + 1;
+
+            if (specifier === 'c') {
+                if (argIndex < args.length) {
+                    let styleArg = String(args[argIndex++]);
+                    const filteredStyle = filterStyle(styleArg);
+
+                    let styledText = "";
+                    while (i < format.length && format[i] !== '%') {
+                        styledText += format[i];
+                        i++;
+                    }
+                    const domString = `<span style="${filteredStyle}">${styledText}</span>`;
+                    domString.isDomString = true;
+                    styledElements.push(domString);
+                }
+            } else {
+                if (formatting && specifier === 'f') {
+                    mainOutput += `%${formatting}${specifier}`;
+                } else if (argIndex < args.length) {
+                    const arg = args[argIndex++];
+                    switch (specifier) {
+                        case 's':
+                            mainOutput += String(arg);
+                            break;
+                        case 'd':
+                        case 'i':
+                            mainOutput += parseInt(arg, 10);
+                            break;
+                        case 'f':
+                            mainOutput += parseFloat(arg);
+                            break;
+                        case 'o':
+                        case 'O':
+                            try {
+                                mainOutput += JSON.stringify(arg);
+                            } catch (e) {
+                                mainOutput += String(arg);
+                            }
+                            break;
+                        default:
+                            mainOutput += `%${formatting}${specifier}`;
+                    }
+                } else {
+                    mainOutput += `%${formatting}${specifier}`;
+                }
+            }
+        } else {
+            mainOutput += format[i];
+            i++;
+        }
+    }
+    const extraArgs = args.slice(argIndex);
+    return [mainOutput, ...styledElements, ...extraArgs];
+}
+
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
     if (type === "execute") {
@@ -831,13 +950,10 @@ self.addEventListener("message", (event) => {
                                 args[0] = parseFloat(args[1]);
                                 break;
                             case "%o":
-                                args[0] = args[1];
-                                break;
                             case "%O":
                                 args[0] = args[1];
                                 break;
                         }
-                        // Remove the second argument.
                         args.splice(1, 1);
                     }
                     args.unshift("Assertion failed:");
