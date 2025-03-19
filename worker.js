@@ -360,7 +360,7 @@ function objectToStringForNode(obj) {
         return `${obj.toString()}n`;
     }
     if (typeof obj === "string") {
-        return "`${obj}`";
+        return `'${obj}'`;
     }
     if (typeof obj !== "object" || obj === null) {
         return String(obj);
@@ -372,7 +372,7 @@ function objectToStringForNode(obj) {
     const keyValuePairs = keys.map((key) => {
         const isNumeric = /^\d+$/.test(key);
         const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
-        const formattedKey = isNumeric || isValidIdentifier ? key : "`${key}`";
+        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
         return `${formattedKey}: ${objectToStringForNode(obj[key])}`;
     });
     const output = `{${keyValuePairs.join(", ")}}`;
@@ -736,7 +736,7 @@ function objectToString(obj) {
     const keyValuePairs = keys.map((key, index) => {
         const isNumeric = /^\d+$/.test(key);
         const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
-        const formattedKey = isNumeric || isValidIdentifier ? key : `"${key}"`;
+        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
         return `${formattedKey}: ${objectToString(obj[key])}`;
     });
     return `{${keyValuePairs.join(", ")}}`;
