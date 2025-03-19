@@ -849,8 +849,6 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             group: (args) => {
-                console.log("args", args)
-                console.log("args", getObjectOrStringForLog([args]))
                 self.postMessage({ type: "group", message: getObjectOrStringForLog([args]), collapsed: false });
                 groupLevel++;
             },
