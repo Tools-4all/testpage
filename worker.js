@@ -187,7 +187,11 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         } catch (err) {
             typeName = "Object";
         }
-        if (!isPrototype) {
+
+        // New check: if the value is the console object, use a compact header.
+        if (value && value.constructor && value.constructor.name === "Console") {
+            headerText = "console";
+        } else if (!isPrototype) {
             if (value instanceof RegExp) {
                 headerText = value.toString();
             } else if (typeName !== "Object") {
@@ -201,11 +205,11 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                     headerText = "{}";
                 }
             }
-        }
-        else {
+        } else {
             headerText = (typeName !== "Object") ? typeName : "Object";
         }
     }
+
 
     let children = {};
 
