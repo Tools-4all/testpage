@@ -1858,7 +1858,7 @@ prompt("This is a prompt:");
               summary.textContent = msg;
             } else {
               console.log("msg", msg);
-              summary.appendChild(lazyRenderTreeNode(null, msg[0]));
+              summary.appendChild(lazyRenderTreeNode(null, msg[0][0]));
             }
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
