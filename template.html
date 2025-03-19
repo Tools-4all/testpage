@@ -1156,10 +1156,63 @@
       justify-content: space-between;
       margin-top: 10px;
     }
-    .headerText {
-      background-color: white;
+
+    /* Floating Rich Text Toolbar (appears when header text is focused) */
+    .floating-toolbar {
+      position: absolute;
+      display: none;
+      /* hidden until needed */
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
-    
+
+    .floating-toolbar button,
+    .floating-toolbar select,
+    .floating-toolbar input[type="color"] {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 3px 5px;
+      font-size: 13px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-right: 3px;
+    }
+
+    /* Header text areas that will be captured into the export */
+    .export-header {
+      width: 100%;
+      min-height: 40px;
+      padding: 5px;
+      border: 1px dashed #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      color: #333;
+      background: #fff;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    .export-header.empty::before {
+      content: attr(data-placeholder);
+      color: #aaa;
+    }
+
+    /* Modal checkboxes container */
+    .modal-checkboxes {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .modal-checkboxes label {
+      margin-right: 10px;
+      cursor: pointer;
+    }
   </style>
 </head>
 
@@ -2994,55 +3047,184 @@ prompt("This is a prompt:");
     }
 
 
-    async function exportImage() {
-      const wrapperBoth = document.createElement('div');
-      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
-      editorTextDiv.contentEditable = true;
-      wrapperBoth.appendChild(editorTextDiv);
-      wrapperBoth.appendChild(await getEditorDiv());
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
-        textDiv.contentEditable = true;
-        wrapperBoth.appendChild(textDiv);
-        wrapperBoth.appendChild(await getOutputDivClone());
-        const headerTextCheckbox = document.createElement("input");
-        headerTextCheckbox.type = "checkbox";
-        headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-        });
-        const exportCheckbox = document.createElement("input");
-        exportCheckbox.type = "checkbox";
-        exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener("change", () => {
-          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-        });
-      }
-      const editorHeaderCheckbox = document.createElement("input");
-      editorHeaderCheckbox.type = "checkbox";
-      editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener("change", () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+    // -----------------------
+    // Floating Toolbar Functionality
+    // -----------------------
+    function attachFloatingToolbar(headerElem) {
+      const toolbar = document.createElement("div");
+      toolbar.classList.add("floating-toolbar");
+
+      // Bold button
+      const btnBold = document.createElement("button");
+      btnBold.innerHTML = "<b>B</b>";
+      btnBold.title = "Bold";
+      btnBold.addEventListener("click", () => document.execCommand("bold", false));
+      toolbar.appendChild(btnBold);
+
+      // Italic button
+      const btnItalic = document.createElement("button");
+      btnItalic.innerHTML = "<i>I</i>";
+      btnItalic.title = "Italic";
+      btnItalic.addEventListener("click", () => document.execCommand("italic", false));
+      toolbar.appendChild(btnItalic);
+
+      // Underline button
+      const btnUnderline = document.createElement("button");
+      btnUnderline.innerHTML = "<u>U</u>";
+      btnUnderline.title = "Underline";
+      btnUnderline.addEventListener("click", () => document.execCommand("underline", false));
+      toolbar.appendChild(btnUnderline);
+
+      // Font family dropdown
+      const selectFont = document.createElement("select");
+      selectFont.title = "Font Family";
+      ["Arial", "Georgia", "Courier New", "Times New Roman", "Verdana"].forEach(font => {
+        const opt = document.createElement("option");
+        opt.value = font;
+        opt.textContent = font;
+        selectFont.appendChild(opt);
       });
+      selectFont.addEventListener("change", () => {
+        document.execCommand("fontName", false, selectFont.value);
+      });
+      toolbar.appendChild(selectFont);
+
+      // Font size dropdown (using execCommand's 1-7 scale)
+      const selectSize = document.createElement("select");
+      selectSize.title = "Font Size";
+      const sizeMap = { "10px": 1, "13px": 2, "16px": 3, "18px": 4, "24px": 5, "32px": 6, "48px": 7 };
+      for (let px in sizeMap) {
+        const opt = document.createElement("option");
+        opt.value = sizeMap[px];
+        opt.textContent = px;
+        selectSize.appendChild(opt);
+      }
+      selectSize.addEventListener("change", () => {
+        document.execCommand("fontSize", false, selectSize.value);
+      });
+      toolbar.appendChild(selectSize);
+
+      // Text color picker
+      const inputTextColor = document.createElement("input");
+      inputTextColor.type = "color";
+      inputTextColor.title = "Text Color";
+      inputTextColor.addEventListener("change", () => {
+        document.execCommand("foreColor", false, inputTextColor.value);
+      });
+      toolbar.appendChild(inputTextColor);
+
+      // Background color picker
+      const inputBgColor = document.createElement("input");
+      inputBgColor.type = "color";
+      inputBgColor.title = "Background Color";
+      inputBgColor.addEventListener("change", () => {
+        document.execCommand("hiliteColor", false, inputBgColor.value);
+      });
+      toolbar.appendChild(inputBgColor);
+
+      document.body.appendChild(toolbar);
+
+      // Show toolbar on focus – position it above the header element
+      headerElem.addEventListener("focus", () => {
+        const rect = headerElem.getBoundingClientRect();
+        // Position toolbar above the header, with a 5px gap
+        toolbar.style.top = (window.scrollY + rect.top - toolbar.offsetHeight - 5) + "px";
+        toolbar.style.left = (window.scrollX + rect.left) + "px";
+        toolbar.style.display = "block";
+      });
+
+      // Hide toolbar on blur (after a slight delay to allow clicks)
+      headerElem.addEventListener("blur", () => {
+        setTimeout(() => {
+          toolbar.style.display = "none";
+        }, 200);
+      });
+    }
+
+    // -----------------------
+    // Create Header Editor for Export Modal
+    // -----------------------
+    function createExportHeader(placeholderText) {
+      const headerDiv = document.createElement("div");
+      headerDiv.classList.add("export-header", "empty");
+      headerDiv.contentEditable = true;
+      headerDiv.setAttribute("data-placeholder", placeholderText);
+      headerDiv.addEventListener("input", () => {
+        if (headerDiv.textContent.trim() !== "") {
+          headerDiv.classList.remove("empty");
+        } else {
+          headerDiv.classList.add("empty");
+        }
+      });
+      attachFloatingToolbar(headerDiv);
+      return headerDiv;
+    }
+
+    // -----------------------
+    // Integration in Export Functions
+    // -----------------------
+
+    // Example for exportImage:
+    async function exportImage() {
+      // Create a wrapper for export (will include headers and clones)
+      const wrapperBoth = document.createElement("div");
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+
+      // Create header editors
+      const editorHeader = createExportHeader("Enter editor remarks here...");
+      const outputHeader = createExportHeader("Enter output remarks here...");
+
+      // Build the export wrapper – headers placed above their respective content clones
+      // Editor header + editor clone
+      const editorHeaderContainer = document.createElement("div");
+      editorHeaderContainer.appendChild(editorHeader);
+      // Clone editor div
+      editorHeaderContainer.appendChild(await getEditorDiv());
+      wrapperBoth.appendChild(editorHeaderContainer);
+
+      // If there is any output, add output header + output clone
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputHeaderContainer = document.createElement("div");
+        outputHeaderContainer.appendChild(outputHeader);
+        outputHeaderContainer.appendChild(await getOutputDivClone());
+        wrapperBoth.appendChild(outputHeaderContainer);
+      }
+
+      // Append the wrapper to export modal content
+      exportModalContent.innerHTML = "";
       exportModalContent.appendChild(wrapperBoth);
+
+      // At the bottom of the modal, add checkboxes to toggle inclusion of headers
+      const modalCheckboxes = document.createElement("div");
+      modalCheckboxes.classList.add("modal-checkboxes");
+      modalCheckboxes.innerHTML = `
+    <label>
+      <input type="checkbox" id="includeEditorHeader" checked> Include Editor Header
+    </label>
+    <label>
+      <input type="checkbox" id="includeOutputHeader" checked> Include Output Header
+    </label>
+  `;
+      exportModalContent.appendChild(modalCheckboxes);
+
+      // When the export button is clicked, the header content will be used only if its checkbox is checked.
+      const exportBtnsWrapper = document.createElement("div");
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      exportModalContent.appendChild(exportBtnsWrapper);
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
-      exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
+        // Remove headers that are not toggled on before capture
+        if (!document.getElementById("includeEditorHeader").checked) {
+          editorHeader.style.display = "none";
+        }
+        if (!document.getElementById("includeOutputHeader").checked && outputHeader) {
+          outputHeader.style.display = "none";
+        }
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -3051,81 +3233,76 @@ prompt("This is a prompt:");
         const bothImg = new Image();
         bothImg.src = imgSrc;
         let theyReady = false;
-
-        bothImg.onload = () => {
-          theyReady = true;
-        };
-
+        bothImg.onload = () => { theyReady = true; };
         while (!theyReady) {
           await new Promise((resolve) => setTimeout(resolve, 150));
         }
-
         canvas.width = bothImg.width;
-        canvas.height = bothImg.height
+        canvas.height = bothImg.height;
         ctx.drawImage(bothImg, 0, 0);
-
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
-        a.download = `${currentTab.name}.png`;
+        a.download = currentTab.name + ".png";
         a.click();
       }
-
-      displayModal()
+      displayModal();
     }
 
-
+    // Example for exportPDF:
     async function exportPDF() {
-      const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
-      editorTextDiv.contentEditable = true;
-      wrapBoth.appendChild(editorTextDiv);
+
+      // Create header editors for PDF export
+      const editorHeader = createExportHeader("Enter editor remarks here...");
+      const outputHeader = createExportHeader("Enter output remarks here...");
+
+      // Build the export wrapper with editor and (if exists) output headers
+      const editorContainer = document.createElement("div");
+      editorContainer.appendChild(editorHeader);
+      editorContainer.appendChild(await getEditorDiv());
+      wrapBoth.appendChild(editorContainer);
+
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputContainer = document.createElement("div");
+        outputContainer.appendChild(outputHeader);
+        outputContainer.appendChild(await getOutputDivClone());
+        wrapBoth.appendChild(outputContainer);
+      }
+
+      exportModalContent.innerHTML = "";
       exportModalContent.appendChild(wrapBoth);
-      wrapBoth.appendChild(editorDiv);
+
+      // Append modal checkboxes at the bottom
+      const modalCheckboxes = document.createElement("div");
+      modalCheckboxes.classList.add("modal-checkboxes");
+      modalCheckboxes.innerHTML = `
+    <label>
+      <input type="checkbox" id="includeEditorHeader" checked> Include Editor Header
+    </label>
+    <label>
+      <input type="checkbox" id="includeOutputHeader" checked> Include Output Header
+    </label>
+  `;
+      exportModalContent.appendChild(modalCheckboxes);
+
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const outputDiv = await getOutputDivClone();
-        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
-        textDiv.contentEditable = true;
-        wrapBoth.appendChild(textDiv);
-        wrapBoth.appendChild(outputDiv);
-        const headerTextCheckbox = document.createElement("input");
-        headerTextCheckbox.type = "checkbox";
-        headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-        });
-        const exportCheckbox = document.createElement("input");
-        exportCheckbox.type = "checkbox";
-        exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener("change", () => {
-          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-        });
-      }
-      const editorHeaderCheckbox = document.createElement("input");
-      editorHeaderCheckbox.type = "checkbox";
-      editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener("change", () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
-      });
+      exportModalContent.appendChild(exportBtnsWrapper);
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
-      exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
+        // Remove headers not included per checkbox selection
+        if (!document.getElementById("includeEditorHeader").checked) {
+          editorHeader.style.display = "none";
+        }
+        if (!document.getElementById("includeOutputHeader").checked && outputHeader) {
+          outputHeader.style.display = "none";
+        }
         exportBtn.disabled = true;
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
@@ -3144,15 +3321,17 @@ prompt("This is a prompt:");
           });
         });
         closeModal("close");
+        // Remove extra pages if any
         if (doc.internal.getNumberOfPages() > 1) {
           for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
             doc.deletePage(i);
           }
         }
-        doc.save(`${currentTab.name}.pdf`);
+        doc.save(currentTab.name + ".pdf");
       }
       displayModal();
     }
+
 
     function exportCurrent() {
       if (activeTabId === null) {
