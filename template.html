@@ -310,6 +310,26 @@
       background: #0067a8;
     }
 
+    .exportBtnsWrapper {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    #exportSelect {
+      padding: 5px 5px;
+      border-radius: 5px;
+      width: 200px;
+    }
+
+    #exportButton {
+      width: 200px;
+      margin-left: 0px;
+      margin-top: 15px;
+    }
+
     #mainContainer {
       display: flex;
       flex-direction: column;
@@ -1233,7 +1253,7 @@
       </div>
     </div>
     <div id="exportPanel" class="sidebar-panel">
-      <div>
+      <div class="exportBtnsWrapper">
         <select id="exportSelect">
           <option value="current">Download Current Script</option>
           <option id="allZip" value="allZip">Download All Scripts (zip)</option>
@@ -1853,7 +1873,7 @@ prompt("This is a prompt:");
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
-            summary.style.display = "flex"
+            summary.style.display = "-webkit-box"
             if (typeof msg === "string") {
               summary.textContent = msg;
             } else if (typeof msg === "object") {
