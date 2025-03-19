@@ -558,10 +558,6 @@
       border-radius: 4px;
     }
 
-    .outputContainer:not(.lightMode) .promptInput {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
     .outputContainer:not(.darkMode) .promptInput {
       border: 1px solid rgba(0, 0, 0, 0.1);
     }
@@ -885,10 +881,12 @@
 
     .theme.color1e1e1e .prompt-line input {
       color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.07);
     }
 
     .theme.colorffffff .prompt-line input {
       color: #000000;
+      background-color: rgba(0, 0, 0, 0.03);
     }
 
     #moon {
@@ -1744,6 +1742,7 @@ prompt("This is a prompt:");
             let val = inp.value.trim();
             inp.disabled = true;
             inp.style.border = "none";
+            inp.style.backgroundColor = "transparent";
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
               pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
