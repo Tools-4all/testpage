@@ -201,7 +201,8 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                     headerText = "{}";
                 }
             }
-        } else {
+        }
+        else {
             headerText = (typeName !== "Object") ? typeName : "Object";
         }
     }
