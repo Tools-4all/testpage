@@ -1157,11 +1157,10 @@
       margin-top: 10px;
     }
 
-    /* Floating Rich Text Toolbar (appears when header text is focused) */
+    /* Floating Rich Text Toolbar */
     .floating-toolbar {
       position: absolute;
       display: none;
-      /* hidden until needed */
       background: #f9f9f9;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -1182,7 +1181,7 @@
       margin-right: 3px;
     }
 
-    /* Header text areas that will be captured into the export */
+    /* Export header text areas */
     .export-header {
       width: 100%;
       min-height: 40px;
@@ -3051,6 +3050,7 @@ prompt("This is a prompt:");
     // Floating Toolbar Functionality
     // -----------------------
     function attachFloatingToolbar(headerElem) {
+      // Create the floating toolbar
       const toolbar = document.createElement("div");
       toolbar.classList.add("floating-toolbar");
 
@@ -3089,7 +3089,7 @@ prompt("This is a prompt:");
       });
       toolbar.appendChild(selectFont);
 
-      // Font size dropdown (using execCommand's 1-7 scale)
+      // Font size dropdown (1-7 scale)
       const selectSize = document.createElement("select");
       selectSize.title = "Font Size";
       const sizeMap = { "10px": 1, "13px": 2, "16px": 3, "18px": 4, "24px": 5, "32px": 6, "48px": 7 };
@@ -3124,16 +3124,21 @@ prompt("This is a prompt:");
 
       document.body.appendChild(toolbar);
 
-      // Show toolbar on focus – position it above the header element
+      // Ensure header is focusable
+      headerElem.tabIndex = 0;
+
+      // Show toolbar on focus
       headerElem.addEventListener("focus", () => {
-        const rect = headerElem.getBoundingClientRect();
-        // Position toolbar above the header, with a 5px gap
-        toolbar.style.top = (window.scrollY + rect.top - toolbar.offsetHeight - 5) + "px";
-        toolbar.style.left = (window.scrollX + rect.left) + "px";
-        toolbar.style.display = "block";
+        // Small delay to ensure toolbar dimensions are computed
+        setTimeout(() => {
+          const rect = headerElem.getBoundingClientRect();
+          toolbar.style.top = (window.scrollY + rect.top - toolbar.offsetHeight - 5) + "px";
+          toolbar.style.left = (window.scrollX + rect.left) + "px";
+          toolbar.style.display = "block";
+        }, 50);
       });
 
-      // Hide toolbar on blur (after a slight delay to allow clicks)
+      // Hide toolbar on blur (with a slight delay to allow button clicks)
       headerElem.addEventListener("blur", () => {
         setTimeout(() => {
           toolbar.style.display = "none";
@@ -3142,13 +3147,15 @@ prompt("This is a prompt:");
     }
 
     // -----------------------
-    // Create Header Editor for Export Modal
+    // Create an Export Header Editor
     // -----------------------
     function createExportHeader(placeholderText) {
       const headerDiv = document.createElement("div");
       headerDiv.classList.add("export-header", "empty");
       headerDiv.contentEditable = true;
       headerDiv.setAttribute("data-placeholder", placeholderText);
+      // Make sure it can receive focus
+      headerDiv.tabIndex = 0;
       headerDiv.addEventListener("input", () => {
         if (headerDiv.textContent.trim() !== "") {
           headerDiv.classList.remove("empty");
@@ -3161,12 +3168,10 @@ prompt("This is a prompt:");
     }
 
     // -----------------------
-    // Integration in Export Functions
+    // Integration in ExportImage Function
     // -----------------------
-
-    // Example for exportImage:
     async function exportImage() {
-      // Create a wrapper for export (will include headers and clones)
+      // Create a wrapper for export
       const wrapperBoth = document.createElement("div");
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
@@ -3174,27 +3179,25 @@ prompt("This is a prompt:");
       const editorHeader = createExportHeader("Enter editor remarks here...");
       const outputHeader = createExportHeader("Enter output remarks here...");
 
-      // Build the export wrapper – headers placed above their respective content clones
-      // Editor header + editor clone
-      const editorHeaderContainer = document.createElement("div");
-      editorHeaderContainer.appendChild(editorHeader);
-      // Clone editor div
-      editorHeaderContainer.appendChild(await getEditorDiv());
-      wrapperBoth.appendChild(editorHeaderContainer);
+      // Build container for editor content: header on top, then editor clone
+      const editorContainer = document.createElement("div");
+      editorContainer.appendChild(editorHeader);
+      editorContainer.appendChild(await getEditorDiv());
+      wrapperBoth.appendChild(editorContainer);
 
-      // If there is any output, add output header + output clone
+      // If output exists, build container for output content
       if (currentTab.outputElement.innerHTML.trim()) {
-        const outputHeaderContainer = document.createElement("div");
-        outputHeaderContainer.appendChild(outputHeader);
-        outputHeaderContainer.appendChild(await getOutputDivClone());
-        wrapperBoth.appendChild(outputHeaderContainer);
+        const outputContainer = document.createElement("div");
+        outputContainer.appendChild(outputHeader);
+        outputContainer.appendChild(await getOutputDivClone());
+        wrapperBoth.appendChild(outputContainer);
       }
 
-      // Append the wrapper to export modal content
+      // Place the wrapper into the export modal content
       exportModalContent.innerHTML = "";
       exportModalContent.appendChild(wrapperBoth);
 
-      // At the bottom of the modal, add checkboxes to toggle inclusion of headers
+      // Create checkboxes in the modal to toggle header inclusion
       const modalCheckboxes = document.createElement("div");
       modalCheckboxes.classList.add("modal-checkboxes");
       modalCheckboxes.innerHTML = `
@@ -3207,7 +3210,15 @@ prompt("This is a prompt:");
   `;
       exportModalContent.appendChild(modalCheckboxes);
 
-      // When the export button is clicked, the header content will be used only if its checkbox is checked.
+      // Add live checkbox listeners to hide/show headers immediately
+      document.getElementById("includeEditorHeader").addEventListener("change", function () {
+        editorHeader.style.display = this.checked ? "block" : "none";
+      });
+      document.getElementById("includeOutputHeader").addEventListener("change", function () {
+        outputHeader.style.display = this.checked ? "block" : "none";
+      });
+
+      // Add export button
       const exportBtnsWrapper = document.createElement("div");
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       exportModalContent.appendChild(exportBtnsWrapper);
@@ -3218,11 +3229,11 @@ prompt("This is a prompt:");
       exportBtnsWrapper.appendChild(exportBtn);
 
       exportBtn.onclick = async function () {
-        // Remove headers that are not toggled on before capture
+        // Before export, ensure headers reflect checkbox state
         if (!document.getElementById("includeEditorHeader").checked) {
           editorHeader.style.display = "none";
         }
-        if (!document.getElementById("includeOutputHeader").checked && outputHeader) {
+        if (!document.getElementById("includeOutputHeader").checked) {
           outputHeader.style.display = "none";
         }
         exportBtn.disabled = true;
@@ -3244,90 +3255,6 @@ prompt("This is a prompt:");
         a.href = canvas.toDataURL("image/png");
         a.download = currentTab.name + ".png";
         a.click();
-      }
-      displayModal();
-    }
-
-    // Example for exportPDF:
-    async function exportPDF() {
-      const wrapBoth = document.createElement('div');
-      wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-
-      // Create header editors for PDF export
-      const editorHeader = createExportHeader("Enter editor remarks here...");
-      const outputHeader = createExportHeader("Enter output remarks here...");
-
-      // Build the export wrapper with editor and (if exists) output headers
-      const editorContainer = document.createElement("div");
-      editorContainer.appendChild(editorHeader);
-      editorContainer.appendChild(await getEditorDiv());
-      wrapBoth.appendChild(editorContainer);
-
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const outputContainer = document.createElement("div");
-        outputContainer.appendChild(outputHeader);
-        outputContainer.appendChild(await getOutputDivClone());
-        wrapBoth.appendChild(outputContainer);
-      }
-
-      exportModalContent.innerHTML = "";
-      exportModalContent.appendChild(wrapBoth);
-
-      // Append modal checkboxes at the bottom
-      const modalCheckboxes = document.createElement("div");
-      modalCheckboxes.classList.add("modal-checkboxes");
-      modalCheckboxes.innerHTML = `
-    <label>
-      <input type="checkbox" id="includeEditorHeader" checked> Include Editor Header
-    </label>
-    <label>
-      <input type="checkbox" id="includeOutputHeader" checked> Include Output Header
-    </label>
-  `;
-      exportModalContent.appendChild(modalCheckboxes);
-
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      exportModalContent.appendChild(exportBtnsWrapper);
-
-      const exportBtn = document.createElement('button');
-      exportBtn.textContent = "Export PDF";
-      exportBtn.classList.add("exportBtn");
-      exportBtnsWrapper.appendChild(exportBtn);
-
-      exportBtn.onclick = async function () {
-        // Remove headers not included per checkbox selection
-        if (!document.getElementById("includeEditorHeader").checked) {
-          editorHeader.style.display = "none";
-        }
-        if (!document.getElementById("includeOutputHeader").checked && outputHeader) {
-          outputHeader.style.display = "none";
-        }
-        exportBtn.disabled = true;
-        const contentWidth = wrapBoth.offsetWidth;
-        const contentHeight = wrapBoth.offsetHeight;
-        let doc = new jsPDF({
-          orientation: contentWidth > contentHeight ? 'l' : 'p',
-          unit: 'px',
-          format: [contentWidth, contentHeight]
-        });
-        await new Promise(resolve => {
-          doc.html(wrapBoth, {
-            callback: resolve,
-            x: 0,
-            y: 0,
-            margin: [0, 0, 0, 0],
-            html2canvas: { scale: 1, logging: false }
-          });
-        });
-        closeModal("close");
-        // Remove extra pages if any
-        if (doc.internal.getNumberOfPages() > 1) {
-          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-            doc.deletePage(i);
-          }
-        }
-        doc.save(currentTab.name + ".pdf");
       }
       displayModal();
     }
