@@ -849,11 +849,11 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             group: (args) => {
-                self.postMessage({ type: "group", message: getObjectOrStringForLog([args]), collapsed: false });
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...[args]), collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (args) => {
-                self.postMessage({ type: "group", message: getObjectOrStringForLog([argss]), collapsed: true });
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...[argss]), collapsed: true });
                 groupLevel++;
             },
             groupEnd: () => {
