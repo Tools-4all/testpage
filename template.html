@@ -2457,7 +2457,7 @@ prompt("This is a prompt:");
         rules: [
           // Keywords & special keywords
           { token: 'special.keyword', foreground: '0000FF' },
-          { token: 'keyword', foreground: '0000FF' },
+          { token: 'keyword', foreground: 'af00db' },
 
           // Identifiers and attributes
           { token: 'identifier', foreground: '000000' },
@@ -2481,9 +2481,10 @@ prompt("This is a prompt:");
           { token: 'comment', foreground: '008000' },
 
           // Strings and escapes (red)
-          { token: 'string', foreground: 'A31515' },
-          { token: 'string.escape', foreground: 'A31515' },
+          { token: 'string', foreground: 'a31515' },
+          { token: 'string.escape', foreground: 'a31515' },
           { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'string.escape.js', foreground: 'ee0000'},
 
           // Numbers (greenish)
           { token: 'number', foreground: '098658' },
