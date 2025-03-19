@@ -356,6 +356,10 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
 }
 
 function objectToStringForNode(obj) {
+    const maxKeys = 10;
+    const maxOutputLength = 100;
+
+    // Handle primitives
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
@@ -365,22 +369,56 @@ function objectToStringForNode(obj) {
     if (typeof obj !== "object" || obj === null) {
         return String(obj);
     }
+
+    // For arrays, only process the first maxKeys elements.
     if (Array.isArray(obj)) {
-        return `[${obj.map(item => objectToString(item)).join(", ")}]`;
+        let parts = [];
+        for (let i = 0; i < Math.min(obj.length, maxKeys); i++) {
+            const item = obj[i];
+            if (typeof item === "object" && item !== null) {
+                // Instead of recursing, just mark nested objects/arrays as such.
+                parts.push(Array.isArray(item) ? "[Array]" : "[Object]");
+            } else {
+                parts.push(String(item));
+            }
+        }
+        if (obj.length > maxKeys) {
+            parts.push("...");
+        }
+        let output = `[${parts.join(", ")}]`;
+        return output.length > maxOutputLength ? output.slice(0, maxOutputLength) + "...]" : output;
     }
-    const keys = Object.keys(obj);
-    const keyValuePairs = keys.map((key) => {
+
+    // For plain objects, iterate over top-level keys only.
+    let keys = Object.keys(obj);
+    let parts = [];
+    for (let i = 0; i < Math.min(keys.length, maxKeys); i++) {
+        let key = keys[i];
+        // Use quotes if the key isn't a valid identifier.
         const isNumeric = /^\d+$/.test(key);
         const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
         const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
-        return `${formattedKey}: ${objectToStringForNode(obj[key])}`;
-    });
-    const output = `{${keyValuePairs.join(", ")}}`;
-    if (output.length > 100) {
-        return output.slice(0, 100) + "...}";
+
+        let value = obj[key];
+        let formattedValue;
+        if (typeof value === "object" && value !== null) {
+            // Do not descend further.
+            formattedValue = Array.isArray(value) ? "[Array]" : "[Object]";
+        } else {
+            formattedValue = String(value);
+        }
+        parts.push(`${formattedKey}: ${formattedValue}`);
+    }
+    if (keys.length > maxKeys) {
+        parts.push("...");
+    }
+    let output = `{${parts.join(", ")}}`;
+    if (output.length > maxOutputLength) {
+        output = output.slice(0, maxOutputLength) + "...}";
     }
     return output;
 }
+
 
 
 function renderObject(obj) {
@@ -732,8 +770,14 @@ function objectToString(obj) {
     if (Array.isArray(obj)) {
         return `[${obj.map(item => objectToString(item)).join(", ")}]`;
     }
-    
-    return JSON.stringify(obj);
+    const keys = Object.keys(obj);
+    const keyValuePairs = keys.map((key, index) => {
+        const isNumeric = /^\d+$/.test(key);
+        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
+        const formattedKey = isNumeric || isValidIdentifier ? key : `${key}`;
+        return `${formattedKey}: ${objectToString(obj[key])}`;
+    });
+    return `{${keyValuePairs.join(", ")}}`;
 }
 
 function getObjectOrString(...args) {
