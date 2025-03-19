@@ -193,9 +193,13 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
             } else if (typeName !== "Object") {
                 headerText = typeName;
             } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
-                headerText = value.constructor.name + " {}";
+                headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
-                headerText = "{}";
+                try {
+                    headerText = JSON.stringify(value);
+                } catch (e) {
+                    headerText = "{}";
+                }
             }
         } else {
             headerText = (typeName !== "Object") ? typeName : "Object";
@@ -763,10 +767,10 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "warn", message: getObjectOrStringForLog(...args) });
             },
             info: (...args) => {
-                self.postMessage({ type: "info", message: getObjectOrStringForLog(...args)});
+                self.postMessage({ type: "info", message: getObjectOrStringForLog(...args) });
             },
             debug: (...args) => {
-                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args)});
+                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -830,9 +834,7 @@ self.addEventListener("message", (event) => {
                         args.splice(1, 1);
                     }
                     args.unshift("Assertion failed:");
-                    const msg = getObjectOrString(...args);
-                    console.log(msg)
-                    self.postMessage({ type: "error", message: msg });
+                    self.postMessage({ type: "error", message: getObjectOrStringForLog(...args) });
                 }
             },
             dir: (obj) => {
@@ -903,7 +905,7 @@ self.addEventListener("message", (event) => {
                     const duration = performance.now() - timers[label];
                     const msg = `${label}: ${duration} ms`;
                     args.unshift(msg);
-                    self.postMessage({ type: "log",  message: getObjectOrStringForLog(...args) });
+                    self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
                 } else {
                     const message = `Timer '${label}' does not exist`;
                     self.postMessage({ type: "error", message });
