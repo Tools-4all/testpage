@@ -2193,6 +2193,7 @@ prompt("This is a prompt:");
       let actualMsg = "";
       let subMsgDiv
       const wrapBoth = document.createElement("div");
+      wrapBoth.appendChild(div);
       for (let key in msg) {
         subMsgDiv = document.createElement("div");
         if (msg[key][1]) {
@@ -2206,7 +2207,6 @@ prompt("This is a prompt:");
           wrapBoth.appendChild(subMsgDiv);
         }
       }
-      wrapBoth.appendChild(div);
       wrapBoth.style.display = "block";
       container.appendChild(wrapBoth);
       container.scrollTop = container.scrollHeight;
