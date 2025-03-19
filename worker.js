@@ -866,7 +866,7 @@ self.addEventListener("message", (event) => {
 
             profile: (label = "default") => {
                 profiles[label] = performance.now();
-                const message = `Profile '${objectToString(label)}' started`;
+                const message = `Profile '${label}' started`;
                 self.postMessage({ type: "info", message });
             },
 
@@ -901,9 +901,9 @@ self.addEventListener("message", (event) => {
             timeLog: (label = "default", ...args) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
-                    const message = `${label}: ${duration} ms${extra}`;
-                    self.postMessage({ type: "log", message });
+                    const msg = `${label}: ${duration} ms$`;
+                    args.unshift(msg);
+                    self.postMessage({ type: "log",  message: getObjectOrStringForLog(...args) });
                 } else {
                     const message = `Timer '${label}' does not exist`;
                     self.postMessage({ type: "error", message });
