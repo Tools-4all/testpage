@@ -846,7 +846,6 @@ self.addEventListener("message", (event) => {
                 }
             },
             dir: (obj) => {
-                // need to change getObjectOrString to take an argument isdir to display for example for [] Array(0) instead of [] etc
                 const html = getObjectOrString(obj);
                 self.postMessage({ type: "log", message: html });
             },
@@ -855,9 +854,9 @@ self.addEventListener("message", (event) => {
             },
             timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
                 const stack = getStack();
-                self.postMessage({ type: "log", message: `${serializedArgs}\n   ${stack.split("\n").join("\n   ")}` });
+                args.push(stack);
+                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             group: (...args) => {
                 const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
