@@ -875,10 +875,10 @@ self.addEventListener("message", (event) => {
                 if (profiles[label]) {
                     const duration = performance.now() - profiles[label];
                     delete profiles[label];
-                    const message = `Profile '${objectToString(label)}' finished. Duration: ${duration.toFixed(2)}ms`;
+                    const message = `Profile '${label}' finished. Duration: ${duration.toFixed(2)}ms`;
                     self.postMessage({ type: "info", message });
                 } else {
-                    const message = `No profile '${objectToString(label)}' found`;
+                    const message = `No profile '${label}' found`;
                     self.postMessage({ type: "warn", message });
                 }
             },
@@ -890,11 +890,11 @@ self.addEventListener("message", (event) => {
             timeEnd: (label = "default") => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const message = `${objectToString(label)}: ${duration.toFixed(2)}ms`;
+                    const message = `${label}: ${duration.toFixed(2)}ms`;
                     self.postMessage({ type: "log", message });
                     delete timers[label];
                 } else {
-                    const message = `No timer called '${objectToString(label)}' found`;
+                    const message = `No timer called '${label}' found`;
                     self.postMessage({ type: "error", message });
                 }
             },
