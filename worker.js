@@ -572,7 +572,7 @@ self.Error = CustomError;
 
 
 function getStack() {
-    const rawLines = new Error().stack.split('\n');
+    const rawLines = new NativeError().stack.split('\n');
     const userScript = '1919191.js';
     const frames = [];
 
