@@ -817,6 +817,7 @@ self.addEventListener("message", (event) => {
             },
             assert: (condition, ...args) => {
                 if (!condition) {
+                    console.log(args)
                     const msg = getObjectOrString(...args);
                     // insert Assertion failed: before the message
                     console.log(msg)
