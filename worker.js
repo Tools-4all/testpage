@@ -818,7 +818,7 @@ self.addEventListener("message", (event) => {
             assert: (condition, ...args) => {
                 if (!condition) {
                     const firstArg = args[0];
-                    if (typeof firstArg === "string" && args.length > 1 && ["%s", "%d", "%i", "%f", "%o"].some(format => firstArg.includes(format))) {
+                    if (typeof firstArg === "string" && args.length > 1 && ["%s", "%d", "%i", "%f", "%o", "%O"].some(format => firstArg.includes(format))) {
                         switch (firstArg) {
                             case "%s":
                                 args[0] = args[1].toString();
@@ -831,6 +831,9 @@ self.addEventListener("message", (event) => {
                                 args[0] = parseFloat(args[1]);
                                 break;
                             case "%o":
+                                args[0] = args[1];
+                                break;
+                            case "%O":
                                 args[0] = args[1];
                                 break;
                         }
