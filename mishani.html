@@ -17,6 +17,30 @@
       padding: 0;
     }
 
+    body {
+      user-select: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    .allowSelect {
+      user-select: text !important;
+      -webkit-user-drag: text !important;
+      -webkit-user-select: text !important;
+      -moz-user-select: text !important;
+      -ms-user-select: text !important;
+    }
+
+    .dontAllowSelect {
+      user-select: none;
+      -webkit-user-drag: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
     #compiler {
       position: relative;
       font-family: 'Fira Code', monospace;
@@ -174,12 +198,6 @@
       font-size: 20px;
       position: relative;
     }
-
-    /* #activityBar .icon:hover,
-    #activityBar .icon.active {
-      background-color: #3c3c3c;
-      color: #fff;
-    } */
 
     #activityBar .icon:hover:after {
       content: attr(data-label);
@@ -354,6 +372,7 @@
       visibility: visible;
     }
 
+
     .tab:hover:not(.active, .theme.colorffffff .tab) {
       background-color: rgba(255, 255, 255, 0.1) !important;
     }
@@ -515,6 +534,7 @@
       display: flex;
       align-items: center;
       font-size: 14px;
+      margin-left: 4px;
     }
 
     .prompt-line span {
@@ -536,10 +556,6 @@
       padding-left: 5px;
       padding-right: 5px;
       border-radius: 4px;
-    }
-
-    .outputContainer:not(.lightMode) .promptInput {
-      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .outputContainer:not(.darkMode) .promptInput {
@@ -621,6 +637,14 @@
       background-color: rgba(0, 0, 0, 0.1);
     }
 
+    .outputContainer:not(.darkMode) .prompt-line {
+      color: #000
+    }
+
+    .outputContainer:not(.lightMode) .prompt-line {
+      color: #d4d4d4
+    }
+
     #undoBtn,
     #redoBtn {
       margin-top: 3px;
@@ -653,6 +677,10 @@
     .theme.color1e1e1e #statusBar {
       background-color: #2c2c2c;
       color: #cccccc;
+    }
+
+    #activityBar .icon.active {
+      border-left: 3px solid #007acc;
     }
 
     #activityBar.theme.color252526 .icon:hover,
@@ -853,10 +881,12 @@
 
     .theme.color1e1e1e .prompt-line input {
       color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.07);
     }
 
     .theme.colorffffff .prompt-line input {
       color: #000000;
+      background-color: rgba(0, 0, 0, 0.03);
     }
 
     #moon {
@@ -872,6 +902,52 @@
       color: #d4d4d4;
     }
 
+    summary {
+      list-style: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::marker {
+      display: none;
+    }
+
+    details>summary::before {
+      content: "▶";
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+    }
+
+
+    details[open]>summary::before {
+      transform: rotate(90deg);
+    }
+
+    .isClone {
+      cursor: default !important;
+      pointer-events: none !important;
+    }
+
+    .outputContainer.isClone details>summary::before {
+      font-family: "Symbol", Symbol, symbol;
+      content: "Þ";
+      display: inline-block;
+      margin-right: 5px;
+      transition: transform 0.2s;
+      font-size: 13px;
+    }
+
+    .outputContainer.isClone details[open]>summary::before {
+      font-family: "Symbol", Symbol, symbol;
+      content: "ß";
+      transform: none;
+    }
+
     .objinsp-highlight-key {
       color: #9cdcfe;
       margin-left: 10px;
@@ -879,6 +955,7 @@
 
     .objinsp-highlight-string {
       color: #ce9178;
+      display: ruby;
     }
 
     .objinsp-highlight-number {
@@ -956,9 +1033,12 @@
       .sidebar-panel {
         width: 100%;
         padding-right: 50px;
+        z-index: 1010;
+        margin-top: 0px;
+        padding-top: 46px;
       }
     }
-    
+
 
     .lightMode {}
 
@@ -966,6 +1046,115 @@
 
     .monaco-editor .find-widget>.button.codicon-widget-close {
       top: 8px !important;
+    }
+
+    .lineNumber {
+      vertical-align: middle;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      box-sizing: border-box;
+      width: 50px;
+      height: 100%;
+    }
+
+    .lineNumDark {
+      color: rgb(133, 133, 133);
+    }
+
+    .lineNumLight {
+      color: rgb(35, 120, 147);
+    }
+
+    .numberDiv {
+      text-align: right;
+      height: 18.9px;
+      padding-right: 10px;
+      padding-left: 18px;
+    }
+
+    .codeLineDiv {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      word-wrap: break-word;
+      word-break: break-all;
+      line-break: strict;
+      hyphens: none;
+      -webkit-hyphens: none;
+      -moz-hyphens: none;
+    }
+
+    .outputItem {
+      white-space: pre-wrap;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .symbolDiv {
+      margin-right: 5px;
+      flex-shrink: 0;
+    }
+
+    .flexContainer {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .previewModal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .previewModal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+    }
+
+    .modalClose {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .modalClose:hover,
+    .modalClose:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    body.lastTab .tab .close {
+      visibility: hidden !important;
+    }
+
+    body.lastTab #allZip {
+      display: none !important;
+    }
+
+    .exportBtnsWrapper {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .headerText {
+      background-color: white;
+    }
+
+    .handPointer {
+      cursor: pointer;
     }
   </style>
 </head>
@@ -1024,8 +1213,11 @@
       <div class="icon" id="settingsIcon" data-label="Settings" data-target="settingsPanel">
         <i class="fas fa-cog"></i>
       </div>
-
+      <div class="icon" id="exportIcon" data-label="Export" data-target="exportPanel">
+        <i class="fas fa-file-export"></i>
+      </div>
     </div>
+
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
       <button id="loadGitButton" disabled="true">Load</button>
@@ -1040,6 +1232,17 @@
         </div>
       </div>
     </div>
+    <div id="exportPanel" class="sidebar-panel">
+      <div>
+        <select id="exportSelect">
+          <option value="current">Download Current Script</option>
+          <option id="allZip" value="allZip">Download All Scripts (zip)</option>
+          <option value="image">Export as Image</option>
+          <option value="pdf">Export as PDF</option>
+        </select>
+        <button id="exportButton" class="vs-button" onclick="exportCode()">Export</button>
+      </div>
+    </div>
     <div id="mainContainer">
       <div id="tabBar" class="theme color252526"></div>
       <div id="tabsContainer"></div>
@@ -1051,9 +1254,19 @@
       </div>
     </div>
   </div>
+
+  <div id="exportModal" class="previewModal">
+    <div class="previewModal-content" id="exportModalContent">
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
     const workerPath = "{% url 'betzi_test_js' %}";
+    const { jsPDF } = window.jspdf;
     let currentTab = null;
     let workerBlobURL = null;
     let activeDropdown = null;
@@ -1067,7 +1280,10 @@
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
     const compiler = document.getElementById("compiler");
+    const exportSelect = document.getElementById("exportSelect");
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
+    const modal = document.getElementById("exportModal");
+    const exportModalContent = document.getElementById("exportModalContent");
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
@@ -1092,7 +1308,9 @@
     }
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && modalIsOpen()) {
+          closeModal("close");
+        } else if (event.key === 'Escape') {
           compiler.style.width = "60%";
           compiler.style.height = "500px";
           compiler.style.margin = '100px auto';
@@ -1126,9 +1344,8 @@
             }
           });
         });
-        monaco.editor.setTheme("vs-light");
+        monaco.editor.setTheme("custom-light");
 
-        // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
           let lines = tab.outputElement.querySelectorAll(".outputContent");
           lines.forEach(line => {
@@ -1170,7 +1387,6 @@
         });
         monaco.editor.setTheme("custom-dark");
 
-        // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
           let lines = tab.outputElement.querySelectorAll(".outputContent");
           lines.forEach(line => {
@@ -1236,6 +1452,7 @@
       editorOutputWrapper.appendChild(editorContainer);
       let outputContainer = document.createElement("div");
       outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
       outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
@@ -1315,7 +1532,7 @@
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
-        theme: darkModeFlag ? "custom-dark" : "vs-light",
+        theme: darkModeFlag ? "custom-dark" : "custom-light",
         automaticLayout: true,
         tabSize: spaces,
         insertSpaces: true,
@@ -1343,6 +1560,7 @@
         smoothScrolling: true,
         breadcrumbs: { enabled: true },
         fixedOverflowWidgets: true,
+        folding: true,
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
@@ -1369,7 +1587,13 @@
       });
       closeIcon.addEventListener("click", (e) => {
         e.stopPropagation();
+        if (tabs.length === 1) {
+          return;
+        }
         closeTab(id);
+        if (tabs.length === 1) {
+          document.body.classList.add("lastTab");
+        }
       });
       tabEl.addEventListener("dragstart", (ev) => {
         switchTab(id);
@@ -1425,6 +1649,11 @@ prompt("This is a prompt:");
 `);
       }
       switchTab(id);
+      if (tabs.length > 1) {
+        document.body.classList.remove("lastTab");
+      } else {
+        document.body.classList.add("lastTab");
+      }
       return id;
     }
     function getUniqueTabName(baseName, tabId = null) {
@@ -1489,22 +1718,17 @@ prompt("This is a prompt:");
         let container = tab.outputElement;
         let pl = document.createElement("div");
         pl.classList.add("prompt-line", "outputContent");
-        pl.style.marginLeft = "4px";
 
         let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        flexContainer.classList.add("flexContainer");
 
         let symbolDiv = document.createElement("div");
+        symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
         symbolDiv.textContent = `[?]`;
-        symbolDiv.style.marginRight = "5px";
-        symbolDiv.style.flexShrink = "0";
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
-        messageDiv.style.whiteSpace = "pre-wrap";
-        messageDiv.style.display = "flex";
-        messageDiv.style.flexWrap = "wrap";
+        messageDiv.classList.add("outputItem")
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1522,6 +1746,7 @@ prompt("This is a prompt:");
             let val = inp.value.trim();
             inp.disabled = true;
             inp.style.border = "none";
+            inp.style.backgroundColor = "transparent";
             if (currentTab.groupStack && currentTab.groupStack.length > 0) {
               let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
               pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
@@ -1550,22 +1775,17 @@ prompt("This is a prompt:");
         let container = tab.outputElement;
         const alertLine = document.createElement("div");
         alertLine.classList.add("prompt-line", "outputContent");
-        alertLine.style.marginLeft = "4px";
 
         let flexContainer = document.createElement("div");
-        flexContainer.style.display = "flex";
-        flexContainer.style.alignItems = "flex-start";
+        flexContainer.classList.add("flexContainer");
 
-        let symbolDiv = document.createElement("div");
+        let symbolDiv = document.createElement("div", "symbolDiv");
+        symbolDiv.classList.add("dontAllowSelect");
         symbolDiv.textContent = `[!]`;
-        symbolDiv.style.marginRight = "5px";
-        symbolDiv.style.flexShrink = "0";
 
         let messageDiv = document.createElement("div");
         messageDiv.textContent = message;
-        messageDiv.style.whiteSpace = "pre-wrap";
-        messageDiv.style.display = "flex";
-        messageDiv.style.flexWrap = "wrap";
+        messageDiv.classList.add("outputItem")
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
@@ -1633,7 +1853,26 @@ prompt("This is a prompt:");
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
-            summary.textContent = msg;
+            summary.style.display = "flex"
+            if (typeof msg === "string") {
+              summary.textContent = msg;
+            } else if (typeof msg === "object") {
+              let actualMsg = "";
+              let subMsgDiv
+              for (let key in msg) {
+                subMsgDiv = document.createElement("div");
+                if (msg[key][1]) {
+                  subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+                  subMsgDiv.style.marginRight = "8px";
+                  summary.appendChild(subMsgDiv);
+                } else {
+                  subMsgDiv = document.createElement("div");
+                  subMsgDiv.style.marginRight = "8px";
+                  subMsgDiv.innerText = msg[key][0]
+                  summary.appendChild(subMsgDiv);
+                }
+              }
+            }
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
               currentTab.groupStack[currentTab.groupStack.length - 1] :
@@ -1659,7 +1898,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
-            appendTable(tab.outputElement, e.data);
+            appendTable(tab.outputElement, e.data, msg);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
             const isForce = e.data.forceUse;
@@ -1713,13 +1952,23 @@ prompt("This is a prompt:");
       container.scrollTop = container.scrollHeight;
     }
 
+    function escapeHtmlVisible(text) {
+      return text.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '\\n');
+    }
+
+
 
     function lazyRenderTreeNode(key, tree) {
       if (typeof tree !== 'object' || tree === null) {
         const div = document.createElement('div');
         let content = '';
         if (typeof tree === 'string') {
-          content = `<span class="objinsp objinsp-highlight-string">${tree}</span>`;
+          content = `<span class="objinsp objinsp-highlight-string">${escapeHtmlVisible(tree)}</span>`;
         } else if (typeof tree === 'number') {
           content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
         } else {
@@ -1774,7 +2023,16 @@ prompt("This is a prompt:");
     }
 
 
-
+    function gotoLine(lineNumber) {
+      const model = currentTab.editorInstance.getModel();
+      if (lineNumber > model.getLineCount()) {
+        return;
+      }
+      const column = model.getLineMaxColumn(lineNumber);
+      currentTab.editorInstance.setPosition({ lineNumber, column });
+      currentTab.editorInstance.revealLineInCenter(lineNumber);
+      currentTab.editorInstance.focus();
+    }
     const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
 
     function appendToOutput(outputDiv, type, message, forceUse = false) {
@@ -1793,34 +2051,39 @@ prompt("This is a prompt:");
       line.classList.add(styleClass);
 
       let flexContainer = document.createElement("div");
-      flexContainer.style.display = "flex";
-      flexContainer.style.alignItems = "flex-start";
+      flexContainer.classList.add("flexContainer");
 
       let symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
+
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
-      symbolDiv.style.marginRight = "5px";
-      symbolDiv.style.flexShrink = "0";
 
       let messageDiv = document.createElement("div");
-      messageDiv.style.whiteSpace = "pre-wrap";
-      messageDiv.style.display = "flex";
-      messageDiv.style.flexWrap = "wrap";
+      messageDiv.classList.add("outputItem");
       if (type === "error" && forceUse) {
         const lines = message.split("\n");
         messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
+        const matches = message.match(/\(js:\d+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            const lineNumber = parseInt(match.match(/\d+/)[0]);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
+          });
+        }
       }
       else if (typeof message === "object") {
         let actualMsg = "";
         let subMsgDiv
         for (let key in message) {
+          subMsgDiv = document.createElement("div");
           if (message[key][1]) {
             subMsgDiv = lazyRenderTreeNode(null, message[key][0])
-            subMsgDiv.style.marginRight = "15px";
+            subMsgDiv.style.marginRight = "8px";
             messageDiv.appendChild(subMsgDiv);
           } else {
             subMsgDiv = document.createElement("div");
-            subMsgDiv.style.marginRight = "15px";
-            subMsgDiv.innerText = escapeHtml(message[key][0]);
+            subMsgDiv.style.marginRight = "8px";
+            subMsgDiv.innerText = message[key][0]
             messageDiv.appendChild(subMsgDiv);
           }
         }
@@ -1837,13 +2100,12 @@ prompt("This is a prompt:");
     }
 
 
-    function appendTable(outputElement, tableInfo) {
+    function appendTable(outputElement, tableInfo, msg) {
       let container = outputElement;
       if (currentTab.groupStack && currentTab.groupStack.length > 0) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
 
-      // Determine the structure of the received table data.
       let tableData, headerOrder;
       if (
         tableInfo.table &&
@@ -1851,13 +2113,10 @@ prompt("This is a prompt:");
         "tableData" in tableInfo.table &&
         "headerOrder" in tableInfo.table
       ) {
-        // When buildTableData returns an object with tableData and headerOrder.
         tableData = tableInfo.table.tableData;
         headerOrder = tableInfo.table.headerOrder;
       } else if (tableInfo.table && typeof tableInfo.table === "object") {
-        // Fallback: when tableInfo.table is already the table data.
         tableData = tableInfo.table;
-        // Use the keys of tableData as header order; ensure "(index)" is first.
         headerOrder = Object.keys(tableData);
         headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
       } else {
@@ -1865,7 +2124,6 @@ prompt("This is a prompt:");
         return;
       }
 
-      // Validate the extracted tableData and headerOrder.
       if (
         !tableData ||
         !Array.isArray(tableData["(index)"]) ||
@@ -1885,7 +2143,6 @@ prompt("This is a prompt:");
       const table = document.createElement("table");
       table.classList.add("console-table");
 
-      // Create header row from headerOrder.
       const thead = document.createElement("thead");
       const headRow = document.createElement("tr");
       headRow.classList.add("console-table-row");
@@ -1898,7 +2155,6 @@ prompt("This is a prompt:");
       thead.appendChild(headRow);
       table.appendChild(thead);
 
-      // Create table rows based on rowCount.
       const tbody = document.createElement("tbody");
       for (let i = 0; i < rowCount; i++) {
         const tr = document.createElement("tr");
@@ -1946,20 +2202,39 @@ prompt("This is a prompt:");
       }
       table.appendChild(tbody);
 
-      // Optionally add a symbol indicator.
       const symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect");
       symbolDiv.innerHTML = "[>]";
       table.style.marginLeft = "7px";
       symbolDiv.style.marginTop = "7px";
       div.appendChild(symbolDiv);
-      div.appendChild(table);
+      const wrapBoth = document.createElement("div");
+      wrapBoth.style.display = "block"
+      wrapBoth.style.width = "100%"
+      const wrapTable = document.createElement("div");
+      wrapTable.style.display = "flex";
+      wrapTable.appendChild(table);
+      wrapBoth.style.width = "100%";
+      wrapBoth.appendChild(wrapTable);
+      div.appendChild(wrapBoth);
+      let actualMsg = "";
+      let subMsgDiv
+      for (let key in msg) {
+        subMsgDiv = document.createElement("div");
+        if (msg[key][1]) {
+          subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+          subMsgDiv.style.marginRight = "8px";
+          wrapBoth.appendChild(subMsgDiv);
+        } else {
+          subMsgDiv = document.createElement("div");
+          subMsgDiv.style.marginRight = "8px";
+          subMsgDiv.innerText = msg[key][0]
+          wrapBoth.appendChild(subMsgDiv);
+        }
+      }
       container.appendChild(div);
       container.scrollTop = container.scrollHeight;
     }
-
-
-
-
 
 
     function objectToHTML(obj, level = 0) {
@@ -2019,22 +2294,226 @@ prompt("This is a prompt:");
       }
     }
     require(["vs/editor/editor.main"], function () {
-      monaco.editor.defineTheme("custom-dark", {
-        base: "vs-dark",
-        inherit: true,
-        rules: [
-          { token: "keyword", foreground: "C586C0" },
-          { token: "identifier", foreground: "9CDCFE" },
-          { token: "string", foreground: "CE9178" },
-          { token: "comment", foreground: "6A9955" },
-          { token: "number", foreground: "B5CEA8" }
+      monaco.languages.setMonarchTokensProvider('javascript', {
+        defaultToken: 'invalid',
+        tokenPostfix: '.js',
+
+        keywords: [
+          'break', 'case', 'catch', 'class', 'continue', 'debugger',
+          'default', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'from', 'get', 'if', 'import', 'in', 'set', 'super',
+          'switch', 'symbol', 'this', 'throw', 'try', 'while', 'with',
+          'yield', 'await', 'of'
         ],
-        colors: {
-          "editor.background": "#1E1E1E"
+
+        specialKeywords: [
+          'let', 'const', 'var', 'function',
+          'null', 'undefined', 'true', 'false', 'void', 'typeof',
+          'new', 'delete', 'instanceof'
+        ],
+
+        typeKeywords: [
+          'any', 'boolean', 'number', 'object', 'string', 'undefined'
+        ],
+
+        operators: [
+          '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**',
+          '*', '/', '%', '++', '--', '<<', '</', '>>', '>>>', '&',
+          '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=',
+          '*=', '**=', '/=', '%=', '<<=', '>>=', '>>>=', '&=', '|=',
+          '^=', '@'
+        ],
+
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        digits: /\d+(_+\d+)*/,
+        octaldigits: /[0-7]+(_+[0-7]+)*/,
+        binarydigits: /[0-1]+(_+[0-1]+)*/,
+        hexdigits: /[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
+        regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
+        regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
+
+        tokenizer: {
+          root: [
+            [/[{}]/, 'delimiter.bracket'],
+            { include: 'common' }
+          ],
+
+          common: [
+            [/=>/, 'arrow'],
+
+            [/\basync(?=\s+function\b)/, 'special.keyword'],
+
+            [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
+            [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
+            [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
+
+            [/[a-z_$][\w$]*/, {
+              cases: {
+                '@specialKeywords': 'special.keyword',
+                '@keywords': 'keyword',
+                '@typeKeywords': 'keyword',
+                '@default': 'identifier'
+              }
+            }],
+            [/[A-Z][\w\$]*/, 'type.identifier'],
+
+            { include: '@whitespace' },
+
+            [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+
+            [/[()\[\]]/, '@brackets'],
+            [/[<>](?!@symbols)/, '@brackets'],
+            [/@symbols/, {
+              cases: {
+                '@operators': 'delimiter',
+                '@default': ''
+              }
+            }],
+
+            [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
+            [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
+            [/0[xX](@hexdigits)/, 'number.hex'],
+            [/0[oO]?(@octaldigits)/, 'number.octal'],
+            [/0[bB](@binarydigits)/, 'number.binary'],
+            [/(@digits)/, 'number'],
+
+            [/[;,.]/, 'delimiter'],
+
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            [/"/, 'string', '@string_double'],
+            [/'/, 'string', '@string_single'],
+            [/`/, 'string', '@string_backtick']
+          ],
+
+          whitespace: [
+            [/[ \t\r\n]+/, ''],
+            [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ],
+
+          jsdoc: [
+            [/[^\/*]+/, 'comment.doc'],
+            [/\*\//, 'comment.doc', '@pop'],
+            [/[\/*]/, 'comment.doc']
+          ],
+
+          regexp: [
+            [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
+            [/(\[)(\^?)(?=(?:[^\]\\\/]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
+            [/(\()(\?:|\?=|\?!)/, ['regexp.escape.control', 'regexp.escape.control']],
+            [/[()]/, 'regexp.escape.control'],
+            [/@regexpctl/, 'regexp.escape.control'],
+            [/[^\\\/]/, 'regexp'],
+            [/@regexpesc/, 'regexp.escape'],
+            [/\\\./, 'regexp.invalid'],
+            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']]
+          ],
+
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.invalid'],
+            [/@regexpesc/, 'regexp.escape'],
+            [/[^\]]/, 'regexp'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
+          ],
+
+          string_double: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, 'string', '@pop']
+          ],
+
+          string_single: [
+            [/[^\\']+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, 'string', '@pop']
+          ],
+
+          string_backtick: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
+            [/[^\\`$]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/`/, 'string', '@pop']
+          ],
+
+          bracketCounting: [
+            [/\{/, 'delimiter.bracket', '@bracketCounting'],
+            [/\}/, 'delimiter.bracket', '@pop'],
+            { include: 'common' }
+          ]
         }
       });
+
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'special.keyword', foreground: '569cd6' },
+          { token: 'keyword', foreground: 'c586c0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: 'dcdcaa' },
+          { token: 'attribute', foreground: '9cdcfe' },
+          { token: 'arrow', foreground: '569cd6' },
+          { token: 'type.identifier', foreground: '4EC9B0' },
+          { token: 'function', foreground: 'dcdcaa' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string.escape', foreground: 'd7ba7d' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'string.escape.js', foreground: 'd7ba7d' },
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
+        }
+      });
+
+      monaco.editor.defineTheme('custom-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'special.keyword', foreground: '0000FF' },
+          { token: 'keyword', foreground: 'af00db' },
+          { token: 'identifier', foreground: '0070c1' },
+          { token: 'attribute', foreground: '001080' },
+          { token: 'delimiter', foreground: '000000' },
+          { token: 'operator', foreground: '000000' },
+          { token: 'arrow', foreground: '0000FF' },
+          { token: 'method', foreground: '795e26' },
+          { token: 'function', foreground: '795e26' },
+          { token: 'type.identifier', foreground: '267f99' },
+          { token: 'comment', foreground: '008000' },
+          { token: 'string', foreground: 'a31515' },
+          { token: 'string.escape', foreground: 'a31515' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'string.escape.js', foreground: 'ee0000' },
+          { token: 'number', foreground: '098658' },
+          { token: 'regexp', foreground: 'd16969' }
+        ],
+        colors: {
+          'editor.background': '#ffffff',
+          'editor.foreground': '#333333'
+        }
+      });
+
       createTab();
     });
+
     function updateStatusPosition() {
       if (activeTabId === null) {
         document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
@@ -2044,8 +2523,7 @@ prompt("This is a prompt:");
       if (!t) return;
       let pos = t.editorInstance.getPosition();
       if (pos) {
-        document.getElementById("statusPosition").textContent =
-          `Ln ${pos.lineNumber}, Col ${pos.column}`;
+        document.getElementById("statusPosition").textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
       }
     }
     document.getElementById('addTabButton').addEventListener("click", () => {
@@ -2062,7 +2540,7 @@ prompt("This is a prompt:");
         switchTab(clickedTab.id);
       }
     });
-    ["gitIcon", "settingsIcon"].forEach((iconId) => {
+    ["gitIcon", "settingsIcon", "exportIcon"].forEach((iconId) => {
       let el = document.getElementById(iconId);
       el.addEventListener("click", (e) => {
         let alreadyActive = e.currentTarget.classList.contains("active");
@@ -2361,12 +2839,414 @@ prompt("This is a prompt:");
       });
     }
 
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return window.btoa(binary);
+    }
+
     document.addEventListener("DOMContentLoaded", async function () {
       await cacheWorkerCode();
       nextWorker = new Worker(workerBlobURL);
     });
 
-    alert(4);
+
+    function exportCode() {
+      switch (exportSelect.value) {
+        case "allZip":
+          exportAllZip();
+          break;
+        case "image":
+          exportImage();
+          break;
+        case "pdf":
+          exportPDF();
+          break;
+        case "current":
+          exportCurrent();
+          break;
+      }
+    }
+
+    function exportAllZip() {
+      if (tabs.length === 0) {
+        return;
+      }
+      if (tabs.length === 1) {
+        exportCurrent();
+        return;
+      }
+
+      exportModalContent.innerHTML = "";
+
+      let checklistContainer = document.createElement("div");
+      checklistContainer.style.display = "flex";
+      checklistContainer.style.flexWrap = "wrap";
+      checklistContainer.style.gap = "10px";
+      checklistContainer.style.padding = "10px";
+
+      tabs.forEach((tab) => {
+        let checkboxWrapper = document.createElement("div");
+        checkboxWrapper.style.display = "flex";
+        checkboxWrapper.style.alignItems = "center";
+        checkboxWrapper.style.flex = "1 0 auto";
+
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.id = "export-tab-" + tab.id;
+        checkbox.dataset.tabId = tab.id;
+
+        let label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = tab.name;
+        label.style.marginLeft = "5px";
+
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checklistContainer.appendChild(checkboxWrapper);
+      });
+      exportModalContent.appendChild(checklistContainer);
+
+      let exportBtn = document.createElement("button");
+      exportBtn.textContent = "Export";
+      exportBtn.classList.add("exportBtn");
+      exportBtn.style.marginTop = "20px";
+
+      function updateExportButtonState() {
+        let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
+        exportBtn.disabled = selectedCount === 0;
+      }
+
+      checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
+        cb.addEventListener("change", updateExportButtonState);
+      });
+      updateExportButtonState();
+
+      exportModalContent.appendChild(exportBtn);
+
+      exportBtn.addEventListener("click", function () {
+        let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
+        let selectedTabs = [];
+        selectedCheckboxes.forEach((cb) => {
+          let tabId = parseInt(cb.dataset.tabId, 10);
+          let tabObj = tabs.find((t) => t.id === tabId);
+          if (tabObj) {
+            selectedTabs.push(tabObj);
+          }
+        });
+        closeModal("close");
+
+        if (selectedTabs.length === 0) {
+          return;
+        }
+
+        if (selectedTabs.length === 1) {
+          let t = selectedTabs[0];
+          let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+          let url = URL.createObjectURL(blob);
+          let a = document.createElement("a");
+          a.href = url;
+          a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
+          a.click();
+          URL.revokeObjectURL(url);
+        } else {
+          let zip = new JSZip();
+          selectedTabs.forEach((t) => {
+            let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
+            zip.file(fileName, t.editorInstance.getValue());
+          });
+          zip.generateAsync({ type: "blob" }).then((content) => {
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "scripts.zip";
+            a.click();
+          });
+        }
+      });
+
+      displayModal();
+    }
+
+
+    async function takeImage(domElem) {
+      const canvas = await html2canvas(domElem, {
+        scale: 2,
+        logging: false,
+        backgroundColor: null,
+        willReadFrequently: true,
+        allowTaint: true,
+        useCORS: true
+      });
+
+      return canvas.toDataURL("image/png");
+    }
+
+    async function getOutputDivClone() {
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const outputWrapper = document.createElement('div');
+      outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.style.backgroundColor = backgroundColor;
+      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      outputWrapper.appendChild(tempOutputDiv);
+      tempOutputDiv.classList.add(...currentTab.outputElement.classList);
+      tempOutputDiv.style.width = maxWidth;
+      tempOutputDiv.style.maxWidth = maxWidth;
+      tempOutputDiv.style.height = 'auto';
+      tempOutputDiv.style.overflowY = 'visible';
+      return outputWrapper;
+    }
+
+    async function getEditorDiv() {
+      const model = currentTab.editorInstance.getModel();
+      const code = model.getValue();
+      const language = "javascript";
+
+      const codeLines = code.split('\n');
+
+      const highlightedLines = await Promise.all(
+        codeLines.map((line) => monaco.editor.colorize(line, language, {}))
+      );
+
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.style.backgroundColor = backgroundColor;
+      wrapperDiv.style.fontFamily = fontFamily;
+      wrapperDiv.style.fontSize = `${fontSize}px`;
+      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.whiteSpace = "pre-wrap";
+      wrapperDiv.style.width = maxWidth;
+      wrapperDiv.style.maxWidth = maxWidth;
+      wrapperDiv.style.color = textColor;
+
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
+        lineWrapper.style.alignItems = "flex-start";
+
+        const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.textContent = index + 1;
+
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.classList.add("codeLineDiv")
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
+      return wrapperDiv;
+    }
+
+
+    async function exportImage() {
+      const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapperBoth.appendChild(editorTextDiv);
+      wrapperBoth.appendChild(await getEditorDiv());
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapperBoth.appendChild(textDiv);
+        wrapperBoth.appendChild(await getOutputDivClone());
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
+      }
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+      exportModalContent.appendChild(wrapperBoth);
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        let theyReady = false;
+
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
+        while (!theyReady) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height
+        ctx.drawImage(bothImg, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${currentTab.name}.png`;
+        a.click();
+      }
+
+      displayModal()
+    }
+
+
+    async function exportPDF() {
+      const editorDiv = await getEditorDiv();
+      const wrapBoth = document.createElement('div');
+      wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapBoth.appendChild(editorTextDiv);
+      exportModalContent.appendChild(wrapBoth);
+      wrapBoth.appendChild(editorDiv);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputDiv = await getOutputDivClone();
+        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapBoth.appendChild(textDiv);
+        wrapBoth.appendChild(outputDiv);
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
+      }
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export PDF";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const contentWidth = wrapBoth.offsetWidth;
+        const contentHeight = wrapBoth.offsetHeight;
+        let doc = new jsPDF({
+          orientation: contentWidth > contentHeight ? 'l' : 'p',
+          unit: 'px',
+          format: [contentWidth, contentHeight]
+        });
+        await new Promise(resolve => {
+          doc.html(wrapBoth, {
+            callback: resolve,
+            x: 0,
+            y: 0,
+            margin: [0, 0, 0, 0],
+            html2canvas: { scale: 1, logging: false }
+          });
+        });
+        closeModal("close");
+        if (doc.internal.getNumberOfPages() > 1) {
+          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+            doc.deletePage(i);
+          }
+        }
+        doc.save(`${currentTab.name}.pdf`);
+      }
+      displayModal();
+    }
+
+    function exportCurrent() {
+      if (activeTabId === null) {
+        alert("No tab to export.");
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function displayModal() {
+      modal.style.display = "block";
+      modal.dispatchEvent(new Event("modalOpened"));
+    }
+
+    function closeModal(event) {
+      if (event.target === modal || event === "close") {
+        modal.style.display = "none";
+        modal.dispatchEvent(new Event("modalClosed"));
+      }
+    }
+    modal.addEventListener("modalOpened", () => {
+      document.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("modalClosed", () => {
+      document.removeEventListener("click", closeModal);
+      exportModalContent.innerHTML = "";
+    });
+
+    function modalIsOpen() {
+      return modal.style.display === "block";
+    }
   </script>
 </body>
 
