@@ -750,7 +750,6 @@ function getObjectOrStringForLog(...args) {
     return objs
 }
 
-
 const allowedProps = [
     "background", "background-color", "background-image", "background-position", "background-size", "background-repeat",
     "border", "border-width", "border-style", "border-color",
@@ -902,7 +901,6 @@ function formatConsoleString(format, ...args) {
 }
 
 
-
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
     if (type === "execute") {
@@ -913,7 +911,8 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                const objs = getObjectOrStringForLog(formatConsoleString(...args));
+                args = formatConsoleString(...args);
+                const objs = getObjectOrStringForLog(...args);
                 self.postMessage({ type: "log", message: objs });
             },
             error: (...args) => {
