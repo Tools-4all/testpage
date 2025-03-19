@@ -757,7 +757,7 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                const objs = getObjectOrString(...args);
+                const objs = getObjectOrStringForLog(...args);
                 self.postMessage({ type: "log", message: objs });
             },
             error: (...args) => {
