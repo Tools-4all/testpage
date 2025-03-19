@@ -2191,9 +2191,11 @@ prompt("This is a prompt:");
       div.appendChild(symbolDiv);
       const wrapBoth = document.createElement("div");
       wrapBoth.style.display = "block"
+      wrapBoth.style.width = "100%"
       const wrapTable = document.createElement("div");
       wrapTable.style.display = "flex";
       wrapTable.appendChild(table);
+      wrapBoth.style.width = "100%";
       wrapBoth.appendChild(wrapTable);
       div.appendChild(wrapBoth);
       let actualMsg = "";
