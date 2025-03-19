@@ -599,18 +599,17 @@ function getStack() {
 
     const deduped = [];
     for (let i = 0; i < frames.length; i++) {
-        if (i > 0 && frames[i].line === frames[i - 1].line) {
-            continue;
-        }
+        if (i > 0 && frames[i].line === frames[i - 1].line) continue;
         deduped.push(frames[i]);
     }
 
-
+    // Instead of popping the last frame, we mimic relativeStack:
     if (deduped.length) {
-        deduped.pop();
-        const lastIndex = deduped.length - 1;
-        if (deduped[lastIndex]) {
-            deduped[lastIndex].fn
+        const lastFrame = deduped[deduped.length - 1];
+        // If the last frame isn't already 'userCode', append a new one.
+        if (!/userCode/.test(lastFrame.fn)) {
+            // Add an offset of 2 to the last frame's line to simulate the missing frame.
+            deduped.push({ fn: "userCode", line: lastFrame.line + 2 });
         }
     }
 
@@ -618,6 +617,7 @@ function getStack() {
         .map(f => `at ${f.fn} (js:${f.line})`)
         .join('\n');
 }
+
 
 
 function relativeStack(error) {
