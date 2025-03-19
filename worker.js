@@ -830,7 +830,7 @@ function formatConsoleString(format, ...args) {
                         styledText += format[i];
                         i++;
                     }
-                    const domString = DomeElement(`<span style="${filteredStyle}">${styledText}</span>`);
+                    const domString = new DomeElement(`<span style="${filteredStyle}">${styledText}</span>`);
                     styledElements.push(domString);
                 }
             } else {
