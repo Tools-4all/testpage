@@ -817,6 +817,25 @@ self.addEventListener("message", (event) => {
             },
             assert: (condition, ...args) => {
                 if (!condition) {
+                    const firstArg = args[0];
+                    if (typeof firstArg === "string" && args.length > 1 && ["%s", "%d", "%i", "%f", "%o"].some(format => firstArg.includes(format))) {
+                        switch (firstArg) {
+                            case "%s":
+                                args[0] = args[1].toString();
+                                break;
+                            case "%d":
+                            case "%i":
+                                args[0] = parseInt(args[1]);
+                                break;
+                            case "%f":
+                                args[0] = parseFloat(args[1]);
+                                break;
+                            case "%o":
+                                args[0] = getObjectOrString(args[1]);
+                                break;
+                        }
+                        args.splice(1, 1);
+                    }
                     args.unshift("Assertion failed:");
                     const msg = getObjectOrString(...args);
                     console.log(msg)
