@@ -732,14 +732,8 @@ function objectToString(obj) {
     if (Array.isArray(obj)) {
         return `[${obj.map(item => objectToString(item)).join(", ")}]`;
     }
-    const keys = Object.keys(obj);
-    const keyValuePairs = keys.map((key, index) => {
-        const isNumeric = /^\d+$/.test(key);
-        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
-        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
-        return `${formattedKey}: ${objectToString(obj[key])}`;
-    });
-    return `{${keyValuePairs.join(", ")}}`;
+    
+    return JSON.stringify(obj);
 }
 
 function getObjectOrString(...args) {
