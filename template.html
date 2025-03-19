@@ -1854,10 +1854,9 @@ prompt("This is a prompt:");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
             summary.style.display = "flex"
-            if (typeof msg === "string") {
+            if (typeof msg === "string" || typeof msg === "array" && !msg[0][0]) {
               summary.textContent = msg;
             } else {
-              console.log("msg", msg);
               summary.appendChild(lazyRenderTreeNode(null, msg[0][0]));
             }
             details.appendChild(summary);
