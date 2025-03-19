@@ -1857,7 +1857,7 @@ prompt("This is a prompt:");
             console.log("msg", msg);
             if (typeof msg === "string") {
               summary.textContent = msg;
-            } else if (typeof msg === "object" && msg.length) {
+            } else if (msg.length) {
               summary.appendChild(lazyRenderTreeNode(null, msg[0]));
             }
             details.appendChild(summary);
