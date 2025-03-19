@@ -1862,7 +1862,7 @@ prompt("This is a prompt:");
               for (let key in msg) {
                 subMsgDiv = document.createElement("div");
                 if (msg[key][1]) {
-                  subMsgDiv = lazyRenderTreeNode(key, msg[key][0])
+                  subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
                   subMsgDiv.style.marginRight = "8px";
                   summary.appendChild(subMsgDiv);
                 } else {
