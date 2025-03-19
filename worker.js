@@ -187,10 +187,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         } catch (err) {
             typeName = "Object";
         }
-
-        // New check: if the value is the console object, use a compact header.
-        console.log(value.constructor, value.constructor.name)
-        if (value && value.constructor && value.constructor.name === "console") {
+        if (value instanceof customConsole) {
             headerText = "console";
         } else if (!isPrototype) {
             if (value instanceof RegExp) {
