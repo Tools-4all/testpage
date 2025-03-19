@@ -196,7 +196,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                 headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
                 try {
-                    headerText = objectToString(value);
+                    headerText = objectToStringForNode(value);
                 } catch (e) {
                     headerText = "{}";
                 }
@@ -354,6 +354,30 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     visited.delete(value);
     return node;
 }
+
+function objectToStringForNode(obj) {
+    if (typeof obj === "bigint") {
+        return `${obj.toString()}n`;
+    }
+    if (typeof obj === "string") {  // Add this check to wrap strings in quotes.
+        return `"${obj}"`;
+    }
+    if (typeof obj !== "object" || obj === null) {
+        return String(obj);
+    }
+    if (Array.isArray(obj)) {
+        return `[${obj.map(item => objectToString(item)).join(", ")}]`;
+    }
+    const keys = Object.keys(obj);
+    const keyValuePairs = keys.map((key) => {
+        const isNumeric = /^\d+$/.test(key);
+        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
+        const formattedKey = isNumeric || isValidIdentifier ? key : `"${key}"`;
+        return `${formattedKey}: ${objectToString(obj[key])}`;
+    });
+    return `{${keyValuePairs.join(", ")}}`;
+}
+
 
 function renderObject(obj) {
     const visited = new Set();
