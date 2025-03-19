@@ -727,6 +727,25 @@ function getObjectOrString(...args) {
     return objs
 }
 
+function getObjectOrStringForLog(...args) {
+    let objs = {}
+    let num = 0
+    args.forEach(arg => {
+        if ([Date, Error, Function].some(type => arg instanceof type)) {
+            if (arg instanceof Error) {
+                objs[num] = [arg.stack, false]
+            } else {
+                objs[num] = [arg.toString(), false]
+            }
+        } else if (["object", "function"].includes(typeof arg) && arg !== null) {
+            objs[num] = [createNodeObject(null, arg, new Set()), true]
+        } else {
+            objs[num] = [objectToString(arg), false]
+        }
+        num++
+    });
+    return objs
+}
 
 self.addEventListener("message", (event) => {
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
