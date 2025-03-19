@@ -901,7 +901,7 @@ self.addEventListener("message", (event) => {
             timeLog: (label = "default", ...args) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const msg = `${label}: ${duration} ms$`;
+                    const msg = `${label}: ${duration} ms`;
                     args.unshift(msg);
                     self.postMessage({ type: "log",  message: getObjectOrStringForLog(...args) });
                 } else {
