@@ -821,7 +821,7 @@ function formatConsoleString(format, ...args) {
             i = j + 1;
 
             if (specifier === 'c') {
-                if (argIndex < args.length && typeof args[argIndex] === "string" && typeof args[argIndex + 1] === "string") {
+                if (argIndex < args.length && typeof args[argIndex + 1] === "string") {
                     let styleArg = String(args[argIndex++]);
                     const filteredStyle = filterStyle(styleArg);
 
