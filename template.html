@@ -1856,9 +1856,9 @@ prompt("This is a prompt:");
             summary.style.display = "flex"
             if (typeof msg === "string") {
               summary.textContent = msg;
-            } else if (msg.length) {
+            } else {
               console.log("msg", msg);
-              summary.appendChild(lazyRenderTreeNode(null, msg));
+              summary.appendChild(lazyRenderTreeNode(null, msg[0]));
             }
             details.appendChild(summary);
             let parentContainer = currentTab.groupStack.length > 0 ?
