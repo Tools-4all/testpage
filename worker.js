@@ -606,18 +606,52 @@ function getStack() {
     }
 
 
+    // Instead of:
     if (deduped.length) {
-        const lastFrame = deduped[deduped.length - 1];
-        if (lastFrame.fn === 'eval' || lastFrame.fn === '<anonymous>') {
-            deduped.pop();
-        }
-        const finalFrame = deduped[deduped.length - 1];
-        if (!finalFrame || !/userCode/.test(finalFrame.fn)) {
-            const lineForUserCode = finalFrame ? finalFrame.line : 0;
-            deduped.push({ fn: "userCode", line: lineForUserCode });
+        deduped.pop();
+        const lastIndex = deduped.length - 1;
+        if (deduped[lastIndex]) {
+            deduped[lastIndex].fn
         }
     }
-    
+
+    // Do this:
+    if (deduped.length) {
+        // Look into the raw error stack lines to see if there's an eval or <anonymous> frame.
+        const rawLines = new NativeError().stack.split('\n');
+        let userCodeLine = null;
+        for (const line of rawLines) {
+            if (!line.includes(userScript)) continue;
+            // Look for an eval or anonymous frame (as in relativeStack)
+            const matchEval = line.match(/at (\S+) \(([^:]+):(\d+):(\d+)\)/);
+            if (matchEval) {
+                const fn = matchEval[1];
+                if (fn === 'eval' || fn === '<anonymous>') {
+                    const ln = parseInt(matchEval[3], 10);
+                    const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
+                    userCodeLine = (adj > 0 ? adj : ln);
+                    break;
+                }
+            }
+            // Try matching lines without a function name.
+            const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
+            if (matchNoFn) {
+                const ln = parseInt(matchNoFn[2], 10);
+                const adj = ln - WRAPPER_LINE_COUNT_FOR_ERR;
+                userCodeLine = (adj > 0 ? adj : ln);
+                break;
+            }
+        }
+        // If we didn't find an eval/<anonymous> frame, use an offset from the last captured frame.
+        if (userCodeLine === null) {
+            const lastFrame = deduped[deduped.length - 1];
+            // Assuming that for console.trace the expected userCode line is 2 greater.
+            userCodeLine = lastFrame.line + 2;
+        }
+        // Append the new frame.
+        deduped.push({ fn: "userCode", line: userCodeLine });
+    }
+
 
     return deduped
         .map(f => `at ${f.fn} (js:${f.line})`)
