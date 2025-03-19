@@ -732,8 +732,9 @@ function getObjectOrStringForLog(...args) {
     let objs = {}
     let num = 0
     args.forEach(arg => {
-        console.log("arg", arg, "isDomString", arg.isDomString)
-        if ([Date, Error, Function].some(type => arg instanceof type)) {
+        if (arg instanceof DomeElement) {
+            objs[num] = [arg.text, "domObject"]
+        } else if ([Date, Error, Function].some(type => arg instanceof type)) {
             if (arg instanceof Error) {
                 objs[num] = [arg.stack, false]
             } else {
@@ -741,8 +742,6 @@ function getObjectOrStringForLog(...args) {
             }
         } else if (["object", "function"].includes(typeof arg) && arg !== null) {
             objs[num] = [createNodeObject(null, arg, new Set()), true]
-        } else if (typeof arg === "string" && arg.isDomString) {
-            objs[num] = [arg, "domObject"]
         } else {
             objs[num] = [objectToString(arg), false]
         }
@@ -788,6 +787,12 @@ function filterStyle(styleStr) {
         .join("; ");
 }
 
+class DomeElement {
+    constructor(text) {
+        this.text = text;
+    }
+}
+
 function formatConsoleString(format, ...args) {
     let argIndex = 0;
     let mainOutput = "";
@@ -825,8 +830,7 @@ function formatConsoleString(format, ...args) {
                         styledText += format[i];
                         i++;
                     }
-                    const domString = `<span style="${filteredStyle}">${styledText}</span>`;
-                    domString.isDomString = true;
+                    const domString = DomeElement(`<span style="${filteredStyle}">${styledText}</span>`);
                     styledElements.push(domString);
                 }
             } else {
