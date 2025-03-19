@@ -754,24 +754,19 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                const objs = getObjectOrStringForLog(...args);
-                self.postMessage({ type: "log", message: objs });
+                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             error: (...args) => {
-                const objs = getObjectOrString(...args);
-                self.postMessage({ type: "error", message: objs, forceUse: false });
+                self.postMessage({ type: "error", message: getObjectOrStringForLog(...args), forceUse: false });
             },
             warn: (...args) => {
-                const objs = getObjectOrString(...args);
-                self.postMessage({ type: "warn", message: objs });
+                self.postMessage({ type: "warn", message: getObjectOrStringForLog(...args) });
             },
             info: (...args) => {
-                const objs = getObjectOrString(...args);
-                self.postMessage({ type: "info", message: objs });
+                self.postMessage({ type: "info", message: getObjectOrStringForLog(...args)});
             },
             debug: (...args) => {
-                const objs = getObjectOrStringForLog(...args);
-                self.postMessage({ type: "log", message: objs });
+                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args)});
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -855,9 +850,7 @@ self.addEventListener("message", (event) => {
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             group: (...args) => {
-                const serializedArgs = args.map(arg => objectToString(arg)).join(" ");
-                const message = `${serializedArgs}`;
-                self.postMessage({ type: "group", message, collapsed: false });
+                self.postMessage({ type: "group", message: getObjectOrStringForLog(...args), collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
