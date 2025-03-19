@@ -894,7 +894,7 @@ self.addEventListener("message", (event) => {
                     self.postMessage({ type: "log", message });
                     delete timers[label];
                 } else {
-                    const message = `No timer called '${label}' found`;
+                    const message = `Timer '${label}' does not exist`;
                     self.postMessage({ type: "error", message });
                 }
             },
@@ -903,10 +903,10 @@ self.addEventListener("message", (event) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
                     const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
-                    const message = `${objectToString(label)}: ${duration.toFixed(2)}ms${extra}`;
+                    const message = `${label}: ${duration.toFixed(2)}ms${extra}`;
                     self.postMessage({ type: "log", message });
                 } else {
-                    const message = `No timer called '${objectToString(label)}' found`;
+                    const message = `Timer '${label}' does not exist`;
                     self.postMessage({ type: "error", message });
                 }
             }
