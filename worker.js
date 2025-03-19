@@ -579,14 +579,12 @@ function getStack() {
     for (const line of rawLines) {
         if (!line.includes(userScript)) continue;
 
-        // Try matching a function frame.
         const matchFn = line.match(/at ([^(]+)\(([^:]+):(\d+):(\d+)\)/);
         if (matchFn) {
             const fnName = matchFn[1].trim();
             const fileLine = parseInt(matchFn[3], 10);
             const lineNum = fileLine - WRAPPER_LINE_COUNT > 0 ? fileLine - WRAPPER_LINE_COUNT : fileLine;
             if (fnName === 'eval' || fnName === '<anonymous>') {
-                // Instead of pushing eval, push a userCode frame and break.
                 frames.push({ fn: "userCode", line: lineNum });
                 break;
             }
@@ -594,7 +592,6 @@ function getStack() {
             continue;
         }
 
-        // Try matching a frame with no function.
         const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
         if (matchNoFn) {
             const fileLine = parseInt(matchNoFn[2], 10);
@@ -603,16 +600,11 @@ function getStack() {
             break;
         }
     }
-
-    // Deduplicate consecutive frames with the same line.
     const deduped = [];
     for (let i = 0; i < frames.length; i++) {
         if (i > 0 && frames[i].line === frames[i - 1].line) continue;
         deduped.push(frames[i]);
     }
-
-    // If no eval/anonymous frame was encountered, and the last frame is not already userCode,
-    // append one with an offset of 2 (to mimic relativeStack behavior).
     if (deduped.length && !/userCode/.test(deduped[deduped.length - 1].fn)) {
         const lastFrame = deduped[deduped.length - 1];
         deduped.push({ fn: "userCode", line: lastFrame.line + 2 });
