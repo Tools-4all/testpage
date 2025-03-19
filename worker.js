@@ -890,7 +890,7 @@ self.addEventListener("message", (event) => {
             timeEnd: (label = "default") => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
-                    const message = `${label}: ${duration.toFixed(2)}ms`;
+                    const message = `${label}: ${duration} ms`;
                     self.postMessage({ type: "log", message });
                     delete timers[label];
                 } else {
@@ -903,7 +903,7 @@ self.addEventListener("message", (event) => {
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
                     const extra = args.length ? " " + args.map(a => objectToString(a)).join(" ") : "";
-                    const message = `${label}: ${duration.toFixed(2)}ms${extra}`;
+                    const message = `${label}: ${duration} ms${extra}`;
                     self.postMessage({ type: "log", message });
                 } else {
                     const message = `Timer '${label}' does not exist`;
