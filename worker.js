@@ -187,9 +187,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         } catch (err) {
             typeName = "Object";
         }
-        if (value instanceof customConsole) {
-            headerText = "console";
-        } else if (!isPrototype) {
+        if (!isPrototype) {
             if (value instanceof RegExp) {
                 headerText = value.toString();
             } else if (typeName !== "Object") {
@@ -203,11 +201,11 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
                     headerText = "{}";
                 }
             }
-        } else {
+        }
+        else {
             headerText = (typeName !== "Object") ? typeName : "Object";
         }
     }
-
 
     let children = {};
 
