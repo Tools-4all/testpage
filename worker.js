@@ -728,7 +728,7 @@ function getObjectOrString(...args) {
     return objs
 }
 
-function getObjectOrStringForLog(...args) {
+function getObjectOrStringForLog(args) {
     let objs = {}
     let num = 0
     args.forEach(arg => {
