@@ -579,43 +579,46 @@ function getStack() {
     for (const line of rawLines) {
         if (!line.includes(userScript)) continue;
 
+        // Try matching a function frame.
         const matchFn = line.match(/at ([^(]+)\(([^:]+):(\d+):(\d+)\)/);
         if (matchFn) {
             const fnName = matchFn[1].trim();
             const fileLine = parseInt(matchFn[3], 10);
             const lineNum = fileLine - WRAPPER_LINE_COUNT > 0 ? fileLine - WRAPPER_LINE_COUNT : fileLine;
+            if (fnName === 'eval' || fnName === '<anonymous>') {
+                // Instead of pushing eval, push a userCode frame and break.
+                frames.push({ fn: "userCode", line: lineNum });
+                break;
+            }
             frames.push({ fn: fnName, line: lineNum });
             continue;
         }
 
+        // Try matching a frame with no function.
         const matchNoFn = line.match(/at ([^:]+):(\d+):(\d+)/);
         if (matchNoFn) {
-            const fnName = matchNoFn[1].trim();
             const fileLine = parseInt(matchNoFn[2], 10);
             const lineNum = fileLine - WRAPPER_LINE_COUNT > 0 ? fileLine - WRAPPER_LINE_COUNT : fileLine;
-            frames.push({ fn: fnName, line: lineNum });
+            frames.push({ fn: "userCode", line: lineNum });
+            break;
         }
     }
 
+    // Deduplicate consecutive frames with the same line.
     const deduped = [];
     for (let i = 0; i < frames.length; i++) {
         if (i > 0 && frames[i].line === frames[i - 1].line) continue;
         deduped.push(frames[i]);
     }
 
-    // Instead of popping the last frame, we mimic relativeStack:
-    if (deduped.length) {
+    // If no eval/anonymous frame was encountered, and the last frame is not already userCode,
+    // append one with an offset of 2 (to mimic relativeStack behavior).
+    if (deduped.length && !/userCode/.test(deduped[deduped.length - 1].fn)) {
         const lastFrame = deduped[deduped.length - 1];
-        // If the last frame isn't already 'userCode', append a new one.
-        if (!/userCode/.test(lastFrame.fn)) {
-            // Add an offset of 2 to the last frame's line to simulate the missing frame.
-            deduped.push({ fn: "userCode", line: lastFrame.line + 2 });
-        }
+        deduped.push({ fn: "userCode", line: lastFrame.line + 2 });
     }
 
-    return deduped
-        .map(f => `at ${f.fn} (js:${f.line})`)
-        .join('\n');
+    return deduped.map(f => `at ${f.fn} (js:${f.line})`).join('\n');
 }
 
 
