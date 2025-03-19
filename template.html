@@ -1156,10 +1156,10 @@
       justify-content: space-between;
       margin-top: 10px;
     }
+
     .headerText {
       background-color: white;
     }
-    
   </style>
 </head>
 
@@ -1348,7 +1348,7 @@
             }
           });
         });
-        monaco.editor.setTheme("vs-light");
+        monaco.editor.setTheme("custom-light");
 
         // Reassign log classes for ALL existing tabs:
         tabs.forEach(tab => {
@@ -1538,7 +1538,7 @@
       tabsContainer.appendChild(editorOutputWrapper);
       let editorInstance = monaco.editor.create(editorContainer, {
         language: "javascript",
-        theme: darkModeFlag ? "custom-dark" : "vs-light",
+        theme: darkModeFlag ? "custom-dark" : "custom-light",
         automaticLayout: true,
         tabSize: spaces,
         insertSpaces: true,
@@ -2429,14 +2429,11 @@ prompt("This is a prompt:");
         base: 'vs-dark',
         inherit: true,
         rules: [
-          // Special keywords styled with #569cd6
           { token: 'special.keyword', foreground: '569cd6' },
-          // Regular keywords styled with #c586c0
           { token: 'keyword', foreground: 'c586c0' },
           { token: 'identifier', foreground: '9CDCFE' },
           { token: 'delimiter', foreground: 'D4D4D4' },
           { token: 'operator', foreground: 'D4D4D4' },
-          // Methods use a slightly different light color.
           { token: 'method', foreground: 'dcdcaa' },
           { token: 'attribute', foreground: '9cdcfe' },
           { token: 'arrow', foreground: '569cd6' },
@@ -2453,6 +2450,53 @@ prompt("This is a prompt:");
           'editor.background': '#1E1E1E'
         }
       });
+
+      monaco.editor.defineTheme('custom-light', {
+        base: 'vs', // Base on the built-in light theme
+        inherit: true,
+        rules: [
+          // Keywords & special keywords
+          { token: 'special.keyword', foreground: '0000FF' },
+          { token: 'keyword', foreground: '0000FF' },
+
+          // Identifiers and attributes
+          { token: 'identifier', foreground: '000000' },
+          { token: 'attribute', foreground: '001080' },
+
+          // Delimiters & operators
+          { token: 'delimiter', foreground: '000000' },
+          { token: 'operator', foreground: '000000' },
+
+          // Arrow operator (same as keywords)
+          { token: 'arrow', foreground: '0000FF' },
+
+          // Methods & functions (using a brownish hue)
+          { token: 'method', foreground: '795e26' },
+          { token: 'function', foreground: '795e26' },
+
+          // Type identifiers (using a blue-green tone)
+          { token: 'type.identifier', foreground: '267f99' },
+
+          // Comments (green)
+          { token: 'comment', foreground: '008000' },
+
+          // Strings and escapes (red)
+          { token: 'string', foreground: 'A31515' },
+          { token: 'string.escape', foreground: 'A31515' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+
+          // Numbers (greenish)
+          { token: 'number', foreground: '098658' },
+
+          // Regular expressions (reddish)
+          { token: 'regexp', foreground: 'd16969' }
+        ],
+        colors: {
+          'editor.background': '#ffffff',
+          'editor.foreground': '#333333'
+        }
+      });
+
 
       // Initialize your editor (or call your tab creation function)
       createTab();
