@@ -854,7 +854,7 @@ self.addEventListener("message", (event) => {
             },
             timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
-                const stack = relativeStack();
+                const stack = getStack();
                 console.log(stack)
                 args.push(stack);
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
