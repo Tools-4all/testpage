@@ -818,8 +818,9 @@ self.addEventListener("message", (event) => {
             assert: (condition, ...args) => {
                 if (!condition) {
                     const msg = getObjectOrString(...args);
-                    console.log(msg)
-                    self.postMessage({ type: "error", message: `Assertion failed:`, objs: msg });
+                    // insert Assertion failed: before the message
+                    msg.unshift(["Assertion failed:", false]);
+                    self.postMessage({ type: "error", message: msg });
                 }
             },
             dir: (obj) => {
