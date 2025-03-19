@@ -831,7 +831,7 @@ self.addEventListener("message", (event) => {
                                 args[0] = parseFloat(args[1]);
                                 break;
                             case "%o":
-                                args[0] = getObjectOrString(args[1]);
+                                args[0] = args[1];
                                 break;
                         }
                         // Remove the second argument.
