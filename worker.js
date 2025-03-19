@@ -607,12 +607,12 @@ function getStack() {
 
 
     if (deduped.length) {
-        deduped.pop();
-        const lastIndex = deduped.length - 1;
-        if (deduped[lastIndex]) {
-            deduped[lastIndex].fn
+        const last = deduped[deduped.length - 1];
+        if (!/userCode/.test(last.fn)) {
+            deduped.push({ fn: "userCode", line: last.line });
         }
     }
+
 
     return deduped
         .map(f => `at ${f.fn} (js:${f.line})`)
