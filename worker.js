@@ -834,6 +834,7 @@ self.addEventListener("message", (event) => {
                                 args[0] = getObjectOrString(args[1]);
                                 break;
                         }
+                        // Remove the second argument.
                         args.splice(1, 1);
                     }
                     args.unshift("Assertion failed:");
