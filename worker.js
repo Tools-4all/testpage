@@ -189,6 +189,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         }
 
         // New check: if the value is the console object, use a compact header.
+        console.log(value.constructor, value.constructor.name)
         if (value && value.constructor && value.constructor.name === "Console") {
             headerText = "console";
         } else if (!isPrototype) {
