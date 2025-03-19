@@ -2056,6 +2056,7 @@ prompt("This is a prompt:");
         let actualMsg = "";
         let subMsgDiv
         for (let key in message) {
+          subMsgDiv = document.createElement("div");
           if (message[key][1]) {
             if (message[key][1] === "domObject") {
               subMsgDiv.innerHTML = message[key][0];
