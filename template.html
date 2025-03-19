@@ -2453,44 +2453,25 @@ prompt("This is a prompt:");
       });
 
       monaco.editor.defineTheme('custom-light', {
-        base: 'vs', // Base on the built-in light theme
+        base: 'vs', 
         inherit: true,
         rules: [
-          // Keywords & special keywords
           { token: 'special.keyword', foreground: '0000FF' },
           { token: 'keyword', foreground: 'af00db' },
-
-          // Identifiers and attributes
           { token: 'identifier', foreground: '0070c1' },
           { token: 'attribute', foreground: '001080' },
-
-          // Delimiters & operators
           { token: 'delimiter', foreground: '000000' },
           { token: 'operator', foreground: '000000' },
-
-          // Arrow operator (same as keywords)
           { token: 'arrow', foreground: '0000FF' },
-
-          // Methods & functions (using a brownish hue)
           { token: 'method', foreground: '795e26' },
           { token: 'function', foreground: '795e26' },
-
-          // Type identifiers (using a blue-green tone)
           { token: 'type.identifier', foreground: '267f99' },
-
-          // Comments (green)
           { token: 'comment', foreground: '008000' },
-
-          // Strings and escapes (red)
           { token: 'string', foreground: 'a31515' },
           { token: 'string.escape', foreground: 'a31515' },
           { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
           { token: 'string.escape.js', foreground: 'ee0000'},
-
-          // Numbers (greenish)
           { token: 'number', foreground: '098658' },
-
-          // Regular expressions (reddish)
           { token: 'regexp', foreground: 'd16969' }
         ],
         colors: {
@@ -2499,8 +2480,6 @@ prompt("This is a prompt:");
         }
       });
 
-
-      // Initialize your editor (or call your tab creation function)
       createTab();
     });
 
