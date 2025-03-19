@@ -748,6 +748,50 @@ function getObjectOrStringForLog(...args) {
     return objs
 }
 
+
+const allowedProps = [
+    "background", "background-color", "background-image", "background-position", "background-size", "background-repeat",
+    "border", "border-width", "border-style", "border-color",
+    "border-radius",
+    "box-decoration-break",
+    "box-shadow",
+    "clear", "float",
+    "color",
+    "cursor",
+    "display",
+    "font", "font-size", "font-family", "font-weight", "font-style", "font-variant", "line-height",
+    "margin", "margin-top", "margin-right", "margin-bottom", "margin-left",
+    "outline", "outline-width", "outline-style", "outline-color",
+    "padding", "padding-top", "padding-right", "padding-bottom", "padding-left",
+    "text-align", "text-decoration", "text-transform", "text-shadow", "text-overflow",
+    "white-space",
+    "word-spacing", "word-break",
+    "writing-mode"
+];
+
+function filterStyle(styleStr) {
+    return styleStr.split(";")
+        .map(decl => decl.trim())
+        .filter(decl => {
+            if (!decl) return false;
+            const parts = decl.split(":");
+            if (parts.length !== 2) return false;
+            const prop = parts[0].trim().toLowerCase();
+            return allowedProps.includes(prop);
+        })
+        .map(decl => {
+            const parts = decl.split(":");
+            return parts[0].trim() + ": " + parts[1].trim();
+        })
+        .join("; ");
+}
+
+class DomeElement {
+    constructor(text) {
+        this.text = text;
+    }
+}
+
 function formatConsoleString(format, ...args) {
     let argIndex = 0;
     const parts = [];
