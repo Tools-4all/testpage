@@ -391,10 +391,10 @@ function objectToStringForNode(obj) {
         }
     });
     if (vals.length === 0) {
-        return "{}";
+        return `(0) {}`;
     } else if (vals.length > 5) {
-        return `{${vals.slice(0, 5).join(", ")}, ...}`;
-    } return `{${vals.join(", ")}}`;
+        return `(${vals.length}) {${vals.slice(0, 5).join(", ")}, ...}`;
+    } return `(${vals.length}) {${vals.join(", ")}}`;
 }
 
 
