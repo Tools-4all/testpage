@@ -1183,15 +1183,36 @@
       margin-top: 10px;
     }
 
+    .form-check-input:checked {
+      background-color: #3498db !important;
+    }
+
+    .form-check-custom {
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .form-check-label,
+    .form-check-input {
+      cursor: pointer;
+    }
+
     #exportBtn {
       background-color: #0e639c;
       color: #ffffff;
       border: none;
       padding: 6px 12px;
-      margin-left: 10px;
+      margin-top: 10px;
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #exportBtn:hover {
+      background-color: #1177bb;
     }
 
     .headerText {
@@ -1288,7 +1309,7 @@
       <div>
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
         <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
-        <div class="form-check form-switch">
+        <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
         </div>
