@@ -66,10 +66,7 @@ const wrapperPrefixLines = [
 
 function arrayToString(arr) {
     const out = arr.map((item) => {
-        if (typeof item === 'string') {
-            return "'" + item + "'";
-        }
-        return JSON.stringify(item);
+        return getStringOfKeyValue(item);
     });
     return out.join(', ');
 }
@@ -189,7 +186,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
         if (!isDir) {
-            headerText = !isPrototype ? `(${value.length}) [${getStringOfKeyValue(value)}]` : `[${getStringOfKeyValue(value)}]`;
+            headerText = !isPrototype ? `(${value.length}) [${arrayToString(value)}]` : `[${arrayToString(value)}]`;
         } else {
             headerText = `Array(${value.length})`;
         }
