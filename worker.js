@@ -74,7 +74,7 @@ function arrayToString(arr) {
     return out.join(', ');
 }
 
-referfefer
+
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir = false) {
     // Convert Symbol keys to strings.
