@@ -1363,6 +1363,9 @@
           element.classList.remove("darkMode")
         });
 
+        document.getElementById('compiler').classList.add("lightMode");
+        document.getElementById('compiler').classList.remove("darkMode");
+
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -1403,6 +1406,10 @@
           element.classList.remove("lightMode");
           element.classList.add("darkMode")
         });
+
+        document.getElementById('compiler').classList.remove("lightMode");
+        document.getElementById('compiler').classList.add("darkMode");
+
         lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         document.querySelectorAll(".theme").forEach((element) => {
@@ -3061,10 +3068,12 @@ prompt("This is a prompt:");
       // wrapperDiv.style.maxWidth = maxWidth;
       wrapperDiv.style.color = textColor;
 
-      if (window.screen.width < 768) {
-        wrapperDiv.style.zoom = "70%";
-        alert("Please note that the code may not be displayed properly on small screens.");
-      }
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.screen.width < 768) {
+          wrapperDiv.style.transform = "scale(0.7)";
+          alert("Please note that the code may not be displayed properly on small screens.");
+        }
+      });
 
       codeLines.forEach((line, index) => {
         const lineWrapper = document.createElement('div');
@@ -3286,7 +3295,7 @@ prompt("This is a prompt:");
     }
 
 
-    alert(1);
+    alert(2);
   </script>
 
 </body>
