@@ -41,6 +41,16 @@
       -ms-user-select: none;
     }
 
+    .darkMode {
+      background-color: #252526;
+      color: #d4d4d4;
+    }
+
+    .lightMode {
+      background-color: #f0f0f0;
+      color: #131313;
+    }
+
     #compiler {
       position: relative;
       font-family: 'Fira Code', monospace;
@@ -48,35 +58,8 @@
       width: 60%;
       height: 500px;
       margin: 100px auto;
-      color: #d4d4d4;
       overflow: hidden;
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
-    }
-
-    .theme {}
-
-    .color1e1e1e {
-      background-color: #1e1e1e;
-      color: #d4d4d4;
-    }
-
-    .color252526 {
-      background-color: #252526;
-      color: #cccccc;
-      border-color: #333 !important;
-      border-bottom-color: #333;
-    }
-
-    .colorffffff {
-      background-color: #ffffff;
-      color: #000;
-    }
-
-    .colorf0f0f0 {
-      background-color: #f0f0f0;
-      color: #131313;
-      border-color: #c0c0c0 !important;
-      border-bottom-color: #c0c0c0;
     }
 
     .vs-logo {
@@ -103,6 +86,7 @@
 
     .vs-navbar {
       font-family: 'Fira Code', monospace;
+      background-color: transparent;
       font-size: 14px;
       display: flex;
       padding: 5px 10px;
@@ -154,27 +138,59 @@
       white-space: nowrap;
     }
 
-    .vs-navbar-dropdown-item:hover {
-      background-color: #444;
-      color: #ffffff;
-    }
-
     .vs-navbar-dropdown-item.disabled {
       pointer-events: none;
       opacity: 0.5;
     }
 
-    #lightMode {
+    #compiler:not(.darkMode) .vs-navbar-dropdown {
+      background-color: #f9f9f9;
+      color: #000000;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.darkMode) .vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar-dropdown {
+      background-color: #3c3c3c;
+      color: #ffffff;
+      border-color: #4c4c4c;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
+      background-color: #444;
+      color: #ffffff;
+    }
+
+
+    #moon,
+    #sun {
+      color: #636262;
+      font-size: 17px;
+      height: 20px;
+      width: 20px;
+      padding-top: 2px;
+      padding-left: 4px;
       margin-left: 20px;
-      margin-right: 20px;
       cursor: pointer;
+      margin-right: 20px;
+      transition: color 0.2s;
+    }
+
+    #sun {
+      color: #c5c5c5;
     }
 
     #fullScreenBtn {
+      color: #c5c5c5;
       margin-top: 3px;
       margin-right: 7px;
       font-size: 13px;
       cursor: pointer;
+      transition: color 0.2s;
     }
 
     #activityBar {
@@ -183,7 +199,8 @@
       flex-direction: column;
       align-items: center;
       padding-top: 10px;
-      border-right: 1px solid #333;
+      background-color: transparent;
+      border-right: 1px solid;
       transition: width 0.3s ease;
       flex-shrink: 0;
       margin-top: 30px;
@@ -197,6 +214,12 @@
       text-align: center;
       font-size: 20px;
       position: relative;
+      border-left: 3px solid transparent;
+      padding-right: 3px;
+    }
+
+    #exportIcon {
+      padding-left: 5px !important;
     }
 
     #activityBar .icon:hover:after {
@@ -213,10 +236,29 @@
       z-index: 9;
     }
 
+    #compiler:not(.darkMode) #activityBar .icon {
+      color: #9b9a9a !important;
+    }
+
+    #compiler:not(.darkMode) #activityBar .icon:hover,
+    #compiler:not(.darkMode) #activityBar .icon.active {
+      background-color: rgb(183, 182, 182);
+      color: #fffdfd !important;
+    }
+
+    #compiler:not(.darkMode) #activityBar .icon:hover:after {
+      background: #acabab;
+    }
+
+    #compiler:not(.lightMode) #activityBar .icon:hover,
+    #compiler:not(.lightMode) #activityBar .icon.active {
+      background-color: #3c3c3c;
+      color: #fff;
+    }
+
     .sidebar-panel {
       width: 250px;
-      background-color: #1e1e1e;
-      border-right: 1px solid #333;
+      border-right: 1px solid;
       overflow-y: auto;
       padding: 10px;
       display: none;
@@ -226,6 +268,18 @@
 
     .sidebar-panel.active {
       display: block;
+    }
+
+    #compiler:not(.darkMode) .sidebar-panel {
+      background-color: #eeeeee;
+      color: #545151 !important;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .sidebar-panel {
+      background-color: #2b2b2b;
+      color: #ffffff;
+      border-color: #3c3c3c;
     }
 
     #gitUrl {
@@ -244,6 +298,18 @@
 
     #gitUrl:focus {
       border-color: #007acc;
+    }
+
+    #compiler:not(.darkMode) .sidebar-panel.active #gitUrl {
+      background-color: #f9f9f9;
+      border-color: #c0c0c0;
+      color: #000000;
+    }
+
+    #compiler:not(.lightMode) .sidebar-panel.active #gitUrl {
+      background-color: #3c3c3c;
+      border-color: #4c4c4c;
+      color: #ffffff;
     }
 
     #loadGitButton {
@@ -266,7 +332,6 @@
     #tabSizeInput {
       width: 100%;
     }
-    
 
     .vs-range {
       -webkit-appearance: none;
@@ -286,7 +351,7 @@
       height: 14px;
       background: #007acc;
       border-radius: 50%;
-      border: 2px solid #444;
+      border: 2px solid #0369ae;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
@@ -295,7 +360,7 @@
       width: 14px;
       height: 14px;
       background: #007acc;
-      border: 2px solid #444;
+      border: 2px solid #0369ae;
       border-radius: 50%;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
@@ -309,6 +374,16 @@
     .vs-range::-webkit-slider-thumb:active,
     .vs-range::-moz-range-thumb:active {
       background: #0067a8;
+    }
+
+    #compiler:not(.darkMode) .sidebar-panel.active .vs-range {
+      background-color: #f9f9f9;
+      border: 1px solid #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .sidebar-panel.active .vs-range {
+      background-color: #3c3c3c;
+      border: 1px solid #4c4c4c;
     }
 
     .exportBtnsWrapper {
@@ -343,7 +418,7 @@
     }
 
     #tabBar {
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid;
       display: flex;
       align-items: center;
       height: 30px;
@@ -366,6 +441,10 @@
       border-radius: 10px;
     }
 
+    #tabBar::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+
     .tab {
       margin-right: 2px;
       margin-top: 3px;
@@ -376,6 +455,48 @@
       align-items: center;
       user-select: none;
       -webkit-user-drag: element;
+    }
+
+    .tab.active {
+      border-top: 1px solid #007acc !important;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -2px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+
+    #activityBar .icon.active {
+      border-left: 3px solid #007acc;
+    }
+
+    #compiler:not(.darkMode) .tab {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
+    #compiler:not(.lightMode) .tab {
+      background-color: #2c2c2c;
+      color: #ffffff;
+    }
+
+    #compiler:not(.darkMode) .tab:hover {
+      background-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .tab:hover {
+      background-color: #3c3c3c;
+    }
+
+    #compiler:not(.darkMode) .tab.active,
+    #compiler:not(.darkMode) .tab.active:hover {
+      background-color: #d0d0d0;
+      border-top: 1px solid #007acc !important;
+    }
+
+    #compiler:not(.lightMode) .tab.active,
+    #compiler:not(.lightMode) .tab.tab.active:hover {
+      background-color: #1c1c1c;
+      border-top: 1px solid #007acc !important;
     }
 
     .tab .tab-title {
@@ -394,15 +515,6 @@
 
     .tab.active .close {
       visibility: visible;
-    }
-
-
-    .tab:hover:not(.active, .theme.colorffffff .tab) {
-      background-color: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .tab:hover:not(.active, .theme.color1e1e1e .tab) {
-      background-color: rgba(0, 0, 0, 0.1) !important;
     }
 
     .tab-title-edit {
@@ -428,9 +540,23 @@
       transition: color 0.2s;
     }
 
-    #addTabButton:hover {
+    #addTabButton:hover,
+    #fullScreenBtn:hover,
+    #sun:hover {
       color: #fff;
     }
+
+    #compiler:not(.darkMode) #addTabButton,
+    #compiler:not(.darkMode) #fullScreenBtn {
+      color: #636262 !important;
+    }
+
+    #compiler:not(.darkMode) #addTabButton:hover,
+    #compiler:not(.darkMode) #fullScreenBtn:hover,
+    #compiler:not(.darkMode) #moon:hover {
+      color: #000000 !important;
+    }
+
 
     #addTabButton_media {
       font-size: 25px;
@@ -492,6 +618,15 @@
       border-bottom: 1px solid;
     }
 
+    #compiler:not(.darkMode) .controls {
+      background-color: #f0f0f0;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .controls {
+      background-color: #252526;
+      border-color: #333;
+    }
 
     #runButton {
       margin-left: auto;
@@ -530,6 +665,14 @@
       transition: overflow 0.3s;
     }
 
+    #compiler:not(.darkMode) .output {
+      background-color: white;
+    }
+
+    #compiler:not(.lightMode) .output {
+      background-color: #1e1e1e;
+    }
+
     .output::-webkit-scrollbar {
       width: 8px;
     }
@@ -545,6 +688,14 @@
 
     .output::-webkit-scrollbar-horizontal {
       height: 8px;
+    }
+
+    #compiler:not(.darkMode) .output::-webkit-scrollbar-corner {
+      background: #f0f0f0;
+    }
+
+    #compiler:not(.lightMode) .output::-webkit-scrollbar-corner {
+      background: #252526;
     }
 
     .outputContent {
@@ -582,13 +733,18 @@
       border-radius: 4px;
     }
 
-    .outputContainer:not(.darkMode) .promptInput {
+    #compiler:not(.darkMode) .promptInput {
       border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    #compiler:not(.lightMode) .promptInput {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #d4d4d4;
     }
 
     #statusBar {
       height: 24px;
-      border-top: 1px solid #333;
+      border-top: 1px solid;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -634,7 +790,7 @@
       line-break: anywhere;
     }
 
-    q .console-table thead {
+    .console-table thead {
       font-weight: bold;
     }
 
@@ -645,29 +801,51 @@
       vertical-align: top;
     }
 
-    .outputContainer:not(.lightMode) .console-table thead .console-table-header:hover {
+    #compiler:not(.lightMode) .console-table thead {
+      background-color: #3c3c3c;
+      color: #ffffff;
+    }
+
+    #compiler:not(.lightMode) .console-table td,
+    #compiler:not(.lightMode) .console-table th {
+      color: #d4d4d4;
+    }
+
+
+    #compiler:not(.darkMode) .console-table thead {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
+    #compiler:not(.darkMode) .console-table td,
+    #compiler:not(.darkMode) .console-table th {
+      color: #333333;
+    }
+
+    #compiler:not(.lightMode) .console-table thead .console-table-header:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
 
-    .outputContainer:not(.darkMode) .console-table thead .console-table-header:hover {
+    #compiler:not(.darkMode) .console-table thead .console-table-header:hover {
       background-color: rgba(0, 0, 0, 0.1);
     }
 
-    .outputContainer:not(.lightMode) .console-table tbody .console-table-row:hover {
+    #compiler:not(.lightMode) .console-table tbody .console-table-row:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
 
-    .outputContainer:not(.darkMode) .console-table tbody .console-table-row:hover {
+    #compiler:not(.darkMode) .console-table tbody .console-table-row:hover {
       background-color: rgba(0, 0, 0, 0.1);
     }
 
-    .outputContainer:not(.darkMode) .prompt-line {
+    #compiler:not(.darkMode) .prompt-line {
       color: #000
     }
 
-    .outputContainer:not(.lightMode) .prompt-line {
-      color: #d4d4d4
+    #compiler:not(.lightMode) .prompt-line {
+      color: #ffffff
     }
+
 
     #undoBtn,
     #redoBtn {
@@ -680,250 +858,54 @@
     }
 
 
-    .theme.color1e1e1e .tab {
-      background-color: #2c2c2c;
-      color: #ffffff;
+    #compiler:not(.darkMode) .log {
+      color: #343434;
     }
 
-    .theme.color1e1e1e .tab.active {
-      background-color: #1c1c1c;
+    #compiler:not(.darkMode) .error {
+      color: #cc0000;
     }
 
-    .tab.active {
-      border-top: 1px solid #007acc !important;
-      border-bottom: 1px solid transparent;
-      margin-bottom: -2px;
-      border-top-left-radius: 3px;
-      border-top-right-radius: 3px;
+    #compiler:not(.darkMode) .warn {
+      color: #cc9a00;
     }
 
-
-    .theme.color1e1e1e #statusBar {
-      background-color: #2c2c2c;
-      color: #cccccc;
+    #compiler:not(.darkMode) .info {
+      color: #0066cc;
     }
 
-    #activityBar .icon.active {
-      border-left: 3px solid #007acc;
-    }
-
-    #activityBar.theme.color252526 .icon:hover,
-    #activityBar.theme.color252526 .icon.active {
-      background-color: #3c3c3c;
-      color: #fff;
-    }
-
-    .theme.color1e1e1e .sidebar-panel.active {
-      background-color: #2b2b2b;
-      color: #ffffff;
-      border-color: #3c3c3c !important;
-    }
-
-    .theme.color1e1e1e .sidebar-panel.active #gitUrl {
-      background-color: #3c3c3c;
-      border-color: #4c4c4c;
-      color: #ffffff;
-    }
-
-    .theme.color1e1e1e .sidebar-panel.active .vs-range {
-      background-color: #3c3c3c;
-      border: 1px solid #4c4c4c;
-    }
-
-    .theme.color1e1e1e .output {
-      background-color: #1e1e1e;
-      color: #d4d4d4;
-    }
-
-    .theme.color1e1e1e .console-table thead {
-      background-color: #3c3c3c;
-      color: #ffffff;
-    }
-
-    .theme.color1e1e1e .console-table td,
-    .theme.color1e1e1e .console-table th {
-      color: #d4d4d4;
-    }
-
-    .dark-log {
-      color: #BBBBBB !important;
-    }
-
-    .dark-error {
-      color: #FF6666 !important;
-    }
-
-    .dark-warn {
-      color: #FFFF66 !important;
-    }
-
-    .dark-info {
-      color: #74cbfb !important;
-    }
-
-    .dark-prompt {
-      color: #99FF99 !important;
-    }
-
-    .theme.colorffffff .tab {
-      background-color: #e0e0e0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .tab {
-      background-color: #e0e0e0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .tab.active {
-      background-color: #d0d0d0;
-      border-top: 1px solid #007acc !important;
-    }
-
-    .theme.colorffffff #statusBar {
-      background-color: #ecebeb;
-      color: #000000;
-      border-color: #c0c0c0 !important;
-    }
-
-    .theme.colorf0f0f0.vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
-      background-color: #c0c0c0;
-      color: black;
-    }
-
-    .vs-navbar.theme.colorf0f0f0 #addTabButton {
-      color: #636262 !important;
+    #compiler:not(.darkMode) .prompt {
+      color: #008000;
     }
 
 
-    .vs-navbar.theme.colorf0f0f0 #addTabButton:hover {
-      color: #000000 !important;
+    #compiler:not(.lightMode) .log {
+      color: #BBBBBB;
     }
 
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
+    #compiler:not(.lightMode) .error {
+      color: #FF6666;
     }
 
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
+    #compiler:not(.lightMode) .warn {
+      color: #FFFF66;
     }
 
-    .theme.color252526.output::-webkit-scrollbar-corner {
-      background: #252526;
+    #compiler:not(.lightMode) .info {
+      color: #74cbfb;
     }
 
-    .theme.colorf0f0f0.output::-webkit-scrollbar-corner {
-      background: #f0f0f0;
-    }
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
-
-
-    #activityBar.theme.colorf0f0f0 .icon {
-      color: #9b9a9a !important;
-    }
-
-    #activityBar.theme.colorf0f0f0 .icon:hover,
-    #activityBar.theme.colorf0f0f0 .icon.active {
-      background-color: rgb(183, 182, 182);
-      color: #eae8e8 !important;
-    }
-
-    #activityBar.theme.colorf0f0f0 .icon:hover:after {
-      background: #acabab;
-    }
-
-    .theme.colorf0f0f0 #activityBar .icon {
-      color: #9b9a9a !important;
-    }
-
-    .theme.colorffffff .sidebar-panel.active {
-      background-color: #eeeeee;
-      color: #000000;
-      border-color: #c0c0c0 !important;
-    }
-
-    .theme.colorffffff .sidebar-panel.active #gitUrl {
-      background-color: #f9f9f9;
-      border-color: #c0c0c0;
-      color: #000000;
-    }
-
-    .theme.colorffffff .sidebar-panel.active .vs-range {
-      background-color: #f9f9f9;
-      border: 1px solid #c0c0c0;
-    }
-
-    .theme.colorf0f0f0 .controls {
-      background-color: #c0c0c0;
-    }
-
-    .theme.color252526 .controls {
-      background-color: #444;
-    }
-
-    .theme.colorffffff .output {
-      background-color: #f9f9f9;
-      color: #000;
-    }
-
-    .theme.colorffffff .console-table thead {
-      background-color: #dddddd;
-      color: #000000;
-    }
-
-    .theme.colorffffff .console-table td,
-    .theme.colorffffff .console-table th {
-      color: #333333;
-    }
-
-    .light-log {
-      color: #444444 !important;
-    }
-
-    .light-error {
-      color: #cc0000 !important;
-    }
-
-    .light-warn {
-      color: #cc9a00 !important;
-    }
-
-    .light-info {
-      color: #0066cc !important;
-    }
-
-    .light-prompt {
-      color: #008000 !important;
-    }
-
-    .theme.color1e1e1e .prompt-line input {
-      color: #ffffff;
-      background-color: rgba(255, 255, 255, 0.07);
-    }
-
-    .theme.colorffffff .prompt-line input {
-      color: #000000;
-      background-color: rgba(0, 0, 0, 0.03);
-    }
-
-    #moon {
-      font-size: 17px;
-      height: 20px;
-      width: 20px;
-      padding-top: 2px;
-      padding-left: 4px;
+    #compiler:not(.lightMode) .prompt {
+      color: #99FF99;
     }
 
     .objinsp-summary {
       cursor: pointer;
       color: #d4d4d4;
+    }
+
+    #compiler:not(.darkMode) .objinsp-summary {
+      color: #a19e9e;
     }
 
     summary {
@@ -977,30 +959,58 @@
       margin-left: 10px;
     }
 
+    #compiler:not(.darkMode) .objinsp-highlight-key {
+      color: #57c2fc;
+    }
+
     .objinsp-highlight-string {
       color: #ce9178;
       display: ruby;
+    }
+
+    #compiler:not(.darkMode) .objinsp-highlight-string {
+      color: #cc7b5a;
     }
 
     .objinsp-highlight-number {
       color: #b5cea8;
     }
 
+    #compiler:not(.darkMode) .objinsp-highlight-number {
+      color: #8f9d6a;
+    }
+
     .objinsp-highlight-primitive {
       color: #ce9178;
+    }
+
+    #compiler:not(.darkMode) .objinsp-highlight-primitive {
+      color: #cc7b5a;
     }
 
     .objinsp-highlight-type {
       color: #4ec9b0;
     }
 
+    #compiler:not(.darkMode) .objinsp-highlight-type {
+      color: #3aa99e;
+    }
+
     .objinsp-highlight-value {
       color: #efd8d8;
+    }
+
+    #compiler:not(.darkMode) .objinsp-highlight-value {
+      color: #1b1b1b;
     }
 
     .objinsp-node {
       color: #d4d4d4;
       margin-left: 10px;
+    }
+
+    #compiler:not(.darkMode) .objinsp-node {
+      color: #000000;
     }
 
     .objinsp-dark:hover {
@@ -1013,10 +1023,10 @@
 
     @media (max-width: 768px) {
 
-      #lightMode {
+      /* #sun {
         margin-left: 10px;
         margin-right: 10px;
-      }
+      } */
 
       #activityBar {
         width: 40px;
@@ -1067,10 +1077,6 @@
       }
     }
 
-
-    .lightMode {}
-
-    .darkMode {}
 
     .monaco-editor .find-widget>.button.codicon-widget-close {
       top: 8px !important;
@@ -1177,6 +1183,34 @@
       margin-top: 10px;
     }
 
+    .form-check-input:checked {
+      background-color: #3498db !important;
+      cursor: pointer;
+    }
+
+    .form-check-custom {
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .exportBtn {
+      background-color: #0e639c;
+      color: #ffffff;
+      border: none;
+      padding: 6px 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .exportBtn:hover {
+      background-color: #1177bb;
+    }
+
     .headerText {
       background-color: white;
     }
@@ -1184,25 +1218,41 @@
     .handPointer {
       cursor: pointer;
     }
+
+
+
+    #compiler:not(.darkMode) .vs-navbar,
+    #compiler:not(.darkMode) #activityBar,
+    #compiler:not(.darkMode) #statusBar,
+    #compiler:not(.darkMode) #tabBar {
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar,
+    #compiler:not(.lightMode) #activityBar,
+    #compiler:not(.lightMode) #statusBar,
+    #compiler:not(.lightMode) #tabBar {
+      border-color: #333;
+    }
   </style>
 </head>
 
 <body>
-  <div id="compiler" class="theme color1e1e1e">
+  <div id="compiler" class="darkMode">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
-    <div class="vs-navbar theme color252526">
+    <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
-        <div class="theme color252526 vs-navbar-dropdown" id="fileDropdown">
+        <div class="vs-navbar-dropdown" id="fileDropdown">
           <div class="vs-navbar-dropdown-item" id="uploadFileBtn">Upload File</div>
           <div class="vs-navbar-dropdown-item" id="saveScriptBtn">Save File</div>
         </div>
       </div>
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
-        <div class="theme color252526 vs-navbar-dropdown" id="editDropdown">
+        <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item"> </div>
           <div class="vs-navbar-dropdown-item"> </div>
         </div>
@@ -1213,8 +1263,8 @@
         <i class="fas fa-play"></i> Run
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
-      <div id="lightMode" onclick="changeToLightMode()">
-        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <div id="lightModeDiv" onclick="changeToLightMode()">
+        <!-- <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
           <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
@@ -1224,13 +1274,14 @@
           <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
           <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
           <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
-        </svg>
+        </svg> -->
+        <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-    <div id="activityBar" class="theme color252526">
+    <div id="activityBar">
       <div id="addTabButton_media"><i class="fas fa-plus"></i></div>
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
@@ -1254,7 +1305,7 @@
       <div>
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
         <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
-        <div class="form-check form-switch">
+        <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
         </div>
@@ -1272,7 +1323,7 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar" class="theme color252526"></div>
+      <div id="tabBar"></div>
       <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
@@ -1345,99 +1396,29 @@
         }
       }
     });
-    const themeMapDark = {
-      "color252526": "colorf0f0f0",
-      "color1e1e1e": "colorffffff"
-    };
-    const themeMapLight = {
-      "colorf0f0f0": "color252526",
-      "colorffffff": "color1e1e1e"
-    };
-    const lightModeDiv = document.getElementById("lightMode");
-    const sunSvg = lightModeDiv.innerHTML;
+
+    const lightModeDiv = document.getElementById("lightModeDiv");
+    // const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
-        document.querySelectorAll(".outputContainer").forEach((element) => {
-          element.classList.add("lightMode");
-          element.classList.remove("darkMode")
-        });
+
+        document.getElementById('compiler').classList.add("lightMode");
+        document.getElementById('compiler').classList.remove("darkMode");
 
         darkModeFlag = false;
-        document.querySelectorAll(".theme").forEach((element) => {
-          element.classList.forEach((cls) => {
-            if (themeMapDark[cls]) {
-              element.classList.remove(cls);
-              element.classList.add(themeMapDark[cls]);
-            }
-          });
-        });
+
+        lightModeDiv.innerHTML = '<i id="moon" class="fa-solid fa-moon"></i>';
         monaco.editor.setTheme("custom-light");
 
-        tabs.forEach(tab => {
-          let lines = tab.outputElement.querySelectorAll(".outputContent");
-          lines.forEach(line => {
-            if (line.classList.contains("dark-log")) {
-              line.classList.remove("dark-log");
-              line.classList.add("light-log");
-            } else if (line.classList.contains("dark-error")) {
-              line.classList.remove("dark-error");
-              line.classList.add("light-error");
-            } else if (line.classList.contains("dark-warn")) {
-              line.classList.remove("dark-warn");
-              line.classList.add("light-warn");
-            } else if (line.classList.contains("dark-info")) {
-              line.classList.remove("dark-info");
-              line.classList.add("light-info");
-            }
-            let promptSpan = line.querySelector(".dark-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("dark-prompt");
-              promptSpan.classList.add("light-prompt");
-            }
-          });
-        });
-
       } else {
-        document.querySelectorAll(".outputContainer").forEach((element) => {
-          element.classList.remove("lightMode");
-          element.classList.add("darkMode")
-        });
-        lightModeDiv.innerHTML = sunSvg;
-        darkModeFlag = true;
-        document.querySelectorAll(".theme").forEach((element) => {
-          element.classList.forEach((cls) => {
-            if (themeMapLight[cls]) {
-              element.classList.remove(cls);
-              element.classList.add(themeMapLight[cls]);
-            }
-          });
-        });
-        monaco.editor.setTheme("custom-dark");
 
-        tabs.forEach(tab => {
-          let lines = tab.outputElement.querySelectorAll(".outputContent");
-          lines.forEach(line => {
-            if (line.classList.contains("light-log")) {
-              line.classList.remove("light-log");
-              line.classList.add("dark-log");
-            } else if (line.classList.contains("light-error")) {
-              line.classList.remove("light-error");
-              line.classList.add("dark-error");
-            } else if (line.classList.contains("light-warn")) {
-              line.classList.remove("light-warn");
-              line.classList.add("dark-warn");
-            } else if (line.classList.contains("light-info")) {
-              line.classList.remove("light-info");
-              line.classList.add("dark-info");
-            }
-            let promptSpan = line.querySelector(".light-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("light-prompt");
-              promptSpan.classList.add("dark-prompt");
-            }
-          });
-        });
+        document.getElementById('compiler').classList.remove("lightMode");
+        document.getElementById('compiler').classList.add("darkMode");
+
+        lightModeDiv.innerHTML = '<i id="sun" class="fa-solid fa-sun"></i>';
+        darkModeFlag = true;
+        monaco.editor.setTheme("custom-dark");
       }
       updateUndoRedoButtons();
     }
@@ -1482,11 +1463,9 @@
       outputContainer.classList.add("outputContainer");
       outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
-      outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
+      // outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
-      controlsBar.classList.add("theme");
-      controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
       outputContainer.appendChild(controlsBar);
 
       controlsBar.addEventListener('mousedown', function (e) {
@@ -1513,14 +1492,8 @@
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
-
-
           let newHeightPercent = (newHeight / parentHeight) * 100;
-
-
           newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
-
-
           outputContainer.style.height = newHeightPercent + '%';
         }
 
@@ -2026,7 +1999,7 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-      if ( key && summaryText.includes(":")) {
+      if (key && summaryText.includes(":")) {
         const both = summaryText.split(":");
         summaryText = both[0];
         summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
@@ -2054,7 +2027,6 @@ prompt("This is a prompt:");
       return detailsEl;
     }
 
-
     function gotoLine(lineNumber) {
       const model = currentTab.editorInstance.getModel();
       if (lineNumber > model.getLineCount()) {
@@ -2079,8 +2051,8 @@ prompt("This is a prompt:");
         groupLevel = 0;
       }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
-      let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
-      line.classList.add(styleClass);
+      // let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
+      line.classList.add(type);
 
       let flexContainer = document.createElement("div");
       flexContainer.classList.add("flexContainer");
@@ -3050,16 +3022,23 @@ prompt("This is a prompt:");
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      // const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
       wrapperDiv.style.fontSize = `${fontSize}px`;
       wrapperDiv.style.lineHeight = `${lineHeight}px`;
       wrapperDiv.style.whiteSpace = "pre-wrap";
-      wrapperDiv.style.width = maxWidth;
-      wrapperDiv.style.maxWidth = maxWidth;
+      wrapperDiv.style.width = '100%';
+      // wrapperDiv.style.maxWidth = maxWidth;
       wrapperDiv.style.color = textColor;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.screen.width < 768) {
+          wrapperDiv.style.transform = "scale(0.7)";
+          alert("Please note that the code may not be displayed properly on small screens.");
+        }
+      });
 
       codeLines.forEach((line, index) => {
         const lineWrapper = document.createElement('div');
@@ -3279,7 +3258,9 @@ prompt("This is a prompt:");
     function modalIsOpen() {
       return modal.style.display === "block";
     }
+
   </script>
+
 </body>
 
 </html>
