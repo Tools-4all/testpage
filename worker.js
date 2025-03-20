@@ -1031,8 +1031,6 @@ self.addEventListener("message", (event) => {
                 func.toLocaleString = () => `function ${name}() { [native code] }`;
             }
             customConsole[Object.getOwnPropertySymbols(console)[0]] = "console"
-
-
         }
 
 
