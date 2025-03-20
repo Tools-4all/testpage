@@ -384,6 +384,8 @@ function getStringOfKeyValue(obj) {
             return `'${obj}'`;
         case "bigint":
             return `${obj.toString()}n`;
+        case "symbol":
+            return obj.toString();
         case "function":
             return `ƒ ${obj.name || "anonymous"}()`;
         case "object":
