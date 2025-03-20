@@ -186,7 +186,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        headerText = !isPrototype ? `Array(${value.length}) [${arrayToString(value)}]` : "[]";
+        headerText = !isPrototype ? `(${value.length}) [${arrayToString(value)}]` : "[]";
     } else if (value instanceof Map) {
         headerText = "Map(" + value.size + ")";
     } else if (value instanceof Set) {
@@ -390,9 +390,6 @@ function getStringOfKeyValue(obj) {
         case "undefined":
         case "float":
             return String(obj);
-    }
-    if (Array.isArray(obj)) {
-        return `Array(${obj.length})`;
     }
     return `{...}`;
 }
