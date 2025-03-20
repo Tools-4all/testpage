@@ -429,7 +429,7 @@
     }
 
     #tabBar {
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid;
       display: flex;
       align-items: center;
       height: 30px;
@@ -441,6 +441,14 @@
       overflow-x: auto;
       overflow-y: hidden;
       transition: overflow 0.3s;
+    }
+
+    #compiler:not(.darkMode) #tabBar {
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) #tabBar {
+      border-color: #333;
     }
 
     #tabBar::-webkit-scrollbar {
