@@ -153,7 +153,7 @@
       color: #000000;
     }
 
-    #lightMode {
+    #sun {
       color: #c5c5c5;
       margin-left: 20px;
       margin-right: 20px;
@@ -515,7 +515,7 @@
 
     #addTabButton:hover,
     #fullScreenBtn:hover,
-    #lightMode:hover {
+    #sun:hover {
       color: #fff;
     }
 
@@ -1006,7 +1006,7 @@
 
     @media (max-width: 768px) {
 
-      #lightMode {
+      #sun {
         margin-left: 10px;
         margin-right: 10px;
       }
@@ -1218,8 +1218,8 @@
         <i class="fas fa-play"></i> Run
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
-      <div id="lightMode" onclick="changeToLightMode()">
-        <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <div onclick="changeToLightMode()">
+        <!-- <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
           <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
@@ -1229,7 +1229,8 @@
           <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
           <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
           <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
-        </svg>
+        </svg> -->
+        <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
@@ -1352,7 +1353,7 @@
     });
 
     const lightModeDiv = document.getElementById("lightMode");
-    const sunSvg = lightModeDiv.innerHTML;
+    // const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
@@ -1370,7 +1371,7 @@
         document.getElementById('compiler').classList.remove("lightMode");
         document.getElementById('compiler').classList.add("darkMode");
 
-        lightModeDiv.innerHTML = sunSvg;
+        lightModeDiv.innerHTML = '<i id="sun" class="fa-solid fa-sun"></i>';
         darkModeFlag = true;
         monaco.editor.setTheme("custom-dark");
       }
