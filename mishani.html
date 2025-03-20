@@ -1322,30 +1322,6 @@
         lightModeDiv.innerHTML = '<i id="moon" class="fa-solid fa-moon"></i>';
         monaco.editor.setTheme("custom-light");
 
-        // tabs.forEach(tab => {
-        //   let lines = tab.outputElement.querySelectorAll(".outputContent");
-        //   lines.forEach(line => {
-        //     if (line.classList.contains("dark-log")) {
-        //       line.classList.remove("dark-log");
-        //       line.classList.add("light-log");
-        //     } else if (line.classList.contains("dark-error")) {
-        //       line.classList.remove("dark-error");
-        //       line.classList.add("light-error");
-        //     } else if (line.classList.contains("dark-warn")) {
-        //       line.classList.remove("dark-warn");
-        //       line.classList.add("light-warn");
-        //     } else if (line.classList.contains("dark-info")) {
-        //       line.classList.remove("dark-info");
-        //       line.classList.add("light-info");
-        //     }
-        //     let promptSpan = line.querySelector(".dark-prompt");
-        //     if (promptSpan) {
-        //       promptSpan.classList.remove("dark-prompt");
-        //       promptSpan.classList.add("light-prompt");
-        //     }
-        //   });
-        // });
-
       } else {
 
         document.getElementById('compiler').classList.remove("lightMode");
@@ -1354,30 +1330,6 @@
         lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
         monaco.editor.setTheme("custom-dark");
-
-        // tabs.forEach(tab => {
-        //   let lines = tab.outputElement.querySelectorAll(".outputContent");
-        //   lines.forEach(line => {
-        //     if (line.classList.contains("light-log")) {
-        //       line.classList.remove("light-log");
-        //       line.classList.add("dark-log");
-        //     } else if (line.classList.contains("light-error")) {
-        //       line.classList.remove("light-error");
-        //       line.classList.add("dark-error");
-        //     } else if (line.classList.contains("light-warn")) {
-        //       line.classList.remove("light-warn");
-        //       line.classList.add("dark-warn");
-        //     } else if (line.classList.contains("light-info")) {
-        //       line.classList.remove("light-info");
-        //       line.classList.add("dark-info");
-        //     }
-        //     let promptSpan = line.querySelector(".light-prompt");
-        //     if (promptSpan) {
-        //       promptSpan.classList.remove("light-prompt");
-        //       promptSpan.classList.add("dark-prompt");
-        //     }
-        //   });
-        // });
       }
       updateUndoRedoButtons();
     }
@@ -1451,14 +1403,8 @@
         function onMouseMove(e) {
           let dy = e.clientY - startY;
           let newHeight = startHeight - dy;
-
-
           let newHeightPercent = (newHeight / parentHeight) * 100;
-
-
           newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
-
-
           outputContainer.style.height = newHeightPercent + '%';
         }
 
