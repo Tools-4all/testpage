@@ -57,6 +57,7 @@ const wrapperPrefixLines = [
     'var flexSwitchCheckDefault = undefined;',
     'var customConsole = undefined;',
     'var getObjectOrStringForLog = undefined;',
+    'var arrayToString = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
