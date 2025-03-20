@@ -1030,7 +1030,7 @@ self.addEventListener("message", (event) => {
                 func.toString = () => `function ${name}() { [native code] }`;
                 func.toLocaleString = () => `function ${name}() { [native code] }`;
             }
-            customConsole[Object.getOwnPropertySymbols(customConsole)[0]] = "console"
+            customConsole[Object.getOwnPropertySymbols(console)[0]] = "console"
 
 
         }
