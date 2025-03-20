@@ -58,6 +58,7 @@ const wrapperPrefixLines = [
     'var customConsole = undefined;',
     'var getObjectOrStringForLog = undefined;',
     'var arrayToString = undefined;',
+    'var getStringOfKeyValue = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -179,7 +180,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         visited.delete(value);
         return node;
     }
-    
+
 
     let headerText = "";
     if (typeof value === 'function') {
@@ -368,6 +369,34 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     return node;
 }
 
+function getStringOfKeyValue(obj) {
+    switch (typeof obj) {
+        case "string":
+            return `'${obj}'`;
+        case "bigint":
+            return `${obj.toString()}n`;
+        case "function":
+            return `ƒ ${obj.name || "anonymous"}()`;
+        case "object":
+            if (obj === null) {
+                return "null";
+            }
+            if (Array.isArray(obj)) {
+                return `Array(${obj.length})`;
+            }
+            return `{...}`;
+        case "number":
+        case "boolean":
+        case "undefined":
+        case "float":
+            return String(obj);
+    }
+    if (Array.isArray(obj)) {
+        return `Array(${obj.length})`;
+    }
+    return `{...}`;
+}
+
 function objectToStringForNode(obj) {
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
@@ -379,18 +408,12 @@ function objectToStringForNode(obj) {
         return String(obj);
     }
     if (Array.isArray(obj)) {
-        return `[${obj.map(item => objectToString(item)).join(", ")}]`;
+        return `[${obj.map(item => getStringOfKeyValue(item)).join(", ")}]`;
     }
     const keys = Object.keys(obj);
     const vals = []
     keys.forEach(key => {
-        if (typeof obj[key] === "function") {
-            vals.push(`${key}: ƒ ${obj[key].name || "anonymous"}()`);
-        } else if (Array.isArray(obj[key])) {
-            vals.push(`${key}: Array(${obj[key].length})`);
-        } else {
-            vals.push(`${key}: ${objectToString(obj[key])}`);
-        }
+        vals.push(`${key}: ${getStringOfKeyValue(obj[key])}`);
     });
     if (vals.length === 0) {
         return `(0) {}`;
