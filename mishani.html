@@ -429,13 +429,11 @@
     #compiler:not(.darkMode) .tab {
       background-color: #e0e0e0;
       color: #000000;
-      transition: background-color 0.3s;
     }
 
     #compiler:not(.lightMode) .tab {
       background-color: #2c2c2c;
       color: #ffffff;
-      transition: background-color 0.3s;
     }
 
     #compiler:not(.darkMode) .tab.active {
@@ -448,11 +446,11 @@
       border-top: 1px solid #007acc !important;
     }
 
-    #compiler:not(.darkMode) .tab:hover {
+    #compiler:not(.darkMode) .tab:hover:not(.active, .tab) {
       background-color: #c0c0c0;
     }
 
-    #compiler:not(.lightMode) .tab:hover {
+    #compiler:not(.lightMode) .tab:hover:not(.active, .tab) {
       background-color: #3c3c3c;
     }
 
