@@ -3061,6 +3061,10 @@ prompt("This is a prompt:");
       // wrapperDiv.style.maxWidth = maxWidth;
       wrapperDiv.style.color = textColor;
 
+      if (window.screen.width < 768) {
+        wrapperDiv.style.zoom = "0.8";
+      }
+
       codeLines.forEach((line, index) => {
         const lineWrapper = document.createElement('div');
         lineWrapper.style.display = "flex";
