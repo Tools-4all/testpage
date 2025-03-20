@@ -412,6 +412,7 @@ function getStringOfKeyValue(obj) {
             return obj[Object.getOwnPropertySymbols(obj)[0]];
         }
     } catch (e) {
+        console.error(e)
         return "{...}";
     }
     return `{...}`;
