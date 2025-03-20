@@ -216,7 +216,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
                     headerText = value[Object.getOwnPropertySymbols(value)[0]].toString();
                 } else if (isDir) {
                     headerText = "Object"
-
                 } else {
                     try {
                         headerText = objectToStringForNode(value);
@@ -393,6 +392,9 @@ function getStringOfKeyValue(obj) {
             }
             if (Array.isArray(obj)) {
                 return `Array(${obj.length})`;
+            }
+            if (obj[Object.getOwnPropertySymbols(obj)[0]]) {
+                return obj[Object.getOwnPropertySymbols(obj)[0]];
             }
             return `{...}`;
         case "number":
