@@ -75,7 +75,7 @@ function arrayToString(arr) {
 }
 
 
-function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir) {
+function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir = false) {
     // Convert Symbol keys to strings.
 
     if (value instanceof Error) {
