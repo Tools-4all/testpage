@@ -391,6 +391,7 @@ function getStringOfKeyValue(obj) {
         case "function":
             return `ƒ ${obj.name || "anonymous"}()`;
         case "object":
+            console.log(obj[Object.getOwnPropertySymbols(obj)[0]])
             if (obj === null) {
                 return "null";
             }
