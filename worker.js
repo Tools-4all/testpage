@@ -212,8 +212,8 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
             } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
                 headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
-                if (isDir && value.name) {
-                    headerText = value.name;
+                if (isDir && value[Object.getOwnPropertySymbols(value)[0]] ) {
+                    headerText = value[Object.getOwnPropertySymbols(value)[0]].toString();
                 } else if (isDir) {
                     headerText = "Object"
 
@@ -1020,12 +1020,10 @@ self.addEventListener("message", (event) => {
         }
 
         {
-            let names = ["prompt", "alert", "console", "log", "error", "warn", "info", "debug", "clear", "table", "count", "countReset", "assert", "dir", "dirxml", "timeStamp", "trace", "group", "groupCollapsed", "groupEnd", "profile", "profileEnd", "time", "timeEnd", "timeLog", "Error"];
-            let funcs = [customAlert, customPrompt, customConsole, customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog, CustomError];
+            let funcs = [customAlert, customPrompt, customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog, CustomError];
             for (let i = 0; i < names.length; i++) {
                 let name = names[i];
                 let func = funcs[i];
-                Object.defineProperty(func, "name", { value: name });
                 func.valueOf = () => `function ${name}() { [native code] }`;
                 func.toString = () => `function ${name}() { [native code] }`;
                 func.toLocaleString = () => `function ${name}() { [native code] }`;
