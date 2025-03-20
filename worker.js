@@ -369,17 +369,17 @@ function objectToStringForNode(obj) {
         return `[${obj.map(item => objectToString(item)).join(", ")}]`;
     }
     const keys = Object.keys(obj);
-    const keyValuePairs = keys.map((key) => {
-        const isNumeric = /^\d+$/.test(key);
-        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
-        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
-        return `${formattedKey}: ${objectToStringForNode(obj[key])}`;
+    const vals = []
+    keys.forEach(key => {
+        if (typeof obj[key] === "function") {
+            vals.push(`${key}: ƒ ${obj[key].name || "anonymous"}()`);
+        }
     });
-    const output = `{${keyValuePairs.join(", ")}}`;
-    if (output.length > 100) {
-        return output.slice(0, 100) + "...}";
-    }
-    return output;
+    if (vals.length === 0) {
+        return "{}";
+    } else if (vals.length > 5) {
+        return `{${vals.slice(0, 5).join(", ")}...}`;
+    } return `{${vals.join(", ")}}`;
 }
 
 
@@ -733,17 +733,13 @@ function objectToString(obj) {
         return `[${obj.map(item => objectToString(item)).join(", ")}]`;
     }
     const keys = Object.keys(obj);
-    const vals = []
-    keys.forEach(key => {
-        if (typeof obj[key] === "function") {
-            vals.push(`${key}: ƒ ${obj[key].name || "anonymous"}()`);
-        }
+    const keyValuePairs = keys.map((key, index) => {
+        const isNumeric = /^\d+$/.test(key);
+        const isValidIdentifier = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
+        const formattedKey = isNumeric || isValidIdentifier ? key : `'${key}'`;
+        return `${formattedKey}: ${objectToString(obj[key])}`;
     });
-    if (vals.length === 0) {
-        return "{}";
-    } else if (vals.length > 5) {
-        return `{${vals.slice(0, 5).join(", ")}...}`;
-    } return `{${vals.join(", ")}}`;
+    return `{${keyValuePairs.join(", ")}}`;
 }
 
 function getObjectOrString(...args) {
