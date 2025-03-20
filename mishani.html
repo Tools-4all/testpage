@@ -138,19 +138,31 @@
       white-space: nowrap;
     }
 
-    .vs-navbar-dropdown-item:hover {
-      background-color: #444;
-      color: #ffffff;
-    }
-
     .vs-navbar-dropdown-item.disabled {
       pointer-events: none;
       opacity: 0.5;
     }
 
+    #compiler:not(.darkMode) .vs-navbar-dropdown {
+      background-color: #f9f9f9;
+      color: #000000;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar-dropdown {
+      background-color: #3c3c3c;
+      color: #ffffff;
+      border-color: #4c4c4c;
+    }
+
     #compiler:not(.darkMode) .vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
       background-color: #e0e0e0;
       color: #000000;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
+      background-color: #444;
+      color: #ffffff;
     }
 
 
@@ -204,6 +216,10 @@
       position: relative;
       border-left: 3px solid transparent;
       padding-right: 3px;
+    }
+
+    #exportIcon {
+      padding-right: 0px;
     }
 
     #activityBar .icon:hover:after {
