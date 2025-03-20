@@ -185,7 +185,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
 
 
     let headerText = "";
-    console.log("value", value)
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
@@ -403,7 +402,6 @@ function getStringOfKeyValue(obj) {
 }
 
 function objectToStringForNode(obj) {
-    console.log("im here 2")
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
@@ -934,7 +932,6 @@ self.addEventListener("message", (event) => {
             timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
                 const stack = getStack();
-                console.log(stack)
                 args.push(stack);
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
