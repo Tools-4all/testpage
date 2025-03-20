@@ -434,6 +434,22 @@
       border-radius: 10px;
     }
 
+    #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    #compiler:not(.lightMode) #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
     .tab {
       margin-right: 2px;
       margin-top: 3px;
@@ -532,6 +548,15 @@
     #addTabButton:hover {
       color: #fff;
     }
+
+    #compiler:not(.darkMode) #addTabButton {
+      color: #636262 !important;
+    }
+
+    #compiler:not(.darkMode) #addTabButton:hover {
+      color: #000000 !important;
+    }
+
 
     #addTabButton_media {
       font-size: 25px;
@@ -640,6 +665,14 @@
       transition: overflow 0.3s;
     }
 
+    #compiler:not(.darkMode) .output {
+      background-color: white;
+    }
+
+    #compiler:not(.lightMode) .output {
+      background-color: #1e1e1e;
+    }
+
     .output::-webkit-scrollbar {
       width: 8px;
     }
@@ -657,12 +690,12 @@
       height: 8px;
     }
 
-    #compiler:not(.darkMode) .output {
-      background-color: white;
+    #compiler:not(.darkMode) .output::-webkit-scrollbar-corner {
+      background: #f0f0f0;
     }
 
-    #compiler:not(.lightMode) .output {
-      background-color: #1e1e1e;
+    #compiler:not(.lightMode) .output::-webkit-scrollbar-corner {
+      background: #252526;
     }
 
     .outputContent {
@@ -777,9 +810,20 @@
       color: #ffffff;
     }
 
+    #compiler:not(.lightMode) .console-table td,
+    #compiler:not(.lightMode) .console-table th {
+      color: #d4d4d4;
+    }
+
+
+    #compiler:not(.darkMode) .console-table thead {
+      background-color: #dddddd;
+      color: #000000;
+    }
+
     #compiler:not(.darkMode) .console-table td,
     #compiler:not(.darkMode) .console-table th {
-      color: #d4d4d4;
+      color: #333333;
     }
 
     .outputContainer:not(.lightMode) .console-table thead .console-table-header:hover {
@@ -918,16 +962,16 @@
       color: black;
     } */
 
-    .vs-navbar.theme.colorf0f0f0 #addTabButton {
+    /* .vs-navbar.theme.colorf0f0f0 #addTabButton {
       color: #636262 !important;
     }
 
 
     .vs-navbar.theme.colorf0f0f0 #addTabButton:hover {
       color: #000000 !important;
-    }
+    } */
 
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+    /* .theme.color252526 #tabBar::-webkit-scrollbar-track {
       background-color: #333;
     }
 
@@ -949,7 +993,7 @@
 
     .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
       background-color: #c0c0c0;
-    }
+    } */
 
 
     /* #activityBar.theme.colorf0f0f0 .icon {
@@ -1000,15 +1044,6 @@
       color: #000;
     } */
 
-    .theme.colorffffff .console-table thead {
-      background-color: #dddddd;
-      color: #000000;
-    }
-
-    .theme.colorffffff .console-table td,
-    .theme.colorffffff .console-table th {
-      color: #333333;
-    }
 
     .light-log {
       color: #444444 !important;
