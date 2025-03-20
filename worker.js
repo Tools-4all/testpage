@@ -394,6 +394,9 @@ function getStringOfKeyValue(obj) {
             if (obj === null) {
                 return "null";
             }
+            if (undefined === obj) {
+                return "undefined";
+            }
             if (obj instanceof Date) {
                 return obj.toString();
             }
