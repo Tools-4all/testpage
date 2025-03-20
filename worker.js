@@ -402,7 +402,6 @@ function formatValue(value) {
 }
 
 function buildTableData(input, columns) {
-    // Special cases for Map, Set, Date, RegExp, functions remain unchanged...
     if (input instanceof Map) {
         return {
             tableData: {
