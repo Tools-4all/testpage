@@ -61,6 +61,17 @@ const wrapperPrefixLines = [
     '(() => {'
 ];
 
+function arrayToString(arr) {
+    // preserve strings as visible strings
+    const out = arr.map((item) => {
+        if (typeof item === 'string') {
+            return item;
+        }
+        return JSON.stringify(item);
+    });
+    return out.join(', ');
+}
+
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     // Convert Symbol keys to strings.
 
@@ -167,12 +178,13 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
         visited.delete(value);
         return node;
     }
+    
 
     let headerText = "";
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        headerText = !isPrototype ? `Array(${value.length}) [${value.toString()}]` : "[]";
+        headerText = !isPrototype ? `Array(${value.length}) [${arrayToString(value)}]` : "[]";
     } else if (value instanceof Map) {
         headerText = "Map(" + value.size + ")";
     } else if (value instanceof Set) {
