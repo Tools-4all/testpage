@@ -62,15 +62,15 @@ const wrapperPrefixLines = [
 ];
 
 function arrayToString(arr) {
-    // preserve strings as visible strings
     const out = arr.map((item) => {
         if (typeof item === 'string') {
-            return item;
+            return "'" + item + "'";
         }
         return JSON.stringify(item);
     });
     return out.join(', ');
 }
+
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     // Convert Symbol keys to strings.
