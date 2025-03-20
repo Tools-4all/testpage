@@ -82,7 +82,9 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
     if (typeof key === "symbol") {
         key = key.toString();
     }
-
+    if (typeof value === "symbol") {
+        return (key != null) ? { [key]: value.toString() } : value.toString();
+    }
     // If the value is exactly its constructor's prototype, force prototype mode.
     if (value && value.constructor && value === value.constructor.prototype) {
         isPrototype = true;
@@ -212,7 +214,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
             } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
                 headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
-                if (isDir && value[Object.getOwnPropertySymbols(value)[0]] ) {
+                if (isDir && value[Object.getOwnPropertySymbols(value)[0]]) {
                     headerText = value[Object.getOwnPropertySymbols(value)[0]].toString();
                 } else if (isDir) {
                     headerText = "Object"
@@ -852,11 +854,7 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                try {
-                    self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
-                } catch (e) {
-                    console.log(e, getObjectOrStringForLog(...args))
-                }
+                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             error: (...args) => {
                 self.postMessage({ type: "error", message: getObjectOrStringForLog(...args), forceUse: false });
@@ -1027,9 +1025,9 @@ self.addEventListener("message", (event) => {
             while (Atomics.wait(view, 0, 0) === "ok");
         }
 
-        {   
+        {
             let names = ["prompt", "alert", "console", "log", "error", "warn", "info", "debug", "clear", "table", "count", "countReset", "assert", "dir", "dirxml", "timeStamp", "trace", "group", "groupCollapsed", "groupEnd", "profile", "profileEnd", "time", "timeEnd", "timeLog", "Error"];
-            let funcs = [customPrompt, customAlert, customConsole,  customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog, CustomError];
+            let funcs = [customPrompt, customAlert, customConsole, customConsole.log, customConsole.error, customConsole.warn, customConsole.info, customConsole.debug, customConsole.clear, customConsole.table, customConsole.count, customConsole.countReset, customConsole.assert, customConsole.dir, customConsole.dirxml, customConsole.timeStamp, customConsole.trace, customConsole.group, customConsole.groupCollapsed, customConsole.groupEnd, customConsole.profile, customConsole.profileEnd, customConsole.time, customConsole.timeEnd, customConsole.timeLog, CustomError];
             for (let i = 0; i < names.length; i++) {
                 let func = funcs[i];
                 func.valueOf = () => `function ${name}() { [native code] }`;
