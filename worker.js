@@ -381,106 +381,111 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
 }
 
 function getStringOfKeyValue(obj) {
-    switch (typeof obj) {
-        case "string":
-            return `'${obj}'`;
-        case "bigint":
-            return `${obj.toString()}n`;
-        case "symbol":
-            return obj.toString();
-        case "function":
-            return `ƒ ${obj.name || "anonymous"}()`;
-        case "object":
-            if (obj === null) {
-                return "null";
-            }
-            if (undefined === obj) {
-                return "undefined";
-            }
-            if (obj instanceof Date) {
+    try {
+        switch (typeof obj) {
+            case "string":
+                return `'${obj}'`;
+            case "bigint":
+                return `${obj.toString()}n`;
+            case "symbol":
                 return obj.toString();
-            }
-            if (obj instanceof RegExp) {
-                return obj.toString();
-            }
-            if (obj instanceof Error) {
-                return obj.stack;
-            }
-            if (obj instanceof Map) {
-                return `Map(${obj.size})`;
-            }
-            if (obj instanceof Set) {
-                return `Set(${obj.size})`;
-            }
-            if (obj instanceof ArrayBuffer) {
-                return "ArrayBuffer";
-            }
-            if (ArrayBuffer.isView(obj) && !(obj instanceof DataView)) {
-                return `${obj.constructor.name}(${obj.length})`;
-            }
-            if (obj instanceof Promise) {
-                return "Promise";
-            }
-            if (obj instanceof WeakMap) {
-                return "WeakMap";
-            }
-            if (obj instanceof WeakSet) {
-                return "WeakSet";
-            }
-            if (obj instanceof Int8Array) {
-                return `Int8Array(${obj.length})`;
-            }
-            if (obj instanceof Uint8Array) {
-                return `Uint8Array(${obj.length})`;
-            }
-            if (obj instanceof Uint8ClampedArray) {
-                return `Uint8ClampedArray(${obj.length})`;
-            }
-            if (obj instanceof Int16Array) {
-                return `Int16Array(${obj.length})`;
-            }
-            if (obj instanceof Uint16Array) {
-                return `Uint16Array(${obj.length})`;
-            }
-            if (obj instanceof Int32Array) {
-                return `Int32Array(${obj.length})`;
-            }
-            if (obj instanceof Uint32Array) {
-                return `Uint32Array(${obj.length})`;
-            }
-            if (obj instanceof Float32Array) {
-                return `Float32Array(${obj.length})`;
-            }
-            if (obj instanceof Float64Array) {
-                return `Float64Array(${obj.length})`;
-            }
-            if (obj instanceof BigInt64Array) {
-                return `BigInt64Array(${obj.length})`;
-            }
-            if (obj instanceof BigUint64Array) {
-                return `BigUint64Array(${obj.length})`;
-            }
-            if (obj instanceof DataView) {
-                return `DataView(${obj.byteLength})`;
-            }
-            if (obj instanceof Proxy) {
-                return `Proxy`;
-            }
+            case "function":
+                return `ƒ ${obj.name || "anonymous"}()`;
+            case "object":
+                if (obj === null) {
+                    return "null";
+                }
+                if (undefined === obj) {
+                    return "undefined";
+                }
+                if (obj instanceof Date) {
+                    return obj.toString();
+                }
+                if (obj instanceof RegExp) {
+                    return obj.toString();
+                }
+                if (obj instanceof Error) {
+                    return obj.stack;
+                }
+                if (obj instanceof Map) {
+                    return `Map(${obj.size})`;
+                }
+                if (obj instanceof Set) {
+                    return `Set(${obj.size})`;
+                }
+                if (obj instanceof ArrayBuffer) {
+                    return "ArrayBuffer";
+                }
+                if (ArrayBuffer.isView(obj) && !(obj instanceof DataView)) {
+                    return `${obj.constructor.name}(${obj.length})`;
+                }
+                if (obj instanceof Promise) {
+                    return "Promise";
+                }
+                if (obj instanceof WeakMap) {
+                    return "WeakMap";
+                }
+                if (obj instanceof WeakSet) {
+                    return "WeakSet";
+                }
+                if (obj instanceof Int8Array) {
+                    return `Int8Array(${obj.length})`;
+                }
+                if (obj instanceof Uint8Array) {
+                    return `Uint8Array(${obj.length})`;
+                }
+                if (obj instanceof Uint8ClampedArray) {
+                    return `Uint8ClampedArray(${obj.length})`;
+                }
+                if (obj instanceof Int16Array) {
+                    return `Int16Array(${obj.length})`;
+                }
+                if (obj instanceof Uint16Array) {
+                    return `Uint16Array(${obj.length})`;
+                }
+                if (obj instanceof Int32Array) {
+                    return `Int32Array(${obj.length})`;
+                }
+                if (obj instanceof Uint32Array) {
+                    return `Uint32Array(${obj.length})`;
+                }
+                if (obj instanceof Float32Array) {
+                    return `Float32Array(${obj.length})`;
+                }
+                if (obj instanceof Float64Array) {
+                    return `Float64Array(${obj.length})`;
+                }
+                if (obj instanceof BigInt64Array) {
+                    return `BigInt64Array(${obj.length})`;
+                }
+                if (obj instanceof BigUint64Array) {
+                    return `BigUint64Array(${obj.length})`;
+                }
+                if (obj instanceof DataView) {
+                    return `DataView(${obj.byteLength})`;
+                }
+                if (obj instanceof Proxy) {
+                    return `Proxy`;
+                }
 
-            if (Array.isArray(obj)) {
-                return `Array(${obj.length})`;
-            }
-            if (obj[Object.getOwnPropertySymbols(obj)[0]]) {
-                return obj[Object.getOwnPropertySymbols(obj)[0]];
-            }
-            return `{...}`;
-        case "number":
-        case "boolean":
-        case "undefined":
-        case "float":
-            return String(obj);
+                if (Array.isArray(obj)) {
+                    return `Array(${obj.length})`;
+                }
+                if (obj[Object.getOwnPropertySymbols(obj)[0]]) {
+                    return obj[Object.getOwnPropertySymbols(obj)[0]];
+                }
+                return `{...}`;
+            case "number":
+            case "boolean":
+            case "undefined":
+            case "float":
+                return String(obj);
+        }
+        return `{...}`;
+    } catch (e) {
+        console.error(e);
+        return `{...}`;
     }
-    return `{...}`;
 }
 
 function objectToStringForNode(obj) {
