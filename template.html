@@ -2026,7 +2026,7 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-      if (summaryText.includes(":")) {
+      if ( key && summaryText.includes(":")) {
         const both = summaryText.split(":");
         summaryText = both[0];
         summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
