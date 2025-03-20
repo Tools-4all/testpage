@@ -464,9 +464,6 @@ function getStringOfKeyValue(obj) {
                 if (obj instanceof DataView) {
                     return `DataView(${obj.byteLength})`;
                 }
-                if (obj instanceof Proxy) {
-                    return `Proxy`;
-                }
 
                 if (Array.isArray(obj)) {
                     return `Array(${obj.length})`;
