@@ -53,7 +53,17 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
-    .theme {}
+    #compiler:not(.lightMode) {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+
+    #compiler:not(.darkMode) {
+      background-color: #f0f0f0;
+      color: #131313;
+    }
+
+    /* .theme {} */
 
     .color1e1e1e {
       background-color: #1e1e1e;
@@ -103,6 +113,7 @@
 
     .vs-navbar {
       font-family: 'Fira Code', monospace;
+      background-color: transparent;
       font-size: 14px;
       display: flex;
       padding: 5px 10px;
@@ -116,6 +127,8 @@
       padding-left: 40px;
       height: 30px;
     }
+
+
 
     .vs-navbar-item {
       margin-right: 10px;
@@ -1188,11 +1201,11 @@
 </head>
 
 <body>
-  <div id="compiler" class="theme color1e1e1e">
+  <div id="compiler" class="darkMode">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
-    <div class="vs-navbar theme color252526">
+    <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
         File
         <div class="theme color252526 vs-navbar-dropdown" id="fileDropdown">
