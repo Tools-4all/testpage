@@ -2022,12 +2022,16 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-
+      if (summaryText.contains(":")) {
+        const both = summaryText.split(":");
+        summaryText = both[0];
+        summaryText += `: <span class="objinsp objinsp-highlight-type">${both[1]}</span>`;
+      }
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
       summaryEl.className = 'objinsp objinsp-summary';
-      summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}1</span>`;
+      summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
       detailsEl.appendChild(summaryEl);
 
       detailsEl.addEventListener('toggle', function () {
