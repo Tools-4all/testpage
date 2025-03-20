@@ -706,8 +706,13 @@
       border-radius: 4px;
     }
 
-    .outputContainer:not(.darkMode) .promptInput {
+
+    #compiler:not(.darkMode) .promptInput {
       border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    #compiler:not(.lightMode) .promptInput {
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     #statusBar {
