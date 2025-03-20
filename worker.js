@@ -362,7 +362,7 @@ function objectToStringForNode(obj) {
     if (typeof obj === "string") {
         return `'${obj}'`;
     }
-    if (typeof obj !== "object" || obj === null) {
+    if (typeof obj !== "object" || obj === null || obj === undefined) {
         return String(obj);
     }
     if (Array.isArray(obj)) {
