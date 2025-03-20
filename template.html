@@ -994,6 +994,10 @@
       color: #4ec9b0;
     }
 
+    .objinsp-highlight-value {
+      color: #d4d4d4;
+    }
+
     .objinsp-node {
       color: #d4d4d4;
       margin-left: 10px;
@@ -2025,7 +2029,7 @@ prompt("This is a prompt:");
       if (summaryText.includes(":")) {
         const both = summaryText.split(":");
         summaryText = both[0];
-        summaryText += `: <span class="objinsp objinsp-highlight-type">${both[1]}</span>`;
+        summaryText += `: <span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
       }
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
