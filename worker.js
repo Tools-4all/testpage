@@ -407,6 +407,13 @@ function getStringOfKeyValue(obj) {
         case "float":
             return String(obj);
     }
+    try {
+        if (obj[Object.getOwnPropertySymbols(obj)[0]]) {
+            return obj[Object.getOwnPropertySymbols(obj)[0]];
+        }
+    } catch (e) {
+        return "{...}";
+    }
     return `{...}`;
 }
 
