@@ -412,7 +412,6 @@ function objectToStringForNode(obj) {
         return String(obj);
     }
     if (Array.isArray(obj)) {
-        console.log("im here")
         return `[${obj.map(item => getStringOfKeyValue(item)).join(", ")}]`;
     }
     const keys = Object.keys(obj);
