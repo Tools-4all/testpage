@@ -609,11 +609,13 @@
     }
 
     #compiler:not(.darkMode) .controls {
-      background-color: #c0c0c0;
+      background-color: #f0f0f0;
+      border-color: #c0c0c0;
     }
 
     #compiler:not(.lightMode) .controls {
-      background-color: #444;
+      background-color: #252526;
+      border-color: #333;
     }
 
     #runButton {
@@ -1428,7 +1430,7 @@
       </div>
     </div>
     <div id="mainContainer">
-      <div id="tabBar" class="theme color252526"></div>
+      <div id="tabBar"></div>
       <div id="tabsContainer"></div>
       <div id="statusBar">
         <div class="status-item" id="statusPosition">Ln 1, Col 1</div>
@@ -1645,11 +1647,9 @@
       outputContainer.classList.add("outputContainer");
       outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
-      outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
+      // outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
-      controlsBar.classList.add("theme");
-      controlsBar.classList.add(darkModeFlag ? "color252526" : "colorf0f0f0");
       outputContainer.appendChild(controlsBar);
 
       controlsBar.addEventListener('mousedown', function (e) {
@@ -3451,7 +3451,6 @@ prompt("This is a prompt:");
     }
 
 
-    alert(5);
   </script>
 
 </body>
