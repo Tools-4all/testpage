@@ -187,8 +187,10 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        if (!isDir) {
+        if (!isDir && depth === 0) {
             headerText = !isPrototype ? `(${value.length}) [${arrayToString(value)}]` : `[${arrayToString(value)}]`;
+        } else if (depth !== 0) {
+            headerText = `[${arrayToString(value)}]`;
         } else {
             headerText = `Array(${value.length})`;
         }
