@@ -311,6 +311,12 @@
       border-color: #007acc;
     }
 
+    #compiler:not(.darkMode) .sidebar-panel.active #gitUrl {
+      background-color: #f9f9f9;
+      border-color: #c0c0c0;
+      color: #000000;
+    }
+
     #compiler:not(.lightMode) .sidebar-panel.active #gitUrl {
       background-color: #3c3c3c;
       border-color: #4c4c4c;
@@ -337,7 +343,6 @@
     #tabSizeInput {
       width: 100%;
     }
-
 
     .vs-range {
       -webkit-appearance: none;
@@ -380,6 +385,16 @@
     .vs-range::-webkit-slider-thumb:active,
     .vs-range::-moz-range-thumb:active {
       background: #0067a8;
+    }
+
+    #compiler:not(.darkMode) .sidebar-panel.active .vs-range {
+      background-color: #f9f9f9;
+      border: 1px solid #c0c0c0;
+    }
+
+    #compiler:not(.darkMode) .vs-range::-webkit-slider-thumb,
+    #compiler:not(.darkMode) .vs-range::-moz-range-thumb {
+      border-color: #c0c0c0 !important;
     }
 
     #compiler:not(.lightMode) .sidebar-panel.active .vs-range {
