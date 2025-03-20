@@ -153,14 +153,6 @@
       color: #000000;
     }
 
-    #sun {
-      color: #c5c5c5;
-      margin-left: 20px;
-      margin-right: 20px;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
     #fullScreenBtn {
       color: #c5c5c5;
       margin-top: 3px;
@@ -872,14 +864,21 @@
       color: #99FF99;
     }
 
-    #moon {
+    #moon,
+    #sun {
       color: #636262;
       font-size: 17px;
       height: 20px;
       width: 20px;
       padding-top: 2px;
       padding-left: 4px;
+      margin-left: 20px;
+      margin-right: 20px;
       transition: color 0.2s;
+    }
+
+    #sun {
+      color: #c5c5c5;
     }
 
     .objinsp-summary {
@@ -1006,10 +1005,10 @@
 
     @media (max-width: 768px) {
 
-      #sun {
+      /* #sun {
         margin-left: 10px;
         margin-right: 10px;
-      }
+      } */
 
       #activityBar {
         width: 40px;
@@ -1218,7 +1217,7 @@
         <i class="fas fa-play"></i> Run
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
-      <div onclick="changeToLightMode()">
+      <div id="lightModeDiv" onclick="changeToLightMode()">
         <!-- <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
           <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
           <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
@@ -1352,7 +1351,7 @@
       }
     });
 
-    const lightModeDiv = document.getElementById("lightMode");
+    const lightModeDiv = document.getElementById("lightModeDiv");
     // const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
