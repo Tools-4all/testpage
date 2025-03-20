@@ -267,6 +267,7 @@
       width: 100%;
     }
 
+
     .vs-range {
       -webkit-appearance: none;
       appearance: none;
@@ -315,17 +316,22 @@
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
+      margin-top: 30px;
     }
 
     #exportSelect {
       padding: 5px 5px;
       border-radius: 5px;
-      max-width: 200px;
+      width: 100%;
+      max-width: 275px;
+      color: #000 !important;
     }
 
     #exportButton {
-      width: 200px;
+      width: 100%;
+      max-width: 275px;
+      margin-left: 0px;
+      margin-top: 15px;
     }
 
     #mainContainer {
@@ -988,6 +994,10 @@
       color: #4ec9b0;
     }
 
+    .objinsp-highlight-value {
+      color: #efd8d8;
+    }
+
     .objinsp-node {
       color: #d4d4d4;
       margin-left: 10px;
@@ -1352,7 +1362,7 @@
           element.classList.add("lightMode");
           element.classList.remove("darkMode")
         });
-        lightModeDiv.innerHTML = '<i class="fa-regular fa-moon" id="moon"></i>';
+
         darkModeFlag = false;
         document.querySelectorAll(".theme").forEach((element) => {
           element.classList.forEach((cls) => {
@@ -1871,7 +1881,7 @@ prompt("This is a prompt:");
             const details = document.createElement("details");
             details.open = !e.data.collapsed;
             const summary = document.createElement("summary");
-            summary.style.display = "flex"
+            summary.style.display = "-webkit-box"
             if (typeof msg === "string") {
               summary.textContent = msg;
             } else if (typeof msg === "object") {
@@ -2016,7 +2026,11 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-
+      if (summaryText.includes(":")) {
+        const both = summaryText.split(":");
+        summaryText = both[0];
+        summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
+      }
       const detailsEl = document.createElement('details');
       detailsEl.setAttribute('data-loaded', 'false');
       const summaryEl = document.createElement('summary');
