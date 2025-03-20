@@ -172,7 +172,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        headerText = isPrototype ? "Array(" + value.length + ")" : "[123]";
+        headerText = !isPrototype ? "Array(" + value.length + ")" : "[]";
     } else if (value instanceof Map) {
         headerText = "Map(" + value.size + ")";
     } else if (value instanceof Set) {
