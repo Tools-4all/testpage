@@ -154,9 +154,11 @@
     }
 
     #lightMode {
+      color: #c5c5c5;
       margin-left: 20px;
       margin-right: 20px;
       cursor: pointer;
+      transition: color 0.2s;
     }
 
     #fullScreenBtn {
@@ -165,6 +167,7 @@
       margin-right: 7px;
       font-size: 13px;
       cursor: pointer;
+      transition: color 0.2s;
     }
 
     #activityBar {
@@ -508,7 +511,9 @@
       transition: color 0.2s;
     }
 
-    #addTabButton:hover {
+    #addTabButton:hover,
+    #fullScreenBtn:hover,
+    #lightMode:hover {
       color: #fff;
     }
 
@@ -872,6 +877,7 @@
       width: 20px;
       padding-top: 2px;
       padding-left: 4px;
+      transition: color 0.2s;
     }
 
     .objinsp-summary {
