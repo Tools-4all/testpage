@@ -386,6 +386,8 @@ function objectToStringForNode(obj) {
     keys.forEach(key => {
         if (typeof obj[key] === "function") {
             vals.push(`${key}: ƒ ${obj[key].name || "anonymous"}()`);
+        } else if (Array.isArray(obj[key])) {
+            vals.push(`Array(${obj[key].length})`);
         } else {
             vals.push(`${key}: ${objectToString(obj[key])}`);
         }
