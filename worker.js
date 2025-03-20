@@ -381,6 +381,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
 }
 
 function getStringOfKeyValue(obj) {
+    console.log(obj[Object.getOwnPropertySymbols(obj)[0]])
     switch (typeof obj) {
         case "string":
             return `'${obj}'`;
