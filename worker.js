@@ -405,7 +405,7 @@ function renderObject(obj) {
 function formatValue(value) {
     if (value === null) return "null";
     if (value === undefined) return "undefined";
-    if (typeof value === "string") return "'" + value + "'";
+    if (typeof value === "string") return '"' + value + '"';
     if (typeof value === "number" || typeof value === "boolean") return value.toString();
     if (typeof value === "function") return "ƒ " + (value.name || "anonymous") + "()";
     if (Array.isArray(value)) return "Array(" + value.length + ")";
