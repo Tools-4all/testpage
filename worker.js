@@ -184,6 +184,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
 
 
     let headerText = "";
+    console.log("value", value)
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
