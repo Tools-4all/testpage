@@ -429,11 +429,13 @@
     #compiler:not(.darkMode) .tab {
       background-color: #e0e0e0;
       color: #000000;
+      transition: background-color 0.3s;
     }
 
     #compiler:not(.lightMode) .tab {
       background-color: #2c2c2c;
       color: #ffffff;
+      transition: background-color 0.3s;
     }
 
     #compiler:not(.darkMode) .tab.active {
@@ -464,14 +466,14 @@
       visibility: visible;
     }
 
-
+    /* 
     .tab:hover:not(.active, .theme.colorffffff .tab) {
       background-color: rgba(255, 255, 255, 0.1) !important;
     }
 
     .tab:hover:not(.active, .theme.color1e1e1e .tab) {
       background-color: rgba(0, 0, 0, 0.1) !important;
-    }
+    } */
 
     .tab-title-edit {
       background: #555;
