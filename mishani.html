@@ -819,45 +819,47 @@
       margin-right: 10px;
     }
 
-    .dark-log {
-      color: #BBBBBB !important;
-    }
-
-    .dark-error {
-      color: #FF6666 !important;
-    }
-
-    .dark-warn {
-      color: #FFFF66 !important;
-    }
-
-    .dark-info {
-      color: #74cbfb !important;
-    }
-
-    .dark-prompt {
-      color: #99FF99 !important;
-    }
-
-    .light-log {
+    #compiler:not(.darkMode) .log {
       color: #444444 !important;
     }
 
-    .light-error {
+    #compiler:not(.darkMode) .error {
       color: #cc0000 !important;
     }
 
-    .light-warn {
+    #compiler:not(.darkMode) .warn {
       color: #cc9a00 !important;
     }
 
-    .light-info {
+    #compiler:not(.darkMode) .info {
       color: #0066cc !important;
     }
 
-    .light-prompt {
+    #compiler:not(.darkMode) .prompt {
       color: #008000 !important;
     }
+
+    #compiler:not(.lightMode) .log {
+      color: #BBBBBB;
+    }
+
+    #compiler:not(.lightMode) .error {
+      color: #FF6666 !important;
+    }
+
+    #compiler:not(.lightMode) .warn {
+      color: #FFFF66 !important;
+    }
+
+    #compiler:not(.lightMode) .info {
+      color: #74cbfb !important;
+    }
+
+    #compiler:not(.lightMode) .prompt {
+      color: #99FF99 !important;
+    }
+
+
 
     #moon {
       font-size: 17px;
