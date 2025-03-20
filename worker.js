@@ -212,10 +212,14 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
             } else if (value.constructor && value.constructor.name && value.constructor.name !== "Object") {
                 headerText = value.constructor.name + " " + JSON.stringify(value);
             } else {
-                try {
-                    headerText = objectToStringForNode(value);
-                } catch (e) {
-                    headerText = "{}";
+                if (isDir) {
+                    headerText = "Object"
+                } else {
+                    try {
+                        headerText = objectToStringForNode(value);
+                    } catch (e) {
+                        headerText = "{}";
+                    }
                 }
             }
         }
