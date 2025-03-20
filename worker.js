@@ -190,7 +190,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
     } else if (Array.isArray(value)) {
         console.log("isDir", isDir)
         if (!isDir) {
-            headerText = !isPrototype ? `Array(${value.length}) [${arrayToString(value)}]` : `[${arrayToString(value)}]`;
+            headerText = !isPrototype ? `(${value.length}) [${arrayToString(value)}]` : `[${arrayToString(value)}]`;
         } else {
             headerText = `Array(${value.length})`;
         }
