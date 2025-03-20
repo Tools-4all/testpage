@@ -362,7 +362,7 @@
       height: 14px;
       background: #007acc;
       border-radius: 50%;
-      border: 2px solid #e90b0b;
+      border: 2px solid;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
     }
@@ -371,7 +371,7 @@
       width: 14px;
       height: 14px;
       background: #007acc;
-      border: 2px solid #e90b0b;
+      border: 2px solid;
       border-radius: 50%;
       box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
       cursor: pointer;
@@ -394,7 +394,12 @@
 
     #compiler:not(.darkMode) .vs-range::-webkit-slider-thumb,
     #compiler:not(.darkMode) .vs-range::-moz-range-thumb {
-      border-color: #c0c0c0 !important;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .vs-range::-webkit-slider-thumb,
+    #compiler:not(.lightMode) .vs-range::-moz-range-thumb {
+      border-color: #444;
     }
 
     #compiler:not(.lightMode) .sidebar-panel.active .vs-range {
