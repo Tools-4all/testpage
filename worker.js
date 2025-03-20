@@ -59,6 +59,7 @@ const wrapperPrefixLines = [
     'var getObjectOrStringForLog = undefined;',
     'var arrayToString = undefined;',
     'var getStringOfKeyValue = undefined;',
+    'var getObjectOrStringForDir = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -74,7 +75,7 @@ function arrayToString(arr) {
 }
 
 
-function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
+function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir) {
     // Convert Symbol keys to strings.
 
     if (value instanceof Error) {
@@ -186,7 +187,11 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false) {
     if (typeof value === 'function') {
         headerText = 'ƒ ' + (value.name || 'anonymous') + '()';
     } else if (Array.isArray(value)) {
-        headerText = !isPrototype ? `(${value.length}) [${arrayToString(value)}]` : "[]";
+        if (isDir) {
+            headerText = !isPrototype ? `Array(${value.length}) [${arrayToString(value)}]` : `[${arrayToString(value)}]`;
+        } else {
+            headerText = `Array(${value.length})`;
+        }
     } else if (value instanceof Map) {
         headerText = "Map(" + value.size + ")";
     } else if (value instanceof Set) {
@@ -793,6 +798,20 @@ function getObjectOrString(...args) {
     return objs
 }
 
+function getObjectOrStringForDir(...args) {
+    let objs = {}
+    let num = 0
+    args.forEach(arg => {
+        if (["object", "function"].includes(typeof arg) && arg !== null) {
+            objs[num] = [createNodeObject(null, arg, new Set(), false, true), true]
+        } else {
+            objs[num] = [objectToString(arg), false]
+        }
+        num++
+    });
+    return objs
+}
+
 function getObjectOrStringForLog(...args) {
     let objs = {}
     let num = 0
@@ -904,7 +923,7 @@ self.addEventListener("message", (event) => {
                 }
             },
             dir: (obj) => {
-                self.postMessage({ type: "log", message: getObjectOrString(obj) });
+                self.postMessage({ type: "log", message: getObjectOrStringForDir(obj) });
             },
             dirxml: (obj) => {
                 self.postMessage({ type: "warn", message: "DOM simulation is not implemented yet, please use console.dir for non DOM objects." });
