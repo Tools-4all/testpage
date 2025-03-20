@@ -381,7 +381,6 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
 }
 
 function getStringOfKeyValue(obj) {
-    console.log(obj[Object.getOwnPropertySymbols(obj)[0]])
     switch (typeof obj) {
         case "string":
             return `'${obj}'`;
@@ -392,7 +391,6 @@ function getStringOfKeyValue(obj) {
         case "function":
             return `ƒ ${obj.name || "anonymous"}()`;
         case "object":
-            console.log(obj[Object.getOwnPropertySymbols(obj)[0]])
             if (obj === null) {
                 return "null";
             }
@@ -408,14 +406,6 @@ function getStringOfKeyValue(obj) {
         case "undefined":
         case "float":
             return String(obj);
-    }
-    try {
-        if (obj[Object.getOwnPropertySymbols(obj)[0]]) {
-            return obj[Object.getOwnPropertySymbols(obj)[0]];
-        }
-    } catch (e) {
-        console.error(e)
-        return "{...}";
     }
     return `{...}`;
 }
