@@ -62,30 +62,6 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
-    /* .color1e1e1e {
-      background-color: #1e1e1e;
-      color: #d4d4d4;
-    }
-
-    .color252526 {
-      background-color: #252526;
-      color: #cccccc;
-      border-color: #333 !important;
-      border-bottom-color: #333;
-    }
-
-    .colorffffff {
-      background-color: #ffffff;
-      color: #000;
-    }
-
-    .colorf0f0f0 {
-      background-color: #f0f0f0;
-      color: #131313;
-      border-color: #c0c0c0 !important;
-      border-bottom-color: #c0c0c0;
-    } */
-
     .vs-logo {
       position: absolute;
       top: 0;
@@ -177,7 +153,6 @@
       color: #000000;
     }
 
-
     #lightMode {
       margin-left: 20px;
       margin-right: 20px;
@@ -250,7 +225,6 @@
 
     .sidebar-panel {
       width: 250px;
-      /* background-color: #1e1e1e; */
       border-right: 1px solid;
       overflow-y: auto;
       padding: 10px;
@@ -434,7 +408,7 @@
       border-radius: 10px;
     }
 
-    /* #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
+    #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
       background-color: #c0c0c0;
     }
 
@@ -448,23 +422,23 @@
 
     #compiler:not(.lightMode) #tabBar::-webkit-scrollbar-track {
       background-color: #333;
+    }
+
+    /* .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
     } */
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
 
     .tab {
       margin-right: 2px;
@@ -1071,10 +1045,6 @@
       }
     }
 
-
-    .lightMode {}
-
-    .darkMode {}
 
     .monaco-editor .find-widget>.button.codicon-widget-close {
       top: 8px !important;
@@ -2045,7 +2015,7 @@ prompt("This is a prompt:");
           childrenTree = {};
         }
       }
-      if (summaryText.includes(":")) {
+      if (key && summaryText.includes(":")) {
         const both = summaryText.split(":");
         summaryText = both[0];
         summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
@@ -2072,7 +2042,6 @@ prompt("This is a prompt:");
       });
       return detailsEl;
     }
-
 
     function gotoLine(lineNumber) {
       const model = currentTab.editorInstance.getModel();
