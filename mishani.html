@@ -752,10 +752,6 @@
       line-break: anywhere;
     }
 
-    /* q .console-table thead {
-      font-weight: bold;
-    } */
-
     .console-table thead {
       font-weight: bold;
     }
@@ -1338,11 +1334,11 @@
               line.classList.remove("dark-info");
               line.classList.add("light-info");
             }
-            let promptSpan = line.querySelector(".dark-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("dark-prompt");
-              promptSpan.classList.add("light-prompt");
-            }
+            // let promptSpan = line.querySelector(".dark-prompt");
+            // if (promptSpan) {
+            //   promptSpan.classList.remove("dark-prompt");
+            //   promptSpan.classList.add("light-prompt");
+            // }
           });
         });
 
@@ -1371,11 +1367,11 @@
               line.classList.remove("light-info");
               line.classList.add("dark-info");
             }
-            let promptSpan = line.querySelector(".light-prompt");
-            if (promptSpan) {
-              promptSpan.classList.remove("light-prompt");
-              promptSpan.classList.add("dark-prompt");
-            }
+            // let promptSpan = line.querySelector(".light-prompt");
+            // if (promptSpan) {
+            //   promptSpan.classList.remove("light-prompt");
+            //   promptSpan.classList.add("dark-prompt");
+            // }
           });
         });
       }
