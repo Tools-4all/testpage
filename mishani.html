@@ -446,13 +446,22 @@
       border-top: 1px solid #007acc !important;
     }
 
-    #compiler:not(.darkMode) .tab:hover:not(.active) {
+    #compiler:not(.darkMode) .tab:hover {
       background-color: #c0c0c0;
     }
 
-    #compiler:not(.lightMode) .tab:hover:not(.active) {
+    #compiler:not(.lightMode) .tab:hover {
       background-color: #3c3c3c;
     }
+
+    #compiler:not(.darkMode) .tab.active:hover {
+      background-color: #d0d0d0;
+    }
+
+    #compiler:not(.lightMode) .tab.tab.active:hover {
+      background-color: #1c1c1c;
+    }
+
 
     .tab .tab-title {
       margin-right: 15px;
