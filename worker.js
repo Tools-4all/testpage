@@ -401,6 +401,7 @@ function getStringOfKeyValue(obj) {
 }
 
 function objectToStringForNode(obj) {
+    console.log("im here 2")
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
