@@ -852,7 +852,11 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
+                try {
+                    self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
+                } catch (e) {
+                    console.log(e, getObjectOrStringForLog(...args))
+                }
             },
             error: (...args) => {
                 self.postMessage({ type: "error", message: getObjectOrStringForLog(...args), forceUse: false });
