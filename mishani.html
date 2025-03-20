@@ -270,6 +270,12 @@
       display: block;
     }
 
+    #compiler:not(.darkMode) .sideBar-panel {
+      background-color: #eeeeee;
+      color: #000000;
+      border-color: #c0c0c0 !important;
+    }
+
     #gitUrl {
       width: 100%;
       padding: 8px 10px;
@@ -418,6 +424,26 @@
       align-items: center;
       user-select: none;
       -webkit-user-drag: element;
+    }
+
+    #compiler:not(.darkMode) .tab {
+      background-color: #e0e0e0;
+      color: #000000;
+    }
+
+    #compiler:not(.lightMode) .tab {
+      background-color: #2c2c2c;
+      color: #ffffff;
+    }
+
+    #compiler:not(.darkMode) .tab.active {
+      background-color: #d0d0d0;
+      border-top: 1px solid #007acc !important;
+    }
+
+    #compiler:not(.lightMode) .tab.active {
+      background-color: #1c1c1c;
+      border-top: 1px solid #007acc !important;
     }
 
     .tab .tab-title {
