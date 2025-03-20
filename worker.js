@@ -799,12 +799,13 @@ function getObjectOrString(...args) {
     return objs
 }
 
+
 function getObjectOrStringForDir(...args) {
     let objs = {}
     let num = 0
     args.forEach(arg => {
         if (["object", "function"].includes(typeof arg) && arg !== null) {
-            objs[num] = [createNodeObject(null, arg, new Set(), false, true), true]
+            objs[num] = [createNodeObject(null, arg, new Set(), 0, false, true), true]
         } else {
             objs[num] = [objectToString(arg), false]
         }
