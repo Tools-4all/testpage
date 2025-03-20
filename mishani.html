@@ -62,20 +62,7 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
-    /* 
-    #compiler:not(.lightMode) {
-      background-color: #252526;
-      color: #d4d4d4;
-    }
-
-    #compiler:not(.darkMode) {
-      background-color: #f0f0f0;
-      color: #131313;
-    } */
-
-    /* .theme {} */
-
-    .color1e1e1e {
+    /* .color1e1e1e {
       background-color: #1e1e1e;
       color: #d4d4d4;
     }
@@ -97,7 +84,7 @@
       color: #131313;
       border-color: #c0c0c0 !important;
       border-bottom-color: #c0c0c0;
-    }
+    } */
 
     .vs-logo {
       position: absolute;
@@ -190,11 +177,6 @@
       color: #000000;
     }
 
-
-    /* .theme.colorf0f0f0.vs-navbar-dropdown.active .vs-navbar-dropdown-item:hover {
-      background-color: #c0c0c0;
-      color: black;
-    } */
 
     #lightMode {
       margin-left: 20px;
@@ -443,14 +425,6 @@
       transition: overflow 0.3s;
     }
 
-    #compiler:not(.darkMode) #tabBar {
-      border-color: #c0c0c0;
-    }
-
-    #compiler:not(.lightMode) #tabBar {
-      border-color: #333;
-    }
-
     #tabBar::-webkit-scrollbar {
       height: 4px;
     }
@@ -470,6 +444,18 @@
       align-items: center;
       user-select: none;
       -webkit-user-drag: element;
+    }
+
+    .tab.active {
+      border-top: 1px solid #007acc !important;
+      border-bottom: 1px solid transparent;
+      margin-bottom: -2px;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+
+    #activityBar .icon.active {
+      border-left: 3px solid #007acc;
     }
 
     #compiler:not(.darkMode) .tab {
@@ -519,15 +505,6 @@
     .tab.active .close {
       visibility: visible;
     }
-
-    /* 
-    .tab:hover:not(.active, .theme.colorffffff .tab) {
-      background-color: rgba(255, 255, 255, 0.1) !important;
-    }
-
-    .tab:hover:not(.active, .theme.color1e1e1e .tab) {
-      background-color: rgba(0, 0, 0, 0.1) !important;
-    } */
 
     .tab-title-edit {
       background: #555;
@@ -743,14 +720,6 @@
       flex-shrink: 0;
     }
 
-    #compiler:not(.darkMode) #statusBar {
-      border-color: #c0c0c0;
-    }
-
-    #compiler:not(.lightMode) #statusBar {
-      border-color: #333;
-    }
-
     .status-item {
       margin-right: 10px;
     }
@@ -788,7 +757,11 @@
       line-break: anywhere;
     }
 
-    q .console-table thead {
+    /* q .console-table thead {
+      font-weight: bold;
+    } */
+
+    .console-table thead {
       font-weight: bold;
     }
 
@@ -797,6 +770,16 @@
       border: 1px solid #333;
       padding: 4px 8px;
       vertical-align: top;
+    }
+
+    #compiler:not(.lightMode) .console-table thead {
+      background-color: #3c3c3c;
+      color: #ffffff;
+    }
+
+    #compiler:not(.darkMode) .console-table td,
+    #compiler:not(.darkMode) .console-table th {
+      color: #d4d4d4;
     }
 
     .outputContainer:not(.lightMode) .console-table thead .console-table-header:hover {
@@ -833,7 +816,7 @@
       margin-right: 10px;
     }
 
-
+    /* 
     .theme.color1e1e1e .tab {
       background-color: #2c2c2c;
       color: #ffffff;
@@ -841,15 +824,7 @@
 
     .theme.color1e1e1e .tab.active {
       background-color: #1c1c1c;
-    }
-
-    .tab.active {
-      border-top: 1px solid #007acc !important;
-      border-bottom: 1px solid transparent;
-      margin-bottom: -2px;
-      border-top-left-radius: 3px;
-      border-top-right-radius: 3px;
-    }
+    } */
 
 
     /* .theme.color1e1e1e #statusBar {
@@ -857,9 +832,7 @@
       color: #cccccc;
     } */
 
-    #activityBar .icon.active {
-      border-left: 3px solid #007acc;
-    }
+
 
     /* #activityBar.theme.color252526 .icon:hover,
     #activityBar.theme.color252526 .icon.active {
@@ -867,7 +840,7 @@
       color: #fff;
     } */
 
-    .theme.color1e1e1e .sidebar-panel.active {
+    /* .theme.color1e1e1e .sidebar-panel.active {
       background-color: #2b2b2b;
       color: #ffffff;
       border-color: #3c3c3c !important;
@@ -887,9 +860,9 @@
     .theme.color1e1e1e .output {
       background-color: #1e1e1e;
       color: #d4d4d4;
-    }
+    } */
 
-    .theme.color1e1e1e .console-table thead {
+    /* .theme.color1e1e1e .console-table thead {
       background-color: #3c3c3c;
       color: #ffffff;
     }
@@ -897,7 +870,7 @@
     .theme.color1e1e1e .console-table td,
     .theme.color1e1e1e .console-table th {
       color: #d4d4d4;
-    }
+    } */
 
     .dark-log {
       color: #BBBBBB !important;
@@ -979,7 +952,7 @@
     }
 
 
-    #activityBar.theme.colorf0f0f0 .icon {
+    /* #activityBar.theme.colorf0f0f0 .icon {
       color: #9b9a9a !important;
     }
 
@@ -1012,7 +985,7 @@
     .theme.colorffffff .sidebar-panel.active .vs-range {
       background-color: #f9f9f9;
       border: 1px solid #c0c0c0;
-    }
+    } */
 
     /* .theme.colorf0f0f0 .controls {
       background-color: #c0c0c0;
@@ -1022,10 +995,10 @@
       background-color: #444;
     } */
 
-    .theme.colorffffff .output {
+    /* .theme.colorffffff .output {
       background-color: #f9f9f9;
       color: #000;
-    }
+    } */
 
     .theme.colorffffff .console-table thead {
       background-color: #dddddd;
@@ -1057,7 +1030,7 @@
       color: #008000 !important;
     }
 
-    .theme.color1e1e1e .prompt-line input {
+    /* .theme.color1e1e1e .prompt-line input {
       color: #ffffff;
       background-color: rgba(255, 255, 255, 0.07);
     }
@@ -1065,7 +1038,7 @@
     .theme.colorffffff .prompt-line input {
       color: #000000;
       background-color: rgba(0, 0, 0, 0.03);
-    }
+    } */
 
     #moon {
       font-size: 17px;
@@ -1342,12 +1315,16 @@
 
 
     #compiler:not(.darkMode) .vs-navbar,
-    #compiler:not(.darkMode) #activityBar {
+    #compiler:not(.darkMode) #activityBar,
+    #compiler:not(.darkMode) #statusBar,
+    #compiler:not(.darkMode) #tabBar {
       border-color: #c0c0c0;
     }
 
     #compiler:not(.lightMode) .vs-navbar,
-    #compiler:not(.lightMode) #activityBar {
+    #compiler:not(.lightMode) #activityBar,
+    #compiler:not(.lightMode) #statusBar,
+    #compiler:not(.lightMode) #tabBar {
       border-color: #333;
     }
   </style>
