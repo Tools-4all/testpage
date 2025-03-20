@@ -41,6 +41,16 @@
       -ms-user-select: none;
     }
 
+    .darkMode {
+      background-color: #252526;
+      color: #d4d4d4;
+    }
+
+    .lightMode {
+      background-color: #f0f0f0;
+      color: #131313;
+    }
+
     #compiler {
       position: relative;
       font-family: 'Fira Code', monospace;
@@ -53,15 +63,16 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
+    /* 
     #compiler:not(.lightMode) {
-      background-color: #1e1e1e;
+      background-color: #252526;
       color: #d4d4d4;
     }
 
     #compiler:not(.darkMode) {
       background-color: #f0f0f0;
       color: #131313;
-    }
+    } */
 
     /* .theme {} */
 
@@ -127,8 +138,6 @@
       padding-left: 40px;
       height: 30px;
     }
-
-
 
     .vs-navbar-item {
       margin-right: 10px;
@@ -196,6 +205,7 @@
       flex-direction: column;
       align-items: center;
       padding-top: 10px;
+      background-color: transparent;
       border-right: 1px solid #333;
       transition: width 0.3s ease;
       flex-shrink: 0;
@@ -1197,6 +1207,18 @@
     .handPointer {
       cursor: pointer;
     }
+
+
+
+    #compiler:not(.darkMode) .vs-navbar,
+    #compiler:not(.darkMode) #activityBar {
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .vs-navbar,
+    #compiler:not(.lightMode) #activityBar {
+      border-color: #333;
+    }
   </style>
 </head>
 
@@ -1243,7 +1265,7 @@
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </div>
     </div>
-    <div id="activityBar" class="theme color252526">
+    <div id="activityBar">
       <div id="addTabButton_media"><i class="fas fa-plus"></i></div>
       <div class="icon" id="searchIcon" data-label="Search" data-target="searchPanel">
         <i class="fas fa-search"></i>
