@@ -408,7 +408,7 @@
       border-radius: 10px;
     }
 
-    /* #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
+    #compiler:not(.darkMode) #tabBar::-webkit-scrollbar-track {
       background-color: #c0c0c0;
     }
 
@@ -422,23 +422,23 @@
 
     #compiler:not(.lightMode) #tabBar::-webkit-scrollbar-track {
       background-color: #333;
+    }
+
+    /* .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
+    }
+
+    .theme.color252526 #tabBar::-webkit-scrollbar-track {
+      background-color: #333;
+    }
+
+    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
+      background-color: #c0c0c0;
     } */
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
-
-    .theme.color252526 #tabBar::-webkit-scrollbar-track {
-      background-color: #333;
-    }
-
-    .theme.colorf0f0f0 #tabBar::-webkit-scrollbar-track {
-      background-color: #c0c0c0;
-    }
 
     .tab {
       margin-right: 2px;
@@ -1335,14 +1335,7 @@
         }
       }
     });
-    // const themeMapDark = {
-    //   "color252526": "colorf0f0f0",
-    //   "color1e1e1e": "colorffffff"
-    // };
-    // const themeMapLight = {
-    //   "colorf0f0f0": "color252526",
-    //   "colorffffff": "color1e1e1e"
-    // };
+
     const lightModeDiv = document.getElementById("lightMode");
     const sunSvg = lightModeDiv.innerHTML;
 
@@ -1355,14 +1348,6 @@
         darkModeFlag = false;
 
         lightModeDiv.innerHTML = '<i id="moon" class="fa-solid fa-moon"></i>';
-        // document.querySelectorAll(".theme").forEach((element) => {
-        //   element.classList.forEach((cls) => {
-        //     if (themeMapDark[cls]) {
-        //       element.classList.remove(cls);
-        //       element.classList.add(themeMapDark[cls]);
-        //     }
-        //   });
-        // });
         monaco.editor.setTheme("custom-light");
 
         tabs.forEach(tab => {
@@ -1396,14 +1381,6 @@
 
         lightModeDiv.innerHTML = sunSvg;
         darkModeFlag = true;
-        // document.querySelectorAll(".theme").forEach((element) => {
-        //   element.classList.forEach((cls) => {
-        //     if (themeMapLight[cls]) {
-        //       element.classList.remove(cls);
-        //       element.classList.add(themeMapLight[cls]);
-        //     }
-        //   });
-        // });
         monaco.editor.setTheme("custom-dark");
 
         tabs.forEach(tab => {
