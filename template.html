@@ -1339,6 +1339,7 @@
         <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
+          <button class="vs-button" onclick="saveSettings()">Save settings</button>
         </div>
       </div>
     </div>
@@ -1428,8 +1429,28 @@
       }
     });
 
+    function saveSettings() {
+      localStorage.setItem("tabSize", spaces);
+      localStorage.setItem("terminateWorker", flexSwitchCheckDefault.checked);
+      localStorage.setItem("darkMode", darkModeFlag);
+    }
+
+    function loadSettings() {
+      const tabSize = localStorage.getItem("tabSize");
+      if (tabSize) {
+        spaces = parseInt(tabSize);
+        tabSizeInput.value = spaces;
+        tabSizeDisplay.textContent = spaces;
+        tabSizeInput.dispatchEvent(new Event("input"));
+      }
+      const terminateWorker = localStorage.getItem("terminateWorker");
+      if (terminateWorker) {
+        flexSwitchCheckDefault.checked = terminateWorker === "true";
+      }
+      darkModeFlag = localStorage.getItem("darkMode") === "true";
+    }
+
     const lightModeDiv = document.getElementById("lightModeDiv");
-    // const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
