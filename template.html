@@ -3253,6 +3253,13 @@ prompt("This is a prompt:");
       alert.classList.add("alert");
       alert.textContent = message;
       exportModalContent.appendChild(alert);
+      const btn = document.createElement("button");
+      btn.textContent = "Close";
+      btn.classList.add("exportBtn");
+      btn.addEventListener("click", () => {
+        closeModal("close");
+      });
+      exportModalContent.appendChild(btn);
       displayModal();
     }
     
@@ -3267,8 +3274,6 @@ prompt("This is a prompt:");
     function modalIsOpen() {
       return modal.style.display === "block";
     }
-
-    showAlert("Welcome to the JavaScript editor! Click on the + button to create a new tab.");
 
   </script>
 
