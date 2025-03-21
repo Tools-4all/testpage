@@ -71,11 +71,6 @@ function arrayToString(arr) {
     return out.join(', ');
 }
 
-function buildFunctionName(name) {
-    return eval(`'function ${name}() { [native code] }'`);
-}
-
-
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir = false) {
     // Convert Symbol keys to strings.
@@ -1111,8 +1106,11 @@ self.addEventListener("message", (event) => {
             for (let i = 0; i < names.length; i++) {
                 let func = funcs[i];
                 func.valueOf = () => `function ${name}() { [native code] }`;
+                func.valueOf.name = "valueOf";
                 func.toString = () => `function ${name}() { [native code] }`;
+                func.toString.name = "toString";
                 func.toLocaleString = () => `function ${name}() { [native code] }`;
+                func.toLocaleString.name = "toLocaleString";
             }
             customAlert.name = "alert";
             customPrompt.name = "prompt";
