@@ -1339,7 +1339,7 @@
         <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
-          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()">Save settings</button>
+          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()" id="saveSettingsBtn">Save settings</button>
         </div>
       </div>
     </div>
@@ -1433,6 +1433,13 @@
       localStorage.setItem("tabSize", spaces);
       localStorage.setItem("terminateWorker", flexSwitchCheckDefault.checked);
       localStorage.setItem("darkMode", darkModeFlag);
+      const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+      saveSettings.disabled = true;
+      saveSettingsBtn.textContent = "Saved!";
+      setTimeout(() => {
+        saveSettingsBtn.textContent = "Save settings";
+        saveSettings.disabled = false;
+      }, 1000);
     }
 
     function loadSettings() {
