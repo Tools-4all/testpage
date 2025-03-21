@@ -964,7 +964,6 @@ self.addEventListener("message", (event) => {
                     return;
                 }
                 const tableData = buildTableData(data, columns);
-                console.log(getObjectOrStringForLog([data]));
                 self.postMessage({
                     type: "table",
                     table: tableData,
