@@ -3268,9 +3268,9 @@ prompt("This is a prompt:");
     }
 
     function showAlert(message) {
+      exportModalContent.innerHTML = "";
       const wrapBoth = document.createElement('div');
       wrapBoth.classList.add("alertWrap");
-      exportModalContent.innerHTML = "";
       let alertDiv = document.createElement("div");
       alertDiv.classList.add("alertText");
       alertDiv.textContent = message;
