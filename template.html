@@ -1434,13 +1434,13 @@
       localStorage.setItem("terminateWorker", flexSwitchCheckDefault.checked);
       localStorage.setItem("darkMode", darkModeFlag);
       const saveSettingsBtn = document.getElementById("saveSettingsBtn");
-      saveSettings.disabled = true;
-      saveSettings.style.width = saveSettings.offsetWidth + "px";
+      saveSettingsBtn.disabled = true;
+      saveSettingsBtn.style.width = saveSettings.offsetWidth + "px";
       saveSettingsBtn.textContent = "Saved!";
       setTimeout(() => {
         saveSettingsBtn.textContent = "Save settings";
-        saveSettings.disabled = false;
-        saveSettings.style.width = "auto";
+        saveSettingsBtn.disabled = false;
+        saveSettingsBtn.style.width = "auto";
       }, 1000);
     }
 
