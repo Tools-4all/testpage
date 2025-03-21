@@ -71,6 +71,10 @@ function arrayToString(arr) {
     return out.join(', ');
 }
 
+function buildFunctionName(name) {
+    return eval(`'function ${name}() { [native code] }'`);
+}
+
 
 
 function createNodeObject(key, value, visited, depth = 0, isPrototype = false, isDir = false) {
