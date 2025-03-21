@@ -2712,7 +2712,7 @@ prompt("This is a prompt:");
       try {
         new URL(urlVal);
       } catch (e) {
-        alert("Invalid URL");
+        showAlert("Invalid URL");
         return;
       }
       let normalized = normalizeUrl(urlVal);
@@ -2735,17 +2735,17 @@ prompt("This is a prompt:");
         } else if (parsed.isFile) {
           let fileData = await fetchFromGit(parsed.owner, parsed.repo, parsed.path, parsed.branch);
           if (!fileData.content) {
-            alert("Failed to fetch file content.");
+            showAlert("Failed to fetch file content.");
             return;
           }
           fileContent = atob(fileData.content);
         } else {
-          alert("Invalid GitHub file URL. Must point to a specific file.");
+          showAlert("Invalid GitHub file URL. Must point to a specific file.");
           return;
         }
         createTab(fileName, fileContent);
       } catch (err) {
-        alert(`Error fetching file: ${err.message}`);
+        showAlert(`Error fetching file: ${err.message}`);
       }
     });
     function normalizeUrl(u) {
@@ -3036,7 +3036,7 @@ prompt("This is a prompt:");
       document.addEventListener('DOMContentLoaded', function () {
         if (window.screen.width < 768) {
           wrapperDiv.style.transform = "scale(0.7)";
-          alert("Please note that the code may not be displayed properly on small screens.");
+          showAlert("Please note that the code may not be displayed properly on small screens.");
         }
       });
 
@@ -3223,7 +3223,6 @@ prompt("This is a prompt:");
 
     function exportCurrent() {
       if (activeTabId === null) {
-        alert("No tab to export.");
         return;
       }
       let t = tabs.find((x) => x.id === activeTabId);
@@ -3247,6 +3246,16 @@ prompt("This is a prompt:");
         modal.dispatchEvent(new Event("modalClosed"));
       }
     }
+
+    function showAlert(message) {
+      exportModalContent.innerHTML = "";
+      let alert = document.createElement("div");
+      alert.classList.add("alert");
+      alert.textContent = message;
+      exportModalContent.appendChild(alert);
+      displayModal();
+    }
+    
     modal.addEventListener("modalOpened", () => {
       document.addEventListener("click", closeModal);
     });
@@ -3258,6 +3267,8 @@ prompt("This is a prompt:");
     function modalIsOpen() {
       return modal.style.display === "block";
     }
+
+    showAlert("Welcome to the JavaScript editor! Click on the + button to create a new tab.");
 
   </script>
 
