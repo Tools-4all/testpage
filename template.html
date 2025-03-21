@@ -1447,7 +1447,9 @@
       if (terminateWorker) {
         flexSwitchCheckDefault.checked = terminateWorker === "true";
       }
-      darkModeFlag = localStorage.getItem("darkMode") === "true";
+      if (localStorage.getItem("darkMode") === "true") {
+        changeToLightMode();
+      }
     }
 
     const lightModeDiv = document.getElementById("lightModeDiv");
