@@ -2223,9 +2223,6 @@ prompt("This is a prompt:");
       div.appendChild(wrapBoth);
       let actualMsg = "";
       let subMsgDiv
-      console.log('msg before', msg)
-      msg = msg[0][0]
-      console.log('msg after', msg)
       for (let key in msg) {
         subMsgDiv = document.createElement("div");
         if (msg[key][1]) {
