@@ -507,7 +507,7 @@ function objectToStringForNode(obj) {
         return `(0) {}`;
     } else if (vals.length > 5) {
         return `(${vals.length}) {${vals.slice(0, 5).join(", ")}, ...}`;
-    } return `(${vals.length}) {${vals.join(", ")}}`;
+    } return `{${vals.join(", ")}}`;
 }
 
 
