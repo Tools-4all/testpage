@@ -3250,10 +3250,10 @@ prompt("This is a prompt:");
     function showAlert(message) {
       exportModalContent.innerHTML = "";
       let alert = document.createElement("div");
-      alert.classList.add("alert");
+      alert.classList.add("alertText");
       alert.textContent = message;
       exportModalContent.appendChild(alert);
-      const btn = document.createElement("button");
+      const btn = document.createElement("alertButton");
       btn.textContent = "Close";
       btn.classList.add("exportBtn");
       btn.addEventListener("click", () => {
