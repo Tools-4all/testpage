@@ -2224,11 +2224,10 @@ prompt("This is a prompt:");
       let actualMsg = "";
       let subMsgDiv
       msg = msg[0][0]
+      console.log('msg', msg)
       for (let key in msg) {
         subMsgDiv = document.createElement("div");
         if (msg[key][1]) {
-          console.log(msg[key][0])
-          console.log(msg)
           subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
           subMsgDiv.style.marginRight = "8px";
           wrapBoth.appendChild(subMsgDiv);
