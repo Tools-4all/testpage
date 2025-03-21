@@ -1235,8 +1235,11 @@
       border-color: #333;
     }
 
+    .alertWrap {
+      display: block;
+      color: #e74c3c;
+    }
     .alertButton {
-      background-color: #e74c3c;
       color: white;
       border: none;
       padding: 6px 12px;
@@ -1247,7 +1250,6 @@
       transition: background-color 0.3s;
     }
     .alertText {
-      color: #e74c3c;
       font-size: 14px;
       font-weight: 500;
       margin-top: 10px;
@@ -3266,18 +3268,21 @@ prompt("This is a prompt:");
     }
 
     function showAlert(message) {
+      const wrapBoth = document.createElement('div');
+      wrapBoth.classList.add("alertWrap");
       exportModalContent.innerHTML = "";
       let alert = document.createElement("div");
       alert.classList.add("alertText");
       alert.textContent = message;
-      exportModalContent.appendChild(alert);
       const btn = document.createElement("alertButton");
       btn.textContent = "Close";
       btn.classList.add("exportBtn");
       btn.addEventListener("click", () => {
         closeModal("close");
       });
-      exportModalContent.appendChild(btn);
+      wrapBoth.appendChild(alert);
+      wrapBoth.appendChild(btn);
+      exportModalContent.appendChild(wrapBoth);
       displayModal();
     }
     
