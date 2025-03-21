@@ -1435,10 +1435,12 @@
       localStorage.setItem("darkMode", darkModeFlag);
       const saveSettingsBtn = document.getElementById("saveSettingsBtn");
       saveSettings.disabled = true;
+      saveSettings.style.width = saveSettings.offsetWidth + "px";
       saveSettingsBtn.textContent = "Saved!";
       setTimeout(() => {
         saveSettingsBtn.textContent = "Save settings";
         saveSettings.disabled = false;
+        saveSettings.style.width = "auto";
       }, 1000);
     }
 
