@@ -221,7 +221,7 @@ function createNodeObject(key, value, visited, depth = 0, isPrototype = false, i
                     headerText = "Object"
                 } else {
                     try {
-                        headerText = objectToStringForNode(value);
+                        headerText = objectToStringForNode(value, false);
                     } catch (e) {
                         headerText = "{}";
                     }
@@ -485,7 +485,7 @@ function getStringOfKeyValue(obj) {
     }
 }
 
-function objectToStringForNode(obj) {
+function objectToStringForNode(obj, isDir=false) {
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
@@ -507,7 +507,10 @@ function objectToStringForNode(obj) {
         return `(0) {}`;
     } else if (vals.length > 5) {
         return `(${vals.length}) {${vals.slice(0, 5).join(", ")}, ...}`;
-    } return `(${vals.length}) {${vals.join(", ")}}`;
+    } else if (isDir) {
+        return `(${vals.length}) {${vals.join(", ")}}`;
+    } 
+    return `{${vals.join(", ")}}`;
 }
 
 
