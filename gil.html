@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <title>Dynamic SSL Certificate Checker</title>
   <style>
+    /* Reset & Base */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #f7f7f7;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 2rem;
+      background: #f4f6f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
@@ -16,37 +17,41 @@
     }
     .container {
       background: #fff;
-      padding: 2rem;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 900px;
       width: 100%;
-      max-width: 800px;
+      padding: 30px;
     }
     h1 {
       text-align: center;
+      margin-bottom: 20px;
       color: #333;
-      margin-bottom: 1rem;
     }
     form {
       display: flex;
-      flex-direction: row;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 20px;
+      gap: 10px;
     }
     input[type="text"] {
       flex: 1;
-      padding: 0.75rem;
-      font-size: 1rem;
+      padding: 12px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 1rem;
+      transition: border 0.2s;
+    }
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #007bff;
     }
     button {
-      padding: 0.75rem 1.5rem;
+      padding: 12px 20px;
       font-size: 1rem;
+      background: #007bff;
       border: none;
-      border-radius: 4px;
-      background: #007BFF;
       color: #fff;
+      border-radius: 4px;
       cursor: pointer;
       transition: background 0.2s;
     }
@@ -54,126 +59,145 @@
       background: #0056b3;
     }
     .status {
-      padding: 0.75rem;
+      margin-bottom: 20px;
+      padding: 12px;
       border-radius: 4px;
-      font-weight: bold;
       text-align: center;
-      margin-bottom: 1rem;
+      font-weight: bold;
     }
-    .valid {
+    .status.valid {
       background: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
-    .invalid {
+    .status.invalid {
       background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
-    .error {
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeeba;
-      padding: 0.75rem;
+    .tree-view {
+      font-family: monospace;
+      font-size: 0.9rem;
+      background: #f1f3f5;
+      padding: 15px;
       border-radius: 4px;
-      text-align: center;
-      margin-bottom: 1rem;
+      overflow: auto;
+      max-height: 600px;
     }
-    /* Styles for dynamic JSON tree */
-    .json-tree {
-      font-family: "Courier New", Courier, monospace;
-      background: #f0f0f0;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
+    .node {
+      margin-left: 20px;
+      position: relative;
+      padding-left: 10px;
+      margin-top: 5px;
     }
-    .json-key {
+    .node::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: #ccc;
+    }
+    .toggle {
+      cursor: pointer;
+      user-select: none;
       font-weight: bold;
-      color: #333;
+      color: #007bff;
+      margin-right: 5px;
     }
-    .json-object,
-    .json-array {
-      margin-left: 1rem;
-      border-left: 1px dotted #ccc;
-      padding-left: 0.5rem;
-      margin-bottom: 0.5rem;
+    .collapsed > .children {
+      display: none;
+    }
+    .key {
+      color: #555;
+    }
+    .value {
+      color: #000;
+    }
+    /* Hover effects for tree nodes */
+    .node:hover {
+      background: rgba(0, 123, 255, 0.05);
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Dynamic SSL Certificate Checker</h1>
-    <form id="sslForm">
+    <h1>SSL Certificate Checker</h1>
+    <form id="urlForm">
       <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://www.google.com)" required>
       <button type="submit">Check</button>
     </form>
     <div id="statusMessage"></div>
-    <div id="dynamicOutput" class="json-tree"></div>
+    <div id="treeContainer" class="tree-view"></div>
   </div>
-
   <script>
-    // Recursively builds an HTML element representing the JSON data.
-    function buildJsonTree(data) {
-      const container = document.createElement("div");
-      
-      if (typeof data === "object" && data !== null) {
-        if (Array.isArray(data)) {
-          const list = document.createElement("ul");
-          list.classList.add("json-array");
-          data.forEach((item, index) => {
-            const li = document.createElement("li");
-            li.innerHTML = `<span class="json-key">[${index}]:</span> `;
-            li.appendChild(buildJsonTree(item));
-            list.appendChild(li);
-          });
-          container.appendChild(list);
-        } else {
-          const list = document.createElement("ul");
-          list.classList.add("json-object");
-          Object.keys(data).forEach(key => {
-            const li = document.createElement("li");
-            const keySpan = document.createElement("span");
-            keySpan.classList.add("json-key");
-            keySpan.textContent = key + ": ";
-            li.appendChild(keySpan);
-            li.appendChild(buildJsonTree(data[key]));
-            list.appendChild(li);
-          });
-          container.appendChild(list);
+    // Recursively create a DOM tree from a JSON object.
+    function createNode(key, value) {
+      const nodeEl = document.createElement("div");
+      nodeEl.classList.add("node");
+
+      if (typeof value === "object" && value !== null) {
+        // Create header with toggle if object/array.
+        const header = document.createElement("div");
+        const toggle = document.createElement("span");
+        toggle.classList.add("toggle");
+        toggle.textContent = key ? key + ":" : "";
+        header.appendChild(toggle);
+        nodeEl.appendChild(header);
+
+        // Container for children nodes.
+        const childrenContainer = document.createElement("div");
+        childrenContainer.classList.add("children");
+        for (const childKey in value) {
+          if (value.hasOwnProperty(childKey)) {
+            childrenContainer.appendChild(createNode(childKey, value[childKey]));
+          }
         }
+        nodeEl.appendChild(childrenContainer);
+
+        // Toggle collapse on header click.
+        toggle.addEventListener("click", function() {
+          nodeEl.classList.toggle("collapsed");
+        });
       } else {
-        // Display primitive values directly
-        const span = document.createElement("span");
-        span.textContent = data;
-        container.appendChild(span);
+        // Leaf node.
+        const line = document.createElement("div");
+        line.innerHTML = `<span class="key">${key ? key + ": " : ""}</span><span class="value">${value}</span>`;
+        nodeEl.appendChild(line);
       }
-      return container;
+      return nodeEl;
     }
 
-    document.getElementById("sslForm").addEventListener("submit", async function(e) {
+    function buildTree(data, container) {
+      container.innerHTML = "";
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          container.appendChild(createNode(key, data[key]));
+        }
+      }
+    }
+
+    document.getElementById("urlForm").addEventListener("submit", async function(e) {
       e.preventDefault();
-      const statusDiv = document.getElementById("statusMessage");
-      const outputDiv = document.getElementById("dynamicOutput");
-      statusDiv.innerHTML = "";
-      outputDiv.innerHTML = "Fetching data...";
-      
       const url = document.getElementById("urlInput").value.trim();
-      if (!url) return;
+      const treeContainer = document.getElementById("treeContainer");
+      const statusMessage = document.getElementById("statusMessage");
+      treeContainer.innerHTML = "";
+      statusMessage.innerHTML = "";
+      
+      // Set loading state.
+      statusMessage.innerHTML = `<div class="status">Fetching certificate details...</div>`;
       
       try {
-        const response = await fetch(`https://api-xzow.onrender.com/check_ssl?url=${encodeURIComponent(url)}`);
-        if (!response.ok) {
-          throw new Error("Error fetching data from the API");
+        const res = await fetch("https://api-xzow.onrender.com/check_ssl?url=" + encodeURIComponent(url));
+        if (!res.ok) {
+          throw new Error("Error fetching data from API");
         }
-        const data = await response.json();
-        outputDiv.innerHTML = ""; // Clear fetching text
+        const data = await res.json();
         
-        // Dynamically build the certificate details view
-        const tree = buildJsonTree(data);
-        outputDiv.appendChild(tree);
-
-        // Check certificate validity if dates exist
-        if(data.not_valid_before && data.not_valid_after) {
+        // Determine certificate status based on validity dates.
+        if (data.not_valid_before && data.not_valid_after) {
           const now = new Date();
           const validFrom = new Date(data.not_valid_before);
           const validTo = new Date(data.not_valid_after);
@@ -189,13 +213,15 @@
             message = "Certificate is valid.";
             statusClass = "valid";
           }
-          statusDiv.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+          statusMessage.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
         } else {
-          statusDiv.innerHTML = `<div class="error">Certificate details incomplete.</div>`;
+          statusMessage.innerHTML = `<div class="status invalid">Certificate details incomplete.</div>`;
         }
+        
+        // Build a dynamic tree from the returned JSON.
+        buildTree(data, treeContainer);
       } catch (error) {
-        outputDiv.innerHTML = "";
-        statusDiv.innerHTML = `<div class="error">${error.message}</div>`;
+        statusMessage.innerHTML = `<div class="status invalid">${error.message}</div>`;
       }
     });
   </script>
