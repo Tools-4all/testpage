@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SSL Certificate Checker</title>
+  <title>Dynamic SSL Certificate Checker</title>
   <style>
     body {
       background: #f7f7f7;
@@ -11,7 +11,7 @@
       padding: 2rem;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       min-height: 100vh;
     }
     .container {
@@ -20,7 +20,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       width: 100%;
-      max-width: 700px;
+      max-width: 800px;
     }
     h1 {
       text-align: center;
@@ -29,18 +29,19 @@
     }
     form {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 0.5rem;
       margin-bottom: 1rem;
     }
     input[type="text"] {
+      flex: 1;
       padding: 0.75rem;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
     button {
-      padding: 0.75rem;
+      padding: 0.75rem 1.5rem;
       font-size: 1rem;
       border: none;
       border-radius: 4px;
@@ -52,22 +53,12 @@
     button:hover {
       background: #0056b3;
     }
-    .result {
-      background: #f0f0f0;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-family: "Courier New", Courier, monospace;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-    }
     .status {
       padding: 0.75rem;
       border-radius: 4px;
       font-weight: bold;
       text-align: center;
+      margin-bottom: 1rem;
     }
     .valid {
       background: #d4edda;
@@ -86,29 +77,86 @@
       padding: 0.75rem;
       border-radius: 4px;
       text-align: center;
+      margin-bottom: 1rem;
+    }
+    /* Styles for dynamic JSON tree */
+    .json-tree {
+      font-family: "Courier New", Courier, monospace;
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+    .json-key {
+      font-weight: bold;
+      color: #333;
+    }
+    .json-object,
+    .json-array {
+      margin-left: 1rem;
+      border-left: 1px dotted #ccc;
+      padding-left: 0.5rem;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>SSL Certificate Checker</h1>
+    <h1>Dynamic SSL Certificate Checker</h1>
     <form id="sslForm">
       <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://www.google.com)" required>
-      <button type="submit">Check Certificate</button>
+      <button type="submit">Check</button>
     </form>
     <div id="statusMessage"></div>
-    <div id="result" class="result"></div>
+    <div id="dynamicOutput" class="json-tree"></div>
   </div>
 
   <script>
+    // Recursively builds an HTML element representing the JSON data.
+    function buildJsonTree(data) {
+      const container = document.createElement("div");
+      
+      if (typeof data === "object" && data !== null) {
+        if (Array.isArray(data)) {
+          const list = document.createElement("ul");
+          list.classList.add("json-array");
+          data.forEach((item, index) => {
+            const li = document.createElement("li");
+            li.innerHTML = `<span class="json-key">[${index}]:</span> `;
+            li.appendChild(buildJsonTree(item));
+            list.appendChild(li);
+          });
+          container.appendChild(list);
+        } else {
+          const list = document.createElement("ul");
+          list.classList.add("json-object");
+          Object.keys(data).forEach(key => {
+            const li = document.createElement("li");
+            const keySpan = document.createElement("span");
+            keySpan.classList.add("json-key");
+            keySpan.textContent = key + ": ";
+            li.appendChild(keySpan);
+            li.appendChild(buildJsonTree(data[key]));
+            list.appendChild(li);
+          });
+          container.appendChild(list);
+        }
+      } else {
+        // Display primitive values directly
+        const span = document.createElement("span");
+        span.textContent = data;
+        container.appendChild(span);
+      }
+      return container;
+    }
+
     document.getElementById("sslForm").addEventListener("submit", async function(e) {
       e.preventDefault();
       const statusDiv = document.getElementById("statusMessage");
-      const resultDiv = document.getElementById("result");
+      const outputDiv = document.getElementById("dynamicOutput");
       statusDiv.innerHTML = "";
-      resultDiv.innerHTML = "Fetching data...";
+      outputDiv.innerHTML = "Fetching data...";
       
-      // Grab user input and encode it as query parameter.
       const url = document.getElementById("urlInput").value.trim();
       if (!url) return;
       
@@ -118,9 +166,13 @@
           throw new Error("Error fetching data from the API");
         }
         const data = await response.json();
-        resultDiv.innerHTML = JSON.stringify(data, null, 4);
+        outputDiv.innerHTML = ""; // Clear fetching text
+        
+        // Dynamically build the certificate details view
+        const tree = buildJsonTree(data);
+        outputDiv.appendChild(tree);
 
-        // Determine if certificate is valid based on not_valid_before and not_valid_after
+        // Check certificate validity if dates exist
         if(data.not_valid_before && data.not_valid_after) {
           const now = new Date();
           const validFrom = new Date(data.not_valid_before);
@@ -142,7 +194,7 @@
           statusDiv.innerHTML = `<div class="error">Certificate details incomplete.</div>`;
         }
       } catch (error) {
-        resultDiv.innerHTML = "";
+        outputDiv.innerHTML = "";
         statusDiv.innerHTML = `<div class="error">${error.message}</div>`;
       }
     });
