@@ -1135,17 +1135,25 @@
     }
 
     .previewModal {
-      display: none;
       position: fixed;
       z-index: 9999;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
-      overflow: auto;
-      background-color: rgb(0, 0, 0);
       background-color: rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease, opacity 0.5s ease;
     }
+
+    .previewModal.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
 
     .previewModal-content {
       background-color: #fefefe;
@@ -1234,6 +1242,29 @@
     #compiler:not(.lightMode) #tabBar {
       border-color: #333;
     }
+
+    .alertWrap {
+      color: #e74c3c;
+      text-align: center;
+      align-items: center;
+    }
+
+    .alertButton {
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      margin-top: 50px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .alertText {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
@@ -1308,6 +1339,8 @@
         <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
+          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()" id="saveSettingsBtn">Save
+            settings</button>
         </div>
       </div>
     </div>
@@ -1397,8 +1430,39 @@
       }
     });
 
+    function saveSettings() {
+      localStorage.setItem("tabSize", spaces);
+      localStorage.setItem("terminateWorker", flexSwitchCheckDefault.checked);
+      localStorage.setItem("darkMode", darkModeFlag);
+      const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+      saveSettingsBtn.disabled = true;
+      saveSettingsBtn.style.width = saveSettingsBtn.offsetWidth + "px";
+      saveSettingsBtn.textContent = "Saved!";
+      setTimeout(() => {
+        saveSettingsBtn.textContent = "Save settings";
+        saveSettingsBtn.disabled = false;
+        saveSettingsBtn.style.width = "auto";
+      }, 1000);
+    }
+
+    function loadSettings() {
+      const tabSize = localStorage.getItem("tabSize");
+      if (tabSize) {
+        spaces = parseInt(tabSize);
+        tabSizeInput.value = spaces;
+        tabSizeDisplay.textContent = spaces;
+        tabSizeInput.dispatchEvent(new Event("input"));
+      }
+      const terminateWorker = localStorage.getItem("terminateWorker");
+      if (terminateWorker) {
+        flexSwitchCheckDefault.checked = terminateWorker === "true";
+      }
+      if (localStorage.getItem("darkMode") === "false") {
+        changeToLightMode();
+      }
+    }
+
     const lightModeDiv = document.getElementById("lightModeDiv");
-    // const sunSvg = lightModeDiv.innerHTML;
 
     function changeToLightMode() {
       if (darkModeFlag) {
@@ -2514,7 +2578,7 @@ prompt("This is a prompt:");
           'editor.foreground': '#333333'
         }
       });
-
+      loadSettings();
       createTab();
     });
 
@@ -2712,7 +2776,7 @@ prompt("This is a prompt:");
       try {
         new URL(urlVal);
       } catch (e) {
-        alert("Invalid URL");
+        showAlert("Invalid URL");
         return;
       }
       let normalized = normalizeUrl(urlVal);
@@ -2735,17 +2799,17 @@ prompt("This is a prompt:");
         } else if (parsed.isFile) {
           let fileData = await fetchFromGit(parsed.owner, parsed.repo, parsed.path, parsed.branch);
           if (!fileData.content) {
-            alert("Failed to fetch file content.");
+            showAlert("Failed to fetch file content.");
             return;
           }
           fileContent = atob(fileData.content);
         } else {
-          alert("Invalid GitHub file URL. Must point to a specific file.");
+          showAlert("Invalid GitHub file URL. Must point to a specific file.");
           return;
         }
         createTab(fileName, fileContent);
       } catch (err) {
-        alert(`Error fetching file: ${err.message}`);
+        showAlert(`Error fetching file: ${err.message}`);
       }
     });
     function normalizeUrl(u) {
@@ -3036,7 +3100,7 @@ prompt("This is a prompt:");
       document.addEventListener('DOMContentLoaded', function () {
         if (window.screen.width < 768) {
           wrapperDiv.style.transform = "scale(0.7)";
-          alert("Please note that the code may not be displayed properly on small screens.");
+          showAlert("Please note that the code may not be displayed properly on small screens.");
         }
       });
 
@@ -3223,7 +3287,6 @@ prompt("This is a prompt:");
 
     function exportCurrent() {
       if (activeTabId === null) {
-        alert("No tab to export.");
         return;
       }
       let t = tabs.find((x) => x.id === activeTabId);
@@ -3237,16 +3300,36 @@ prompt("This is a prompt:");
     }
 
     function displayModal() {
-      modal.style.display = "block";
+      modal.classList.add("active");
       modal.dispatchEvent(new Event("modalOpened"));
     }
 
     function closeModal(event) {
       if (event.target === modal || event === "close") {
-        modal.style.display = "none";
+        modal.classList.remove("active");
         modal.dispatchEvent(new Event("modalClosed"));
       }
     }
+
+    function showAlert(message) {
+      exportModalContent.innerHTML = "";
+      const wrapBoth = document.createElement('div');
+      wrapBoth.classList.add("alertWrap");
+      let alertDiv = document.createElement("div");
+      alertDiv.classList.add("alertText");
+      alertDiv.textContent = message;
+      const btn = document.createElement("alertButton");
+      btn.textContent = "Close";
+      btn.classList.add("exportBtn");
+      btn.addEventListener("click", () => {
+        closeModal("close");
+      });
+      wrapBoth.appendChild(alertDiv);
+      wrapBoth.appendChild(btn);
+      exportModalContent.appendChild(wrapBoth);
+      displayModal();
+    }
+
     modal.addEventListener("modalOpened", () => {
       document.addEventListener("click", closeModal);
     });
@@ -3256,7 +3339,7 @@ prompt("This is a prompt:");
     });
 
     function modalIsOpen() {
-      return modal.style.display === "block";
+      return modal.classList.contains("active");
     }
 
   </script>
