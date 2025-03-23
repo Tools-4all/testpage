@@ -1,265 +1,151 @@
-{% extends 'base_template.html' %}
-{% block content %}
-{% load static %}
-
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <title>Online Voice Recorder</title>
-  <link rel="stylesheet" href="{% static 'css/voiceRecorder.css' %}?v=2" />
-  <link rel="stylesheet" href="{% static 'css/page_info.css' %}" />
-  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.0/lame.min.js"></script>
+  <meta charset="UTF-8">
+  <title>SSL Certificate Checker</title>
+  <style>
+    body {
+      background: #f7f7f7;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 700px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    input[type="text"] {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #007BFF;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    .status {
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .valid {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .invalid {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .error {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 0.75rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+  </style>
 </head>
-
 <body>
-
-  <div class="titleDiv">
-    <h1 class="functionTitle">Online Voice Recorder</h1>
-    <div class="btn-info" id="infoBtn">
-      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle"
-        viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-        <path
-          d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
-      </svg>
-    </div>
+  <div class="container">
+    <h1>SSL Certificate Checker</h1>
+    <form id="sslForm">
+      <input type="text" id="urlInput" placeholder="Enter URL (e.g., https://www.google.com)" required>
+      <button type="submit">Check Certificate</button>
+    </form>
+    <div id="statusMessage"></div>
+    <div id="result" class="result"></div>
   </div>
 
-  <div class="info-div" id="infoDiv">
-    <h2>User Guide</h2>
-    <p>Our Voice Recorder tool allows you to capture high-quality audio effortlessly. Perfect for recording meetings,
-      lectures, podcasts, or personal notes, this tool is intuitive and efficient.</p>
+  <script>
+    document.getElementById("sslForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const statusDiv = document.getElementById("statusMessage");
+      const resultDiv = document.getElementById("result");
+      statusDiv.innerHTML = "";
+      resultDiv.innerHTML = "Fetching data...";
+      
+      // Grab user input and encode it as query parameter.
+      const url = document.getElementById("urlInput").value.trim();
+      if (!url) return;
+      
+      try {
+        const response = await fetch(`https://api-xzow.onrender.com/check_ssl?url=${encodeURIComponent(url)}`);
+        if (!response.ok) {
+          throw new Error("Error fetching data from the API");
+        }
+        const data = await response.json();
+        resultDiv.innerHTML = JSON.stringify(data, null, 4);
 
-    <h3>How to Use:</h3>
-    <ol>
-      <li><strong>Start Recording</strong> – Click the "Record" button to begin capturing your voice immediately.</li>
-      <li><strong>Pause and Resume</strong> – Use the pause button to temporarily halt the recording, then resume when
-        you're ready.</li>
-      <li><strong>Stop Recording</strong> – Click the "Stop" button to end your recording session.</li>
-      <li><strong>Review and Save</strong> – Listen to your recording using the playback feature and download your
-        audio
-        in MP3, WAV, or WebM format if you're satisfied.</li>
-    </ol>
-
-    <h3>Features:</h3>
-    <p>This tool offers an intuitive interface with a live timer, pause/resume controls, and instant playback preview.
-      Enjoy clear, high-quality audio recording without any installation or registration.</p>
-  </div>
-
-
-  <div id="chooseMicModal">
-    <div class="modal-content">
-      <h2>Choose Microphone</h2>
-      <select id="micSelect"></select>
-      <div class="button-container">
-        <button id="cancelButton">Cancel</button>
-        <button id="saveButton">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="voice_recorder_container">
-    <div id="microphone">
-      <i class="fa-solid fa-microphone"></i>
-    </div>
-
-    <div class="controls">
-      <button id="recordButton">
-        <span id="recordText">Record</span> <img src="{% static 'site_images/record.png' %}" alt="Start Recorder">
-      </button>
-      <button id="pauseRecordButton" class="pause" disabled><i class="fa-solid fa-pause"></i></button>
-      <button id="stopButton" disabled>
-        <i class="fa-solid fa-stop"></i>
-      </button>
-      <button id="reRecordButton" disabled>Re‑record</button>
-      <button id="playPauseButton" disabled>
-        <i class="fa-solid fa-play"></i>
-      </button>
-    </div>
-    <canvas id="waveformCanvas"></canvas>
-    <div id="timestamp">
-      <span id="blinkingDot" class="blinking-dot"></span>
-      <span id="pauseIcon"><i class="fa-solid fa-pause"></i></span>
-      <span id="timerText">00:00</span>
-    </div>
-    <div class="download-section" id="downloadSection" style="display:none;">
-      <div class="btn-circle-download" id="downloadButton">
-        <div>
-          <span style="font-size: 20px;font-weight: 500;"></span>
-        </div>
-        <div>
-          <select id="downloadFormat">
-            <option value="mp3" selected>MP3</option>
-            <option value="wav">WAV</option>
-            <option value="webm">WebM</option>
-          </select>
-        </div>
-        <div style="margin-left: 22px;margin-top: 15px;z-index: 999;" onclick="">
-          <svg id="arrow" wi3dth="14px" height="20px" viewBox="17 14 14 20" style="margin-left: 10px;">
-            <path d="M24,15 L24,32"></path>
-            <polyline points="30 27 24 33 18 27"></polyline>
-          </svg>
-          <svg id="check" width="21px" height="15px" viewBox="13 17 21 15">
-            <polyline points="32.5 18.5 20 31 14.5 25.5"></polyline>
-          </svg>
-          <svg id="border" width="48px" height="48px" viewBox="0 0 48 48">
-            <path
-              d="M24,1 L24,1 L24,1 C36.7025492,1 47,11.2974508 47,24 L47,24 L47,24 C47,36.7025492 36.7025492,47 24,47 L24,47 L24,47 C11.2974508,47 1,36.7025492 1,24 L1,24 L1,24 C1,11.2974508 11.2974508,1 24,1 L24,1 Z">
-            </path>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <div id="page-info" class="info-section" data-aos="fade" data-aos-duration="700" style="margin-top: 100px;">
-    <h2 class="info-title">Capture Crisp, Clear Audio Recordings</h2>
-    <p class="info-text">
-      Experience the ultimate voice recording solution designed for professionals and content creators.
-      Our robust tool lets you record your voice in high fidelity with crystal-clear sound, ensuring every nuance is
-      captured flawlessly.
-      Whether you're producing podcasts, recording interviews, or capturing important conversations, our recorder
-      delivers unmatched performance and clarity.
-    </p>
-    <h3 class="info-subtitle">Why Choose Our Voice Recorder?</h3>
-    <ul class="info-list">
-      <li class="info-list-item">Record with high-fidelity audio for professional sound quality.</li>
-      <li class="info-list-item">Intuitive, user-friendly interface for effortless voice capture.</li>
-      <li class="info-list-item">Powerful controls to pause, resume, and stop your recordings seamlessly.</li>
-      <li class="info-list-item">Optimized for speed, efficiency, and clarity—completely free to use.</li>
-    </ul>
-    <p class="info-text">
-      Unlock your creative potential and capture every word with razor-sharp audio clarity.
-      Start recording now and let your voice shine in every project!
-    </p>
-  </div>
-
-  <div id="page-blog" class="blog-content" data-aos="fade" data-aos-duration="700">
-    <h2>Master Voice Recording: Capture Every Word with Clarity</h2>
-    <p>
-      <span class="black-strong">Voice recording</span> is a game-changing tool for digital creators, educators, and
-      professionals.
-      It captures every nuance of your voice with exceptional clarity, making your podcasts, interviews, and audio
-      memos
-      more engaging and professional.
-    </p>
-
-    <h3>Why Is Voice Recording Essential?</h3>
-    <p>
-      In today's digital age, voice recording is vital for:
-    </p>
-    <ul>
-      <li><strong>Creating professional podcasts:</strong> Produce clear, engaging audio content with ease.</li>
-      <li><strong>Documenting important conversations:</strong> Preserve every word of your meetings and interviews.
-      </li>
-      <li><strong>Recording interviews:</strong> Capture the nuances of every discussion with superior sound quality.
-      </li>
-      <li><strong>Enhancing training sessions:</strong> Deliver detailed audio instructions complemented by
-        crystal-clear commentary.</li>
-    </ul>
-
-    <h3>Key Features of Our Voice Recorder</h3>
-    <p>
-      Our tool is packed with advanced features designed to elevate your recording experience:
-    </p>
-    <ul>
-      <li><strong>High-Quality Audio Recording:</strong> Capture your voice with exceptional clarity.</li>
-      <li><strong>User-Friendly Controls:</strong> Easily pause, resume, and stop recordings using dynamic on-screen
-        controls.</li>
-      <li><strong>Instant Playback:</strong> Preview your recordings immediately to ensure perfection.</li>
-      <li><strong>Fast & Free:</strong> Enjoy a lightning-fast, no-cost recording solution for all your needs.</li>
-    </ul>
-
-    <h3>How to Use the Voice Recorder?</h3>
-    <p>
-      Getting started is a breeze:
-    </p>
-    <ol>
-      <li><strong>Start Recording:</strong> Click "Record" to begin capturing your voice immediately.</li>
-      <li><strong>Pause and Resume:</strong> Use intuitive controls to pause or resume your recording as needed.</li>
-      <li><strong>Stop Recording:</strong> Click "Stop" to end your session when you're finished.</li>
-      <li><strong>Review and Save:</strong> Instantly preview your audio and download it for editing or sharing.</li>
-    </ol>
-    <p class="info-text" style="color: #FF0000; font-weight: bold;">
-      Important: This advanced Voice Recorder tool is optimized for desktop use and may not be fully supported on all
-      devices.
-      For the best performance, please use a modern desktop browser.
-    </p>
-
-    <h3>Who Can Benefit from Our Voice Recorder?</h3>
-    <p>
-      Our cutting-edge tool is perfect for:
-    </p>
-    <ul>
-      <li><strong>Content Creators:</strong> Produce captivating podcasts, interviews, and audio reviews.</li>
-      <li><strong>Educators:</strong> Record lectures and instructional sessions with clear audio commentary.</li>
-      <li><strong>Professionals:</strong> Capture meetings and interviews with precision and clarity.</li>
-      <li><strong>Podcasters:</strong> Create and share high-quality audio content that engages your audience.</li>
-    </ul>
-
-    <h3>Start Recording Your Voice Now</h3>
-    <p>
-      Whether you're <strong>producing podcasts</strong>, <strong>recording interviews</strong>, or <strong>capturing
-        important conversations</strong>,
-      our state-of-the-art voice recorder provides the clarity and performance you need.
-      Try it today and experience the next level of audio recording!
-    </p>
-    <p style="text-align: center; margin-top: 20px;">
-      <a href="{% url 'tools_menu' %}">
-        Explore More Tools
-      </a>
-    </p>
-  </div>
-
-  <section class="faq-section" data-aos="fade" data-aos-duration="700">
-    <h2 class="faq-title">Frequently Asked Questions (FAQ)</h2>
-    <div class="faq">
-      <h3 class="faq-question" onclick="toggleAnswer(this)">What is the Voice Recorder tool?</h3>
-      <div class="faq-answer">
-        <p>Our Voice Recorder allows you to capture high-quality audio of your voice and ambient sounds.
-          It’s perfect for creating podcasts, recording interviews, and capturing meetings.</p>
-      </div>
-    </div>
-    <div class="faq">
-      <h3 class="faq-question" onclick="toggleAnswer(this)">Can I record audio clearly with the Voice Recorder?</h3>
-      <div class="faq-answer">
-        <p>Yes, our tool integrates advanced audio recording capabilities to capture your voice and surrounding sounds
-          with exceptional quality.</p>
-      </div>
-    </div>
-    <div class="faq">
-      <h3 class="faq-question" onclick="toggleAnswer(this)">Is this tool free to use?</h3>
-      <div class="faq-answer">
-        <p>Absolutely! Our powerful Voice Recorder is completely free, offering premium recording features without any
-          hidden costs.</p>
-      </div>
-    </div>
-    <div class="faq">
-      <h3 class="faq-question" onclick="toggleAnswer(this)">What can I record with this tool?</h3>
-      <div class="faq-answer">
-        <p>You can record your voice, interviews, lectures, or any ambient audio input—ensuring crystal-clear
-          recordings
-          every time.</p>
-      </div>
-    </div>
-    <div class="faq">
-      <h3 class="faq-question" onclick="toggleAnswer(this)">Can I preview my recording before saving?</h3>
-      <div class="faq-answer">
-        <p>Yes, immediately after stopping the recording, you can preview your audio to ensure it meets your standards
-          before downloading.</p>
-      </div>
-    </div>
-  </section>
-
-  <div id="tooltip"></div>
-
-  <script src=" https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script>AOS.init();</script>
-
-  <script src="{% static 'js/page_info.js' %}"></script>
-
+        // Determine if certificate is valid based on not_valid_before and not_valid_after
+        if(data.not_valid_before && data.not_valid_after) {
+          const now = new Date();
+          const validFrom = new Date(data.not_valid_before);
+          const validTo = new Date(data.not_valid_after);
+          let message = "";
+          let statusClass = "";
+          if (now < validFrom) {
+            message = "Certificate is not yet valid.";
+            statusClass = "invalid";
+          } else if (now > validTo) {
+            message = "Certificate has expired.";
+            statusClass = "invalid";
+          } else {
+            message = "Certificate is valid.";
+            statusClass = "valid";
+          }
+          statusDiv.innerHTML = `<div class="status ${statusClass}">${message}</div>`;
+        } else {
+          statusDiv.innerHTML = `<div class="error">Certificate details incomplete.</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = "";
+        statusDiv.innerHTML = `<div class="error">${error.message}</div>`;
+      }
+    });
+  </script>
 </body>
-
-{% endblock %}
+</html>
