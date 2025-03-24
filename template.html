@@ -1657,15 +1657,15 @@
               dbClick(target, num + 1);
             }, 100);
           }
-        }
-        dbClick(event.target, 1);
+          dbClick(event.target, 1);
 
+        }
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
       });
-      
+
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       // }
