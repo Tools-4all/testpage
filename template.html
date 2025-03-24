@@ -1631,34 +1631,7 @@
         folding: true,
         minimap: { enabled: !isMobile },
       });
-      editorInstance.onContextMenu = (e) => {
-        console.log(e);
-        e({
-          getAnchor: () => ({ x: e.event.x, y: e.event.y }),
-          getActions: () => [
-            {
-              id: "editor.action.clipboardCutAction",
-              label: "Cut",
-              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_X],
-            },
-            {
-              id: "editor.action.clipboardCopyAction",
-              label: "Copy",
-              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_C],
-            },
-            {
-              id: "editor.action.clipboardPasteAction",
-              label: "Paste",
-              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_V],
-            },
-            {
-              id: "editor.action.selectAll",
-              label: "Select All",
-              keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_A],
-            },
-          ],
-        });
-      };
+      // editorInstance
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
