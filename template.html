@@ -1659,6 +1659,7 @@
         console.log("event up", event)
         event = event.event
         if (event.browserEvent.type === "pointerup") {
+          console.log("event.browserEvent.type === pointerup");
           event.preventDefault();
           event.stopPropagation();
           target.element.dispatchEvent(new MouseEvent("mouseup"));
