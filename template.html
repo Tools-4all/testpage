@@ -1638,7 +1638,6 @@
       let touchEnd = null;
       let eventTargetStart;
       domNode.addEventListener("touchend", (event) => {
-        console.log("touchend", event);
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           console.log("time", touchEnd - touchStart);
