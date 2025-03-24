@@ -1633,15 +1633,19 @@
       });
       console.log("editorInstance", editorInstance);
       const domNode = editorInstance.getDomNode();
+      const selectAction = editorInstance.getAction("editor.action.smartSelect.expand").
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
-      const selectAction = editorInstance.getAction("editor.action.smartSelect.expand").
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
+          const clickEvent = new MouseEvent("click");
+          clickEvent.clientX = event.clientX;
+          clickEvent.clientY = event.clientY;
+          event.target.dispatchEvent(clickEvent);
           selectAction.run();
         }
       });
