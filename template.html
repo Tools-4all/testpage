@@ -1339,7 +1339,8 @@
         <div class="form-check-custom">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
-          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()" id="saveSettingsBtn">Save settings</button>
+          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()" id="saveSettingsBtn">Save
+            settings</button>
         </div>
       </div>
     </div>
@@ -3340,6 +3341,34 @@ prompt("This is a prompt:");
     function modalIsOpen() {
       return modal.classList.contains("active");
     }
+
+    function simulateMouseEvent(event, type) {
+      const touch = event.changedTouches[0];
+      const simulatedEvent = new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: 0
+      });
+      event.target.dispatchEvent(simulatedEvent);
+    }
+
+    document.addEventListener("touchstart", (e) => {
+      simulateMouseEvent(e, "mousedown");
+      e.preventDefault();
+    }, false);
+
+    document.addEventListener("touchmove", (e) => {
+      simulateMouseEvent(e, "mousemove");
+      e.preventDefault();
+    }, false);
+
+    document.addEventListener("touchend", (e) => {
+      simulateMouseEvent(e, "mouseup");
+      e.preventDefault();
+    }, false);
+
 
   </script>
 
