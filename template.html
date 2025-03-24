@@ -3387,7 +3387,7 @@ prompt("This is a prompt:");
     };
 
     // Attach all events to the window
-    getEventNames(window).forEach((eventName) => {
+    getEventNames(currentTab.editorInstance.domElem()).forEach((eventName) => {
       window.addEventListener(eventName, (event) => console.log(eventName, event));
     });
 
