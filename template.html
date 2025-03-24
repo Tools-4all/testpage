@@ -1722,8 +1722,8 @@ prompt("This is a prompt:");
       editorInstance.getDomNode().addEventListener("pointerdown", (e) => {
         if (e.button === 2 && e.pointerType === "mouse") {
           e.preventDefault();
-          editor.focus();
-          editor.trigger("keyboard", "editor.action.showContextMenu", {});
+          editorInstance.focus();
+          editorInstance.trigger("keyboard", "editor.action.showContextMenu", {});
         }
       });
       return id;
