@@ -1642,7 +1642,10 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-          currentTab.editorInstance.setPosition(currentTab.editorInstance.getPosition());
+          const clickEvent = new MouseEvent("click");
+          clickEvent.clientX = event.clientX;
+          clickEvent.clientY = event.clientY;
+          domNode.dispatchEvent(clickEvent);
           currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
         }
       });
