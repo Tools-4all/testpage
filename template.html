@@ -1640,10 +1640,10 @@
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
-          console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
           currentTab.editorInstance.focus();
+          currentTab.editorInstance.getAction("editor.action.goToReferences").run();
           currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
         }
       });
