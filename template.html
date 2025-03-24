@@ -1643,32 +1643,14 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          editorInstance.focus();
-
-          // Get the current cursor position
-          const position = editorInstance.getPosition();
-
-          // Get the word at the current position
-          const wordInfo = editorInstance.getModel().getWordAtPosition(position);
-
-          if (wordInfo) {
-            const selection = new monaco.Range(
-              position.lineNumber,
-              wordInfo.startColumn,
-              position.lineNumber,
-              wordInfo.endColumn
-            );
-
-            // Set the selection
-            editorInstance.setSelection(selection);
-          }
+          event.target.dispatchEvent(new MouseEvent("contextmenu"));
         }
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
       });
-
+      
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       // }
