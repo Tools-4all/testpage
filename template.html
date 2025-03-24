@@ -1643,10 +1643,22 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          ["touchstart", "touchend", "touchstart", "touchend"].forEach((name) => {
-            event.target.dispatchEvent(new MouseEvent(name, { bubbles: true }));
-          });
+          // trigger text selection
+          function dbClick(target, num) {
+            if (num === 5) {
+              return;
+            }
+            if (num % 2) {
+              target.dispatchEvent(new MouseEvent("touchstart"));
+            } else {
+              target.dispatchEvent(new MouseEvent("touchend"));
+            }
+            setTimeout(() => {
+              dbClick(target, num + 1);
+            }, 100);
+          }
         }
+        dbClick(event.target, 1);
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
