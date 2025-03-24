@@ -1635,6 +1635,9 @@
       console.log("editorInstance._onMouseUp", editorInstance._onMouseUp);
       console.log("editorInstance._onMouseUp._listeners", editorInstance._onMouseUp._listeners);
       console.log('editorInstance._onMouseUp._listeners.unshift({value: (...args) => {console.log(args);}});')
+      if (typeof editorInstance._onMouseUp._listeners !== "array") {
+        editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
+      }
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (...args) => {
         console.log(args);
       }});
