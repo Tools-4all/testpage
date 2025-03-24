@@ -1643,7 +1643,7 @@
       }
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
-        console.log("event", event)
+        console.log("event up", event)
         event = event.event
         if (event.browserEvent.type === "pointerup") {
           event.preventDefault();
@@ -1653,7 +1653,7 @@
       }});
       editorInstance["_onMouseDown"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
-        console.log("event", event);
+        console.log("event down", event);
         event = event.event
         if (event.browserEvent.type === "pointerdown") {
           console.log("event.browserEvent.type === pointerdown");
