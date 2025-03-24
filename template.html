@@ -1643,11 +1643,19 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          let selection = window.getSelection();
-          let range = document.createRange();
-          range.selectNodeContents(event.target);
-          selection.removeAllRanges();
-          selection.addRange(range);
+          const pos = currentTab.editorInstance.getPosition();
+          const word = currentTab.editorInstance.getModel().getWordAtPosition(pos);
+          if (word) {
+            const selection = new monaco.Selection(
+              pos.lineNumber,
+              word.startColumn,
+              pos.lineNumber,
+              word.endColumn
+            );
+            currentTab.editorInstance.setSelection(selection);
+            currentTab.editorInstance.focus();
+          }
+
         }
       });
       domNode.addEventListener("touchstart", (event) => {
