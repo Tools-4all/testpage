@@ -1639,7 +1639,7 @@
         editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       }
       if (typeof editorInstance._onMouseDown._listeners !== "array") {
-        editorInstance._onMouseUp._listeners = [editorInstance._onMouseDown._listeners];
+        editorInstance._onMouseDown._listeners = [editorInstance._onMouseDown._listeners];
       }
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
