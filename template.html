@@ -1656,15 +1656,13 @@
       }});
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
-        const tempEvent = event;
-        event.event = null
         console.log("event up", event)
-        event = event.tempEvent
+        event = event.event
         if (event.browserEvent.type === "pointerup") {
           console.log("event.browserEvent.type === pointerup");
           event.preventDefault();
           event.stopPropagation();
-          // target.element.dispatchEvent(new MouseEvent("mouseup"));
+          target.element.dispatchEvent(new MouseEvent("mouseup"));
         }
       }});
       editorInstance["_onMouseDown"]["_listeners"].unshift({value: (event) => {
@@ -3429,6 +3427,12 @@ prompt("This is a prompt:");
 
       return events;
     };
+
+    window.addEventListener("touchend", (event) => {
+      console.log("Touch event", event);
+      event.preventDefault();
+      event.stopPropagation();
+    });
 
   </script>
 
