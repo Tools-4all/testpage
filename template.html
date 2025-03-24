@@ -1632,58 +1632,74 @@
         minimap: { enabled: !isMobile },
       });
       console.log("editorInstance", editorInstance);
-      editorInstance.getDomNode().addEventListener("touchend", (event) => {
-        console.log("Touch event", event);
-        event.preventDefault();
-        event.stopPropagation();
-      });
-      if (typeof editorInstance._onMouseUp._listeners !== "array") {
-        editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
-      }
-      if (typeof editorInstance._onMouseDown._listeners !== "array") {
-        editorInstance._onMouseDown._listeners = [editorInstance._onMouseDown._listeners];
-      }
-      if (typeof editorInstance._onKeyDown._listeners !== "array") {
-        editorInstance._onKeyDown._listeners = [editorInstance._onKeyDown._listeners];
-      }
-      editorInstance["_onKeyDown"]["_listeners"].unshift({
-        value: (event) => {
+      const domNode = editorInstance.getDomNode();
+      let touchStart = null;
+      let touchEnd = null;
+      domNode.addEventListener("touchend", (event) => {
+        touchEnd = new Date().getTime();
+        if (touchEnd - touchStart < 700) {
+          event.preventDefault();
+          event.stopPropagation();
           const target = event.target;
-          console.log("event _onKeyDown", event)
-          event = event.event
-          if (event.browserEvent.type === "pointerup") {
-            event.preventDefault();
-            event.stopPropagation();
-            target.element.dispatchEvent(new MouseEvent("mousedown"));
-          }
+          const evt = new MouseEvent("dblclick", {
+            bubbles: true,
+            cancelable: true,
+            view: window
+          });
+          target.dispatchEvent(evt);
         }
       });
-      editorInstance["_onMouseUp"]["_listeners"].unshift({
-        value: (event) => {
-          const target = event.target;
-          console.log("event up", event)
-          event = event.event
-          if (event.browserEvent.type === "pointerup") {
-            console.log("event.browserEvent.type === pointerup");
-            event.preventDefault();
-            event.stopPropagation();
-            target.element.dispatchEvent(new MouseEvent("mouseup"));
-          }
-        }
+      domNode.addEventListener("touchstart", (event) => {
+        touchStart = new Date().getTime();
       });
-      editorInstance["_onMouseDown"]["_listeners"].unshift({
-        value: (event) => {
-          const target = event.target;
-          console.log("event down", event);
-          event = event.event
-          if (event.browserEvent.type === "pointerdown") {
-            console.log("event.browserEvent.type === pointerdown");
-            event.preventDefault();
-            event.stopPropagation();
-            target.element.dispatchEvent(new MouseEvent("mousedown"));
-          }
-        }
-      });
+      
+      // if (typeof editorInstance._onMouseUp._listeners !== "array") {
+      //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
+      // }
+      // if (typeof editorInstance._onMouseDown._listeners !== "array") {
+      //   editorInstance._onMouseDown._listeners = [editorInstance._onMouseDown._listeners];
+      // }
+      // if (typeof editorInstance._onKeyDown._listeners !== "array") {
+      //   editorInstance._onKeyDown._listeners = [editorInstance._onKeyDown._listeners];
+      // }
+      // editorInstance["_onKeyDown"]["_listeners"].unshift({
+      //   value: (event) => {
+      //     const target = event.target;
+      //     console.log("event _onKeyDown", event)
+      //     event = event.event
+      //     if (event.browserEvent.type === "pointerup") {
+      //       event.preventDefault();
+      //       event.stopPropagation();
+      //       target.element.dispatchEvent(new MouseEvent("mousedown"));
+      //     }
+      //   }
+      // });
+      // editorInstance["_onMouseUp"]["_listeners"].unshift({
+      //   value: (event) => {
+      //     const target = event.target;
+      //     console.log("event up", event)
+      //     event = event.event
+      //     if (event.browserEvent.type === "pointerup") {
+      //       console.log("event.browserEvent.type === pointerup");
+      //       event.preventDefault();
+      //       event.stopPropagation();
+      //       target.element.dispatchEvent(new MouseEvent("mouseup"));
+      //     }
+      //   }
+      // });
+      // editorInstance["_onMouseDown"]["_listeners"].unshift({
+      //   value: (event) => {
+      //     const target = event.target;
+      //     console.log("event down", event);
+      //     event = event.event
+      //     if (event.browserEvent.type === "pointerdown") {
+      //       console.log("event.browserEvent.type === pointerdown");
+      //       event.preventDefault();
+      //       event.stopPropagation();
+      //       target.element.dispatchEvent(new MouseEvent("mousedown"));
+      //     }
+      //   }
+      // });
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
