@@ -3348,87 +3348,26 @@ prompt("This is a prompt:");
     }
 
     if ('ontouchstart' in window) {
-      const longPressDuration = 800;
+      var eventMap = {};
 
-      // Translate touch events into simulated mouse events.
-      const translateTouchEvent = (e, mouseType) => {
-        const touch = e.changedTouches[0];
-        const simulatedEvent = new MouseEvent(mouseType, {
-          bubbles: true,
-          cancelable: true,
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          screenX: touch.screenX,
-          screenY: touch.screenY
-        });
-        e.target.dispatchEvent(simulatedEvent);
-      };
+      (function () {
+        var eventReplacement = {
+          "mousedown": ["touchstart mousedown", "mousedown"],
+          "mouseup": ["touchend mouseup", "mouseup"],
+          "click": ["touchstart click", "click"],
+          "mousemove": ["touchmove mousemove", "mousemove"]
+        };
 
-      // Handle key translation for any key element with a data-key attribute.
-      const triggerKeyboardEvent = (keyElement) => {
-        const key = keyElement.getAttribute('data-key');
-        if (!key) return;
-        if (currentTab && currentTab.editorInstance) {
-          // Adjust behavior for special keys; default sends the key value.
-          switch (key.toLowerCase()) {
-            case 'backspace':
-              currentTab.editorInstance.trigger('keyboard', 'deleteLeft', {});
-              break;
-            case 'delete':
-              currentTab.editorInstance.trigger('keyboard', 'deleteRight', {});
-              break;
-            case 'enter':
-              currentTab.editorInstance.trigger('keyboard', 'type', { text: '\n' });
-              break;
-            default:
-              currentTab.editorInstance.trigger('keyboard', 'type', { text: key });
+
+        for (i in eventReplacement) {
+          if (typeof window["on" + eventReplacement[i][0]] == "object") {
+            eventMap[i] = eventReplacement[i][0];
           }
-        }
-      };
-
-      // Listen for touchstart events to translate to mousedown and start long press detection.
-      document.addEventListener('touchstart', (e) => {
-        translateTouchEvent(e, 'mousedown');
-
-        // Check if the touch target (or its ancestor) is a key element.
-        const keyElement = e.target.closest('[data-key]');
-        if (keyElement) {
-          keyElement._longPressTimeout = setTimeout(() => {
-            // On long press, you can define alternate behavior (here, we reuse the normal key event).
-            if (currentTab && currentTab.editorInstance) {
-              // For example, a long press on backspace could trigger continuous deletion.
-              if (keyElement.getAttribute('data-key').toLowerCase() === 'backspace') {
-                currentTab.editorInstance.trigger('keyboard', 'deleteLeft', {});
-              } else {
-                triggerKeyboardEvent(keyElement);
-              }
-            }
-          }, longPressDuration);
-        }
-      }, { passive: false });
-
-      // Cancel long press if the finger moves.
-      document.addEventListener('touchmove', (e) => {
-        translateTouchEvent(e, 'mousemove');
-        const keyElement = e.target.closest('[data-key]');
-        if (keyElement && keyElement._longPressTimeout) {
-          clearTimeout(keyElement._longPressTimeout);
-          keyElement._longPressTimeout = null;
-        }
-      }, { passive: false });
-
-      // On touchend, simulate the mouseup event and trigger the key's event.
-      document.addEventListener('touchend', (e) => {
-        translateTouchEvent(e, 'mouseup');
-        const keyElement = e.changedTouches[0].target.closest('[data-key]');
-        if (keyElement) {
-          if (keyElement._longPressTimeout) {
-            clearTimeout(keyElement._longPressTimeout);
-            keyElement._longPressTimeout = null;
-          }
-          triggerKeyboardEvent(keyElement);
-        }
-      }, { passive: false });
+          else {
+            eventMap[i] = eventReplacement[i][1];
+          };
+        };
+      })();
     }
 
   </script>
