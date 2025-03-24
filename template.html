@@ -1645,7 +1645,7 @@
           const clickEvent = new MouseEvent("click");
           clickEvent.clientX = event.clientX;
           clickEvent.clientY = event.clientY;
-          domNode.dispatchEvent(clickEvent);
+          event.target.dispatchEvent(clickEvent);
           currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
         }
       });
