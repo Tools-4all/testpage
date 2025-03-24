@@ -1643,42 +1643,31 @@
           event.preventDefault();
           event.stopPropagation();
 
-          // Get the first changed touch (use event.changedTouches since the finger is off)
           const touch = event.changedTouches[0];
-          // Get client coordinates of the touch point
           const x = touch.clientX;
           const y = touch.clientY;
 
-          // Get the editor container's bounding rectangle
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
-          // Compute coordinates relative to the editor's container
           const relativeX = x - editorRect.left;
           const relativeY = y - editorRect.top;
 
-          // Retrieve Monaco's layout info
           const layout = editorInstance.getLayoutInfo();
-          // Adjust for Monaco's internal content offset
           const contentX = relativeX - layout.contentLeft;
           const contentY = relativeY - layout.contentTop;
 
-          // Get the line height and scroll offsets
           const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
           const scrollTop = editorInstance.getScrollTop();
           const scrollLeft = editorInstance.getScrollLeft();
 
-          // Calculate target line number (Monaco is 1-indexed)
           const lineNumber = Math.floor((contentY + scrollTop) / lineHeight) + 1;
 
-          // Get font info for approximating the column position (works best with monospaced fonts)
-          const fontInfo = editorInstance.getConfiguration().fontInfo;
+          const fontInfo = editorInstance.getOption(monaco.editor.EditorOption.fontInfo);
           const charWidth = fontInfo.typicalHalfwidthCharacterWidth;
           const column = Math.floor((contentX + scrollLeft) / charWidth) + 1;
 
-          // Move the cursor and reveal the position
           editorInstance.setPosition({ lineNumber, column });
           editorInstance.revealPosition({ lineNumber, column });
 
-          // Run any additional action
           selectAction.run();
         }
       });
