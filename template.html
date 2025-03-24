@@ -1641,6 +1641,19 @@
       if (typeof editorInstance._onMouseDown._listeners !== "array") {
         editorInstance._onMouseDown._listeners = [editorInstance._onMouseDown._listeners];
       }
+      if (typeof editorInstance._onEditorKeyDown._listeners !== "array") {
+        editorInstance._onEditorKeyDown._listeners = [editorInstance._onEditorKeyDown._listeners];
+      }
+      editorInstance["_onEditorKeyDown"]["_listeners"].unshift({value: (event) => {
+        const target = event.target;
+        console.log("event up", event)
+        event = event.event
+        if (event.browserEvent.type === "pointerup") {
+          event.preventDefault();
+          event.stopPropagation();
+          target.element.dispatchEvent(new MouseEvent("mousedown"));
+        }
+      }});
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
         console.log("event up", event)
