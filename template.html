@@ -1642,8 +1642,7 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-          currentTab.editorInstance.focus();
-          currentTab.editorInstance.getAction("editor.action.goToReferences").run();
+          currentTab.editorInstance.setPosition(currentTab.editorInstance.getPosition());
           currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
         }
       });
