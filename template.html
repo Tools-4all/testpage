@@ -1640,7 +1640,7 @@
       }
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         console.log(event)
-        if (event.browserEvent.type === "pointerup") {
+        if (event.event.browserEvent.type === "pointerup") {
           console.log("pointerup", event);
         }
       }});
