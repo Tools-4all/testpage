@@ -3385,7 +3385,6 @@ prompt("This is a prompt:");
       document.addEventListener('touchend', (e) => {
         translateTouchEvent(e, 'mouseup');
         const targetEl = e.changedTouches[0].target;
-        // Only insert a dot if the touched element has data-key="."
         if (targetEl.getAttribute('data-key') === '.') {
           if (currentTab && currentTab.editorInstance) {
             currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
