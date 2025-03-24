@@ -3364,16 +3364,11 @@ prompt("This is a prompt:");
       const longPressDuration = 800;
       document.addEventListener('touchstart', function (e) {
         translateTouchEvent(e, 'mousedown');
-
         if (e.touches.length === 1) {
           e.target._longPressTimeout = setTimeout(function () {
-            const deleteKeyEvent = new KeyboardEvent('keydown', {
-              key: 'Delete',
-              code: 'Delete',
-              bubbles: true,
-              cancelable: true
-            });
-            e.target.dispatchEvent(deleteKeyEvent);
+            if (currentTab && currentTab.editorInstance) {
+              currentTab.editorInstance.trigger('keyboard', 'deleteRight', {});
+            }
           }, longPressDuration);
         }
       }, { passive: false });
@@ -3388,30 +3383,16 @@ prompt("This is a prompt:");
 
       document.addEventListener('touchend', function (e) {
         translateTouchEvent(e, 'mouseup');
-        translateTouchEvent(e, 'click');
+        if (currentTab && currentTab.editorInstance) {
+          currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
+        }
         if (e.target._longPressTimeout) {
           clearTimeout(e.target._longPressTimeout);
           e.target._longPressTimeout = null;
         }
       }, { passive: false });
-
-      let lastTapTime = 0;
-      document.addEventListener('touchend', function (e) {
-        const currentTime = Date.now();
-        const tapInterval = currentTime - lastTapTime;
-        if (tapInterval > 0 && tapInterval < 500) {
-          const dotKeyEvent = new KeyboardEvent('keydown', {
-            key: '.',
-            code: 'Period',
-            bubbles: true,
-            cancelable: true
-          });
-          e.target.dispatchEvent(dotKeyEvent);
-          e.preventDefault();
-        }
-        lastTapTime = currentTime;
-      }, { passive: false });
     }
+
 
   </script>
 
