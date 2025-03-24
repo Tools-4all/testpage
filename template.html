@@ -1646,7 +1646,7 @@
       }
       editorInstance["_onKeyDown"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
-        console.log("event up", event)
+        console.log("event _onKeyDown", event)
         event = event.event
         if (event.browserEvent.type === "pointerup") {
           event.preventDefault();
