@@ -3342,33 +3342,88 @@ prompt("This is a prompt:");
       return modal.classList.contains("active");
     }
 
-    function simulateMouseEvent(event, type) {
-      const touch = event.changedTouches[0];
-      const simulatedEvent = new MouseEvent(type, {
-        bubbles: true,
-        cancelable: true,
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        button: 0
-      });
-      event.target.dispatchEvent(simulatedEvent);
+    if ('ontouchstart' in window) {
+      // Helper to translate a touch event to a mouse event.
+      function translateTouchEvent(e, mouseType) {
+        const touch = e.changedTouches[0];
+        const simulatedEvent = new MouseEvent(mouseType, {
+          bubbles: true,
+          cancelable: true,
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          screenX: touch.screenX,
+          screenY: touch.screenY
+        });
+        e.target.dispatchEvent(simulatedEvent);
+      }
+
+      // Long press detection to simulate Delete key
+      const longPressDuration = 800; // milliseconds
+      document.addEventListener('touchstart', function (e) {
+        // Translate touchstart to mousedown
+        translateTouchEvent(e, 'mousedown');
+
+        // If only one finger, start long press timer
+        if (e.touches.length === 1) {
+          e.target._longPressTimeout = setTimeout(function () {
+            // Dispatch a Delete key event
+            const deleteKeyEvent = new KeyboardEvent('keydown', {
+              key: 'Delete',
+              code: 'Delete',
+              bubbles: true,
+              cancelable: true
+            });
+            e.target.dispatchEvent(deleteKeyEvent);
+          }, longPressDuration);
+        }
+      }, { passive: false });
+
+      document.addEventListener('touchmove', function (e) {
+        // Translate touchmove to mousemove
+        translateTouchEvent(e, 'mousemove');
+        // Cancel long press if the finger moves
+        if (e.target._longPressTimeout) {
+          clearTimeout(e.target._longPressTimeout);
+          e.target._longPressTimeout = null;
+        }
+      }, { passive: false });
+
+      document.addEventListener('touchend', function (e) {
+        // Translate touchend to mouseup and click
+        translateTouchEvent(e, 'mouseup');
+        translateTouchEvent(e, 'click');
+        if (e.target._longPressTimeout) {
+          clearTimeout(e.target._longPressTimeout);
+          e.target._longPressTimeout = null;
+        }
+      }, { passive: false });
+
+      // Double-tap detection to dispatch a dot key event.
+      let lastTapTime = 0;
+      document.addEventListener('touchend', function (e) {
+        const currentTime = Date.now();
+        const tapInterval = currentTime - lastTapTime;
+        if (tapInterval > 0 && tapInterval < 300) {
+          // Double-tap detected: dispatch a dot (".") key event.
+          const dotKeyEvent = new KeyboardEvent('keydown', {
+            key: '.',
+            code: 'Period',
+            bubbles: true,
+            cancelable: true
+          });
+          e.target.dispatchEvent(dotKeyEvent);
+          e.preventDefault();
+        }
+        lastTapTime = currentTime;
+      }, { passive: false });
+
+      // Prevent Monaco’s custom long-touch context menu when text is selected.
+      document.addEventListener('contextmenu', function (e) {
+        if (window.getSelection().toString().length > 0) {
+          e.preventDefault();
+        }
+      }, { passive: false });
     }
-
-    document.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      simulateMouseEvent(e, "mousedown");
-    }, false);
-
-    document.addEventListener("touchmove", (e) => {
-      e.preventDefault();
-      simulateMouseEvent(e, "mousemove");
-    }, false);
-
-    document.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      simulateMouseEvent(e, "mouseup");
-    }, false);
-
 
   </script>
 
