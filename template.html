@@ -1633,7 +1633,7 @@
       });
       console.log("editorInstance", editorInstance);
       console.log('editorInstance._onMouseUp._listeners.unshift({value: (...args) => {console.log(args);}});')
-      editorInstance._onMouseUp._listeners.unshift({value: (...args) => {
+      editorInstance["_onMouseUp"]["_listeners"].unshift({value: (...args) => {
         console.log(args);
       }});
       editorInstance.getModel().onDidChangeOptions((e) => {
