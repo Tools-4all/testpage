@@ -3350,49 +3350,83 @@ prompt("This is a prompt:");
     if ('ontouchstart' in window) {
       const longPressDuration = 800;
 
+      // Translate touch events into simulated mouse events.
       const translateTouchEvent = (e, mouseType) => {
-        const { clientX, clientY, screenX, screenY } = e.changedTouches[0];
+        const touch = e.changedTouches[0];
         const simulatedEvent = new MouseEvent(mouseType, {
           bubbles: true,
           cancelable: true,
-          clientX,
-          clientY,
-          screenX,
-          screenY
+          clientX: touch.clientX,
+          clientY: touch.clientY,
+          screenX: touch.screenX,
+          screenY: touch.screenY
         });
         e.target.dispatchEvent(simulatedEvent);
       };
 
+      // Handle key translation for any key element with a data-key attribute.
+      const triggerKeyboardEvent = (keyElement) => {
+        const key = keyElement.getAttribute('data-key');
+        if (!key) return;
+        if (currentTab && currentTab.editorInstance) {
+          // Adjust behavior for special keys; default sends the key value.
+          switch (key.toLowerCase()) {
+            case 'backspace':
+              currentTab.editorInstance.trigger('keyboard', 'deleteLeft', {});
+              break;
+            case 'delete':
+              currentTab.editorInstance.trigger('keyboard', 'deleteRight', {});
+              break;
+            case 'enter':
+              currentTab.editorInstance.trigger('keyboard', 'type', { text: '\n' });
+              break;
+            default:
+              currentTab.editorInstance.trigger('keyboard', 'type', { text: key });
+          }
+        }
+      };
+
+      // Listen for touchstart events to translate to mousedown and start long press detection.
       document.addEventListener('touchstart', (e) => {
         translateTouchEvent(e, 'mousedown');
-        if (e.touches.length === 1) {
-          e.target._longPressTimeout = setTimeout(() => {
+
+        // Check if the touch target (or its ancestor) is a key element.
+        const keyElement = e.target.closest('[data-key]');
+        if (keyElement) {
+          keyElement._longPressTimeout = setTimeout(() => {
+            // On long press, you can define alternate behavior (here, we reuse the normal key event).
             if (currentTab && currentTab.editorInstance) {
-              currentTab.editorInstance.trigger('keyboard', 'deleteRight', {});
+              // For example, a long press on backspace could trigger continuous deletion.
+              if (keyElement.getAttribute('data-key').toLowerCase() === 'backspace') {
+                currentTab.editorInstance.trigger('keyboard', 'deleteLeft', {});
+              } else {
+                triggerKeyboardEvent(keyElement);
+              }
             }
           }, longPressDuration);
         }
       }, { passive: false });
 
+      // Cancel long press if the finger moves.
       document.addEventListener('touchmove', (e) => {
         translateTouchEvent(e, 'mousemove');
-        if (e.target._longPressTimeout) {
-          clearTimeout(e.target._longPressTimeout);
-          e.target._longPressTimeout = null;
+        const keyElement = e.target.closest('[data-key]');
+        if (keyElement && keyElement._longPressTimeout) {
+          clearTimeout(keyElement._longPressTimeout);
+          keyElement._longPressTimeout = null;
         }
       }, { passive: false });
 
+      // On touchend, simulate the mouseup event and trigger the key's event.
       document.addEventListener('touchend', (e) => {
         translateTouchEvent(e, 'mouseup');
-        const targetEl = e.changedTouches[0].target;
-        if (targetEl.getAttribute('data-key') === '.') {
-          if (currentTab && currentTab.editorInstance) {
-            currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
+        const keyElement = e.changedTouches[0].target.closest('[data-key]');
+        if (keyElement) {
+          if (keyElement._longPressTimeout) {
+            clearTimeout(keyElement._longPressTimeout);
+            keyElement._longPressTimeout = null;
           }
-        }
-        if (e.target._longPressTimeout) {
-          clearTimeout(e.target._longPressTimeout);
-          e.target._longPressTimeout = null;
+          triggerKeyboardEvent(keyElement);
         }
       }, { passive: false });
     }
