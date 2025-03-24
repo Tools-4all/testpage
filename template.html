@@ -3348,24 +3348,25 @@ prompt("This is a prompt:");
     }
 
     if ('ontouchstart' in window) {
-      function translateTouchEvent(e, mouseType) {
-        const touch = e.changedTouches[0];
+      const longPressDuration = 800;
+
+      const translateTouchEvent = (e, mouseType) => {
+        const { clientX, clientY, screenX, screenY } = e.changedTouches[0];
         const simulatedEvent = new MouseEvent(mouseType, {
           bubbles: true,
           cancelable: true,
-          clientX: touch.clientX,
-          clientY: touch.clientY,
-          screenX: touch.screenX,
-          screenY: touch.screenY
+          clientX,
+          clientY,
+          screenX,
+          screenY
         });
         e.target.dispatchEvent(simulatedEvent);
-      }
+      };
 
-      const longPressDuration = 800;
-      document.addEventListener('touchstart', function (e) {
+      document.addEventListener('touchstart', (e) => {
         translateTouchEvent(e, 'mousedown');
         if (e.touches.length === 1) {
-          e.target._longPressTimeout = setTimeout(function () {
+          e.target._longPressTimeout = setTimeout(() => {
             if (currentTab && currentTab.editorInstance) {
               currentTab.editorInstance.trigger('keyboard', 'deleteRight', {});
             }
@@ -3373,7 +3374,7 @@ prompt("This is a prompt:");
         }
       }, { passive: false });
 
-      document.addEventListener('touchmove', function (e) {
+      document.addEventListener('touchmove', (e) => {
         translateTouchEvent(e, 'mousemove');
         if (e.target._longPressTimeout) {
           clearTimeout(e.target._longPressTimeout);
@@ -3381,10 +3382,10 @@ prompt("This is a prompt:");
         }
       }, { passive: false });
 
-      document.addEventListener('touchend', function (e) {
+      document.addEventListener('touchend', (e) => {
         translateTouchEvent(e, 'mouseup');
         const targetEl = e.changedTouches[0].target;
-        // Only trigger if the touched element represents the dot key.
+        // Only insert a dot if the touched element has data-key="."
         if (targetEl.getAttribute('data-key') === '.') {
           if (currentTab && currentTab.editorInstance) {
             currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
