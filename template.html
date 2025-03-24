@@ -1633,10 +1633,10 @@
       });
       console.log("editorInstance", editorInstance);
       const domNode = editorInstance.getDomNode();
-      domNode.spellcheck = false
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
+      const selectAction = currentTab.editorInstance.getAction("editor.action.smartSelect.expand").
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
@@ -1646,7 +1646,7 @@
           clickEvent.clientX = event.clientX;
           clickEvent.clientY = event.clientY;
           event.target.dispatchEvent(clickEvent);
-          currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
+          selectAction.run();
         }
       });
       domNode.addEventListener("touchstart", (event) => {
