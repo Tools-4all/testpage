@@ -3385,10 +3385,13 @@ prompt("This is a prompt:");
 
       return events;
     };
-    console.log(currentTab)
-    console.log(currentTab.editorInstance)
-    console.log(currentTab.editorInstance._onMouseUp._listeners.unshift)
 
+    setTimeout(() => {
+      console.log(currentTab)
+      console.log(currentTab.editorInstance)
+      console.log(currentTab.editorInstance._onMouseUp._listeners.unshift)
+
+    }, 2000);
     // // Attach all events to the window
     // getEventNames(currentTab.editorInstance).forEach((eventName) => {
     //   window.addEventListener(eventName, (event) => console.log(eventName, event));
