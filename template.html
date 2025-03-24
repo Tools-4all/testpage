@@ -1642,8 +1642,8 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-          editorContainer.focus();
-          const point = editorInstance['_editor'].getTargetAtClientPoint(
+          editorContainer['_editor'].focus();
+          const point = editorInstance.getTargetAtClientPoint(
             event.changedTouches[0].clientX,
             event.changedTouches[0].clientY
           );
