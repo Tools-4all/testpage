@@ -3355,18 +3355,18 @@ prompt("This is a prompt:");
     }
 
     document.addEventListener("touchstart", (e) => {
-      simulateMouseEvent(e, "mousedown");
       e.preventDefault();
+      simulateMouseEvent(e, "mousedown");
     }, false);
 
     document.addEventListener("touchmove", (e) => {
-      simulateMouseEvent(e, "mousemove");
       e.preventDefault();
+      simulateMouseEvent(e, "mousemove");
     }, false);
 
     document.addEventListener("touchend", (e) => {
-      simulateMouseEvent(e, "mouseup");
       e.preventDefault();
+      simulateMouseEvent(e, "mouseup");
     }, false);
 
 
