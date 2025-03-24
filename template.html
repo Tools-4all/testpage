@@ -1631,6 +1631,10 @@
         folding: true,
         minimap: { enabled: !isMobile },
       });
+
+      editorContainer.oncontextmenu = (e) => {
+        console.log(e)
+      };
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
