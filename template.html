@@ -1635,21 +1635,20 @@
       const domNode = editorInstance.getDomNode();
       let touchStart = null;
       let touchEnd = null;
+      let eventTargetStart;
       domNode.addEventListener("touchend", (event) => {
         console.log("touchend", event);
         touchEnd = new Date().getTime();
-        if (touchEnd - touchStart > 700) {
+        if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          // dispatch two click events to trigger text selection
-          domNode.dispatchEvent(new MouseEvent("click"));
-          domNode.dispatchEvent(new MouseEvent("click"));
+          editorInstance.trigger('keyboard', 'editor.action.selectWord', {});
         }
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
-        console.log("touchstart", event);
+        eventTargetStart = event.target;
       });
       
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
