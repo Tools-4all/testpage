@@ -1643,7 +1643,9 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          event.target.dispatchEvent(new MouseEvent("contextmenu"));
+          ["touchstart", "touchend", "touchstart", "touchend"].forEach((name) => {
+            event.target.dispatchEvent(new MouseEvent(name, { bubbles: true }));
+          });
         }
       });
       domNode.addEventListener("touchstart", (event) => {
