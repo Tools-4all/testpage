@@ -1643,16 +1643,10 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          event.target.dispatchEvent(new MouseEvent("touchstart"));
-          setTimeout(() => {
-            event.target.dispatchEvent(new MouseEvent("touchend"));
-            setTimeout(() => {
-              event.target.dispatchEvent(new MouseEvent("touchstart"));
-              setTimeout(() => {
-                event.target.dispatchEvent(new MouseEvent("touchend"));
-              }, 100);
-            }, 100);
-          }, 100);
+          let range = document.createRange();
+          range.selectNodeContents(event.target);
+          selection.removeAllRanges();
+          selection.addRange(range);
         }
       });
       domNode.addEventListener("touchstart", (event) => {
