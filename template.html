@@ -3458,8 +3458,8 @@ prompt("This is a prompt:");
     };
 
     document.getElementById("selectAllBtn").addEventListener("click", () => {
-      const range = currentTab.editorInstance.getModel().getFullModelRange(); // magic
-      currentTab.editorInstance.executeEdits("", [{ range, text, forceMoveMarkers: true }]);
+      const range = currentTab.editorInstance.getModel().getFullModelRange();
+      currentTab.editorInstance.setSelection(range);
     });
 
 
