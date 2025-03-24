@@ -1642,13 +1642,9 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          const target = event.target;
-          const evt = new MouseEvent("dblclick", {
-            bubbles: true,
-            cancelable: true,
-            view: window
-          });
-          target.dispatchEvent(evt);
+          // dispatch two click events to trigger text selection
+          domNode.dispatchEvent(new MouseEvent("click"));
+          domNode.dispatchEvent(new MouseEvent("click"));
         }
       });
       domNode.addEventListener("touchstart", (event) => {
