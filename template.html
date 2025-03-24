@@ -1642,6 +1642,14 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
+          // go to the event target first 
+          const point = editorInstance.getTargetAtClientPoint(
+            event.changedTouches[0].clientX,
+            event.changedTouches[0].clientY
+          );
+          if (point && point.position) {
+            editorInstance.setPosition(point.position);
+          }
           selectAction.run();
         }
       });
