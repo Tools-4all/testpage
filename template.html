@@ -1642,6 +1642,23 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
+          const layout = editorInstance.getLayoutInfo();
+          const contentX = x - layout.contentLeft;
+          const contentY = y - layout.contentTop;
+
+          const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
+          const scrollTop = editorInstance.getScrollTop();
+          const scrollLeft = editorInstance.getScrollLeft();
+
+          const lineNumber = Math.floor((contentY + scrollTop) / lineHeight) + 1;
+
+          const fontInfo = editorInstance.getConfiguration().fontInfo;
+          const charWidth = fontInfo.typicalHalfwidthCharacterWidth;
+          const column = Math.floor((contentX + scrollLeft) / charWidth) + 1;
+
+          editorInstance.setPosition({ lineNumber, column });
+          editorInstance.revealPosition({ lineNumber, column });
+
           selectAction.run();
         }
       });
