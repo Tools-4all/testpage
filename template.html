@@ -1644,7 +1644,7 @@
         if (event.browserEvent.type === "pointerup") {
           event.preventDefault();
           event.stopPropagation();
-          event.target.element.dispatchEvent(new MouseEvent("mouseup"));
+          target.element.dispatchEvent(new MouseEvent("mouseup"));
         }
       }});
       editorInstance.getModel().onDidChangeOptions((e) => {
