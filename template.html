@@ -1643,7 +1643,15 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          event.target.dispatchEvent(new MouseEvent("dblclick"));
+          event.target.dispatchEvent(new MouseEvent("touchstart"));
+          setTimeout(() => {
+            event.target.dispatchEvent(new MouseEvent("touchend"));
+            setTimeout(() => {
+              event.target.dispatchEvent(new MouseEvent("touchstart"));
+              setTimeout(() => {
+                event.target.dispatchEvent(new MouseEvent("touchend"));
+            }, 100);
+          }, 100);
         }
       });
       domNode.addEventListener("touchstart", (event) => {
