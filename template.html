@@ -1719,13 +1719,6 @@ prompt("This is a prompt:");
       } else {
         document.body.classList.add("lastTab");
       }
-      editorInstance.getDomNode().addEventListener("pointerdown", (e) => {
-        if (e.button === 2 && e.pointerType === "mouse") {
-          e.preventDefault();
-          editorInstance.focus();
-          editorInstance.trigger("keyboard", "editor.action.showContextMenu", {});
-        }
-      });
       return id;
     }
     function getUniqueTabName(baseName, tabId = null) {
