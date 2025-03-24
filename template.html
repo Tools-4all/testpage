@@ -1633,7 +1633,7 @@
       });
       console.log("editorInstance", editorInstance);
       const domNode = editorInstance.getDomNode();
-      domNode.spellcheck=false
+      domNode.spellcheck = false
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
@@ -1650,6 +1650,7 @@
               event.target.dispatchEvent(new MouseEvent("touchstart"));
               setTimeout(() => {
                 event.target.dispatchEvent(new MouseEvent("touchend"));
+              }, 100);
             }, 100);
           }, 100);
         }
