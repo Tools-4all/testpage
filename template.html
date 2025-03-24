@@ -3093,7 +3093,6 @@ prompt("This is a prompt:");
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      // const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
@@ -3101,7 +3100,6 @@ prompt("This is a prompt:");
       wrapperDiv.style.lineHeight = `${lineHeight}px`;
       wrapperDiv.style.whiteSpace = "pre-wrap";
       wrapperDiv.style.width = '100%';
-      // wrapperDiv.style.maxWidth = maxWidth;
       wrapperDiv.style.color = textColor;
 
       document.addEventListener('DOMContentLoaded', function () {
