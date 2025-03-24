@@ -1632,6 +1632,8 @@
         minimap: { enabled: !isMobile },
       });
       console.log("editorInstance", editorInstance);
+      console.log("editorInstance._onMouseUp", editorInstance._onMouseUp);
+      console.log("editorInstance._onMouseUp._listeners", editorInstance._onMouseUp._listeners);
       console.log('editorInstance._onMouseUp._listeners.unshift({value: (...args) => {console.log(args);}});')
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (...args) => {
         console.log(args);
