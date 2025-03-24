@@ -1609,7 +1609,7 @@
         lineNumbers: "on",
         wordWrap: "on",
         scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-        contextmenu: false,
+        contextmenu: true,
         selectionHighlight: true,
         renderIndentGuides: true,
         renderLineHighlight: "all",
@@ -1719,13 +1719,13 @@ prompt("This is a prompt:");
       } else {
         document.body.classList.add("lastTab");
       }
-      return id;
       editorContainer.addEventListener("keydown", (e) => {
         if (e.button === 2) {
           e.preventDefault();
           editorInstance.trigger("contextmenu", "editor", e);
         }
       });
+      return id;
     }
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
