@@ -1284,8 +1284,7 @@
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item"> </div>
-          <div class="vs-navbar-dropdown-item"> </div>
+          <div class="vs-navbar-dropdown-item" id="selectAllBtn">Select All</div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -1396,6 +1395,7 @@
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     const modal = document.getElementById("exportModal");
     const exportModalContent = document.getElementById("exportModalContent");
+
     let isMobile;
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
@@ -3456,6 +3456,11 @@ prompt("This is a prompt:");
 
       return events;
     };
+
+    document.getElementById("selectAllBtn").addEventListener("click", () => {
+      const range = currentTab.editorInstance.getModel().getFullModelRange(); // magic
+      currentTab.editorInstance.executeEdits("", [{ range, text, forceMoveMarkers: true }]);
+    });
 
 
   </script>
