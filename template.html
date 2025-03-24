@@ -1643,7 +1643,7 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          editorInstance.trigger('keyboard', 'editor.action.selectWord', {});
+          event.target.dispatchEvent(new MouseEvent("dblclick"));
         }
       });
       domNode.addEventListener("touchstart", (event) => {
