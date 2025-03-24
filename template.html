@@ -3404,13 +3404,11 @@ prompt("This is a prompt:");
         }
       }, { passive: false });
 
-      // Double-tap detection to dispatch a dot key event.
       let lastTapTime = 0;
       document.addEventListener('touchend', function (e) {
         const currentTime = Date.now();
         const tapInterval = currentTime - lastTapTime;
-        if (tapInterval > 0 && tapInterval < 300) {
-          // Double-tap detected: dispatch a dot (".") key event.
+        if (tapInterval > 0 && tapInterval < 500) {
           const dotKeyEvent = new KeyboardEvent('keydown', {
             key: '.',
             code: 'Period',
