@@ -1639,9 +1639,12 @@
         editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       }
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
-        console.log(event)
-        if (event.event.browserEvent.type === "pointerup") {
-          console.log("pointerup", event);
+        const target = event.target;
+        event = event.event
+        if (event.browserEvent.type === "pointerup") {
+          event.preventDefault();
+          event.stopPropagation();
+          event.target.element.dispatchEvent(new MouseEvent("mouseup"));
         }
       }});
       editorInstance.getModel().onDidChangeOptions((e) => {
