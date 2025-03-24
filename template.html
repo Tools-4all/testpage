@@ -1636,9 +1636,9 @@
       let touchStart = null;
       let touchEnd = null;
       domNode.addEventListener("touchend", (event) => {
+        console.log("touchend", event);
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart < 700) {
-          console.log("touchend", event);
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
@@ -1653,6 +1653,7 @@
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
+        console.log("touchstart", event);
       });
       
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
