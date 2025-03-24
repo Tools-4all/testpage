@@ -1631,7 +1631,10 @@
         folding: true,
         minimap: { enabled: !isMobile },
       });
-
+      editorInstance.onContextMenu = (e) => {
+        e.preventDefault();
+        console.log(e);
+      };
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
@@ -3386,10 +3389,10 @@ prompt("This is a prompt:");
       return events;
     };
 
-    // Attach all events to the window
-    getEventNames(currentTab.editorInstance).forEach((eventName) => {
-      window.addEventListener(eventName, (event) => console.log(eventName, event));
-    });
+    // // Attach all events to the window
+    // getEventNames(currentTab.editorInstance).forEach((eventName) => {
+    //   window.addEventListener(eventName, (event) => console.log(eventName, event));
+    // });
 
   </script>
 
