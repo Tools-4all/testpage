@@ -3383,8 +3383,12 @@ prompt("This is a prompt:");
 
       document.addEventListener('touchend', function (e) {
         translateTouchEvent(e, 'mouseup');
-        if (currentTab && currentTab.editorInstance) {
-          currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
+        const targetEl = e.changedTouches[0].target;
+        // Only trigger if the touched element represents the dot key.
+        if (targetEl.getAttribute('data-key') === '.') {
+          if (currentTab && currentTab.editorInstance) {
+            currentTab.editorInstance.trigger('keyboard', 'type', { text: '.' });
+          }
         }
         if (e.target._longPressTimeout) {
           clearTimeout(e.target._longPressTimeout);
@@ -3392,7 +3396,6 @@ prompt("This is a prompt:");
         }
       }, { passive: false });
     }
-
 
   </script>
 
