@@ -1609,7 +1609,7 @@
         lineNumbers: "on",
         wordWrap: "on",
         scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-        contextmenu: true,
+        contextmenu: false,
         selectionHighlight: true,
         renderIndentGuides: true,
         renderLineHighlight: "all",
@@ -1720,6 +1720,12 @@ prompt("This is a prompt:");
         document.body.classList.add("lastTab");
       }
       return id;
+      editorContainer.addEventListener("keydown", (e) => {
+        if (e.button === 2) {
+          e.preventDefault();
+          editorInstance.trigger("contextmenu", "editor", e);
+        }
+      });
     }
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
@@ -3415,13 +3421,6 @@ prompt("This is a prompt:");
           e.preventDefault();
         }
         lastTapTime = currentTime;
-      }, { passive: false });
-
-      // Prevent Monaco’s custom long-touch context menu when text is selected.
-      document.addEventListener('contextmenu', function (e) {
-        if (window.getSelection().toString().length > 0) {
-          e.preventDefault();
-        }
       }, { passive: false });
     }
 
