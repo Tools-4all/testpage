@@ -1643,7 +1643,7 @@
           event.preventDefault();
           event.stopPropagation();
           editorContainer.focus();
-          const point = editorInstance.getTargetAtClientPoint(
+          const point = editorInstance['_editor'].getTargetAtClientPoint(
             event.changedTouches[0].clientX,
             event.changedTouches[0].clientY
           );
