@@ -1642,14 +1642,17 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
+          // Use changedTouches because event.touches is empty on touchend.
           const touch = event.changedTouches[0];
           const clientX = touch.clientX;
           const clientY = touch.clientY;
-
           if (editorInstance.getTargetAtClientPoint) {
             const target = editorInstance.getTargetAtClientPoint(clientX, clientY);
             if (target && target.position) {
               editorInstance.setPosition(target.position);
+              // Now mimic a double-click word selection:
+              editorInstance.focus();
+              editorInstance.getAction("editor.action.selectWord").run();
             }
           } else {
             const simulatedEvent = new MouseEvent('mousedown', {
@@ -1662,10 +1665,6 @@
         }
       });
 
-      domNode.addEventListener("touchstart", (event) => {
-        touchStart = new Date().getTime();
-        eventTargetStart = event.target;
-      });
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
