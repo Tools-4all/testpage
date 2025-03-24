@@ -1656,6 +1656,7 @@
         console.log("event", event);
         event = event.event
         if (event.browserEvent.type === "pointerdown") {
+          console.log("event.browserEvent.type === pointerdown");
           event.preventDefault();
           event.stopPropagation();
           target.element.dispatchEvent(new MouseEvent("mousedown"));
