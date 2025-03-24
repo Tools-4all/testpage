@@ -1636,7 +1636,7 @@
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
-      const selectAction = currentTab.editorInstance.getAction("editor.action.smartSelect.expand").
+      const selectAction = editorInstance.getAction("editor.action.smartSelect.expand").
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
