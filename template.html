@@ -1643,6 +1643,7 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
+          let selection = window.getSelection();
           let range = document.createRange();
           range.selectNodeContents(event.target);
           selection.removeAllRanges();
