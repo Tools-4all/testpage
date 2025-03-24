@@ -1643,17 +1643,8 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          const pos = currentTab.editorInstance.getPosition();
-          const word = currentTab.editorInstance.getModel().getWordAtPosition(pos);
-          if (word) {
-            const selection = new monaco.Selection(
-              pos.lineNumber,
-              word.startColumn,
-              pos.lineNumber,
-              word.endColumn
-            );
-            currentTab.editorInstance.setSelection(selection);
-          }
+          currentTab.editorInstance.focus();
+          currentTab.editorInstance.getAction("editor.action.selectWord").run();
 
         }
       });
