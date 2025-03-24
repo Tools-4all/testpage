@@ -1632,7 +1632,6 @@
         minimap: { enabled: !isMobile },
       });
       editorInstance.onContextMenu = (e) => {
-        e.preventDefault();
         console.log(e);
       };
       editorInstance.getModel().onDidChangeOptions((e) => {
