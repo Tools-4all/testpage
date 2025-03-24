@@ -1642,11 +1642,11 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
+          const touch = event.changedTouches[0];
+          const clientX = touch.clientX;
+          const clientY = touch.clientY;
+
           if (editorInstance.getTargetAtClientPoint) {
-            const touch = event.touches[0];
-            const rect = domNode.getBoundingClientRect();
-            const clientX = touch.clientX;
-            const clientY = touch.clientY;
             const target = editorInstance.getTargetAtClientPoint(clientX, clientY);
             if (target && target.position) {
               editorInstance.setPosition(target.position);
@@ -1661,6 +1661,7 @@
           }
         }
       });
+
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
