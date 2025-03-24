@@ -1632,9 +1632,11 @@
         minimap: { enabled: !isMobile },
       });
       console.log("editorInstance", editorInstance);
-      console.log("editorInstance._onMouseUp", editorInstance._onMouseUp);
-      console.log("editorInstance._onMouseUp._listeners", editorInstance._onMouseUp._listeners);
-      console.log('editorInstance._onMouseUp._listeners.unshift({value: (...args) => {console.log(args);}});')
+      editorInstance.getDomNode().addEventListener("touchend", (event) => {
+        console.log("Touch event", event);
+        event.preventDefault();
+        event.stopPropagation();
+      });
       if (typeof editorInstance._onMouseUp._listeners !== "array") {
         editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       }
@@ -1644,38 +1646,44 @@
       if (typeof editorInstance._onKeyDown._listeners !== "array") {
         editorInstance._onKeyDown._listeners = [editorInstance._onKeyDown._listeners];
       }
-      editorInstance["_onKeyDown"]["_listeners"].unshift({value: (event) => {
-        const target = event.target;
-        console.log("event _onKeyDown", event)
-        event = event.event
-        if (event.browserEvent.type === "pointerup") {
-          event.preventDefault();
-          event.stopPropagation();
-          target.element.dispatchEvent(new MouseEvent("mousedown"));
+      editorInstance["_onKeyDown"]["_listeners"].unshift({
+        value: (event) => {
+          const target = event.target;
+          console.log("event _onKeyDown", event)
+          event = event.event
+          if (event.browserEvent.type === "pointerup") {
+            event.preventDefault();
+            event.stopPropagation();
+            target.element.dispatchEvent(new MouseEvent("mousedown"));
+          }
         }
-      }});
-      editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
-        const target = event.target;
-        console.log("event up", event)
-        event = event.event
-        if (event.browserEvent.type === "pointerup") {
-          console.log("event.browserEvent.type === pointerup");
-          event.preventDefault();
-          event.stopPropagation();
-          target.element.dispatchEvent(new MouseEvent("mouseup"));
+      });
+      editorInstance["_onMouseUp"]["_listeners"].unshift({
+        value: (event) => {
+          const target = event.target;
+          console.log("event up", event)
+          event = event.event
+          if (event.browserEvent.type === "pointerup") {
+            console.log("event.browserEvent.type === pointerup");
+            event.preventDefault();
+            event.stopPropagation();
+            target.element.dispatchEvent(new MouseEvent("mouseup"));
+          }
         }
-      }});
-      editorInstance["_onMouseDown"]["_listeners"].unshift({value: (event) => {
-        const target = event.target;
-        console.log("event down", event);
-        event = event.event
-        if (event.browserEvent.type === "pointerdown") {
-          console.log("event.browserEvent.type === pointerdown");
-          event.preventDefault();
-          event.stopPropagation();
-          target.element.dispatchEvent(new MouseEvent("mousedown"));
+      });
+      editorInstance["_onMouseDown"]["_listeners"].unshift({
+        value: (event) => {
+          const target = event.target;
+          console.log("event down", event);
+          event = event.event
+          if (event.browserEvent.type === "pointerdown") {
+            console.log("event.browserEvent.type === pointerdown");
+            event.preventDefault();
+            event.stopPropagation();
+            target.element.dispatchEvent(new MouseEvent("mousedown"));
+          }
         }
-      }});
+      });
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
@@ -3428,11 +3436,6 @@ prompt("This is a prompt:");
       return events;
     };
 
-    window.addEventListener("touchend", (event) => {
-      console.log("Touch event", event);
-      event.preventDefault();
-      event.stopPropagation();
-    });
 
   </script>
 
