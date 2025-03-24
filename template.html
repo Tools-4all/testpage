@@ -3349,7 +3349,6 @@ prompt("This is a prompt:");
     }
 
     if ('ontouchstart' in window) {
-      // Helper to translate a touch event to a mouse event.
       function translateTouchEvent(e, mouseType) {
         const touch = e.changedTouches[0];
         const simulatedEvent = new MouseEvent(mouseType, {
@@ -3363,16 +3362,12 @@ prompt("This is a prompt:");
         e.target.dispatchEvent(simulatedEvent);
       }
 
-      // Long press detection to simulate Delete key
-      const longPressDuration = 800; // milliseconds
+      const longPressDuration = 800;
       document.addEventListener('touchstart', function (e) {
-        // Translate touchstart to mousedown
         translateTouchEvent(e, 'mousedown');
 
-        // If only one finger, start long press timer
         if (e.touches.length === 1) {
           e.target._longPressTimeout = setTimeout(function () {
-            // Dispatch a Delete key event
             const deleteKeyEvent = new KeyboardEvent('keydown', {
               key: 'Delete',
               code: 'Delete',
@@ -3385,9 +3380,7 @@ prompt("This is a prompt:");
       }, { passive: false });
 
       document.addEventListener('touchmove', function (e) {
-        // Translate touchmove to mousemove
         translateTouchEvent(e, 'mousemove');
-        // Cancel long press if the finger moves
         if (e.target._longPressTimeout) {
           clearTimeout(e.target._longPressTimeout);
           e.target._longPressTimeout = null;
@@ -3395,7 +3388,6 @@ prompt("This is a prompt:");
       }, { passive: false });
 
       document.addEventListener('touchend', function (e) {
-        // Translate touchend to mouseup and click
         translateTouchEvent(e, 'mouseup');
         translateTouchEvent(e, 'click');
         if (e.target._longPressTimeout) {
