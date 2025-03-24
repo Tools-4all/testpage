@@ -3347,28 +3347,49 @@ prompt("This is a prompt:");
       return modal.classList.contains("active");
     }
 
-    if ('ontouchstart' in window) {
-      var eventMap = {};
+    const getEventNames = (root) => {
+      let events = [];
 
-      (function () {
-        var eventReplacement = {
-          "mousedown": ["touchstart mousedown", "mousedown"],
-          "mouseup": ["touchend mouseup", "mouseup"],
-          "click": ["touchstart click", "click"],
-          "mousemove": ["touchmove mousemove", "mousemove"]
-        };
+      const objectHasSubPrototype = (object, comp) => {
+        let proto = Object.getPrototypeOf(object);
 
+        while (proto !== null && proto !== EventTarget) {
+          proto = Object.getPrototypeOf(proto);
+        }
 
-        for (i in eventReplacement) {
-          if (typeof window["on" + eventReplacement[i][0]] == "object") {
-            eventMap[i] = eventReplacement[i][0];
+        return (proto !== null);
+      };
+
+      const addEventNames = (propNames) => {
+        propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
+          propName = propName.substr(2);
+          if (events.indexOf(propName) === -1) {
+            events.push(propName);
           }
-          else {
-            eventMap[i] = eventReplacement[i][1];
-          };
-        };
-      })();
-    }
+        });
+      };
+
+      Object.getOwnPropertyNames(root).forEach((name) => {
+        let value = root[name];
+
+        if (value) {
+          if (objectHasSubPrototype(value, EventTarget)) {
+            let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
+            addEventNames(propNames);
+
+            propNames = Object.getOwnPropertyNames(window);
+            addEventNames(propNames);
+          }
+        }
+      });
+
+      return events;
+    };
+
+    // Attach all events to the window
+    getEventNames(window).forEach((eventName) => {
+      window.addEventListener(eventName, (event) => console.log(eventName, event));
+    });
 
   </script>
 
