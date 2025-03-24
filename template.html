@@ -1643,11 +1643,26 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          domNode.dispatchEvent(
-            new MouseEvent("dblclick", { bubbles: true, cancelable: true, detail: 2 })
-          );
-        }
-      });
+          editorInstance.focus();
+
+          // Get the current cursor position
+          const position = editorInstance.getPosition();
+
+          // Get the word at the current position
+          const wordInfo = editorInstance.getModel().getWordAtPosition(position);
+
+          if (wordInfo) {
+            const selection = new monaco.Range(
+              position.lineNumber,
+              wordInfo.startColumn,
+              position.lineNumber,
+              wordInfo.endColumn
+            );
+
+            // Set the selection
+            editorInstance.setSelection(selection);
+          }
+        });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
