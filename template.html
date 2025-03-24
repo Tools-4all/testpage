@@ -1656,8 +1656,10 @@
       }});
       editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
+        const tempEvent = event;
+        event.event = null
         console.log("event up", event)
-        event = event.event
+        event = event.tempEvent
         if (event.browserEvent.type === "pointerup") {
           console.log("event.browserEvent.type === pointerup");
           event.preventDefault();
