@@ -1396,14 +1396,17 @@
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     const modal = document.getElementById("exportModal");
     const exportModalContent = document.getElementById("exportModalContent");
+    let isMobile;
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
       compiler.style.margin = '0';
       document.getElementById("fullScreenBtn").style.display = 'none';
+      isMobile = true;
     } else {
       window.onload = function () {
         compiler.style.width = '60%';
+        isMobile = false;
         fullScreen();
       };
     }
@@ -1626,6 +1629,7 @@
         breadcrumbs: { enabled: true },
         fixedOverflowWidgets: true,
         folding: true,
+        minimap: { enabled: !isMobile },
       });
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
