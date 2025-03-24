@@ -1631,9 +1631,9 @@
         folding: true,
         minimap: { enabled: !isMobile },
       });
-      // editorInstance._onMouseUp._listeners.unshift({value: (...args) => {
-      //   console.log(args);
-      // }});
+      editorInstance._onMouseUp._listeners.unshift({value: (...args) => {
+        console.log(args);
+      }});
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
@@ -3385,17 +3385,6 @@ prompt("This is a prompt:");
 
       return events;
     };
-
-    setTimeout(() => {
-      console.log(currentTab)
-      console.log(currentTab.editorInstance)
-      console.log(currentTab.editorInstance._onMouseUp._listeners.unshift)
-
-    }, 2000);
-    // // Attach all events to the window
-    // getEventNames(currentTab.editorInstance).forEach((eventName) => {
-    //   window.addEventListener(eventName, (event) => console.log(eventName, event));
-    // });
 
   </script>
 
