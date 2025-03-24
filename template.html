@@ -1638,6 +1638,8 @@
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart < 700) {
+          console.log("touchend", event);
+          console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
           const target = event.target;
