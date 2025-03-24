@@ -1633,6 +1633,7 @@
       });
       console.log("editorInstance", editorInstance);
       const domNode = editorInstance.getDomNode();
+      domNode.spellcheck=false
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
@@ -1644,21 +1645,6 @@
           event.preventDefault();
           event.stopPropagation();
           // trigger text selection
-          function dbClick(target, num) {
-            if (num === 5) {
-              return;
-            }
-            if (num % 2) {
-              target.dispatchEvent(new MouseEvent("touchstart"));
-            } else {
-              target.dispatchEvent(new MouseEvent("touchend"));
-            }
-            setTimeout(() => {
-              dbClick(target, num + 1);
-            }, 100);
-          }
-          dbClick(event.target, 1);
-
         }
       });
       domNode.addEventListener("touchstart", (event) => {
