@@ -1644,8 +1644,7 @@
           event.preventDefault();
           event.stopPropagation();
           currentTab.editorInstance.focus();
-          currentTab.editorInstance.getAction("editor.action.selectWord").run();
-
+          currentTab.editorInstance.getAction("editor.action.smartSelect.expand").run();
         }
       });
       domNode.addEventListener("touchstart", (event) => {
