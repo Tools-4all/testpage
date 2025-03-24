@@ -1643,14 +1643,16 @@
           console.log("time", touchEnd - touchStart);
           event.preventDefault();
           event.stopPropagation();
-          event.target.dispatchEvent(new MouseEvent("dblclick"));
+          domNode.dispatchEvent(
+            new MouseEvent("dblclick", { bubbles: true, cancelable: true, detail: 2 })
+          );
         }
       });
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
       });
-      
+
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       // }
