@@ -1652,6 +1652,7 @@
       }});
       editorInstance["_onMouseDown"]["_listeners"].unshift({value: (event) => {
         const target = event.target;
+        console.log("event", event);
         event = event.event
         if (event.browserEvent.type === "pointerdown") {
           event.preventDefault();
