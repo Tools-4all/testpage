@@ -1642,7 +1642,7 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-          if (editor.getTargetAtClientPoint) {
+          if (editorInstance.getTargetAtClientPoint) {
             const touch = event.touches[0];
             const rect = domNode.getBoundingClientRect();
             const clientX = touch.clientX;
