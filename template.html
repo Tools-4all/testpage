@@ -1642,10 +1642,6 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-          const clickEvent = new MouseEvent("click");
-          clickEvent.clientX = event.clientX;
-          clickEvent.clientY = event.clientY;
-          event.target.dispatchEvent(clickEvent);
           selectAction.run();
         }
       });
