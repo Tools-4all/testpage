@@ -1633,6 +1633,7 @@
       });
       editorInstance.onContextMenu = (e) => {
         console.log(e);
+        e()
       };
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
