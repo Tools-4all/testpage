@@ -1638,8 +1638,10 @@
       if (typeof editorInstance._onMouseUp._listeners !== "array") {
         editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
       }
-      editorInstance["_onMouseUp"]["_listeners"].unshift({value: (...args) => {
-        console.log(args);
+      editorInstance["_onMouseUp"]["_listeners"].unshift({value: (event) => {
+        if (event.browserEvent.type === "pointerup") {
+          console.log("pointerup", event);
+        }
       }});
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
