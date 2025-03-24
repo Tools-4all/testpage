@@ -1642,36 +1642,9 @@
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
           event.preventDefault();
           event.stopPropagation();
-
-          const touch = event.changedTouches[0];
-          const x = touch.clientX;
-          const y = touch.clientY;
-
-          const editorRect = editorInstance.getDomNode().getBoundingClientRect();
-          const relativeX = x - editorRect.left;
-          const relativeY = y - editorRect.top;
-
-          const layout = editorInstance.getLayoutInfo();
-          const contentX = relativeX - layout.contentLeft;
-          const contentY = relativeY - layout.contentTop;
-
-          const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
-          const scrollTop = editorInstance.getScrollTop();
-          const scrollLeft = editorInstance.getScrollLeft();
-
-          const lineNumber = Math.floor((contentY + scrollTop) / lineHeight) + 1;
-
-          const fontInfo = editorInstance.getOption(monaco.editor.EditorOption.fontInfo);
-          const charWidth = fontInfo.typicalHalfwidthCharacterWidth;
-          const column = Math.floor((contentX + scrollLeft) / charWidth) + 1;
-
-          editorInstance.setPosition({ lineNumber, column });
-          editorInstance.revealPosition({ lineNumber, column });
-
           selectAction.run();
         }
       });
-
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
