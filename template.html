@@ -1668,9 +1668,7 @@
       });
 
       editorInstance.onWillType((e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        editorInstance.trigger('keyboard', 'type', {text: e.data});
+        console.log(e)
       });
 
       // domNode.addEventListener("input", (e) => {
