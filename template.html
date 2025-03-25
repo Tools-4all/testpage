@@ -1680,6 +1680,7 @@
           event.stopPropagation();
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
+          editorInstance.focus();
         }
       }, true);
 
