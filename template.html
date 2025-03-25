@@ -2843,6 +2843,8 @@ prompt("This is a prompt:");
         activeDropdown = null;
         document.querySelectorAll(".vs-navbar-dropdown")
           .forEach((d) => d.classList.remove("active"));
+        document.querySelectorAll(".vs-navbar-item")
+          .forEach((i) => i.classList.remove("active"));
       }, 100);
     }
     let gitInp = document.getElementById("gitUrl");
