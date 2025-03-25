@@ -2695,10 +2695,11 @@ prompt("This is a prompt:");
       let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
       t.editorInstance.getAction("actions.find").run();
-      document.querySelectorAll(".icon")
-        .forEach((b) => b.classList.remove("active"));
-      document.querySelectorAll(".sidebar-panel")
-        .forEach((p) => p.classList.remove("active"));  
+      if (isMobile) {
+        // Hide the tab bar on mobile when the search bar is opened
+        document.getElementById("tabBar").style.display = "none";
+        
+      }
     });
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
