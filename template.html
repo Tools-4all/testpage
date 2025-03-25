@@ -1638,6 +1638,7 @@
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
+      let lastDot;
       // need to change that to double click smartSelect.expand via proximity
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
@@ -1685,15 +1686,13 @@
       domNode.addEventListener("textInput", (event) => {
         console.log("textInput", event)
         stopAll(event)
-        if (event.data.length > 1) {
+        if (event.data.length > 1 || event.data === " " && lastDot - new Date().getTime() < 20) {
           return;
         }
         editorInstance.trigger('keyboard', 'type', { text: event.data });
         blurFocus()
         if (event.data === ".") {
-          setTimeout(() => {
-            editorInstance.trigger('keyboard', 'deleteLeft', {});
-          }, 20);
+          lastDot = new Date().getTime();
         }
       });
       domNode.addEventListener("keyup", stopAll);
