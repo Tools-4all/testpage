@@ -1681,15 +1681,6 @@
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
         }
-      });
-      domNode.addEventListener("keyup", (event) => {
-        if (event.key === "." || event.keyCode === 190) {
-          event.preventDefault();
-          event.stopPropagation();
-          event.stopImmediatePropagation();
-          editorInstance.trigger('keyboard', 'type', { text: "." });
-          alert("dot");
-        }
       }, true);
 
 
