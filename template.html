@@ -1667,11 +1667,17 @@
         eventTargetStart = event.target;
       });
 
-      domNode.addEventListener("input", (e) => {
+      editorInstance.onWillType((e) => {
         e.preventDefault();
         e.stopPropagation();
         editorInstance.trigger('keyboard', 'type', {text: e.data});
       });
+
+      // domNode.addEventListener("input", (e) => {
+      //   e.preventDefault();
+      //   e.stopPropagation();
+      //   editorInstance.trigger('keyboard', 'type', {text: e.data});
+      // });
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
