@@ -1635,44 +1635,33 @@
       const domNode = editorInstance.getDomNode();
       if (isMobile) {
         const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
-        let lastTapTime = 0;
-        let lastTapX = 0;
-        let lastTapY = 0;
-        const doubleTapThreshold = 300; 
-        const proximityThreshold = 30; 
-
+        let touchStart = null;
+        let touchEnd = null;
+        let eventTargetStart;
+        // need to change that to double click smartSelect.expand via proximity
         domNode.addEventListener("touchend", (event) => {
-          const currentTapTime = new Date().getTime();
-          const tapX = event.changedTouches[0].clientX;
-          const tapY = event.changedTouches[0].clientY;
-
-          if (
-            currentTapTime - lastTapTime < doubleTapThreshold &&
-            Math.abs(tapX - lastTapX) < proximityThreshold &&
-            Math.abs(tapY - lastTapY) < proximityThreshold
-          ) {
+          touchEnd = new Date().getTime();
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
             event.preventDefault();
             event.stopPropagation();
             editorInstance.focus();
 
-            const point = editorInstance.getTargetAtClientPoint(tapX, tapY);
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
+
             if (point && point.position) {
               const currentPosition = editorInstance.getPosition();
               const targetColumn = point.position.column;
               const targetLine = point.position.lineNumber;
-              if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
                 editorInstance.setPosition(point.position);
               }
             }
             selectAction.run();
-            lastTapTime = 0;
-          } else {
-            lastTapTime = currentTapTime;
-            lastTapX = tapX;
-            lastTapY = tapY;
           }
         });
-
 
         let lastDot;
 
