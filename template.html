@@ -2717,12 +2717,10 @@ prompt("This is a prompt:");
       t.editorInstance.getAction("actions.find").run();
     });
     document.addEventListener("click", (event) => {
-      if (!event.target.closest(".vs-navbar-item")) {
-        document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
-          d.classList.remove("active");
-        });
-        activeDropdown = null;
-      }
+      document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
+        d.classList.remove("active");
+      });
+      activeDropdown = null;
     });
     document.querySelectorAll(".vs-navbar-item").forEach((item) => {
       item.addEventListener("click", (evt) => {
