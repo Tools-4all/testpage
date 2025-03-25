@@ -1654,10 +1654,10 @@
             const targetColumn = point.position.column;
             const targetLine = point.position.lineNumber;
 
+            console.log("currentPosition", currentPosition);
+            console.log("targetColumn", targetColumn);
+            console.log("targetLine", targetLine);
             if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
-              console.log("currentPosition", currentPosition);
-              console.log("targetColumn", targetColumn);
-              console.log("targetLine", targetLine);
               editorInstance.setPosition(point.position);
             }
           }
