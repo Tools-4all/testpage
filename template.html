@@ -1675,6 +1675,7 @@
       domNode.addEventListener("compositionupdate", (event) => {
         console.log("compositionupdate", event);
         if (event.data === "") {
+          console.log("is a dot")
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
