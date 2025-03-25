@@ -1642,8 +1642,7 @@
         domNode.addEventListener("touchend", (event) => {
           touchEnd = new Date().getTime();
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
-            event.preventDefault();
-            event.stopPropagation();
+            stopAll(event);
             editorInstance.focus();
 
             const point = editorInstance.getTargetAtClientPoint(
@@ -1661,7 +1660,7 @@
             }
             selectAction.run();
           }
-        });
+        }, true);
 
         let lastDot;
 
