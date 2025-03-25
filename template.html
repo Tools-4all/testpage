@@ -1672,6 +1672,16 @@
       //   }
       // });
 
+      domNode.addEventListener("keyUp", (event) => {
+        // check if its . 
+        if (event.keyCode === 190) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          editorInstance.trigger('keyboard', 'type', { text: "." });
+        }
+      }, true);
+
       domNode.addEventListener("input", (e) => {
         console.log(e);
         e.preventDefault();
