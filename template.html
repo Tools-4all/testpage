@@ -2717,10 +2717,10 @@ prompt("This is a prompt:");
       t.editorInstance.getAction("actions.find").run();
     });
     document.addEventListener("click", (event) => {
-      document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
-        d.classList.remove("active");
-      });
-      activeDropdown = null;
+      if (!event.target.closest(".vs-navbar-item")) {
+        closeDropdowns();
+        activeDropdown = null;
+      }
     });
     document.querySelectorAll(".vs-navbar-item").forEach((item) => {
       item.addEventListener("click", (evt) => {
@@ -2839,6 +2839,7 @@ prompt("This is a prompt:");
       closeDropdowns();
     });
     function closeDropdowns() {
+      activeDropdown = null;
       document.querySelectorAll(".vs-navbar-dropdown")
         .forEach((d) => d.classList.remove("active"));
     }
