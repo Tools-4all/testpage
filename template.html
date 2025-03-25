@@ -1662,20 +1662,20 @@
         }
       });
 
-      if (typeof editorInstance._onKeyUp._listeners !== "array") {
-        editorInstance._onKeyUp._listeners = [editorInstance._onKeyUp._listeners];
-      }
-      editorInstance["_onKeyUp"]["_listeners"].unshift({
-        value: (event) => {
-          alert(`key up\n${JSON.stringify(event)}`);
-        }
-      });
+      // if (typeof editorInstance._onKeyUp._listeners !== "array") {
+      //   editorInstance._onKeyUp._listeners = [editorInstance._onKeyUp._listeners];
+      // }
+      // editorInstance["_onKeyUp"]["_listeners"].unshift({
+      //   value: (event) => {
 
-      // domNode.addEventListener("input", (e) => {
-      //   e.preventDefault();
-      //   e.stopPropagation();
-      //   editorInstance.trigger('keyboard', 'type', {text: e.data});
+      //   }
       // });
+
+      domNode.addEventListener("input", (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        editorInstance.trigger('keyboard', 'type', { text: e.data });
+      }, true);
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
