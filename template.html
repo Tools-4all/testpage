@@ -1685,6 +1685,9 @@
       domNode.addEventListener("textInput", (event) => {
         console.log("textInput", event)
         stopAll(event)
+        if (event.data.length > 1) {
+          return;
+        }
         editorInstance.trigger('keyboard', 'type', { text: event.data });
         blurFocus()
       });
