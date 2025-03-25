@@ -1638,7 +1638,7 @@
         let touchStart = null;
         let touchEnd = null;
         let eventTargetStart;
-        // need to change that to double click smartSelect.expand via proximity
+        let lastDot;
         domNode.addEventListener("touchend", (event) => {
           touchEnd = new Date().getTime();
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
@@ -1665,8 +1665,6 @@
           touchStart = new Date().getTime();
           eventTargetStart = event.target;
         });
-        let lastDot;
-
         function blurFocus() {
           const elem = document.activeElement
           elem.blur()
