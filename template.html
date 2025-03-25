@@ -1676,33 +1676,33 @@
         elem.blur()
         editorInstance.focus()
       }
-      domNode.addEventListener("compositionupdate", (event) => {
-        console.log("compositionupdate", event);
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        if (event.data === "") {
-          console.log("is a dot")
-          editorInstance.trigger('keyboard', 'type', { text: "." });
-          blurFocus()
-          editorInstance.trigger('keyboard', 'deleteLeft', {});
-          editorInstance.trigger('keyboard', 'deleteLeft', {});
-        } 
-      }, true);
-
-      domNode.addEventListener("input", (event) => {
-        console.log("compositionupdate", event);
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        if (event.data === "") {
-          console.log("is a dot")
-          editorInstance.trigger('keyboard', 'type', { text: "." });
-          blurFocus()
-          editorInstance.trigger('keyboard', 'deleteLeft', {});
-          editorInstance.trigger('keyboard', 'deleteLeft', {});
-        } 
-      }, true);
+      // domNode.addEventListener("compositionupdate", (event) => {
+      //   console.log("compositionupdate", event);
+      //   event.preventDefault();
+      //   event.stopPropagation();
+      //   event.stopImmediatePropagation();
+      //   if (event.data === "") {
+      //     console.log("is a dot")
+      //     editorInstance.trigger('keyboard', 'type', { text: "." });
+      //     blurFocus()
+      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
+      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
+      //   } 
+      // }, true);
+      console.log(domNode)
+      // domNode.addEventListener("input", (event) => {
+      //   console.log("compositionupdate", event);
+      //   event.preventDefault();
+      //   event.stopPropagation();
+      //   event.stopImmediatePropagation();
+      //   if (event.data === "") {
+      //     console.log("is a dot")
+      //     editorInstance.trigger('keyboard', 'type', { text: "." });
+      //     blurFocus()
+      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
+      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
+      //   } 
+      // }, true);
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
       //   e.preventDefault();
