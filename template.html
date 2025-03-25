@@ -1668,12 +1668,7 @@
       });
 
       domNode.addEventListener("input", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        if (e.data.trim()) {
-          editorInstance.trigger("keyboard", "type", e);
-        }
+        editorInstance.focus();
       });
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
