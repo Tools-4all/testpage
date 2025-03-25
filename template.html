@@ -2807,7 +2807,6 @@ prompt("This is a prompt:");
     });
     setInterval(() => updateUndoRedoButtons(), 500);
     document.getElementById("uploadFileBtn").addEventListener("click", () => {
-      closeDropdowns()
       let input = document.createElement("input");
       input.type = "file";
       input.accept = ".js";
@@ -2827,7 +2826,6 @@ prompt("This is a prompt:");
       input.remove();
     });
     document.getElementById("saveScriptBtn").addEventListener("click", () => {
-      closeDropdowns()
       if (activeTabId === null) return;
       let t = tabs.find((x) => x.id === activeTabId);
       let content = t.editorInstance.getValue();
@@ -3473,16 +3471,16 @@ prompt("This is a prompt:");
     }
 
     document.getElementById("selectAllBtn").addEventListener("click", () => {
-      closeDropdowns()
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
       focusTab()
+      closeDropdowns()
     });
 
     document.getElementById("showContext").addEventListener("click", () => {
-      closeDropdowns()
       focusTab()
       currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
+      closeDropdowns()
     })
 
 
