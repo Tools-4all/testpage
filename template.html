@@ -1635,15 +1635,29 @@
       const domNode = editorInstance.getDomNode();
       if (isMobile) {
         const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+        function isPositionInRange(position, range) {
+          // Returns true if position is within the range.
+          if (!range) return false;
+          if (position.lineNumber < range.startLineNumber || position.lineNumber > range.endLineNumber) {
+            return false;
+          }
+          if (position.lineNumber === range.startLineNumber && position.column < range.startColumn) {
+            return false;
+          }
+          if (position.lineNumber === range.endLineNumber && position.column > range.endColumn) {
+            return false;
+          }
+          return true;
+        }
+
         let lastTapTime = 0;
         let lastTapX = 0;
         let lastTapY = 0;
-        const doubleTapThreshold = 300; // maximum time between taps in ms
-        const proximityThreshold = 30;  // maximum distance between taps in pixels
-        let isExpanding = false;  // flag to track if selection expansion is in progress
+        const doubleTapThreshold = 300; // ms
+        const proximityThreshold = 30;  // pixels
 
         domNode.addEventListener("touchend", (event) => {
-          const currentTapTime = new Date().getTime();
+          const currentTapTime = Date.now();
           const tapX = event.changedTouches[0].clientX;
           const tapY = event.changedTouches[0].clientY;
 
@@ -1652,36 +1666,24 @@
             Math.abs(tapX - lastTapX) < proximityThreshold &&
             Math.abs(tapY - lastTapY) < proximityThreshold
           ) {
-            // Double tap detected
             event.preventDefault();
             event.stopPropagation();
 
-            // Only proceed if the action is not already in progress
-            if (!isExpanding) {
-              editorInstance.focus();
-
-              const point = editorInstance.getTargetAtClientPoint(tapX, tapY);
-              if (point && point.position) {
-                const currentPosition = editorInstance.getPosition();
-                const targetColumn = point.position.column;
-                const targetLine = point.position.lineNumber;
-                if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
-                  editorInstance.setPosition(point.position);
-                }
+            const point = editorInstance.getTargetAtClientPoint(tapX, tapY);
+            if (point && point.position) {
+              const currentSelection = editorInstance.getSelection();
+              if (!isPositionInRange(point.position, currentSelection)) {
+                // If the tap is outside the current selection, set the cursor first.
+                editorInstance.setPosition(point.position);
               }
-
-              // Mark expansion as in progress
-              isExpanding = true;
+              // In either case, expand the selection.
               selectAction.run();
-
-              // After the action is done, reset the expansion flag
-              // You can add a delay based on the expected time for the selection to expand
-              setTimeout(() => {
-                isExpanding = false;
-              }, 300);  // Adjust this timeout as needed
             }
+
+            // Reset tap info after a double tap.
+            lastTapTime = 0;
           } else {
-            // Not a double tap – store tap info for the next tap
+            // Record this tap.
             lastTapTime = currentTapTime;
             lastTapX = tapX;
             lastTapY = tapY;
