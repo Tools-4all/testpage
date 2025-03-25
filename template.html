@@ -1690,6 +1690,9 @@
         }
         editorInstance.trigger('keyboard', 'type', { text: event.data });
         blurFocus()
+        if (event.data === ".") {
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+        }
       });
       domNode.addEventListener("keyup", stopAll);
       domNode.addEventListener("input", stopAll);
