@@ -1676,33 +1676,21 @@
         elem.blur()
         editorInstance.focus()
       }
-      // domNode.addEventListener("compositionupdate", (event) => {
-      //   console.log("compositionupdate", event);
-      //   event.preventDefault();
-      //   event.stopPropagation();
-      //   event.stopImmediatePropagation();
-      //   if (event.data === "") {
-      //     console.log("is a dot")
-      //     editorInstance.trigger('keyboard', 'type', { text: "." });
-      //     blurFocus()
-      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
-      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
-      //   } 
-      // }, true);
+      stopAll(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        event.stopPropagation();
+      }
+      
       console.log(domNode)
-      // domNode.addEventListener("input", (event) => {
-      //   console.log("compositionupdate", event);
-      //   event.preventDefault();
-      //   event.stopPropagation();
-      //   event.stopImmediatePropagation();
-      //   if (event.data === "") {
-      //     console.log("is a dot")
-      //     editorInstance.trigger('keyboard', 'type', { text: "." });
-      //     blurFocus()
-      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
-      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
-      //   } 
-      // }, true);
+      domNode.addEventListener("textInput", (event) => {
+        console.log("textInput", event)
+        stopAll(event)
+        editorInstance.trigger('keyboard', 'type', { text: event.data });
+        blurFocus()
+      });
+      domNode.addEventListener("keyup", stopAll);
+      domNode.addEventListener("input", stopAll);
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
       //   e.preventDefault();
