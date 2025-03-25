@@ -1671,7 +1671,11 @@
 
       //   }
       // });
-
+      function blurFocus() {
+        const elem = document.activeElement
+        elem.blur()
+        elem.focus()
+      }
       domNode.addEventListener("compositionupdate", (event) => {
         console.log("compositionupdate", event);
         if (event.data === "") {
@@ -1680,7 +1684,7 @@
           event.stopPropagation();
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
-          editorInstance.focus();
+          blurFocus()
         }
       }, true);
 
