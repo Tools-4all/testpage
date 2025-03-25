@@ -3465,12 +3465,19 @@ prompt("This is a prompt:");
       return events;
     };
 
+    function focusTab(tabElem) {
+      if (!tabElem) { tabElem = currentTab}
+      tabElem.editorInstance.focus()
+    }
+
     document.getElementById("selectAllBtn").addEventListener("click", () => {
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
+      focusTab()
     });
 
     document.getElementById("showContext").addEventListener("click", () => {
+      focusTab()
       currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
     })
 
