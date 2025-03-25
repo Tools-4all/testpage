@@ -1685,7 +1685,6 @@
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
           blurFocus()
-          // invoke delete once
           editorInstance.trigger('keyboard', 'deleteLeft', {});
         }
       }, true);
