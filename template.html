@@ -2839,9 +2839,11 @@ prompt("This is a prompt:");
       closeDropdowns();
     });
     function closeDropdowns() {
-      activeDropdown = null;
-      document.querySelectorAll(".vs-navbar-dropdown")
-        .forEach((d) => d.classList.remove("active"));
+      setTimeout(() => {
+        activeDropdown = null;
+        document.querySelectorAll(".vs-navbar-dropdown")
+          .forEach((d) => d.classList.remove("active"));
+      }, 100);
     }
     let gitInp = document.getElementById("gitUrl");
     let loadGitButton = document.getElementById("loadGitButton");
@@ -3466,7 +3468,7 @@ prompt("This is a prompt:");
     };
 
     function focusTab(tabElem) {
-      if (!tabElem) { tabElem = currentTab}
+      if (!tabElem) { tabElem = currentTab }
       tabElem.editorInstance.focus()
     }
 
