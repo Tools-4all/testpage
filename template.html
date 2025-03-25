@@ -17,12 +17,17 @@
       padding: 0;
     }
 
-    ::selection {
-      background: #FF0099 !important;
-      color: black !important;
-      text-shadow: none !important;
+    .view-line,
+    .view-line * {
+      -webkit-user-select: text !important;
+      /* For Safari/Chrome/older Android */
+      -moz-user-select: text !important;
+      /* For older Firefox */
+      -ms-user-select: text !important;
+      /* For older IE/Edge */
+      user-select: text !important;
+      /* Standard property */
     }
-
 
     body {
       user-select: none;
