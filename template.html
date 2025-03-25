@@ -1677,13 +1677,31 @@
         editorInstance.focus()
       }
       domNode.addEventListener("compositionupdate", (event) => {
-        blurFocus()
-
+        console.log("compositionupdate", event);
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (event.data === "") {
+          console.log("is a dot")
+          editorInstance.trigger('keyboard', 'type', { text: "." });
+          blurFocus()
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+        } 
       }, true);
 
       domNode.addEventListener("input", (event) => {
-        blurFocus()
-
+        console.log("compositionupdate", event);
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (event.data === "") {
+          console.log("is a dot")
+          editorInstance.trigger('keyboard', 'type', { text: "." });
+          blurFocus()
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+        } 
       }, true);
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
