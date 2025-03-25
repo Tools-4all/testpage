@@ -1285,6 +1285,7 @@
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item" id="selectAllBtn">Select All</div>
+          <div class="vs-navbar-dropdown-item" id="showContext">Show context Menu</div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -3469,6 +3470,10 @@ prompt("This is a prompt:");
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
     });
+
+    document.getElementById("showContext").addEventListener("click", () => {
+      currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
+    })
 
 
   </script>
