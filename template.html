@@ -1654,7 +1654,7 @@
             const targetColumn = point.position.column;
             const targetLine = point.position.lineNumber;
 
-            if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
+            if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
               editorInstance.setPosition(point.position);
             }
           }
