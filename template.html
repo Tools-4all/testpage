@@ -16,7 +16,7 @@
       margin: 0;
       padding: 0;
     }
-    
+
 
     body {
       user-select: none;
@@ -2694,7 +2694,6 @@ prompt("This is a prompt:");
       if (activeTabId === null) return;
       let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
-      t.editorInstance.getAction("actions.find").run();
       if (isMobile) {
         document.querySelectorAll(".sidebar-panel")
           .forEach((p) => p.classList.remove("active"));
@@ -2702,6 +2701,7 @@ prompt("This is a prompt:");
           .forEach((b) => b.classList.remove("active"));
 
       }
+      t.editorInstance.getAction("actions.find").run();
     });
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
