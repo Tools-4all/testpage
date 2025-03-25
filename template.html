@@ -1640,6 +1640,7 @@
         let touchEnd = null;
         let eventTargetStart;
         let lastDot;
+        console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
           touchEnd = new Date().getTime();
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
