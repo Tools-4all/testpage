@@ -1675,6 +1675,7 @@
       domNode.addEventListener("input", (e) => {
         e.preventDefault();
         e.stopImmediatePropagation();
+        e.stopPropagation();
         if (typeof e.data === "string" && e.data.trim()) {
           editorInstance.trigger('keyboard', 'type', { text: e.data });
         } else if (e.inputType === "deleteContentBackward") {
@@ -1685,7 +1686,11 @@
           editorInstance.trigger('keyboard', 'type', { text: "\n" });
         } else if (e.inputType === "insertLineBreak") {
           editorInstance.trigger('keyboard', 'type', { text: "\n" });
-        } 
+        } else if (e.inputType === "insertText") {
+          editorInstance.trigger('keyboard', 'type', { text: e.data });
+        } else if (e.inputType === "insertFromPaste") {
+          editorInstance.trigger('keyboard', 'paste', { text: e.data });
+        }
       }, true);
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
