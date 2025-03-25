@@ -1673,7 +1673,7 @@
       // });
 
       domNode.addEventListener("compositionupdate", (event) => {
-        alert(`compositionupdate ${event}`);
+        console.log("compositionupdate", event);
         if (event.data === "." || event.keyCode === 190) {
           event.preventDefault();
           event.stopPropagation();
