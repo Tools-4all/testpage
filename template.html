@@ -1661,7 +1661,10 @@
             selectAction.run();
           }
         }, true);
-
+        domNode.addEventListener("touchstart", (event) => {
+          touchStart = new Date().getTime();
+          eventTargetStart = event.target;
+        });
         let lastDot;
 
         function blurFocus() {
