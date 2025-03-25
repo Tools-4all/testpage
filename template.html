@@ -1676,13 +1676,12 @@
         elem.blur()
         editorInstance.focus()
       }
-      stopAll(event) {
+      function stopAll(event) {
         event.preventDefault();
         event.stopImmediatePropagation();
         event.stopPropagation();
       }
       
-      console.log(domNode)
       domNode.addEventListener("textInput", (event) => {
         console.log("textInput", event)
         stopAll(event)
@@ -1691,6 +1690,8 @@
       });
       domNode.addEventListener("keyup", stopAll);
       domNode.addEventListener("input", stopAll);
+      console.log(domNode)
+
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
       //   e.preventDefault();
