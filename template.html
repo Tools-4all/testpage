@@ -1686,7 +1686,10 @@
       domNode.addEventListener("textInput", (event) => {
         console.log("textInput", event)
         stopAll(event)
-        if (event.data.length > 1 || event.data === " " && lastDot - new Date().getTime() < 20) {
+        if (event.data.length > 1) {
+          return;
+        }
+        if (event.data === " " && lastDot - new Date().getTime() < 200) {
           return;
         }
         editorInstance.trigger('keyboard', 'type', { text: event.data });
@@ -1699,86 +1702,7 @@
       domNode.addEventListener("input", stopAll);
       console.log(domNode)
 
-      // domNode.addEventListener("input", (e) => {
-      //   console.log(e);
-      //   e.preventDefault();
-      //   e.stopImmediatePropagation();
-      //   e.stopPropagation();
-
-      //   // Check if the input is text
-      //   if (typeof e.data === "string" && e.data.trim()) {
-      //     editorInstance.trigger('keyboard', 'type', { text: e.data });
-      //   }
-      //   // Handle backspace delete (delete left)
-      //   else if (e.inputType === "deleteContentBackward") {
-      //     editorInstance.trigger('keyboard', 'deleteLeft', {});
-      //   }
-      //   // Handle forward delete (delete right)
-      //   else if (e.inputType === "deleteContentForward") {
-      //     editorInstance.trigger('keyboard', 'deleteRight', {});
-      //   }
-      //   // Handle inserting a paragraph (new line)
-      //   else if (e.inputType === "insertParagraph" || e.inputType === "insertLineBreak") {
-      //     editorInstance.trigger('keyboard', 'type', { text: "\n" });
-      //   }
-      //   // Handle text insertion
-      //   else if (e.inputType === "insertText") {
-      //     editorInstance.trigger('keyboard', 'type', { text: e.data });
-      //   }
-      //   // Handle paste
-      //   else if (e.inputType === "insertFromPaste") {
-      //     editorInstance.trigger('keyboard', 'paste', { text: e.data });
-      //   }
-      // }, true);
-
-
-      // if (typeof editorInstance._onMouseUp._listeners !== "array") {
-      //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
-      // }
-      // if (typeof editorInstance._onMouseDown._listeners !== "array") {
-      //   editorInstance._onMouseDown._listeners = [editorInstance._onMouseDown._listeners];
-      // }
-      // if (typeof editorInstance._onKeyDown._listeners !== "array") {
-      //   editorInstance._onKeyDown._listeners = [editorInstance._onKeyDown._listeners];
-      // }
-      // editorInstance["_onKeyDown"]["_listeners"].unshift({
-      //   value: (event) => {
-      //     const target = event.target;
-      //     console.log("event _onKeyDown", event)
-      //     event = event.event
-      //     if (event.browserEvent.type === "pointerup") {
-      //       event.preventDefault();
-      //       event.stopPropagation();
-      //       target.element.dispatchEvent(new MouseEvent("mousedown"));
-      //     }
-      //   }
-      // });
-      // editorInstance["_onMouseUp"]["_listeners"].unshift({
-      //   value: (event) => {
-      //     const target = event.target;
-      //     console.log("event up", event)
-      //     event = event.event
-      //     if (event.browserEvent.type === "pointerup") {
-      //       console.log("event.browserEvent.type === pointerup");
-      //       event.preventDefault();
-      //       event.stopPropagation();
-      //       target.element.dispatchEvent(new MouseEvent("mouseup"));
-      //     }
-      //   }
-      // });
-      // editorInstance["_onMouseDown"]["_listeners"].unshift({
-      //   value: (event) => {
-      //     const target = event.target;
-      //     console.log("event down", event);
-      //     event = event.event
-      //     if (event.browserEvent.type === "pointerdown") {
-      //       console.log("event.browserEvent.type === pointerdown");
-      //       event.preventDefault();
-      //       event.stopPropagation();
-      //       target.element.dispatchEvent(new MouseEvent("mousedown"));
-      //     }
-      //   }
-      // });
+     
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
