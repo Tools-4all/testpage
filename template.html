@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" autocapitalize="off" autocorrect="off" spellcheck="false">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8" />
@@ -3487,6 +3487,22 @@ prompt("This is a prompt:");
       closeDropdowns()
     })
 
+
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('input, textarea');
+      inputs.forEach(function (input) {
+        input.setAttribute('autocomplete', 'off');
+        input.setAttribute('autocorrect', 'off');
+        input.setAttribute('autocapitalize', 'off');
+      });
+
+      // Disable content-editable autocorrect and autocapitalize for div and span
+      const editableElements = document.querySelectorAll('[contenteditable]');
+      editableElements.forEach(function (element) {
+        element.setAttribute('autocorrect', 'off');
+        element.setAttribute('autocapitalize', 'off');
+      });
+    }, 3000);
 
   </script>
 
