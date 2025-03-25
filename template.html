@@ -1674,12 +1674,11 @@
 
       domNode.addEventListener("compositionupdate", (event) => {
         console.log("compositionupdate", event);
-        if (event.data === "." || event.keyCode === 190) {
+        if (event.data === "") {
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
-          alert("dot compositionupdate");
         }
       });
       domNode.addEventListener("keyup", (event) => {
