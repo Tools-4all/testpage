@@ -1672,8 +1672,16 @@
       //   }
       // });
 
+      domNode.addEventListener("compositionupdate", (event) => {
+        of (event.data === "." || event.keyCode === 190) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          editorInstance.trigger('keyboard', 'type', { text: "." });
+          alert("dot");
+        }
+      });
       domNode.addEventListener("keyup", (event) => {
-        // On mobile devices, try using `event.key` instead of `event.keyCode`
         if (event.key === "." || event.keyCode === 190) {
           event.preventDefault();
           event.stopPropagation();
