@@ -1686,10 +1686,7 @@
       domNode.addEventListener("textInput", (event) => {
         console.log("textInput", event)
         stopAll(event)
-        if (event.data.length > 1) {
-          return;
-        }
-        if (event.data === " " && lastDot - new Date().getTime() < 200) {
+        if (event.data.length > 1 || lastDot - new Date().getTime() < 20) {
           return;
         }
         editorInstance.trigger('keyboard', 'type', { text: event.data });
