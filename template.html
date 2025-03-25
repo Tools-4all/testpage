@@ -1672,9 +1672,9 @@
       //   }
       // });
 
-      domNode.addEventListener("keyUp", (event) => {
-        // check if its . 
-        if (event.keyCode === 190) {
+      domNode.addEventListener("keyup", (event) => {
+        // On mobile devices, try using `event.key` instead of `event.keyCode`
+        if (event.key === "." || event.keyCode === 190) {
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
@@ -1682,6 +1682,7 @@
           alert("dot");
         }
       }, true);
+
 
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
