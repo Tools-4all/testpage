@@ -1638,8 +1638,9 @@
         let lastTapTime = 0;
         let lastTapX = 0;
         let lastTapY = 0;
-        const doubleTapThreshold = 300; 
-        const proximityThreshold = 30; 
+        const doubleTapThreshold = 300; // maximum time between taps in ms
+        const proximityThreshold = 30;  // maximum distance between taps in pixels
+        let isExpanding = false;  // flag to track if selection expansion is in progress
 
         domNode.addEventListener("touchend", (event) => {
           const currentTapTime = new Date().getTime();
@@ -1651,27 +1652,42 @@
             Math.abs(tapX - lastTapX) < proximityThreshold &&
             Math.abs(tapY - lastTapY) < proximityThreshold
           ) {
+            // Double tap detected
             event.preventDefault();
             event.stopPropagation();
-            editorInstance.focus();
 
-            const point = editorInstance.getTargetAtClientPoint(tapX, tapY);
-            if (point && point.position) {
-              const currentPosition = editorInstance.getPosition();
-              const targetColumn = point.position.column;
-              const targetLine = point.position.lineNumber;
-              if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
-                editorInstance.setPosition(point.position);
+            // Only proceed if the action is not already in progress
+            if (!isExpanding) {
+              editorInstance.focus();
+
+              const point = editorInstance.getTargetAtClientPoint(tapX, tapY);
+              if (point && point.position) {
+                const currentPosition = editorInstance.getPosition();
+                const targetColumn = point.position.column;
+                const targetLine = point.position.lineNumber;
+                if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
+                  editorInstance.setPosition(point.position);
+                }
               }
+
+              // Mark expansion as in progress
+              isExpanding = true;
+              selectAction.run();
+
+              // After the action is done, reset the expansion flag
+              // You can add a delay based on the expected time for the selection to expand
+              setTimeout(() => {
+                isExpanding = false;
+              }, 300);  // Adjust this timeout as needed
             }
-            selectAction.run();
-            lastTapTime = 0;
           } else {
+            // Not a double tap – store tap info for the next tap
             lastTapTime = currentTapTime;
             lastTapX = tapX;
             lastTapY = tapY;
           }
         });
+
 
 
         let lastDot;
