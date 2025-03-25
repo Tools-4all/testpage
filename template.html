@@ -1673,12 +1673,12 @@
       // });
 
       domNode.addEventListener("compositionupdate", (event) => {
-        of (event.data === "." || event.keyCode === 190) {
+        if (event.data === "." || event.keyCode === 190) {
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
           editorInstance.trigger('keyboard', 'type', { text: "." });
-          alert("dot");
+          alert("dot compositionupdate");
         }
       });
       domNode.addEventListener("keyup", (event) => {
