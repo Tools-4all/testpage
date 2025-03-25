@@ -1638,6 +1638,7 @@
       let touchStart = null;
       let touchEnd = null;
       let eventTargetStart;
+      // need to change that to double click smartSelect.expand via proximity
       domNode.addEventListener("touchend", (event) => {
         touchEnd = new Date().getTime();
         if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
@@ -1660,7 +1661,7 @@
           }
           selectAction.run();
         }
-      }, true);
+      });
 
       // if (typeof editorInstance._onKeyUp._listeners !== "array") {
       //   editorInstance._onKeyUp._listeners = [editorInstance._onKeyUp._listeners];
@@ -1684,11 +1685,7 @@
           editorInstance.trigger('keyboard', 'type', { text: "\n" });
         } else if (e.inputType === "insertLineBreak") {
           editorInstance.trigger('keyboard', 'type', { text: "\n" });
-        } else if (e.inputType === "insertText") {
-          editorInstance.trigger('keyboard', 'type', { text: e.data });
-        } else if (e.inputType === "insertFromPaste") {
-          editorInstance.trigger('keyboard', 'paste', { text: e.data });
-        }
+        } 
       }, true);
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
