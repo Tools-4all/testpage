@@ -1692,7 +1692,21 @@
         }
       }, true);
 
-
+      domNode.addEventListener("input", (event) => {
+        console.log("compositionupdate", event);
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        if (event.data === "") {
+          console.log("is a dot")
+          editorInstance.trigger('keyboard', 'type', { text: "." });
+          blurFocus()
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+          editorInstance.trigger('keyboard', 'deleteLeft', {});
+        } else {
+          editorInstance.trigger('keyboard', 'type', { text: event.data });
+        }
+      }, true);
       // domNode.addEventListener("input", (e) => {
       //   console.log(e);
       //   e.preventDefault();
