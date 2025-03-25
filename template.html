@@ -1671,7 +1671,7 @@
         e.preventDefault();
         e.stopPropagation();
         if (e.data) {
-          editorInstance.trigger('keyboard', 'type', {text: null});
+          editorInstance.trigger('keyboard', 'type', {text: e.data});
         }
       });
 
