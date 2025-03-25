@@ -1667,7 +1667,7 @@
       }
       editorInstance["_onKeyUp"]["_listeners"].unshift({
         value: (event) => {
-          alert(`key up ${event.browserEvent.key}`);
+          alert(`key up\n${JSON.stringify(event.browserEvent.key)}`);
         }
       });
 
