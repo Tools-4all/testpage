@@ -1643,16 +1643,25 @@
           event.preventDefault();
           event.stopPropagation();
           editorInstance.focus();
+
           const point = editorInstance.getTargetAtClientPoint(
             event.changedTouches[0].clientX,
             event.changedTouches[0].clientY
           );
+
           if (point && point.position) {
-            editorInstance.setPosition(point.position);
+            const currentPosition = editorInstance.getPosition();
+            const targetColumn = point.position.column;
+            const targetLine = point.position.lineNumber;
+
+            if (currentPosition.column !== targetColumn || currentPosition.lineNumber !== targetLine) {
+              editorInstance.setPosition(point.position);
+            }
           }
           selectAction.run();
         }
       });
+
       domNode.addEventListener("touchstart", (event) => {
         touchStart = new Date().getTime();
         eventTargetStart = event.target;
