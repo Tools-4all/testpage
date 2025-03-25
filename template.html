@@ -1673,27 +1673,37 @@
       // });
 
       domNode.addEventListener("input", (e) => {
-        console.log(e)
+        console.log(e);
         e.preventDefault();
         e.stopImmediatePropagation();
         e.stopPropagation();
+
+        // Check if the input is text
         if (typeof e.data === "string" && e.data.trim()) {
           editorInstance.trigger('keyboard', 'type', { text: e.data });
-        } else if (e.inputType === "deleteContentBackward") {
+        }
+        // Handle backspace delete (delete left)
+        else if (e.inputType === "deleteContentBackward") {
           editorInstance.trigger('keyboard', 'deleteLeft', {});
-          editorInstance.trigger('keyboard', 'deleteLeft', {});
-        } else if (e.inputType === "deleteContentForward") {
+        }
+        // Handle forward delete (delete right)
+        else if (e.inputType === "deleteContentForward") {
           editorInstance.trigger('keyboard', 'deleteRight', {});
-        } else if (e.inputType === "insertParagraph") {
+        }
+        // Handle inserting a paragraph (new line)
+        else if (e.inputType === "insertParagraph" || e.inputType === "insertLineBreak") {
           editorInstance.trigger('keyboard', 'type', { text: "\n" });
-        } else if (e.inputType === "insertLineBreak") {
-          editorInstance.trigger('keyboard', 'type', { text: "\n" });
-        } else if (e.inputType === "insertText") {
+        }
+        // Handle text insertion
+        else if (e.inputType === "insertText") {
           editorInstance.trigger('keyboard', 'type', { text: e.data });
-        } else if (e.inputType === "insertFromPaste") {
+        }
+        // Handle paste
+        else if (e.inputType === "insertFromPaste") {
           editorInstance.trigger('keyboard', 'paste', { text: e.data });
         }
       }, true);
+
 
       // if (typeof editorInstance._onMouseUp._listeners !== "array") {
       //   editorInstance._onMouseUp._listeners = [editorInstance._onMouseUp._listeners];
