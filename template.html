@@ -1662,13 +1662,13 @@
         }
       });
 
-      domNode.addEventListener("touchstart", (event) => {
-        touchStart = new Date().getTime();
-        eventTargetStart = event.target;
-      });
-
-      editorInstance.onWillType((e) => {
-        console.log(e)
+      if (typeof editorInstance._onKeyUp._listeners !== "array") {
+        editorInstance._onKeyUp._listeners = [editorInstance._onKeyUp._listeners];
+      }
+      editorInstance["_onKeyUp"]["_listeners"].unshift({
+        value: (event) => {
+          console.log(event);
+        }
       });
 
       // domNode.addEventListener("input", (e) => {
