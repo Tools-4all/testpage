@@ -1667,13 +1667,15 @@
         }
 
         function showContextMenu(options) {
+          const theModel = editorInstance.getModel();
+          const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
           const defaultOptions = {
-            copy: true,
-            cut: true,
+            copy: isTextSelected,
+            cut: isTextSelected,
             paste: true,
             selectAll: true,
-            undo: true,
-            redo: true,
+            undo: theModel.canUndo(),
+            redo: theModel.canRedo(),
             format: true
           };
           options = Object.assign({}, defaultOptions, options);
