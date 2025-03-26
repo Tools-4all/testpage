@@ -1803,7 +1803,6 @@
           const endPos = selection.getEndPosition();
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-
           if (startCoords && endCoords) {
             const offsetX = 10, offsetY = 22;
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
@@ -1813,20 +1812,28 @@
             const scrollRect = editorScrollable.getBoundingClientRect();
             const defaultHandleHeight = 70;
 
-            // If the selection is at the absolute top or bottom, use 0 so the condition never hides the handle.
-            const leftHandleHeight = startPos.lineNumber === 1 ? 0 : defaultHandleHeight;
+            // For the top handle: if the selection is on line 1, use a negative effective height
+            let leftHandleEffectiveHeight;
+            if (startPos.lineNumber === 1) {
+              // Here, we force the handle to be visible by giving it an effective height that shifts its "bottom" upward.
+              leftHandleEffectiveHeight = -5; // adjust this value (negative) so that the check passes
+            } else {
+              leftHandleEffectiveHeight = defaultHandleHeight;
+            }
+
+            // For the bottom handle: if on the last line, set effective height to 0.
             const model = editorInstance.getModel();
-            const rightHandleHeight = endPos.lineNumber === model.getLineCount() ? 0 : defaultHandleHeight;
+            let rightHandleEffectiveHeight = (endPos.lineNumber === model.getLineCount()) ? 0 : defaultHandleHeight;
 
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < scrollRect.top || (leftHandleTop + leftHandleHeight) > scrollRect.bottom) {
+            if (leftHandleTop < scrollRect.top || (leftHandleTop + leftHandleEffectiveHeight) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            if (rightHandleTop < scrollRect.top || (rightHandleTop + rightHandleHeight) > scrollRect.bottom) {
+            if (rightHandleTop < scrollRect.top || (rightHandleTop + rightHandleEffectiveHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
               mobileSelectorRight.style.visibility = 'visible';
