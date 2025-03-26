@@ -1784,30 +1784,21 @@
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
           if (startCoords && endCoords) {
-            // Offsets to fine-tune the handle positions (adjust these as needed)
             const offsetX = 10, offsetY = 22;
-
-            // Update the transforms for the left and right handles
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
-
-            // Determine the visible area of the editor.
-            // Try to find a scrollable element. If not, fallback to the editor DOM.
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const scrollRect = editorScrollable.getBoundingClientRect();
 
-            // Assume the handle's height is 25px (match your CSS)
             const handleHeight = 100;
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            // If the left handle is completely out-of-view, hide it.
             if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            // Same for the right handle.
             if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
@@ -1964,6 +1955,7 @@
         fixedOverflowWidgets: true,
         folding: true,
         minimap: { enabled: !isMobile },
+        scrollBeyondLastLine: false,
       });
 
       const domNode = editorInstance.getDomNode();
