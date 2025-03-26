@@ -1701,8 +1701,8 @@
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
           // Adjust these offsets
-          mobileSelectorLeft.style.transform = `translate(${startCoords.left - 1}px, ${startCoords.top - 30}px)`;
-          mobileSelectorRight.style.transform = `translate(${endCoords.left - 30}px, ${endCoords.top - 30}px)`;
+          mobileSelectorLeft.style.transform = `translate(${startCoords.left - 1}px, ${startCoords.top + 30}px)`;
+          mobileSelectorRight.style.transform = `translate(${endCoords.left - 30}px, ${endCoords.top + 30}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
       });
