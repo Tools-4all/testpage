@@ -1724,11 +1724,40 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
 
+          let autoScrolling = false;
+          let autoScrollDirection = 0; // -1 for up, +1 for down
+          let autoScrollRaf; // to hold the requestAnimationFrame handle
+
+          // Call this to start continuous scrolling.
+          function startAutoScroll(direction) {
+            autoScrolling = true;
+            autoScrollDirection = direction;
+            autoScrollLoop();
+          }
+
+          // Our auto-scroll loop using requestAnimationFrame.
+          function autoScrollLoop() {
+            if (!autoScrolling) return;
+            // Adjust scroll by a fixed step each frame.
+            const scrollStep = 6;
+            editorInstance.setScrollTop(editorInstance.getScrollTop() + autoScrollDirection * scrollStep);
+            autoScrollRaf = requestAnimationFrame(autoScrollLoop);
+          }
+
+          // Call this to cancel auto-scrolling.
+          function stopAutoScroll() {
+            autoScrolling = false;
+            if (autoScrollRaf) {
+              cancelAnimationFrame(autoScrollRaf);
+              autoScrollRaf = null;
+            }
+          }
+
           selector.addEventListener('touchmove', (event) => {
-            stopAll(event);
+            stopAll(event); // your function to prevent default and stop propagation
             const touch = event.touches[0];
 
-            // Update selection as before.
+            // Update the selection as before.
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
@@ -1750,33 +1779,42 @@
 
             const editorScrollable = domNode;
             const editorRect = editorScrollable.getBoundingClientRect();
-            const threshold = 50;
-            const scrollStep = 6;
+            const zoneThreshold = 50; // threshold for top/bottom zones
 
-            // Initialize lastTouchY if needed.
+            // Initialize lastTouchY if null.
             if (lastTouchY === null) {
               lastTouchY = touch.clientY;
             }
-
             const deltaY = touch.clientY - lastTouchY;
 
-            // If finger is in the top zone and moving up sufficiently (more than 10px)
-            if (touch.clientY < editorRect.top + threshold && deltaY < -10) {
-              editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-              // lastTouchY is NOT updated, so delta remains large, and scrolling continues
+            // If the finger is near the top and moving upward by more than 10px:
+            if (touch.clientY < editorRect.top + zoneThreshold && deltaY < -10) {
+              if (!autoScrolling) {
+                startAutoScroll(-1);
+              }
             }
-            // If finger is in the bottom zone and moving down sufficiently (more than 10px)
-            else if (touch.clientY > editorRect.bottom - threshold && deltaY > 10) {
-              editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-              // Do not update lastTouchY to continue scrolling
+            // If the finger is near the bottom and moving downward by more than 10px:
+            else if (touch.clientY > editorRect.bottom - zoneThreshold && deltaY > 10) {
+              if (!autoScrolling) {
+                startAutoScroll(1);
+              }
             }
-            // If the user reverses direction by more than 5px, update lastTouchY to stop scrolling
-            else if (Math.abs(deltaY) > 5) {
+            // If auto-scrolling is active and the user reverses direction by more than 5px, cancel auto-scroll.
+            else if (autoScrolling && Math.abs(deltaY) > 5 && Math.sign(deltaY) !== autoScrollDirection) {
+              stopAutoScroll();
+              lastTouchY = touch.clientY; // reset baseline
+            }
+            // When not auto-scrolling, keep updating lastTouchY so manual scrolling works.
+            if (!autoScrolling) {
               lastTouchY = touch.clientY;
             }
-            // Otherwise, if the movement is very slight, keep lastTouchY unchanged
           }, { passive: false });
 
+          selector.addEventListener('touchend', () => {
+            // When the finger is lifted, cancel auto-scrolling and reset the baseline.
+            stopAutoScroll();
+            lastTouchY = null;
+          });
 
 
           selector.addEventListener('touchend', (event) => {
