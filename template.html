@@ -1719,8 +1719,15 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
           selector.addEventListener('touchmove', (event) => {
-            stopAll(event);
             const touch = event.touches[0];
+            const editorRect = editorScrollable.getBoundingClientRect();
+            const threshold = 50;
+
+            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
+              stopAll(event);  
+            }
+
+            // Update selection as before.
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
@@ -1738,19 +1745,6 @@
                 );
               editorInstance.setSelection(newSelection);
               touchMoved = true;
-            }
-
-            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || domNode;
-            const editorRect = editorScrollable.getBoundingClientRect();
-            const threshold = 50; 
-            const scrollStep = 10; 
-
-            if (touch.clientY < editorRect.top + threshold) {
-              console.log('scrolling up by', scrollStep);
-              editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
-            } else if (touch.clientY > editorRect.bottom - threshold) {
-              console.log('scrolling down by', scrollStep);
-              editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
             }
           }, { passive: false });
 
