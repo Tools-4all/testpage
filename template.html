@@ -569,6 +569,7 @@
       position: relative;
       flex: 1;
       overflow: hidden;
+    
     }
 
     .editor-and-output {
@@ -1028,6 +1029,10 @@
         margin-left: 10px;
         margin-right: 10px;
       } */
+
+      #monaco-editor {
+        overflow: visible;
+      }
 
       #activityBar {
         width: 40px;
@@ -1658,7 +1663,7 @@
               mobileSelectorRight.style.visibility = 'visible';
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            showContextMenu();
+            mobileSelectionsContainer.classList.remove('hidden');
           }
         });
 
