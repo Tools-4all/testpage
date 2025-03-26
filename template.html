@@ -1751,9 +1751,8 @@
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
-
+            const deltaY = touch.clientY - lastTouchY;
             if (lastTouchY !== null) {
-              console.log("lastTouchY", lastTouchY, "deltaY", deltaY, "editorRect.top + threshold", editorRect.top + threshold, "editorRect.bottom - threshold", editorRect.bottom - threshold);
               if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
               }
