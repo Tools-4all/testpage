@@ -1811,15 +1811,15 @@
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const scrollRect = editorScrollable.getBoundingClientRect();
 
-            const handleHeight = 0;
+            const handleHeight = 70;
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
-              mobileSelectorLeft.style.visibility = 'hidden';
-            } else {
-              mobileSelectorLeft.style.visibility = 'visible';
-            }
+            // if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
+            //   mobileSelectorLeft.style.visibility = 'hidden';
+            // } else {
+            //   mobileSelectorLeft.style.visibility = 'visible';
+            // }
             if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
