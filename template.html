@@ -1607,6 +1607,8 @@
     function createTab(desiredName = null, content = null) {
       let wasDragging = false;
       let lastTouchY = null;
+      let dragTouchX = null;
+      let dragTouchY = null;
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
         if (!editorDom) return;
@@ -1987,8 +1989,6 @@
         const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
         let touchStart = null;
         let touchEnd = null;
-        let dragTouchX = null;
-        let dragTouchY = null;
         let eventTargetStart;
         let lastDot;
 
