@@ -1320,7 +1320,6 @@
     .mobile-outset-container {
       display: flex;
       height: 100%;
-      /* Using a gradient overlay for scrolling effect */
       mask-image: linear-gradient(to right, black 95%, transparent 100%);
       width: calc(100% - 50px);
       overflow-x: scroll;
@@ -1368,7 +1367,6 @@
       right: 0;
     }
 
-    /* Inline SVG arrows styling */
     .mobile-arrow svg {
       width: 24px;
       height: 24px;
@@ -1404,17 +1402,6 @@
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
       <div id="lightModeDiv" onclick="changeToLightMode()">
-        <!-- <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
-          <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
-          <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
-          <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2" />
-          <line x1="20" y1="12" x2="22" y2="12" stroke="white" stroke-width="2" />
-          <line x1="5.5" y1="5.5" x2="7" y2="7" stroke="white" stroke-width="2" />
-          <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
-          <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
-          <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
-        </svg> -->
         <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
@@ -1486,7 +1473,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
-    console.warn = () => {};
+    console.warn = () => { };
     const workerPath = "{% url 'betzi_test_js' %}";
     const { jsPDF } = window.jspdf;
     let currentTab = null;
@@ -1619,47 +1606,41 @@
       const editorDom = editorInstance.getDomNode();
       if (!editorDom) return;
 
-      // Create mobile selections container & selectors
+      // Create container and selectors
       const mobileSelectionsContainer = document.createElement('div');
       mobileSelectionsContainer.className = 'mobile-selections-container hidden';
-
       const mobileSelectorRight = document.createElement('div');
       mobileSelectorRight.className = 'mobile-selector mobile-selector-right';
       const mobileSelectorLeft = document.createElement('div');
       mobileSelectorLeft.className = 'mobile-selector mobile-selector-left';
-
       mobileSelectionsContainer.appendChild(mobileSelectorRight);
       mobileSelectionsContainer.appendChild(mobileSelectorLeft);
 
-      // Append the container to the editor's scrollable area
+      // Append to editor scrollable (or editorDom if not found)
       const editorScrollable = editorDom.querySelector('.monaco-editor-scrollable') || editorDom;
       editorScrollable.insertAdjacentElement('afterbegin', mobileSelectionsContainer);
 
-      // Create mobile context menu
+      // Create context menu with inline SVG arrows and menu items
       const mobileContextMenu = document.createElement('div');
       mobileContextMenu.className = 'mobile-context-menu hidden';
-
       const mobileOutsetContainer = document.createElement('div');
       mobileOutsetContainer.className = 'mobile-outset-container';
       const mobileInsetMenu = document.createElement('div');
       mobileInsetMenu.className = 'mobile-inset-menu';
-
-      // Build menu items
       const menuItems = [
         { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('keyboard', 'copy', null) },
         { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('keyboard', 'cut', null) },
         { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('keyboard', 'paste', null) },
         {
           className: 'select', text: 'Select All', action: () => {
-            const fullRange = editorInstance.getModel().getFullModelRange();
-            editorInstance.setSelection(fullRange);
+            const range = editorInstance.getModel().getFullModelRange();
+            editorInstance.setSelection(range);
           }
         },
         { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('keyboard', 'undo', null) },
         { className: 'redo', text: 'Redo', action: () => editorInstance.trigger('keyboard', 'redo', null) },
         { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
       ];
-
       menuItems.forEach(item => {
         const menuItem = document.createElement('div');
         menuItem.className = 'mobile-menu-item ' + item.className;
@@ -1674,10 +1655,9 @@
         };
         mobileInsetMenu.appendChild(menuItem);
       });
-
       mobileOutsetContainer.appendChild(mobileInsetMenu);
 
-      // Create arrow elements using inline SVG
+      // Create inline SVG arrows for scrolling
       const mobileArrowLeft = document.createElement('div');
       mobileArrowLeft.className = 'mobile-arrow mobile-arrow-left';
       mobileArrowLeft.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 7l-5 5 5 5V7z"/></svg>';
@@ -1686,7 +1666,6 @@
       mobileArrowLeft.ontouchend = function (e) {
         e.preventDefault();
         mobileArrowLeft.classList.remove('hovered');
-        // Implement scroll left logic
         const containerWidth = mobileOutsetContainer.offsetWidth;
         mobileOutsetContainer.scrollBy({ left: -containerWidth, behavior: 'smooth' });
       };
@@ -1699,7 +1678,6 @@
       mobileArrowRight.ontouchend = function (e) {
         e.preventDefault();
         mobileArrowRight.classList.remove('hovered');
-        // Implement scroll right logic
         const containerWidth = mobileOutsetContainer.offsetWidth;
         mobileOutsetContainer.scrollBy({ left: containerWidth, behavior: 'smooth' });
       };
@@ -1707,15 +1685,33 @@
       mobileContextMenu.appendChild(mobileOutsetContainer);
       mobileContextMenu.appendChild(mobileArrowRight);
       mobileContextMenu.appendChild(mobileArrowLeft);
-
       editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
 
-      // --- Selector Touch Handlers ---
+      // ===== Update Selection Handle Positions =====
+      editorInstance.onDidChangeCursorSelection((e) => {
+        const selection = e.selection;
+        // If no selection, hide the handles and context menu
+        if (selection.isEmpty()) {
+          mobileSelectionsContainer.classList.add('hidden');
+          mobileContextMenu.classList.add('hidden');
+          return;
+        }
+        const startPos = selection.getStartPosition();
+        const endPos = selection.getEndPosition();
+        const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+        const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+        if (startCoords && endCoords) {
+          // Adjust these offsets as needed for your UI
+          mobileSelectorLeft.style.transform = `translate(${startCoords.left - 30}px, ${startCoords.top - 8}px)`;
+          mobileSelectorRight.style.transform = `translate(${endCoords.left - 30}px, ${endCoords.top - 8}px)`;
+          mobileSelectionsContainer.classList.remove('hidden');
+        }
+      });
+
+      // ===== Selector Touch Handlers =====
       function handleMobileSelectorTouch(selector, isLeft) {
-        let touchStartPos;
-        let initialSelection;
-        let touchMoved = false;
-        let touchEndTimeout;
+        let touchStartPos, initialSelection;
+        let touchMoved = false, touchEndTimeout;
         selector.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
           touchStartPos = { x: touch.clientX, y: touch.clientY };
@@ -1752,34 +1748,35 @@
           touchMoved = false;
         });
       }
-
       handleMobileSelectorTouch(mobileSelectorLeft, true);
       handleMobileSelectorTouch(mobileSelectorRight, false);
 
-      // --- Long-Press to Show Context Menu ---
-      let touchTimeout, startPosition;
+      // ===== Long-Press to Show Context Menu =====
+      let longPressTimeout, startPositionLP;
       editorDom.addEventListener('touchstart', (event) => {
+        // Do not trigger if touching the context menu or selectors
         if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
           event.stopPropagation();
           event.preventDefault();
           return;
         }
-        touchTimeout = setTimeout(() => {
-          // Get Y coordinate (adjust as needed)
-          let y = editorInstance.getTopForLineNumber(startPosition.lineNumber) || 0;
+        longPressTimeout = setTimeout(() => {
+          // Adjust Y offset as needed
+          let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
           mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
           mobileContextMenu.classList.remove('hidden');
-        }, 1000); // Long press duration
+        }, 1000);
         const touch = event.touches[0];
         const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
         if (target && target.position) {
-          startPosition = target.position;
+          startPositionLP = target.position;
         }
       });
       editorDom.addEventListener('touchend', () => {
-        if (touchTimeout) clearTimeout(touchTimeout);
+        if (longPressTimeout) clearTimeout(longPressTimeout);
       });
     }
+
     function createTab(desiredName = null, content = null) {
       let name = desiredName
         ? getUniqueTabName(desiredName)
