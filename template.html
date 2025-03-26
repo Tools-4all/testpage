@@ -1728,6 +1728,7 @@
             stopAll(event);
             const touch = event.touches[0];
 
+            // Update selection as before.
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
@@ -1747,22 +1748,35 @@
               touchMoved = true;
             }
 
-            const editorScrollable = domNode
+            const editorScrollable = domNode;
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
 
-            if (lastTouchY !== null) {
-              console.log("lastTouchY", lastTouchY, "deltaY", deltaY, "editorRect.top + threshold", editorRect.top + threshold, "editorRect.bottom - threshold", editorRect.bottom - threshold);
-              if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
-                editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-              }
-              else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
-                editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-              }
+            // Initialize lastTouchY if needed.
+            if (lastTouchY === null) {
+              lastTouchY = touch.clientY;
             }
-            lastTouchY = touch.clientY;
+
+            const deltaY = touch.clientY - lastTouchY;
+
+            // If finger is in the top zone and moving up sufficiently (more than 10px)
+            if (touch.clientY < editorRect.top + threshold && deltaY < -10) {
+              editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+              // lastTouchY is NOT updated, so delta remains large, and scrolling continues
+            }
+            // If finger is in the bottom zone and moving down sufficiently (more than 10px)
+            else if (touch.clientY > editorRect.bottom - threshold && deltaY > 10) {
+              editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+              // Do not update lastTouchY to continue scrolling
+            }
+            // If the user reverses direction by more than 5px, update lastTouchY to stop scrolling
+            else if (Math.abs(deltaY) > 5) {
+              lastTouchY = touch.clientY;
+            }
+            // Otherwise, if the movement is very slight, keep lastTouchY unchanged
           }, { passive: false });
+
 
 
           selector.addEventListener('touchend', (event) => {
