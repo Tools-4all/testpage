@@ -1747,7 +1747,7 @@
               touchMoved = true;
             }
 
-            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
+            const editorScrollable = domNode
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
