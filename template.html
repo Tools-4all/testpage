@@ -1724,6 +1724,10 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
 
+          // Define a variable outside the event listener to keep track of auto-scrolling
+          let autoScrollInterval = null;
+          const autoScrollDelay = 50; // milliseconds between auto scroll steps
+
           selector.addEventListener('touchmove', (event) => {
             stopAll(event);
             const touch = event.touches[0];
@@ -1747,24 +1751,41 @@
               touchMoved = true;
             }
 
-            const editorScrollable = domNode
+            const editorScrollable = domNode;
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
-
-            if (lastTouchY !== null) {
-              if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
-                editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+            // Clear any existing auto scroll timer if finger moves outside threshold
+            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
+              if (autoScrollInterval !== null) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
               }
-              else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
-                editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+            } else {
+              // If already scrolling, do nothing; otherwise, start auto scroll
+              if (autoScrollInterval === null) {
+                autoScrollInterval = setInterval(() => {
+                  // Check current finger position if possible; here we use lastTouchY
+                  if (lastTouchY !== null) {
+                    if (lastTouchY < editorRect.top + threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                    } else if (lastTouchY > editorRect.bottom - threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                    }
+                  }
+                }, autoScrollDelay);
               }
             }
+            // Update lastTouchY for next move
             lastTouchY = touch.clientY;
           }, { passive: false });
 
-
+          // Also, clear the interval on touchend so scrolling stops
           selector.addEventListener('touchend', (event) => {
+            if (autoScrollInterval !== null) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
+            }
             if (!touchMoved) {
               const touch = event.changedTouches[0];
               const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
@@ -1779,6 +1800,7 @@
             initialSelection = null;
             touchMoved = false;
           });
+
         }
         handleMobileSelectorTouch(mobileSelectorLeft, true);
         handleMobileSelectorTouch(mobileSelectorRight, false);
