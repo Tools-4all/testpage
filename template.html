@@ -1509,6 +1509,12 @@
         fullScreen();
       };
     }
+
+    function stopAll(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
     function fullScreen() {
       if (compiler.style.width === "60%") {
         compiler.style.width = "100%";
@@ -1846,7 +1852,7 @@
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
-        
+
 
 
         let longPressTimeout, startPositionLP;
@@ -2055,11 +2061,6 @@
           const elem = document.activeElement
           elem.blur()
           editorInstance.focus()
-        }
-        function stopAll(event) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          event.stopPropagation();
         }
 
         domNode.addEventListener("textInput", (event) => {
