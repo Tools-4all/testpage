@@ -1997,7 +1997,11 @@
             wasDragging = false;
             return;
           }
-          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
+          if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 || Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
+            stopAll(event);
+            return;
+          }
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
             stopAll(event);
             editorInstance.focus();
 
