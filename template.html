@@ -1509,12 +1509,6 @@
         fullScreen();
       };
     }
-
-    function stopAll(event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      event.stopPropagation();
-    }
     function fullScreen() {
       if (compiler.style.width === "60%") {
         compiler.style.width = "100%";
@@ -1804,9 +1798,11 @@
           });
 
         }
+
+  
         handleMobileSelectorTouch(mobileSelectorLeft, true);
         handleMobileSelectorTouch(mobileSelectorRight, false);
-        editorInstance.onDidScrollChange(() => {
+        function fitScroll() {
           const selection = editorInstance.getSelection();
           if (!selection || selection.isEmpty()) {
             mobileSelectionsContainer.classList.add('hidden');
@@ -1851,8 +1847,8 @@
 
             mobileSelectionsContainer.classList.remove('hidden');
           }
-        });
-
+        }
+        editorInstance.onDidScrollChange(fitScroll);
 
 
         let longPressTimeout, startPositionLP;
@@ -1880,8 +1876,7 @@
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
-        mobileSelectorRight.dispatchEvent(new Event("touchmove"));
-        mobileSelectorLeft.dispatchEvent(new Event("touchmove"));
+        editorInstance.onDidScrollChange
       }
       let name = desiredName
         ? getUniqueTabName(desiredName)
@@ -2028,9 +2023,6 @@
             wasDragging = false;
             return;
           }
-          if (!event.target.closest('.view-line')) {
-            console.log("not view-line")
-          }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
             editorInstance.focus();
@@ -2061,6 +2053,11 @@
           const elem = document.activeElement
           elem.blur()
           editorInstance.focus()
+        }
+        function stopAll(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          event.stopPropagation();
         }
 
         domNode.addEventListener("textInput", (event) => {
