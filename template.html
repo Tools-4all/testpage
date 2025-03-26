@@ -1919,22 +1919,22 @@
           touchEnd = new Date().getTime();
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
             stopAll(event);
-            // editorInstance.focus();
+            editorInstance.focus();
 
-            // const point = editorInstance.getTargetAtClientPoint(
-            //   event.changedTouches[0].clientX,
-            //   event.changedTouches[0].clientY
-            // );
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
 
-            // if (point && point.position) {
-            //   const currentPosition = editorInstance.getPosition();
-            //   const targetColumn = point.position.column;
-            //   const targetLine = point.position.lineNumber;
-            //   if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
-            //     editorInstance.setPosition(point.position);
-            //   }
-            // }
-            // selectAction.run();
+            if (point && point.position) {
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+                editorInstance.setPosition(point.position);
+              }
+            }
+            selectAction.run();
           }
         }, true);
         domNode.addEventListener("touchstart", (event) => {
