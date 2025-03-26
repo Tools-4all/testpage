@@ -1798,29 +1798,41 @@
 
           if (startCoords && endCoords) {
             const offsetX = 10, offsetY = 22;
-            mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const scrollRect = editorScrollable.getBoundingClientRect();
-
             const handleHeight = 70;
-            const leftHandleTop = startCoords.top + offsetY;
-            const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < 5 || (leftHandleTop + handleHeight) > scrollRect.bottom) {
+            // For left handle
+            const leftHandlePos = startCoords.top + offsetY;
+            const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
+            if (spaceBelowLeft < 50) {
               mobileSelectorLeft.style.visibility = 'hidden';
+            } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
+              // Reverse: position above the selection.
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - handleHeight}px)`;
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
             }
-            if (rightHandleTop < 5 || (rightHandleTop + handleHeight) > scrollRect.bottom) {
+
+            // For right handle
+            const rightHandlePos = endCoords.top + offsetY;
+            const spaceBelowRight = scrollRect.bottom - rightHandlePos;
+            if (spaceBelowRight < 50) {
               mobileSelectorRight.style.visibility = 'hidden';
+            } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - handleHeight}px)`;
             } else {
               mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
             }
 
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
+
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
