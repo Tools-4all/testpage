@@ -1806,41 +1806,29 @@
 
           if (startCoords && endCoords) {
             const offsetX = 10, offsetY = 22;
+            mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
+            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const scrollRect = editorScrollable.getBoundingClientRect();
 
-            // For the left (start) handle:
-            if (startPos.lineNumber === 1) {
-              // Force a fixed position relative to the container's top (e.g., 5px below)
-              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${scrollRect.top + 5}px)`;
-              mobileSelectorLeft.style.visibility = 'visible';
-            } else {
-              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
-              // Check if it is in view (assuming handle height ~25px)
-              if (startCoords.top + offsetY < scrollRect.top || (startCoords.top + offsetY + 25) > scrollRect.bottom) {
-                mobileSelectorLeft.style.visibility = 'hidden';
-              } else {
-                mobileSelectorLeft.style.visibility = 'visible';
-              }
-            }
+            const handleHeight = 70;
+            const leftHandleTop = startCoords.top + offsetY;
+            const rightHandleTop = endCoords.top + offsetY;
 
-            // For the right (end) handle:
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
-            const model = editorInstance.getModel();
-            if (endPos.lineNumber === model.getLineCount()) {
-              mobileSelectorRight.style.visibility = 'visible';
+            if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
+              mobileSelectorLeft.style.visibility = 'hidden';
             } else {
-              if (endCoords.top + offsetY < scrollRect.top || (endCoords.top + offsetY + 25) > scrollRect.bottom) {
-                mobileSelectorRight.style.visibility = 'hidden';
-              } else {
-                mobileSelectorRight.style.visibility = 'visible';
-              }
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
+            if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
+              mobileSelectorRight.style.visibility = 'hidden';
+            } else {
+              mobileSelectorRight.style.visibility = 'visible';
             }
 
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
-
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
