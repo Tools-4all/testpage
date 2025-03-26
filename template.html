@@ -2024,19 +2024,18 @@
           }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
-            const touch = event.touches[0];
-            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-            if (target.targetType !== monaco.editor.MouseTargetType.CONTENT_TEXT) {
-              console.log('not content, target:', target, 'targetType:', target.targetType);
-            } else {
-              console.log('content, target:', target, 'targetType:', target.targetType);
-            }
-            editorInstance.focus();
 
             const point = editorInstance.getTargetAtClientPoint(
               event.changedTouches[0].clientX,
               event.changedTouches[0].clientY
             );
+            if (point.targetType !== monaco.editor.MouseTargetType.CONTENT_TEXT) {
+              console.log('not content, target:', point, 'targetType:', target.targetType);
+            } else {
+              console.log('content, target:', point, 'targetType:', target.targetType);
+            }
+            editorInstance.focus();
+
 
             if (point && point.position) {
               const currentPosition = editorInstance.getPosition();
