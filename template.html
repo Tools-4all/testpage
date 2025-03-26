@@ -1837,6 +1837,7 @@
           }
           longPressTimeout = setTimeout(() => {
             if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
+              wasDragging = true;
               return;
             }
             let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
