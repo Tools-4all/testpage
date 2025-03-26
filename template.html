@@ -1668,6 +1668,7 @@
 
         function showContextMenu(options) {
           const theModel = editorInstance.getModel();
+          console.log("istextselected", theModel.getValueInRange(editorInstance.getSelection()));
           const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
           const defaultOptions = {
             copy: isTextSelected,
