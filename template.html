@@ -1721,8 +1721,7 @@
           let scrollTimer = null;
 
           selector.addEventListener('touchmove', (event) => {
-            event.preventDefault(); // Ensure we’re in passive:false mode
-
+            stopAll(event);
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
