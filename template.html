@@ -1876,7 +1876,7 @@
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
-        editorInstance.onDidScrollChange
+        fitScroll();
       }
       let name = desiredName
         ? getUniqueTabName(desiredName)
