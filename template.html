@@ -1729,7 +1729,7 @@
               editorInstance.setSelection(newSelection);
               touchMoved = true;
             }
-          });
+          }, { passive: false });
           selector.addEventListener('touchend', (event) => {
             if (!touchMoved) {
               const touch = event.changedTouches[0];
