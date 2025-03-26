@@ -1687,7 +1687,6 @@
       mobileContextMenu.appendChild(mobileArrowLeft);
       editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
 
-      // ===== Update Selection Handle Positions =====
       editorInstance.onDidChangeCursorSelection((e) => {
         const selection = e.selection;
         if (selection.isEmpty()) {
