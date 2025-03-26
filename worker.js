@@ -485,7 +485,7 @@ function getStringOfKeyValue(obj) {
     }
 }
 
-function objectToStringForNode(obj, isDir=false) {
+function objectToStringForNode(obj, isDir = false) {
     if (typeof obj === "bigint") {
         return `${obj.toString()}n`;
     }
@@ -509,7 +509,7 @@ function objectToStringForNode(obj, isDir=false) {
         return `(${vals.length}) {${vals.slice(0, 5).join(", ")}, ...}`;
     } else if (isDir) {
         return `(${vals.length}) {${vals.join(", ")}}`;
-    } 
+    }
     return `{${vals.join(", ")}}`;
 }
 

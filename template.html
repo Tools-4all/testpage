@@ -1669,8 +1669,6 @@
             cut: isTextSelected,
             paste: true,
             selectAll: true,
-            undo: theModel.canUndo(),
-            redo: theModel.canRedo(),
             format: true
           };
           options = Object.assign({}, defaultOptions, options);
@@ -1684,8 +1682,6 @@
                 editorInstance.setSelection(range);
               }
             },
-            { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('undo', 'undo') },
-            { className: 'redo', text: 'Redo', action: () => editorInstance.trigger("redo", "redo") },
             { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
