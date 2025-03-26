@@ -1723,11 +1723,10 @@
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
 
-            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
+            if (!touch.clientY >= editorRect.top + threshold && !touch.clientY <= editorRect.bottom - threshold) {
               stopAll(event);  
             }
 
-            // Update selection as before.
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
