@@ -1704,8 +1704,10 @@
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
-            mobileSelectorRight.style.visibility = 'visible';
-            mobileSelectorLeft.style.visibility = 'visible';
+            if (!wasDragging) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
@@ -1725,7 +1727,7 @@
           });
 
           let autoScrollInterval = null;
-          const autoScrollDelay = 20; 
+          const autoScrollDelay = 20;
 
           selector.addEventListener('touchmove', (event) => {
             stopAll(event);
@@ -1841,6 +1843,7 @@
               mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
             }
 
+            mobileSelectionsContainer.classList.remove('hidden');
           }
         });
 
