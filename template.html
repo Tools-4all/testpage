@@ -1846,6 +1846,7 @@
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
+        
 
 
         let longPressTimeout, startPositionLP;
@@ -1873,9 +1874,9 @@
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
+        mobileSelectorRight.dispatchEvent(new Event("touchmove"));
+        mobileSelectorLeft.dispatchEvent(new Event("touchmove"));
       }
-      mobileSelectorRight.dispatchEvent(new Event("touchmove"));
-      mobileSelectorLeft.dispatchEvent(new Event("touchmove"));
       let name = desiredName
         ? getUniqueTabName(desiredName)
         : getNextTabName();
