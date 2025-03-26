@@ -1740,17 +1740,17 @@
               touchMoved = true;
             }
 
-            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || domNode
+            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || domNode;
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50; 
             const scrollStep = 10; 
-            const scrollEvent = new Event('scroll');
+
             if (touch.clientY < editorRect.top + threshold) {
-              scrollEvent.deltaY = -scrollStep;
-              editorScrollable.dispatchEvent(scrollEvent);
+              console.log('scrolling up by', scrollStep);
+              editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
             } else if (touch.clientY > editorRect.bottom - threshold) {
-              scrollEvent.deltaY = scrollStep;
-              editorScrollable.dispatchEvent(scrollEvent);
+              console.log('scrolling down by', scrollStep);
+              editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
             }
           }, { passive: false });
 
