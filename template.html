@@ -2019,6 +2019,9 @@
             wasDragging = false;
             return;
           }
+          if (!event.target.closest('.view-line')) {
+            console.log("not view-line")
+          }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
             editorInstance.focus();
