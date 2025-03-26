@@ -1688,7 +1688,6 @@
       editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
 
       // ===== Update Selection Handle Positions =====
-      // Within your initializeMobileSelection function, in the onDidChangeCursorSelection handler:
       editorInstance.onDidChangeCursorSelection((e) => {
         const selection = e.selection;
         if (selection.isEmpty()) {
@@ -1701,12 +1700,23 @@
         const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
-          // Define adjustable offsets:
-          const offsetX = 30; // tweak this value
-          const offsetY = 8;  // tweak this value
+          // Use the same logic as your original code:
+          const editorCoords = editorInstance.getDomNode().getBoundingClientRect();
+          const leftMargin = document.querySelector('.monaco-editor .margin')?.offsetWidth || 0;
+          const tapsHeight = -3; // original offset for top adjustment
 
-          mobileSelectorLeft.style.transform = `translate(${startCoords.left - offsetX}px, ${startCoords.top - offsetY}px)`;
-          mobileSelectorRight.style.transform = `translate(${endCoords.left - offsetX}px, ${endCoords.top - offsetY}px)`;
+          // Get the top positions of the start and end lines
+          const startLineTop = editorInstance.getTopForLineNumber(startPos.lineNumber);
+          const endLineTop = editorInstance.getTopForLineNumber(endPos.lineNumber);
+
+          // Calculate positions similar to your original code
+          const leftX = editorCoords.left + startCoords.left - leftMargin - 30;
+          const leftY = editorCoords.top + startLineTop - tapsHeight - 8;
+          const rightX = editorCoords.left + endCoords.left - leftMargin - 30;
+          const rightY = editorCoords.top + endLineTop - tapsHeight - 8;
+
+          mobileSelectorLeft.style.transform = `translateX(${leftX}px) translateY(${leftY}px)`;
+          mobileSelectorRight.style.transform = `translateX(${rightX}px) translateY(${rightY}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
       });
