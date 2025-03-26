@@ -1642,8 +1642,8 @@
               editorInstance.setSelection(range);
             }
           },
-          { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('keyboard', 'undo', null) },
-          { className: 'redo', text: 'Redo', action: () => editorInstance.trigger('keyboard', 'redo', null) },
+          { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('undo', 'undo') },
+          { className: 'redo', text: 'Redo', action: () => editorInstance.trigger("redo", "redo") },
           { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
         ];
         menuItems.forEach(item => {
