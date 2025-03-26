@@ -1755,6 +1755,7 @@
             const scrollStep = 6;
             const deltaY = touch.clientY - lastTouchY;
             if (scrollDirection) {
+                console.log("scrollDirection", scrollDirection, "lastScroll", lastScroll, "touch.clientY", touch.clientY);
                 if (scrollDirection === 'up' && lastScroll < touch.clientY) {
                   scrollDirection = null;
                 } else if (scrollDirection === 'down' && lastScroll > touch.clientY) {
