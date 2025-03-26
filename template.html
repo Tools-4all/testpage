@@ -1609,6 +1609,7 @@
       let lastTouchY = null;
       let dragTouchX = null;
       let dragTouchY = null;
+      let contextDiv = null;
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
         if (!editorDom) return;
@@ -1689,7 +1690,7 @@
         mobileContextMenu.appendChild(mobileArrowRight);
         mobileContextMenu.appendChild(mobileArrowLeft);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
-
+        contextDiv = mobileContextMenu
         editorInstance.onDidChangeCursorSelection((e) => {
           const selection = e.selection;
           if (selection.isEmpty()) {
@@ -2030,7 +2031,7 @@
               event.changedTouches[0].clientY
             );
             if (point.type === 7) {
-              console.log("this is empty space")
+              mobileContextMenu.classList.remove('hidden');
             }
             editorInstance.focus();
 
