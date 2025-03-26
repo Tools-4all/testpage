@@ -1602,182 +1602,176 @@
         b.appendChild(x.tabElement);
       });
     }
-    function initializeMobileSelection(editorInstance) {
-      const editorDom = editorInstance.getDomNode();
-      if (!editorDom) return;
 
-      // Create container and selectors
-      const mobileSelectionsContainer = document.createElement('div');
-      mobileSelectionsContainer.className = 'mobile-selections-container hidden';
-      const mobileSelectorRight = document.createElement('div');
-      mobileSelectorRight.className = 'mobile-selector mobile-selector-right';
-      const mobileSelectorLeft = document.createElement('div');
-      mobileSelectorLeft.className = 'mobile-selector mobile-selector-left';
-      mobileSelectionsContainer.appendChild(mobileSelectorRight);
-      mobileSelectionsContainer.appendChild(mobileSelectorLeft);
+    function createTab(desiredName = null, content = null) {
+      function initializeMobileSelection(editorInstance) {
+        const editorDom = editorInstance.getDomNode();
+        if (!editorDom) return;
 
-      // Append to editor scrollable (or editorDom if not found)
-      const editorScrollable = editorDom.querySelector('.monaco-editor-scrollable') || editorDom;
-      editorScrollable.insertAdjacentElement('afterbegin', mobileSelectionsContainer);
+        const mobileSelectionsContainer = document.createElement('div');
+        mobileSelectionsContainer.className = 'mobile-selections-container hidden';
+        const mobileSelectorRight = document.createElement('div');
+        mobileSelectorRight.className = 'mobile-selector mobile-selector-right';
+        const mobileSelectorLeft = document.createElement('div');
+        mobileSelectorLeft.className = 'mobile-selector mobile-selector-left';
+        mobileSelectionsContainer.appendChild(mobileSelectorRight);
+        mobileSelectionsContainer.appendChild(mobileSelectorLeft);
 
-      // Create context menu with inline SVG arrows and menu items
-      const mobileContextMenu = document.createElement('div');
-      mobileContextMenu.className = 'mobile-context-menu hidden';
-      const mobileOutsetContainer = document.createElement('div');
-      mobileOutsetContainer.className = 'mobile-outset-container';
-      const mobileInsetMenu = document.createElement('div');
-      mobileInsetMenu.className = 'mobile-inset-menu';
-      const menuItems = [
-        { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('keyboard', 'copy', null) },
-        { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('keyboard', 'cut', null) },
-        { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('keyboard', 'paste', null) },
-        {
-          className: 'select', text: 'Select All', action: () => {
-            const range = editorInstance.getModel().getFullModelRange();
-            editorInstance.setSelection(range);
-          }
-        },
-        { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('keyboard', 'undo', null) },
-        { className: 'redo', text: 'Redo', action: () => editorInstance.trigger('keyboard', 'redo', null) },
-        { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
-      ];
-      menuItems.forEach(item => {
-        const menuItem = document.createElement('div');
-        menuItem.className = 'mobile-menu-item ' + item.className;
-        menuItem.innerHTML = `<span>${item.text}</span>`;
-        menuItem.ontouchstart = () => menuItem.classList.add('hovered');
-        menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
-        menuItem.ontouchend = (e) => {
+        const editorScrollable = editorDom.querySelector('.monaco-editor-scrollable') || editorDom;
+        editorScrollable.insertAdjacentElement('afterbegin', mobileSelectionsContainer);
+
+        const mobileContextMenu = document.createElement('div');
+        mobileContextMenu.className = 'mobile-context-menu hidden';
+        const mobileOutsetContainer = document.createElement('div');
+        mobileOutsetContainer.className = 'mobile-outset-container';
+        const mobileInsetMenu = document.createElement('div');
+        mobileInsetMenu.className = 'mobile-inset-menu';
+        const menuItems = [
+          { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('keyboard', 'copy', null) },
+          { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('keyboard', 'cut', null) },
+          { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('keyboard', 'paste', null) },
+          {
+            className: 'select', text: 'Select All', action: () => {
+              const range = editorInstance.getModel().getFullModelRange();
+              editorInstance.setSelection(range);
+            }
+          },
+          { className: 'undo', text: 'Undo', action: () => editorInstance.trigger('keyboard', 'undo', null) },
+          { className: 'redo', text: 'Redo', action: () => editorInstance.trigger('keyboard', 'redo', null) },
+          { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
+        ];
+        menuItems.forEach(item => {
+          const menuItem = document.createElement('div');
+          menuItem.className = 'mobile-menu-item ' + item.className;
+          menuItem.innerHTML = `<span>${item.text}</span>`;
+          menuItem.ontouchstart = () => menuItem.classList.add('hovered');
+          menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
+          menuItem.ontouchend = (e) => {
+            e.preventDefault();
+            menuItem.classList.remove('hovered');
+            item.action();
+            mobileContextMenu.classList.add('hidden');
+          };
+          mobileInsetMenu.appendChild(menuItem);
+        });
+        mobileOutsetContainer.appendChild(mobileInsetMenu);
+
+        const mobileArrowLeft = document.createElement('div');
+        mobileArrowLeft.className = 'mobile-arrow mobile-arrow-left';
+        mobileArrowLeft.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 7l-5 5 5 5V7z"/></svg>';
+        mobileArrowLeft.ontouchstart = () => mobileArrowLeft.classList.add('hovered');
+        mobileArrowLeft.ontouchmove = () => mobileArrowLeft.classList.remove('hovered');
+        mobileArrowLeft.ontouchend = function (e) {
           e.preventDefault();
-          menuItem.classList.remove('hovered');
-          item.action();
-          mobileContextMenu.classList.add('hidden');
+          mobileArrowLeft.classList.remove('hovered');
+          const containerWidth = mobileOutsetContainer.offsetWidth;
+          mobileOutsetContainer.scrollBy({ left: -containerWidth, behavior: 'smooth' });
         };
-        mobileInsetMenu.appendChild(menuItem);
-      });
-      mobileOutsetContainer.appendChild(mobileInsetMenu);
 
-      // Create inline SVG arrows for scrolling
-      const mobileArrowLeft = document.createElement('div');
-      mobileArrowLeft.className = 'mobile-arrow mobile-arrow-left';
-      mobileArrowLeft.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 7l-5 5 5 5V7z"/></svg>';
-      mobileArrowLeft.ontouchstart = () => mobileArrowLeft.classList.add('hovered');
-      mobileArrowLeft.ontouchmove = () => mobileArrowLeft.classList.remove('hovered');
-      mobileArrowLeft.ontouchend = function (e) {
-        e.preventDefault();
-        mobileArrowLeft.classList.remove('hovered');
-        const containerWidth = mobileOutsetContainer.offsetWidth;
-        mobileOutsetContainer.scrollBy({ left: -containerWidth, behavior: 'smooth' });
-      };
+        const mobileArrowRight = document.createElement('div');
+        mobileArrowRight.className = 'mobile-arrow mobile-arrow-right';
+        mobileArrowRight.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"/></svg>';
+        mobileArrowRight.ontouchstart = () => mobileArrowRight.classList.add('hovered');
+        mobileArrowRight.ontouchmove = () => mobileArrowRight.classList.remove('hovered');
+        mobileArrowRight.ontouchend = function (e) {
+          e.preventDefault();
+          mobileArrowRight.classList.remove('hovered');
+          const containerWidth = mobileOutsetContainer.offsetWidth;
+          mobileOutsetContainer.scrollBy({ left: containerWidth, behavior: 'smooth' });
+        };
 
-      const mobileArrowRight = document.createElement('div');
-      mobileArrowRight.className = 'mobile-arrow mobile-arrow-right';
-      mobileArrowRight.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"/></svg>';
-      mobileArrowRight.ontouchstart = () => mobileArrowRight.classList.add('hovered');
-      mobileArrowRight.ontouchmove = () => mobileArrowRight.classList.remove('hovered');
-      mobileArrowRight.ontouchend = function (e) {
-        e.preventDefault();
-        mobileArrowRight.classList.remove('hovered');
-        const containerWidth = mobileOutsetContainer.offsetWidth;
-        mobileOutsetContainer.scrollBy({ left: containerWidth, behavior: 'smooth' });
-      };
+        mobileContextMenu.appendChild(mobileOutsetContainer);
+        mobileContextMenu.appendChild(mobileArrowRight);
+        mobileContextMenu.appendChild(mobileArrowLeft);
+        editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
 
-      mobileContextMenu.appendChild(mobileOutsetContainer);
-      mobileContextMenu.appendChild(mobileArrowRight);
-      mobileContextMenu.appendChild(mobileArrowLeft);
-      editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
-
-      // ===== Update Selection Handle Positions =====
-      editorInstance.onDidChangeCursorSelection((e) => {
-        const selection = e.selection;
-        if (selection.isEmpty()) {
-          mobileSelectionsContainer.classList.add('hidden');
-          mobileContextMenu.classList.add('hidden');
-          return;
-        }
-        const startPos = selection.getStartPosition();
-        const endPos = selection.getEndPosition();
-        const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
-        const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-        if (startCoords && endCoords) {
-          // Adjust these offsets
-          mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
-          mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
-          mobileSelectionsContainer.classList.remove('hidden');
-        }
-      });
-
-
-      // ===== Selector Touch Handlers =====
-      function handleMobileSelectorTouch(selector, isLeft) {
-        let touchStartPos, initialSelection;
-        let touchMoved = false, touchEndTimeout;
-        selector.addEventListener('touchstart', (event) => {
-          const touch = event.touches[0];
-          touchStartPos = { x: touch.clientX, y: touch.clientY };
-          initialSelection = editorInstance.getSelection();
-          touchMoved = false;
-          if (touchEndTimeout) clearTimeout(touchEndTimeout);
-          event.preventDefault();
-        });
-        selector.addEventListener('touchmove', (event) => {
-          const touch = event.touches[0];
-          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-          if (target && target.position) {
-            const newSelection = isLeft
-              ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
-              : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
-            editorInstance.setSelection(newSelection);
-            touchMoved = true;
+        editorInstance.onDidChangeCursorSelection((e) => {
+          const selection = e.selection;
+          if (selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+            return;
           }
-          event.preventDefault();
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+          if (startCoords && endCoords) {
+            mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
+            mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
         });
-        selector.addEventListener('touchend', (event) => {
-          if (!touchMoved) {
-            const touch = event.changedTouches[0];
+
+
+        function handleMobileSelectorTouch(selector, isLeft) {
+          let touchStartPos, initialSelection;
+          let touchMoved = false, touchEndTimeout;
+          selector.addEventListener('touchstart', (event) => {
+            const touch = event.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY };
+            initialSelection = editorInstance.getSelection();
+            touchMoved = false;
+            if (touchEndTimeout) clearTimeout(touchEndTimeout);
+            event.preventDefault();
+            wasDragging = true;
+          });
+          selector.addEventListener('touchmove', (event) => {
+            const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
                 ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
                 : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
               editorInstance.setSelection(newSelection);
+              touchMoved = true;
             }
+            event.preventDefault();
+          });
+          selector.addEventListener('touchend', (event) => {
+            if (!touchMoved) {
+              const touch = event.changedTouches[0];
+              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+              if (target && target.position) {
+                const newSelection = isLeft
+                  ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
+                  : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                editorInstance.setSelection(newSelection);
+              }
+            }
+            touchStartPos = null;
+            initialSelection = null;
+            touchMoved = false;
+            setTimeout(() => {
+              wasDragging = false;
+            }, 100);
+          });
+        }
+        handleMobileSelectorTouch(mobileSelectorLeft, true);
+        handleMobileSelectorTouch(mobileSelectorRight, false);
+
+        let longPressTimeout, startPositionLP;
+        editorDom.addEventListener('touchstart', (event) => {
+          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
           }
-          touchStartPos = null;
-          initialSelection = null;
-          touchMoved = false;
+          longPressTimeout = setTimeout(() => {
+            let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
+            mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
+            mobileContextMenu.classList.remove('hidden');
+          }, 1000);
+          const touch = event.touches[0];
+          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+          if (target && target.position) {
+            startPositionLP = target.position;
+          }
+        });
+        editorDom.addEventListener('touchend', () => {
+          if (longPressTimeout) clearTimeout(longPressTimeout);
         });
       }
-      handleMobileSelectorTouch(mobileSelectorLeft, true);
-      handleMobileSelectorTouch(mobileSelectorRight, false);
-
-      // ===== Long-Press to Show Context Menu =====
-      let longPressTimeout, startPositionLP;
-      editorDom.addEventListener('touchstart', (event) => {
-        // Do not trigger if touching the context menu or selectors
-        if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
-          event.stopPropagation();
-          event.preventDefault();
-          return;
-        }
-        longPressTimeout = setTimeout(() => {
-          // Adjust Y offset as needed
-          let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
-          mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
-          mobileContextMenu.classList.remove('hidden');
-        }, 1000);
-        const touch = event.touches[0];
-        const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-        if (target && target.position) {
-          startPositionLP = target.position;
-        }
-      });
-      editorDom.addEventListener('touchend', () => {
-        if (longPressTimeout) clearTimeout(longPressTimeout);
-      });
-    }
-
-    function createTab(desiredName = null, content = null) {
       let name = desiredName
         ? getUniqueTabName(desiredName)
         : getNextTabName();
@@ -1803,7 +1797,6 @@
       outputContainer.classList.add("outputContainer");
       outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
-      // outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
       outputContainer.appendChild(controlsBar);
@@ -1915,9 +1908,15 @@
         let touchEnd = null;
         let eventTargetStart;
         let lastDot;
+        let wasDragging = false;
+
         console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
           touchEnd = new Date().getTime();
+          if (wasDragging) {
+            stopAll(event);
+            return;
+          }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
             stopAll(event);
             editorInstance.focus();
