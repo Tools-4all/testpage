@@ -1636,7 +1636,7 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu({ copy: true, cut: true, paste: true, selectAll: true, undo: true, redo: true, format: true });
 
-
+        mobileContextMenu.appendChild(mobileInsetMenu);
         mobileContextMenu.appendChild(mobileOutsetContainer);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
