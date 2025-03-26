@@ -1770,10 +1770,11 @@
         }
         handleMobileSelectorTouch(mobileSelectorLeft, true);
         handleMobileSelectorTouch(mobileSelectorRight, false);
-        editorInstance.onDidScrollChange(() => {
-          const selection = editorInstance.getSelection();
-          if (!selection || selection.isEmpty()) {
+        editorInstance.onDidChangeCursorSelection((e) => {
+          const selection = e.selection;
+          if (selection.isEmpty()) {
             mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
             return;
           }
           const startPos = selection.getStartPosition();
@@ -1781,8 +1782,32 @@
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
           if (startCoords && endCoords) {
-            mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
+            // Your chosen offsets
+            const offsetX = 10, offsetY = 22;
+            mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
+            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
+
+            // Get the scroll container's bounding rectangle in viewport coordinates.
+            // (Adjust this if you have a different scrollable element.)
+            const scrollRect = (editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode()).getBoundingClientRect();
+
+            // Calculate the absolute (viewport) positions of the handles:
+            const leftHandleY = startCoords.top + offsetY;
+            const rightHandleY = endCoords.top + offsetY;
+
+            // If a handle's Y position is out of the visible area, hide it.
+            if (leftHandleY < scrollRect.top || leftHandleY > scrollRect.bottom) {
+              mobileSelectorLeft.style.visibility = 'hidden';
+            } else {
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
+            if (rightHandleY < scrollRect.top || rightHandleY > scrollRect.bottom) {
+              mobileSelectorRight.style.visibility = 'hidden';
+            } else {
+              mobileSelectorRight.style.visibility = 'visible';
+            }
+
+            mobileSelectionsContainer.classList.remove('hidden');
           }
         });
 
