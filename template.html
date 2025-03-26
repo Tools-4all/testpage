@@ -1288,7 +1288,7 @@
       background: #7a77ff;
       position: absolute;
       border-radius: 50%;
-      margin-top: 25px;
+      /* margin-top: 25px; */
       box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     }
 
@@ -1690,6 +1690,7 @@
       // ===== Update Selection Handle Positions =====
       editorInstance.onDidChangeCursorSelection((e) => {
         const selection = e.selection;
+        // If no selection, hide the handles and context menu
         if (selection.isEmpty()) {
           mobileSelectionsContainer.classList.add('hidden');
           mobileContextMenu.classList.add('hidden');
@@ -1700,27 +1701,12 @@
         const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
-          // Use the same logic as your original code:
-          const editorCoords = editorInstance.getDomNode().getBoundingClientRect();
-          const leftMargin = document.querySelector('.monaco-editor .margin')?.offsetWidth || 0;
-          const tapsHeight = -3; // original offset for top adjustment
-
-          // Get the top positions of the start and end lines
-          const startLineTop = editorInstance.getTopForLineNumber(startPos.lineNumber);
-          const endLineTop = editorInstance.getTopForLineNumber(endPos.lineNumber);
-
-          // Calculate positions similar to your original code
-          const leftX = editorCoords.left + startCoords.left - leftMargin - 30;
-          const leftY = editorCoords.top + startLineTop - tapsHeight - 8;
-          const rightX = editorCoords.left + endCoords.left - leftMargin - 30;
-          const rightY = editorCoords.top + endLineTop - tapsHeight - 8;
-
-          mobileSelectorLeft.style.transform = `translateX(${leftX}px) translateY(${leftY}px)`;
-          mobileSelectorRight.style.transform = `translateX(${rightX}px) translateY(${rightY}px)`;
+          // Adjust these offsets as needed for your UI
+          mobileSelectorLeft.style.transform = `translate(${startCoords.left - 30}px, ${startCoords.top - 8}px)`;
+          mobileSelectorRight.style.transform = `translate(${endCoords.left - 30}px, ${endCoords.top - 8}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
       });
-
 
       // ===== Selector Touch Handlers =====
       function handleMobileSelectorTouch(selector, isLeft) {
