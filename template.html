@@ -1724,9 +1724,8 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
 
-          // Define a variable outside the event listener to keep track of auto-scrolling
           let autoScrollInterval = null;
-          const autoScrollDelay = 20; // milliseconds between auto scroll steps
+          const autoScrollDelay = 20; 
 
           selector.addEventListener('touchmove', (event) => {
             stopAll(event);
@@ -1755,17 +1754,14 @@
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
-            // Clear any existing auto scroll timer if finger moves outside threshold
             if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
               if (autoScrollInterval !== null) {
                 clearInterval(autoScrollInterval);
                 autoScrollInterval = null;
               }
             } else {
-              // If already scrolling, do nothing; otherwise, start auto scroll
               if (autoScrollInterval === null) {
                 autoScrollInterval = setInterval(() => {
-                  // Check current finger position if possible; here we use lastTouchY
                   if (lastTouchY !== null) {
                     if (lastTouchY < editorRect.top + threshold) {
                       editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
@@ -1776,11 +1772,9 @@
                 }, autoScrollDelay);
               }
             }
-            // Update lastTouchY for next move
             lastTouchY = touch.clientY;
           }, { passive: false });
 
-          // Also, clear the interval on touchend so scrolling stops
           selector.addEventListener('touchend', (event) => {
             if (autoScrollInterval !== null) {
               clearInterval(autoScrollInterval);
@@ -2599,7 +2593,6 @@ prompt("This is a prompt:");
         groupLevel = 0;
       }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
-      // let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(type);
 
       let flexContainer = document.createElement("div");
