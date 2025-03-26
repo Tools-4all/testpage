@@ -1983,6 +1983,8 @@
         const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
         let touchStart = null;
         let touchEnd = null;
+        let dragTouchX = null;
+        let dragTouchY = null;
         let eventTargetStart;
         let lastDot;
 
@@ -1995,7 +1997,7 @@
             wasDragging = false;
             return;
           }
-          if (touchEnd - touchStart > 700 && event.target === eventTargetStart) {
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
             editorInstance.focus();
 
@@ -2018,6 +2020,8 @@
         domNode.addEventListener("touchstart", (event) => {
           touchStart = new Date().getTime();
           eventTargetStart = event.target;
+          dragTouchX = event.touches[0].clientX;
+          dragTouchY = event.touches[0].clientY;
         });
         function blurFocus() {
           const elem = document.activeElement
