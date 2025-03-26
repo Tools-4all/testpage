@@ -1719,17 +1719,44 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
           selector.addEventListener('touchmove', (event) => {
-            stopAll(event)
+            // Ensure preventDefault() is effective by using passive: false in addEventListener options.
+            stopAll(event);
+
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
-                ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
-                : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                ? new monaco.Selection(
+                  target.position.lineNumber,
+                  target.position.column,
+                  initialSelection.endLineNumber,
+                  initialSelection.endColumn
+                )
+                : new monaco.Selection(
+                  initialSelection.startLineNumber,
+                  initialSelection.startColumn,
+                  target.position.lineNumber,
+                  target.position.column
+                );
               editorInstance.setSelection(newSelection);
               touchMoved = true;
             }
+
+            // Get the editor's scrolling container (adjust if needed)
+            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
+            const editorRect = editorScrollable.getBoundingClientRect();
+            const threshold = 50; // pixels from top or bottom to trigger scroll
+            const scrollStep = 10; // number of pixels to scroll per event
+
+            if (touch.clientY < editorRect.top + threshold) {
+              // Touch is near the top: scroll up
+              editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+            } else if (touch.clientY > editorRect.bottom - threshold) {
+              // Touch is near the bottom: scroll down
+              editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
+            }
           }, { passive: false });
+
           selector.addEventListener('touchend', (event) => {
             if (!touchMoved) {
               const touch = event.changedTouches[0];
