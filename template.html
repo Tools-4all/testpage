@@ -1704,8 +1704,10 @@
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
-            mobileSelectorRight.style.visibility = 'visible';
-            mobileSelectorLeft.style.visibility = 'visible';
+            if (!wasDragging) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
