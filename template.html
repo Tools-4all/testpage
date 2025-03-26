@@ -1719,17 +1719,40 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
           selector.addEventListener('touchmove', (event) => {
-            stopAll(event)
+            event.preventDefault();
+
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
-                ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
-                : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                ? new monaco.Selection(
+                  target.position.lineNumber,
+                  target.position.column,
+                  initialSelection.endLineNumber,
+                  initialSelection.endColumn
+                )
+                : new monaco.Selection(
+                  initialSelection.startLineNumber,
+                  initialSelection.startColumn,
+                  target.position.lineNumber,
+                  target.position.column
+                );
               editorInstance.setSelection(newSelection);
               touchMoved = true;
             }
+
+            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
+            const editorRect = editorScrollable.getBoundingClientRect();
+            const threshold = 50; 
+            const scrollStep = 10; 
+
+            if (touch.clientY < editorRect.top + threshold) {
+              editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+            } else if (touch.clientY > editorRect.bottom - threshold) {
+              editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
+            }
           }, { passive: false });
+
           selector.addEventListener('touchend', (event) => {
             if (!touchMoved) {
               const touch = event.changedTouches[0];
