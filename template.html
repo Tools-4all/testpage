@@ -1719,7 +1719,7 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
           selector.addEventListener('touchmove', (event) => {
-            event.preventDefault();
+            stopAll(event);
 
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
