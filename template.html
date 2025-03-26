@@ -1663,6 +1663,11 @@
         });
         mobileOutsetContainer.appendChild(mobileInsetMenu);
 
+
+
+        mobileContextMenu.appendChild(mobileOutsetContainer);
+        mobileContextMenu.appendChild(mobileArrowRight);
+        mobileContextMenu.appendChild(mobileArrowLeft);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
         editorInstance.onDidChangeCursorSelection((e) => {
