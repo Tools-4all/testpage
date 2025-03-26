@@ -1809,7 +1809,7 @@
               mobileSelectorLeft.style.visibility = 'hidden';
             } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
               mobileSelectorLeft.style.visibility = 'visible';
-              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(-90deg)`;
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
               mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
@@ -1822,7 +1822,7 @@
               mobileSelectorRight.style.visibility = 'hidden';
             } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
               mobileSelectorRight.style.visibility = 'visible';
-              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(+90deg)`;
             } else {
               mobileSelectorRight.style.visibility = 'visible';
               mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
