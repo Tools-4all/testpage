@@ -1762,7 +1762,7 @@
                   scrollDirection = null;
                 } else {
                   editorInstance.setScrollTop(editorInstance.getScrollTop() + (scrollDirection === 'up' ? -scrollStep : scrollStep));
-                  lastScroll = direction === 'up' ? touch.clientY - 7 : touch.clientY + 7;
+                  lastScroll = scrollDirection === 'up' ? touch.clientY - 7 : touch.clientY + 7;
                 }
             } else if (lastTouchY !== null) {
               if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
