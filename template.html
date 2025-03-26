@@ -1721,7 +1721,6 @@
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
-          let lastTouchY = null;
 
           selector.addEventListener('touchmove', (event) => {
             // Always update the selection first
@@ -1770,9 +1769,6 @@
           }, { passive: false });
 
           // Reset lastTouchY on touchend.
-          selector.addEventListener('touchend', (event) => {
-            lastTouchY = null;
-          });
 
 
           selector.addEventListener('touchend', (event) => {
@@ -1992,6 +1988,7 @@
 
         console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
+          lastTouchY = null;
           touchEnd = new Date().getTime();
           if (wasDragging) {
             stopAll(event);
