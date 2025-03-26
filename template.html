@@ -1732,7 +1732,9 @@
           selector.addEventListener('touchmove', (event) => {
             stopAll(event);
             const touch = event.touches[0];
-
+            if (arget.targetType !== monaco.editor.MouseTargetType.CONTENT_TEXT) {
+              console.log('not content');
+            }
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
