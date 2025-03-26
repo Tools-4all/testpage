@@ -1706,26 +1706,6 @@
         });
 
 
-        // Listen for scroll events
-        editorScrollable.addEventListener('scroll', () => {
-          // Get the current selection
-          const selection = editorInstance.getSelection();
-          if (!selection || selection.isEmpty()) {
-            mobileSelectionsContainer.classList.add('hidden');
-            return;
-          }
-          const startPos = selection.getStartPosition();
-          const endPos = selection.getEndPosition();
-          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
-          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-          if (startCoords && endCoords) {
-            // Recalculate the transform based on the new scroll position.
-            mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
-          }
-        });
-
-
         function handleMobileSelectorTouch(selector, isLeft) {
           let touchStartPos, initialSelection;
           let touchMoved = false, touchEndTimeout;
@@ -1764,7 +1744,7 @@
               touchMoved = true;
             }
 
-
+          
             if (touch.clientY < editorRect.top + threshold) {
               editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
             } else if (touch.clientY > editorRect.bottom - threshold) {
