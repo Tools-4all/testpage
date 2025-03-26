@@ -1309,8 +1309,7 @@
       height: 45px;
       background: #fff;
       border-radius: 18px;
-      max-width: 75vw;
-      width: fit-content;
+      max-width: 200px;
       z-index: 999;
     }
 
@@ -1318,19 +1317,10 @@
       display: none !important;
     }
 
-    .mobile-outset-container {
-      display: flex;
-      height: 100%;
-      mask-image: linear-gradient(to right, black 95%, transparent 100%);
-      width: calc(100% - 50px);
-      overflow-x: scroll;
-      overflow-y: hidden;
-      width: 200px;
-    }
 
     .mobile-inset-menu {
       display: flex;
-      width: 200px;
+      max-width: 200px;
       padding-left: 5px;
       overflow: scroll;
     }
@@ -1632,14 +1622,11 @@
 
         const mobileContextMenu = document.createElement('div');
         mobileContextMenu.className = 'mobile-context-menu hidden';
-        const mobileOutsetContainer = document.createElement('div');
-        mobileOutsetContainer.className = 'mobile-outset-container';
         const mobileInsetMenu = document.createElement('div');
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
         mobileContextMenu.appendChild(mobileInsetMenu);
-        mobileContextMenu.appendChild(mobileOutsetContainer);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
         editorInstance.onDidChangeCursorSelection((e) => {
