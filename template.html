@@ -1633,7 +1633,7 @@
         const mobileInsetMenu = document.createElement('div');
         mobileInsetMenu.className = 'mobile-inset-menu';
         const menuItems = [
-          { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('source','editor.action.clipboardCopyAction'),
+          { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('source','editor.action.clipboardCopyAction')},
           { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('keyboard', 'cut', null) },
           { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('keyboard', 'paste', null) },
           {
