@@ -2030,9 +2030,9 @@
               event.changedTouches[0].clientY
             );
             if (point.targetType !== monaco.editor.MouseTargetType.CONTENT_TEXT) {
-              console.log('not content, target:', point, 'targetType:', target.targetType);
+              console.log('not content, target:', point, 'targetType:', point.targetType);
             } else {
-              console.log('content, target:', point, 'targetType:', target.targetType);
+              console.log('content, target:', point, 'targetType:', point.targetType);
             }
             editorInstance.focus();
 
