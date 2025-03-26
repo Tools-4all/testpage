@@ -1746,10 +1746,8 @@
 
           
             if (touch.clientY < editorRect.top + threshold) {
-              console.log('scrolling up by', scrollStep);
               editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
             } else if (touch.clientY > editorRect.bottom - threshold) {
-              console.log('scrolling down by', scrollStep);
               editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
             }
           }, { passive: false });
