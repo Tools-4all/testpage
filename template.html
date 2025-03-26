@@ -1609,8 +1609,6 @@
       let lastTouchY = null;
       let dragTouchX = null;
       let dragTouchY = null;
-      let scrollDirection = null;
-      let lastScroll = null;
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
         if (!editorDom) return;
@@ -1754,30 +1752,14 @@
             const threshold = 50;
             const scrollStep = 6;
             const deltaY = touch.clientY - lastTouchY;
-            if (scrollDirection) {
-                console.log("scrollDirection", scrollDirection, "lastScroll", lastScroll, "touch.clientY", touch.clientY);
-                if (scrollDirection === 'up' && lastScroll < touch.clientY) {
-                  scrollDirection = null;
-                } else if (scrollDirection === 'down' && lastScroll > touch.clientY) {
-                  scrollDirection = null;
-                } else {
-                  editorInstance.setScrollTop(editorInstance.getScrollTop() + (scrollDirection === 'up' ? -scrollStep : scrollStep));
-                  lastScroll = scrollDirection === 'up' ? touch.clientY - 7 : touch.clientY + 7;
-                }
-            } else if (lastTouchY !== null) {
+            if (lastTouchY !== null) {
               if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-                scrollDirection = 'up';
               }
               else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-                scrollDirection = 'down';
               }
             }
-            if (!lastScroll) {
-              lastScroll = lastTouchY
-            }
-
             lastTouchY = touch.clientY;
           }, { passive: false });
 
@@ -2013,8 +1995,6 @@
         console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
-          lastTouchY = null;
-          lastScroll = null;
           touchEnd = new Date().getTime();
           if (wasDragging) {
             stopAll(event);
