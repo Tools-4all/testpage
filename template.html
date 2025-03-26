@@ -1753,16 +1753,16 @@
             const scrollStep = 6;
 
             if (lastTouchY !== null) {
-              const deltaY = touch.clientY - lastTouchY;
               console.log("lastTouchY", lastTouchY, "deltaY", deltaY, "editorRect.top + threshold", editorRect.top + threshold, "editorRect.bottom - threshold", editorRect.bottom - threshold);
               if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                lastTouchY -= 1;
               }
               else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                lastTouchY += 1;
               }
             }
-            lastTouchY = touch.clientY;
           }, { passive: false });
 
 
