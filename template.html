@@ -1660,6 +1660,9 @@
             }
             mobileSelectionsContainer.classList.remove('hidden');
           }
+          if (isContextMenuOpen()) {
+            showContextMenu();
+          }
         });
 
         function isContextMenuOpen() {
