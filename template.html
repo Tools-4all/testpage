@@ -1782,26 +1782,27 @@
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
           if (startCoords && endCoords) {
-            // Your chosen offsets
+            // Adjust offsets as desired
             const offsetX = 10, offsetY = 22;
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
 
-            // Get the scroll container's bounding rectangle in viewport coordinates.
-            // (Adjust this if you have a different scrollable element.)
+            // Get the bounding rectangle of the scrollable container (or editor dom)
             const scrollRect = (editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode()).getBoundingClientRect();
 
-            // Calculate the absolute (viewport) positions of the handles:
-            const leftHandleY = startCoords.top + offsetY;
-            const rightHandleY = endCoords.top + offsetY;
+            // Use handle height (25px here) to check if the whole handle is visible.
+            const handleHeight = 25;
+            // Calculate the top (after offset) of each handle in viewport coordinates:
+            const leftHandleTop = startCoords.top + offsetY;
+            const rightHandleTop = endCoords.top + offsetY;
 
-            // If a handle's Y position is out of the visible area, hide it.
-            if (leftHandleY < scrollRect.top || leftHandleY > scrollRect.bottom) {
+            // Hide the handle if either its top is above or its bottom is below the visible area
+            if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            if (rightHandleY < scrollRect.top || rightHandleY > scrollRect.bottom) {
+            if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
               mobileSelectorRight.style.visibility = 'visible';
