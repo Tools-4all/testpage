@@ -1870,7 +1870,7 @@
             }
             let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
             mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
-            mobileContextMenu.classList.remove('hidden');
+            showContextMenu();
           }, 1000);
           const touch = event.touches[0];
           const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
