@@ -1815,7 +1815,7 @@
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < scrollRect.top + 1000 || (leftHandleTop + handleHeight) > scrollRect.bottom) {
+            if (leftHandleTop < scrollRect.top || (leftHandleTop - 70) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
