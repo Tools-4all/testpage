@@ -1761,6 +1761,8 @@
               else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
                 editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
                 lastTouchY -= 1;
+              } else {
+                lastTouchY = touch.clientY;
               }
             }
           }, { passive: false });
