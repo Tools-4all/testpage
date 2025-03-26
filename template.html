@@ -1719,13 +1719,11 @@
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
           selector.addEventListener('touchmove', (event) => {
+            stopAll(event);
             const touch = event.touches[0];
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
-
-            if (!touch.clientY >= editorRect.top + threshold && !touch.clientY <= editorRect.bottom - threshold) {
-              stopAll(event);  
-            }
+            const scrollStep = 10;
 
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
@@ -1744,6 +1742,15 @@
                 );
               editorInstance.setSelection(newSelection);
               touchMoved = true;
+            }
+
+          
+            if (touch.clientY < editorRect.top + threshold) {
+              console.log('scrolling up by', scrollStep);
+              editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+            } else if (touch.clientY > editorRect.bottom - threshold) {
+              console.log('scrolling down by', scrollStep);
+              editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
             }
           }, { passive: false });
 
