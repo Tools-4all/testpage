@@ -1718,8 +1718,11 @@
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
           });
+          let scrollTimer = null;
+
+          // In your touchmove handler on the selector:
           selector.addEventListener('touchmove', (event) => {
-            stopAll(event);
+            event.preventDefault(); // Ensure preventDefault works (remember to set passive:false when adding the listener)
 
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
@@ -1741,18 +1744,38 @@
               touchMoved = true;
             }
 
+            // Get the editor's scrollable container and its bounding rectangle:
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const editorRect = editorScrollable.getBoundingClientRect();
-            const threshold = 50; 
-            const scrollStep = 10; 
 
+            // Define threshold (in pixels) and scroll speed:
+            const threshold = 50; // pixels from the top or bottom to trigger scrolling
+            const scrollStep = 10; // pixels to scroll per tick
+            const intervalTime = 50; // how frequently (in ms) to scroll
+
+            // Determine if touch is in the upper or lower scroll zone:
             if (touch.clientY < editorRect.top + threshold) {
-              editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
+              // If not already scrolling, start scrolling upward
+              if (!scrollTimer) {
+                scrollTimer = setInterval(() => {
+                  editorScrollable.scrollBy({ top: -scrollStep, behavior: 'auto' });
+                }, intervalTime);
+              }
             } else if (touch.clientY > editorRect.bottom - threshold) {
-              editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
+              // If not already scrolling, start scrolling downward
+              if (!scrollTimer) {
+                scrollTimer = setInterval(() => {
+                  editorScrollable.scrollBy({ top: scrollStep, behavior: 'auto' });
+                }, intervalTime);
+              }
+            } else {
+              // If the touch is not in either zone, clear the scroll timer if it exists
+              if (scrollTimer) {
+                clearInterval(scrollTimer);
+                scrollTimer = null;
+              }
             }
           }, { passive: false });
-
           selector.addEventListener('touchend', (event) => {
             if (!touchMoved) {
               const touch = event.changedTouches[0];
@@ -1767,6 +1790,8 @@
             touchStartPos = null;
             initialSelection = null;
             touchMoved = false;
+            clearInterval(scrollTimer);
+            scrollTimer = null;
           });
         }
         handleMobileSelectorTouch(mobileSelectorLeft, true);
