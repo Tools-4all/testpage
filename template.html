@@ -1701,7 +1701,7 @@
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
           // Adjust these offsets
-          mobileSelectorLeft.style.transform = `translate(${startCoords.left - 1}px, ${startCoords.top + 24}px)`;
+          mobileSelectorLeft.style.transform = `translate(${startCoords.left + 5}px, ${startCoords.top + 24}px)`;
           mobileSelectorRight.style.transform = `translate(${endCoords.left + 11}px, ${endCoords.top + 24}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
