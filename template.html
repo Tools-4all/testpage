@@ -1746,8 +1746,10 @@
             const scrollStep = 10; 
 
             if (touch.clientY < editorRect.top + threshold) {
+              console.log('scrolling up by', scrollStep);
               editorScrollable.scrollBy({ top: -scrollStep, behavior: 'smooth' });
             } else if (touch.clientY > editorRect.bottom - threshold) {
+              console.log('scrolling down by', scrollStep);
               editorScrollable.scrollBy({ top: scrollStep, behavior: 'smooth' });
             }
           }, { passive: false });
