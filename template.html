@@ -1631,6 +1631,8 @@
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
         editorInstance.onDidChangeCursorSelection((e) => {
+          showContextMenu();
+
           const selection = e.selection;
           if (selection.isEmpty()) {
             mobileSelectionsContainer.classList.add('hidden');
@@ -1651,7 +1653,6 @@
             mobileSelectionsContainer.classList.remove('hidden');
           }
           if (isContextMenuOpen()) {
-            showContextMenu();
           }
         });
 
