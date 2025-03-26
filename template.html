@@ -1776,10 +1776,8 @@
               }
             }
             if (!lastScroll) {
-              lastScroll = lastTouchY
+              lastTouchY = touch.clientY;
             }
-
-            lastTouchY = touch.clientY;
           }, { passive: false });
 
 
