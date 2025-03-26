@@ -1688,7 +1688,7 @@
             { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('source', 'editor.action.clipboardCutAction') },
             { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('source', 'editor.action.clipboardPasteAction') },
             {
-              className: 'select', text: 'Select All', action: () => {
+              className: 'selectAll', text: 'Select All', action: () => {
                 const range = editorInstance.getModel().getFullModelRange();
                 editorInstance.setSelection(range);
               }
