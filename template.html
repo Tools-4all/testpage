@@ -1728,7 +1728,6 @@
             stopAll(event);
             const touch = event.touches[0];
 
-            // (Keep the selection update code as is)
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
               const newSelection = isLeft
@@ -1748,34 +1747,23 @@
               touchMoved = true;
             }
 
-            const editorScrollable = domNode;
+            const editorScrollable = domNode
             const editorRect = editorScrollable.getBoundingClientRect();
             const threshold = 50;
             const scrollStep = 6;
 
-            // Initialize lastTouchY if needed.
-            if (lastTouchY === null) {
-              lastTouchY = touch.clientY;
-            }
-            // Calculate movement relative to the frozen lastTouchY.
-            const deltaY = touch.clientY - lastTouchY;
-
-            // If in the top scroll zone and moving up significantly...
-            if (touch.clientY < editorRect.top + threshold && deltaY < -10) {
-              editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-              // Do not update lastTouchY so delta remains large.
-            }
-            // If in the bottom scroll zone and moving down significantly...
-            else if (touch.clientY > editorRect.bottom - threshold && deltaY > 10) {
-              editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-              // Do not update lastTouchY so delta remains large.
-            }
-            // Otherwise, if the user reverses direction by more than 10px, update lastTouchY.
-            else {
-              lastTouchY = touch.clientY;
+            if (lastTouchY !== null) {
+              const deltaY = touch.clientY - lastTouchY;
+              if (touch.clientY < editorRect.top + threshold && deltaY < 0) {
+                editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                lastTouchY = touch.clientY - scrollStep;
+              }
+              else if (touch.clientY > editorRect.bottom - threshold && deltaY > 0) {
+                editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                lastTouchY = touch.clientY + scrollStep;
+              }
             }
           }, { passive: false });
-
 
 
           selector.addEventListener('touchend', (event) => {
