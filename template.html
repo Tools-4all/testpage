@@ -1815,12 +1815,12 @@
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < 5) {
+            if (leftHandleTop < 5 || (leftHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
+            if (rightHandleTop < 5 || (rightHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
               mobileSelectorRight.style.visibility = 'visible';
