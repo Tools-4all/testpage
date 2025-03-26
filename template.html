@@ -1633,7 +1633,7 @@
         mobileOutsetContainer.className = 'mobile-outset-container';
         const mobileInsetMenu = document.createElement('div');
         mobileInsetMenu.className = 'mobile-inset-menu';
-        showContextMenu()
+        showContextMenu({copy: true, cut: true, paste: true, selectAll: true, undo: true, redo: true, format: true});
 
 
         mobileContextMenu.appendChild(mobileOutsetContainer);
