@@ -1808,25 +1808,19 @@
             const offsetX = 10, offsetY = 22;
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px)`;
-
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const scrollRect = editorScrollable.getBoundingClientRect();
-            const defaultHandleHeight = 70;
 
-            // If the selection is at the absolute top or bottom, use 0 so the condition never hides the handle.
-            const leftHandleHeight = startPos.lineNumber === 1 ? 0 : defaultHandleHeight;
-            const model = editorInstance.getModel();
-            const rightHandleHeight = endPos.lineNumber === model.getLineCount() ? 0 : defaultHandleHeight;
-
+            const handleHeight = 70;
             const leftHandleTop = startCoords.top + offsetY;
             const rightHandleTop = endCoords.top + offsetY;
 
-            if (leftHandleTop < scrollRect.top || (leftHandleTop + leftHandleHeight) > scrollRect.bottom) {
+            if (leftHandleTop < scrollRect.top || (leftHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorLeft.style.visibility = 'hidden';
             } else {
               mobileSelectorLeft.style.visibility = 'visible';
             }
-            if (rightHandleTop < scrollRect.top || (rightHandleTop + rightHandleHeight) > scrollRect.bottom) {
+            if (rightHandleTop < scrollRect.top || (rightHandleTop + handleHeight) > scrollRect.bottom) {
               mobileSelectorRight.style.visibility = 'hidden';
             } else {
               mobileSelectorRight.style.visibility = 'visible';
@@ -1835,7 +1829,6 @@
             mobileSelectionsContainer.classList.remove('hidden');
           }
         });
-
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
