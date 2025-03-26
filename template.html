@@ -1874,6 +1874,8 @@
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
       }
+      mobileSelectorRight.dispatchEvent(new Event("touchmove"));
+      mobileSelectorLeft.dispatchEvent(new Event("touchmove"));
       let name = desiredName
         ? getUniqueTabName(desiredName)
         : getNextTabName();
