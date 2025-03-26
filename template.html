@@ -1710,15 +1710,16 @@
           let touchStartPos, initialSelection;
           let touchMoved = false, touchEndTimeout;
           selector.addEventListener('touchstart', (event) => {
+            event.preventDefault();
             wasDragging = true;
             const touch = event.touches[0];
             touchStartPos = { x: touch.clientX, y: touch.clientY };
             initialSelection = editorInstance.getSelection();
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
-            event.preventDefault();
           });
           selector.addEventListener('touchmove', (event) => {
+            event.preventDefault();
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
@@ -1728,7 +1729,6 @@
               editorInstance.setSelection(newSelection);
               touchMoved = true;
             }
-            event.preventDefault();
           });
           selector.addEventListener('touchend', (event) => {
             if (!touchMoved) {
