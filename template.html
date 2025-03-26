@@ -1913,6 +1913,7 @@
         console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
           touchEnd = new Date().getTime();
+          console.log("wasDragging", wasDragging)
           if (wasDragging) {
             stopAll(event);
             return;
