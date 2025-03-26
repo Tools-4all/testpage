@@ -1687,6 +1687,7 @@
       mobileContextMenu.appendChild(mobileArrowLeft);
       editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
 
+      // ===== Update Selection Handle Positions =====
       editorInstance.onDidChangeCursorSelection((e) => {
         const selection = e.selection;
         if (selection.isEmpty()) {
@@ -1700,7 +1701,7 @@
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
           // Adjust these offsets
-          mobileSelectorLeft.style.transform = `translate(${startCoords.left + 7}px, ${startCoords.top + 22}px)`;
+          mobileSelectorLeft.style.transform = `translate(${startCoords.left + 9}px, ${startCoords.top + 22}px)`;
           mobileSelectorRight.style.transform = `translate(${endCoords.left + 11}px, ${endCoords.top + 22}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
