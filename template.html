@@ -1814,7 +1814,7 @@
           if (startCoords && endCoords) {
             const offsetX = 10, offsetY = 22;
             const reverseOffset = 20;
-            const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
+            const editorScrollable = domNode
             const scrollRect = editorScrollable.getBoundingClientRect();
 
             const leftHandlePos = startCoords.top + offsetY;
@@ -1841,7 +1841,6 @@
               mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
             }
 
-            mobileSelectionsContainer.classList.remove('hidden');
           }
         });
 
