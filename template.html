@@ -1758,8 +1758,10 @@
                 console.log("scrollDirection", scrollDirection, "lastScroll", lastScroll, "touch.clientY", touch.clientY);
                 if (scrollDirection === 'up' && lastScroll < touch.clientY) {
                   scrollDirection = null;
+                  lastScroll -= 7
                 } else if (scrollDirection === 'down' && lastScroll > touch.clientY) {
                   scrollDirection = null;
+                  lastScroll += 7
                 } else {
                   editorInstance.setScrollTop(editorInstance.getScrollTop() + (scrollDirection === 'up' ? -scrollStep : scrollStep));
                 }
@@ -1773,7 +1775,9 @@
                 scrollDirection = 'down';
               }
             }
-            lastScroll = lastTouchY
+            if (!lastScroll) {
+              lastScroll = lastTouchY
+            }
 
             lastTouchY = touch.clientY;
           }, { passive: false });
