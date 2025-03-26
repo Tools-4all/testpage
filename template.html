@@ -1606,6 +1606,7 @@
 
     function createTab(desiredName = null, content = null) {
       let wasDragging = false;
+      let lastTouchY = null;
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
         if (!editorDom) return;
