@@ -1720,13 +1720,13 @@
           });
           let scrollTimer = null;
 
-          // In your touchmove handler on the selector:
           selector.addEventListener('touchmove', (event) => {
-            event.preventDefault(); // Ensure preventDefault works (remember to set passive:false when adding the listener)
+            event.preventDefault(); // Ensure we’re in passive:false mode
 
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
+              // Update selection normally
               const newSelection = isLeft
                 ? new monaco.Selection(
                   target.position.lineNumber,
@@ -1744,32 +1744,33 @@
               touchMoved = true;
             }
 
-            // Get the editor's scrollable container and its bounding rectangle:
+            // Get the editor's scrollable container and its bounding rectangle
             const editorScrollable = editorInstance.getDomNode().querySelector('.monaco-editor-scrollable') || editorInstance.getDomNode();
             const editorRect = editorScrollable.getBoundingClientRect();
 
-            // Define threshold (in pixels) and scroll speed:
-            const threshold = 50; // pixels from the top or bottom to trigger scrolling
-            const scrollStep = 10; // pixels to scroll per tick
-            const intervalTime = 50; // how frequently (in ms) to scroll
+            // Define a threshold in pixels (only scroll if finger is within this many pixels from an edge)
+            const threshold = 50;
+            // Calculate distances from the top and bottom edges:
+            const distanceFromTop = touch.clientY - editorRect.top;
+            const distanceFromBottom = editorRect.bottom - touch.clientY;
 
-            // Determine if touch is in the upper or lower scroll zone:
-            if (touch.clientY < editorRect.top + threshold) {
-              // If not already scrolling, start scrolling upward
+            // Determine scroll direction: -1 if near top, +1 if near bottom, else 0.
+            let scrollDirection = 0;
+            if (distanceFromTop < threshold) {
+              scrollDirection = -1;
+            } else if (distanceFromBottom < threshold) {
+              scrollDirection = 1;
+            }
+
+            // If scrollDirection is non-zero, start (or keep) scrolling; else, clear the timer.
+            if (scrollDirection !== 0) {
+              // If not already scrolling, start a timer.
               if (!scrollTimer) {
                 scrollTimer = setInterval(() => {
-                  editorScrollable.scrollBy({ top: -scrollStep, behavior: 'auto' });
-                }, intervalTime);
-              }
-            } else if (touch.clientY > editorRect.bottom - threshold) {
-              // If not already scrolling, start scrolling downward
-              if (!scrollTimer) {
-                scrollTimer = setInterval(() => {
-                  editorScrollable.scrollBy({ top: scrollStep, behavior: 'auto' });
-                }, intervalTime);
+                  editorScrollable.scrollBy({ top: scrollDirection * 10, behavior: 'auto' });
+                }, 50); // Adjust speed (10px every 50ms here)
               }
             } else {
-              // If the touch is not in either zone, clear the scroll timer if it exists
               if (scrollTimer) {
                 clearInterval(scrollTimer);
                 scrollTimer = null;
@@ -1790,8 +1791,12 @@
             touchStartPos = null;
             initialSelection = null;
             touchMoved = false;
-            clearInterval(scrollTimer);
-            scrollTimer = null;
+            selector.addEventListener('touchend', (event) => {
+              if (scrollTimer) {
+                clearInterval(scrollTimer);
+                scrollTimer = null;
+              }
+            });
           });
         }
         handleMobileSelectorTouch(mobileSelectorLeft, true);
