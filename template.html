@@ -1708,13 +1708,13 @@
           let touchStartPos, initialSelection;
           let touchMoved = false, touchEndTimeout;
           selector.addEventListener('touchstart', (event) => {
+            wasDragging = true;
             const touch = event.touches[0];
             touchStartPos = { x: touch.clientX, y: touch.clientY };
             initialSelection = editorInstance.getSelection();
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
             event.preventDefault();
-            wasDragging = true;
           });
           selector.addEventListener('touchmove', (event) => {
             const touch = event.touches[0];
