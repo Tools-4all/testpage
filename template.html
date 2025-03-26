@@ -1733,432 +1733,434 @@
             stopAll(event);
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+            if (target && target.position) {
+              const newSelection = isLeft
+                ? new monaco.Selection(
+                  target.position.lineNumber,
+                  target.position.column,
+                  initialSelection.endLineNumber,
+                  initialSelection.endColumn
+                )
+                : new monaco.Selection(
+                  initialSelection.startLineNumber,
+                  initialSelection.startColumn,
+                  target.position.lineNumber,
+                  target.position.column
+                );
+              editorInstance.setSelection(newSelection);
+              touchMoved = true;
+            }
+
+            const editorScrollable = domNode;
+            const editorRect = editorScrollable.getBoundingClientRect();
+            const threshold = 50;
+            const scrollStep = 6;
+            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
+              if (autoScrollInterval !== null) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
+              }
+            } else {
+              if (autoScrollInterval === null) {
+                autoScrollInterval = setInterval(() => {
+                  if (lastTouchY !== null) {
+                    if (lastTouchY < editorRect.top + threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                    } else if (lastTouchY > editorRect.bottom - threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                    }
+                  }
+                }, autoScrollDelay);
+              }
+            }
+            lastTouchY = touch.clientY;
+          }, { passive: false });
+
+          selector.addEventListener('touchend', (event) => {
+            if (autoScrollInterval !== null) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
+            }
+            if (!touchMoved) {
+              const touch = event.changedTouches[0];
+              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+              if (target && target.position) {
+                const newSelection = isLeft
+                  ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
+                  : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                editorInstance.setSelection(newSelection);
+              }
+            }
+            touchStartPos = null;
+            initialSelection = null;
+            touchMoved = false;
+          });
+
+        }
+
+
+        handleMobileSelectorTouch(mobileSelectorLeft, true);
+        handleMobileSelectorTouch(mobileSelectorRight, false);
+        function fitScroll() {
+          const selection = editorInstance.getSelection();
+          if (!selection || selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+            return;
+          }
+
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+
+          if (startCoords && endCoords) {
+            const offsetX = 10, offsetY = 22;
+            const reverseOffset = 20;
+            const editorScrollable = domNode
+            const scrollRect = editorScrollable.getBoundingClientRect();
+
+            const leftHandlePos = startCoords.top + offsetY;
+            const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
+            if (spaceBelowLeft < 50) {
+              mobileSelectorLeft.style.visibility = 'hidden';
+            } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
+            } else {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            const rightHandlePos = endCoords.top + offsetY;
+            const spaceBelowRight = scrollRect.bottom - rightHandlePos;
+            if (spaceBelowRight < 50) {
+              mobileSelectorRight.style.visibility = 'hidden';
+            } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
+            } else {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
+        }
+        editorInstance.onDidScrollChange(fitScroll);
+
+
+        let longPressTimeout, startPositionLP;
+        editorDom.addEventListener('touchstart', (event) => {
+          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
+          longPressTimeout = setTimeout(() => {
+            if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
+              wasDragging = true;
+              return;
+            }
+            let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
+            mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
+            mobileContextMenu.classList.remove('hidden');
+          }, 1000);
+          const touch = event.touches[0];
+          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+          if (target && target.position) {
+            startPositionLP = target.position;
+          }
+        });
+        editorDom.addEventListener('touchend', () => {
+          if (longPressTimeout) clearTimeout(longPressTimeout);
+        });
+        fitScroll();
+      }
+      let name = desiredName
+        ? getUniqueTabName(desiredName)
+        : getNextTabName();
+      let id = Date.now();
+      let sharedBuffer = new SharedArrayBuffer(1024);
+      let view = new Int32Array(sharedBuffer);
+      let tabEl = document.createElement("div");
+      tabEl.classList.add("tab");
+      tabEl.draggable = true;
+      let titleSpan = document.createElement("span");
+      titleSpan.classList.add("tab-title");
+      titleSpan.textContent = name;
+      tabEl.appendChild(titleSpan);
+      let closeIcon = document.createElement("i");
+      closeIcon.classList.add("fas", "fa-times", "close");
+      tabEl.appendChild(closeIcon);
+      let editorOutputWrapper = document.createElement("div");
+      editorOutputWrapper.classList.add("editor-and-output");
+      let editorContainer = document.createElement("div");
+      editorContainer.classList.add("editorContainer");
+      editorOutputWrapper.appendChild(editorContainer);
+      let outputContainer = document.createElement("div");
+      outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("allowSelect")
+      outputContainer.classList.add("resize");
+      let controlsBar = document.createElement("div");
+      controlsBar.classList.add("controls");
+      outputContainer.appendChild(controlsBar);
+
+      controlsBar.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.cursor = 'ns-resize';
+        overlay.style.zIndex = '10000';
+        overlay.style.backgroundColor = 'transparent';
+        document.body.appendChild(overlay);
+
+        let startY = e.clientY;
+        let parentHeight = outputContainer.parentElement.clientHeight;
+        let startHeight = outputContainer.offsetHeight;
+
+        const MIN_HEIGHT = 30;
+        const MAX_HEIGHT = 60;
+
+        function onMouseMove(e) {
+          let dy = e.clientY - startY;
+          let newHeight = startHeight - dy;
+          let newHeightPercent = (newHeight / parentHeight) * 100;
+          newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
+          outputContainer.style.height = newHeightPercent + '%';
+        }
+
+        function onMouseUp() {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+          overlay.remove();
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+
+
+
+      let outputDiv = document.createElement("div");
+      outputDiv.classList.add("output");
+      outputDiv.setAttribute("tabindex", "0");
+      outputDiv.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === "a") {
+          e.preventDefault();
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(outputDiv);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+      outputContainer.appendChild(outputDiv);
+      editorOutputWrapper.appendChild(outputContainer);
+      let tabBar = document.getElementById("tabBar");
+      let addTabBtn = document.getElementById("addTabButton");
+      let addTabBtn_media = document.getElementById("addTabButton_media");
+      tabBar.appendChild(tabEl);
+      let tabsContainer = document.getElementById("tabsContainer");
+      tabsContainer.appendChild(editorOutputWrapper);
+      let editorInstance = monaco.editor.create(editorContainer, {
+        language: "javascript",
+        theme: darkModeFlag ? "custom-dark" : "custom-light",
+        automaticLayout: true,
+        tabSize: spaces,
+        insertSpaces: true,
+        minimap: { enabled: true },
+        fontSize: 14,
+        fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
+        fontLigatures: true,
+        folding: true,
+        lineNumbers: "on",
+        wordWrap: "on",
+        scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+        contextmenu: true,
+        selectionHighlight: true,
+        renderIndentGuides: true,
+        renderLineHighlight: "all",
+        cursorStyle: "line",
+        cursorBlinking: "blink",
+        quickSuggestions: true,
+        parameterHints: true,
+        autoClosingBrackets: "always",
+        autoClosingQuotes: "always",
+        formatOnType: true,
+        formatOnPaste: true,
+        suggestOnTriggerCharacters: true,
+        smoothScrolling: true,
+        breadcrumbs: { enabled: true },
+        fixedOverflowWidgets: true,
+        folding: true,
+        minimap: { enabled: !isMobile },
+        scrollBeyondLastLine: false,
+      });
+
+      const domNode = editorInstance.getDomNode();
+      if (isMobile) {
+        initializeMobileSelection(editorInstance);
+        const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+        let touchStart = null;
+        let touchEnd = null;
+        let eventTargetStart;
+        let lastDot;
+
+        console.log(domNode)
+        domNode.addEventListener("touchend", (event) => {
+          lastTouchY = null;
+          touchEnd = new Date().getTime();
+          if (wasDragging) {
+            stopAll(event);
+            wasDragging = false;
+            return;
+          }
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
+            stopAll(event);
+            const touch = event.touches[0];
+            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target.targetType !== monaco.editor.MouseTargetType.CONTENT_TEXT) {
               console.log('not content, target:', target, 'targetType:', target.targetType);
             } else {
               console.log('content, target:', target, 'targetType:', target.targetType);
             }
-          if (target && target.position) {
-            const newSelection = isLeft
-              ? new monaco.Selection(
-                target.position.lineNumber,
-                target.position.column,
-                initialSelection.endLineNumber,
-                initialSelection.endColumn
-              )
-              : new monaco.Selection(
-                initialSelection.startLineNumber,
-                initialSelection.startColumn,
-                target.position.lineNumber,
-                target.position.column
-              );
-            editorInstance.setSelection(newSelection);
-            touchMoved = true;
-          }
+            editorInstance.focus();
 
-          const editorScrollable = domNode;
-          const editorRect = editorScrollable.getBoundingClientRect();
-          const threshold = 50;
-          const scrollStep = 6;
-          if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
-            if (autoScrollInterval !== null) {
-              clearInterval(autoScrollInterval);
-              autoScrollInterval = null;
-            }
-          } else {
-            if (autoScrollInterval === null) {
-              autoScrollInterval = setInterval(() => {
-                if (lastTouchY !== null) {
-                  if (lastTouchY < editorRect.top + threshold) {
-                    editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-                  } else if (lastTouchY > editorRect.bottom - threshold) {
-                    editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-                  }
-                }
-              }, autoScrollDelay);
-            }
-          }
-          lastTouchY = touch.clientY;
-        }, { passive: false });
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
 
-        selector.addEventListener('touchend', (event) => {
-          if (autoScrollInterval !== null) {
-            clearInterval(autoScrollInterval);
-            autoScrollInterval = null;
-          }
-          if (!touchMoved) {
-            const touch = event.changedTouches[0];
-            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-            if (target && target.position) {
-              const newSelection = isLeft
-                ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
-                : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
-              editorInstance.setSelection(newSelection);
+            if (point && point.position) {
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+                editorInstance.setPosition(point.position);
+              }
             }
+            selectAction.run();
           }
-          touchStartPos = null;
-          initialSelection = null;
-          touchMoved = false;
+        }, true);
+        domNode.addEventListener("touchstart", (event) => {
+          touchStart = new Date().getTime();
+          eventTargetStart = event.target;
+          dragTouchX = event.touches[0].clientX;
+          dragTouchY = event.touches[0].clientY;
         });
-
-      }
-
-
-      handleMobileSelectorTouch(mobileSelectorLeft, true);
-      handleMobileSelectorTouch(mobileSelectorRight, false);
-      function fitScroll() {
-        const selection = editorInstance.getSelection();
-        if (!selection || selection.isEmpty()) {
-          mobileSelectionsContainer.classList.add('hidden');
-          mobileContextMenu.classList.add('hidden');
-          return;
+        function blurFocus() {
+          const elem = document.activeElement
+          elem.blur()
+          editorInstance.focus()
         }
-
-        const startPos = selection.getStartPosition();
-        const endPos = selection.getEndPosition();
-        const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
-        const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-
-        if (startCoords && endCoords) {
-          const offsetX = 10, offsetY = 22;
-          const reverseOffset = 20;
-          const editorScrollable = domNode
-          const scrollRect = editorScrollable.getBoundingClientRect();
-
-          const leftHandlePos = startCoords.top + offsetY;
-          const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
-          if (spaceBelowLeft < 50) {
-            mobileSelectorLeft.style.visibility = 'hidden';
-          } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
-            mobileSelectorLeft.style.visibility = 'visible';
-            mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
-          } else {
-            mobileSelectorLeft.style.visibility = 'visible';
-            mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
-          }
-
-          const rightHandlePos = endCoords.top + offsetY;
-          const spaceBelowRight = scrollRect.bottom - rightHandlePos;
-          if (spaceBelowRight < 50) {
-            mobileSelectorRight.style.visibility = 'hidden';
-          } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
-            mobileSelectorRight.style.visibility = 'visible';
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
-          } else {
-            mobileSelectorRight.style.visibility = 'visible';
-            mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
-          }
-
-          mobileSelectionsContainer.classList.remove('hidden');
-        }
-      }
-      editorInstance.onDidScrollChange(fitScroll);
-
-
-      let longPressTimeout, startPositionLP;
-      editorDom.addEventListener('touchstart', (event) => {
-        if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
-          event.stopPropagation();
+        function stopAll(event) {
           event.preventDefault();
-          return;
+          event.stopImmediatePropagation();
+          event.stopPropagation();
         }
-        longPressTimeout = setTimeout(() => {
-          if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
-            wasDragging = true;
+
+        domNode.addEventListener("textInput", (event) => {
+          console.log("textInput", event)
+          stopAll(event)
+          if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
             return;
           }
-          let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
-          mobileContextMenu.style.transform = `translateY(${y - 50}px)`;
-          mobileContextMenu.classList.remove('hidden');
-        }, 1000);
-        const touch = event.touches[0];
-        const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-        if (target && target.position) {
-          startPositionLP = target.position;
-        }
-      });
-      editorDom.addEventListener('touchend', () => {
-        if (longPressTimeout) clearTimeout(longPressTimeout);
-      });
-      fitScroll();
-    }
-    let name = desiredName
-      ? getUniqueTabName(desiredName)
-      : getNextTabName();
-    let id = Date.now();
-    let sharedBuffer = new SharedArrayBuffer(1024);
-    let view = new Int32Array(sharedBuffer);
-    let tabEl = document.createElement("div");
-    tabEl.classList.add("tab");
-    tabEl.draggable = true;
-    let titleSpan = document.createElement("span");
-    titleSpan.classList.add("tab-title");
-    titleSpan.textContent = name;
-    tabEl.appendChild(titleSpan);
-    let closeIcon = document.createElement("i");
-    closeIcon.classList.add("fas", "fa-times", "close");
-    tabEl.appendChild(closeIcon);
-    let editorOutputWrapper = document.createElement("div");
-    editorOutputWrapper.classList.add("editor-and-output");
-    let editorContainer = document.createElement("div");
-    editorContainer.classList.add("editorContainer");
-    editorOutputWrapper.appendChild(editorContainer);
-    let outputContainer = document.createElement("div");
-    outputContainer.classList.add("outputContainer");
-    outputContainer.classList.add("allowSelect")
-    outputContainer.classList.add("resize");
-    let controlsBar = document.createElement("div");
-    controlsBar.classList.add("controls");
-    outputContainer.appendChild(controlsBar);
-
-    controlsBar.addEventListener('mousedown', function (e) {
-      e.preventDefault();
-
-      const overlay = document.createElement('div');
-      overlay.style.position = 'fixed';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.cursor = 'ns-resize';
-      overlay.style.zIndex = '10000';
-      overlay.style.backgroundColor = 'transparent';
-      document.body.appendChild(overlay);
-
-      let startY = e.clientY;
-      let parentHeight = outputContainer.parentElement.clientHeight;
-      let startHeight = outputContainer.offsetHeight;
-
-      const MIN_HEIGHT = 30;
-      const MAX_HEIGHT = 60;
-
-      function onMouseMove(e) {
-        let dy = e.clientY - startY;
-        let newHeight = startHeight - dy;
-        let newHeightPercent = (newHeight / parentHeight) * 100;
-        newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
-        outputContainer.style.height = newHeightPercent + '%';
-      }
-
-      function onMouseUp() {
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        overlay.remove();
-      }
-
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
-    });
-
-
-
-
-    let outputDiv = document.createElement("div");
-    outputDiv.classList.add("output");
-    outputDiv.setAttribute("tabindex", "0");
-    outputDiv.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(outputDiv);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    });
-    outputContainer.appendChild(outputDiv);
-    editorOutputWrapper.appendChild(outputContainer);
-    let tabBar = document.getElementById("tabBar");
-    let addTabBtn = document.getElementById("addTabButton");
-    let addTabBtn_media = document.getElementById("addTabButton_media");
-    tabBar.appendChild(tabEl);
-    let tabsContainer = document.getElementById("tabsContainer");
-    tabsContainer.appendChild(editorOutputWrapper);
-    let editorInstance = monaco.editor.create(editorContainer, {
-      language: "javascript",
-      theme: darkModeFlag ? "custom-dark" : "custom-light",
-      automaticLayout: true,
-      tabSize: spaces,
-      insertSpaces: true,
-      minimap: { enabled: true },
-      fontSize: 14,
-      fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
-      fontLigatures: true,
-      folding: true,
-      lineNumbers: "on",
-      wordWrap: "on",
-      scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-      contextmenu: true,
-      selectionHighlight: true,
-      renderIndentGuides: true,
-      renderLineHighlight: "all",
-      cursorStyle: "line",
-      cursorBlinking: "blink",
-      quickSuggestions: true,
-      parameterHints: true,
-      autoClosingBrackets: "always",
-      autoClosingQuotes: "always",
-      formatOnType: true,
-      formatOnPaste: true,
-      suggestOnTriggerCharacters: true,
-      smoothScrolling: true,
-      breadcrumbs: { enabled: true },
-      fixedOverflowWidgets: true,
-      folding: true,
-      minimap: { enabled: !isMobile },
-      scrollBeyondLastLine: false,
-    });
-
-    const domNode = editorInstance.getDomNode();
-    if (isMobile) {
-      initializeMobileSelection(editorInstance);
-      const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
-      let touchStart = null;
-      let touchEnd = null;
-      let eventTargetStart;
-      let lastDot;
-
-      console.log(domNode)
-      domNode.addEventListener("touchend", (event) => {
-        lastTouchY = null;
-        touchEnd = new Date().getTime();
-        if (wasDragging) {
-          stopAll(event);
-          wasDragging = false;
-          return;
-        }
-        if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
-          stopAll(event);
-          editorInstance.focus();
-
-          const point = editorInstance.getTargetAtClientPoint(
-            event.changedTouches[0].clientX,
-            event.changedTouches[0].clientY
-          );
-
-          if (point && point.position) {
-            const currentPosition = editorInstance.getPosition();
-            const targetColumn = point.position.column;
-            const targetLine = point.position.lineNumber;
-            if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
-              editorInstance.setPosition(point.position);
-            }
+          editorInstance.trigger('keyboard', 'type', { text: event.data });
+          blurFocus()
+          if (event.data === ".") {
+            lastDot = new Date().getTime();
           }
-          selectAction.run();
-        }
-      }, true);
-      domNode.addEventListener("touchstart", (event) => {
-        touchStart = new Date().getTime();
-        eventTargetStart = event.target;
-        dragTouchX = event.touches[0].clientX;
-        dragTouchY = event.touches[0].clientY;
-      });
-      function blurFocus() {
-        const elem = document.activeElement
-        elem.blur()
-        editorInstance.focus()
-      }
-      function stopAll(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        event.stopPropagation();
+        });
+        domNode.addEventListener("keyup", stopAll);
+        domNode.addEventListener("input", stopAll);
       }
 
-      domNode.addEventListener("textInput", (event) => {
-        console.log("textInput", event)
-        stopAll(event)
-        if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
+      editorInstance.getModel().onDidChangeOptions((e) => {
+        const tabSizeNum = editorInstance.getModel().getOptions().tabSize
+        if (tabSizeNum) {
+          tabSizeInput.value = tabSizeNum;
+          tabSizeInput.dispatchEvent(new Event("input"));
+        }
+      });
+      let tabObj = {
+        id,
+        name,
+        sharedBuffer,
+        view,
+        tabElement: tabEl,
+        editorContainer,
+        outputElement: outputDiv,
+        editorInstance,
+        worker: null,
+        editorAndOutput: editorOutputWrapper
+      };
+      tabs.push(tabObj);
+      editorInstance.onDidChangeCursorPosition(() => {
+        updateStatusPosition();
+      });
+      closeIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (tabs.length === 1) {
           return;
         }
-        editorInstance.trigger('keyboard', 'type', { text: event.data });
-        blurFocus()
-        if (event.data === ".") {
-          lastDot = new Date().getTime();
+        closeTab(id);
+        if (tabs.length === 1) {
+          document.body.classList.add("lastTab");
         }
       });
-      domNode.addEventListener("keyup", stopAll);
-      domNode.addEventListener("input", stopAll);
-    }
-
-    editorInstance.getModel().onDidChangeOptions((e) => {
-      const tabSizeNum = editorInstance.getModel().getOptions().tabSize
-      if (tabSizeNum) {
-        tabSizeInput.value = tabSizeNum;
-        tabSizeInput.dispatchEvent(new Event("input"));
-      }
-    });
-    let tabObj = {
-      id,
-      name,
-      sharedBuffer,
-      view,
-      tabElement: tabEl,
-      editorContainer,
-      outputElement: outputDiv,
-      editorInstance,
-      worker: null,
-      editorAndOutput: editorOutputWrapper
-    };
-    tabs.push(tabObj);
-    editorInstance.onDidChangeCursorPosition(() => {
-      updateStatusPosition();
-    });
-    closeIcon.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (tabs.length === 1) {
-        return;
-      }
-      closeTab(id);
-      if (tabs.length === 1) {
-        document.body.classList.add("lastTab");
-      }
-    });
-    tabEl.addEventListener("dragstart", (ev) => {
-      switchTab(id);
-      ev.dataTransfer.setData("text/plain", "");
-      ev.dataTransfer.effectAllowed = "move";
-      draggedTabId = id;
-      tabEl.classList.add("dragging");
-    });
-    tabEl.addEventListener("dragend", () => {
-      tabEl.classList.remove("dragging");
-      draggedTabId = null;
-      lastDropSide = null;
-      document.querySelectorAll(".tab")
-        .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
-    });
-    tabEl.addEventListener("dragover", (ev) => {
-      ev.preventDefault();
-      if (!draggedTabId || tabEl.classList.contains("dragging")) return;
-      let rect = tabEl.getBoundingClientRect();
-      let mid = rect.left + rect.width / 2;
-      if (ev.clientX < mid) {
-        tabEl.classList.add("tab-drop-left");
-        tabEl.classList.remove("tab-drop-right");
-        lastDropSide = "left";
+      tabEl.addEventListener("dragstart", (ev) => {
+        switchTab(id);
+        ev.dataTransfer.setData("text/plain", "");
+        ev.dataTransfer.effectAllowed = "move";
+        draggedTabId = id;
+        tabEl.classList.add("dragging");
+      });
+      tabEl.addEventListener("dragend", () => {
+        tabEl.classList.remove("dragging");
+        draggedTabId = null;
+        lastDropSide = null;
+        document.querySelectorAll(".tab")
+          .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
+      });
+      tabEl.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        if (!draggedTabId || tabEl.classList.contains("dragging")) return;
+        let rect = tabEl.getBoundingClientRect();
+        let mid = rect.left + rect.width / 2;
+        if (ev.clientX < mid) {
+          tabEl.classList.add("tab-drop-left");
+          tabEl.classList.remove("tab-drop-right");
+          lastDropSide = "left";
+        } else {
+          tabEl.classList.add("tab-drop-right");
+          tabEl.classList.remove("tab-drop-left");
+          lastDropSide = "right";
+        }
+      });
+      tabEl.addEventListener("dragleave", () => {
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
+      });
+      tabEl.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
+        if (!draggedTabId) return;
+        reorderTabsByTab(draggedTabId, id, lastDropSide);
+        lastDropSide = null;
+      });
+      titleSpan.addEventListener("dblclick", () => {
+        makeTabTitleEditable(tabObj);
+      });
+      if (content !== null) {
+        editorInstance.setValue(content);
       } else {
-        tabEl.classList.add("tab-drop-right");
-        tabEl.classList.remove("tab-drop-left");
-        lastDropSide = "right";
-      }
-    });
-    tabEl.addEventListener("dragleave", () => {
-      tabEl.classList.remove("tab-drop-left", "tab-drop-right");
-    });
-    tabEl.addEventListener("drop", (ev) => {
-      ev.preventDefault();
-      tabEl.classList.remove("tab-drop-left", "tab-drop-right");
-      if (!draggedTabId) return;
-      reorderTabsByTab(draggedTabId, id, lastDropSide);
-      lastDropSide = null;
-    });
-    titleSpan.addEventListener("dblclick", () => {
-      makeTabTitleEditable(tabObj);
-    });
-    if (content !== null) {
-      editorInstance.setValue(content);
-    } else {
-      editorInstance.setValue(`// ${name}
+        editorInstance.setValue(`// ${name}
 console.log("This is a log");
 console.info("This is an info");
 console.warn("This is a warning");
@@ -2200,14 +2202,14 @@ console.warn("This is a warning");
 console.error("This is an error");
 prompt("This is a prompt:");
 `);
-    }
-    switchTab(id);
-    if (tabs.length > 1) {
-      document.body.classList.remove("lastTab");
-    } else {
-      document.body.classList.add("lastTab");
-    }
-    return id;
+      }
+      switchTab(id);
+      if (tabs.length > 1) {
+        document.body.classList.remove("lastTab");
+      } else {
+        document.body.classList.add("lastTab");
+      }
+      return id;
     }
     function getUniqueTabName(baseName, tabId = null) {
       let candidate = baseName;
