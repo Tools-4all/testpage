@@ -1310,7 +1310,7 @@
       border-radius: 18px;
       max-width: 75vw;
       width: fit-content;
-      z-index: 99999;
+      z-index: 999;
     }
 
     .mobile-context-menu.hidden {
@@ -1690,7 +1690,6 @@
       // ===== Update Selection Handle Positions =====
       editorInstance.onDidChangeCursorSelection((e) => {
         const selection = e.selection;
-        // If no selection, hide the handles and context menu
         if (selection.isEmpty()) {
           mobileSelectionsContainer.classList.add('hidden');
           mobileContextMenu.classList.add('hidden');
@@ -1701,12 +1700,13 @@
         const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
         const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
         if (startCoords && endCoords) {
-          // Adjust these offsets as needed for your UI
+          // Adjust these offsets
           mobileSelectorLeft.style.transform = `translate(${startCoords.left - 30}px, ${startCoords.top - 8}px)`;
           mobileSelectorRight.style.transform = `translate(${endCoords.left - 30}px, ${endCoords.top - 8}px)`;
           mobileSelectionsContainer.classList.remove('hidden');
         }
       });
+
 
       // ===== Selector Touch Handlers =====
       function handleMobileSelectorTouch(selector, isLeft) {
