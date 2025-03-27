@@ -1734,23 +1734,69 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-        
-        function setContextPos(x, y) {
-          const editorRect = editorInstance.getDomNode().getBoundingClientRect();
 
-          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
+        function positionContextMenu(initialX, initialY, container, contextMenu, topmostSelectHandle) {
+          // Get bounding rectangles for container, context menu, and topmost selection handle
+          const containerRect = container.getBoundingClientRect();
+          const menuRect = contextMenu.getBoundingClientRect();
+          const handleRect = topmostSelectHandle.getBoundingClientRect();
 
-          if (!isContextDragged) {
-            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
-              y = y - mobileContextMenu.offsetHeight;
+          const contextMenuWidth = menuRect.width;
+          const contextMenuHeight = menuRect.height;
+
+          // Set initial x and y from parameters
+          let x = initialX;
+          let y = initialY;
+
+          // ----- Adjust X Position -----
+          // If menu overflows container's right edge, shift left
+          if (x + contextMenuWidth > containerRect.right) {
+            x = containerRect.right - contextMenuWidth;
+          }
+          // Also, make sure x does not go beyond container's left edge
+          if (x < containerRect.left) {
+            x = containerRect.left;
+          }
+
+          // ----- Adjust Y Position -----
+          // Prefer to place the context menu above the selection
+          if (initialY - contextMenuHeight >= containerRect.top) {
+            y = initialY - contextMenuHeight;
+          } else {
+            // If not enough space above, place below the topmost selection handle
+            y = handleRect.bottom;
+            // Ensure that placing below does not overflow container's bottom
+            if (y + contextMenuHeight > containerRect.bottom) {
+              y = containerRect.bottom - contextMenuHeight;
             }
           }
 
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
+          // Ensure y is within container's vertical bounds
+          if (y < containerRect.top) {
+            y = containerRect.top;
+          }
+          if (y + contextMenuHeight > containerRect.bottom) {
+            y = containerRect.bottom - contextMenuHeight;
+          }
 
-          mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = y + 'px';
+          // Finally, call your function that applies these coordinates
+          setContextPos(x, y);
         }
+
+        // Example drag event handler that uses similar bounding logic:
+        function onDragMove(newX, newY, container, contextMenu) {
+          const containerRect = container.getBoundingClientRect();
+          const menuRect = contextMenu.getBoundingClientRect();
+          const contextMenuHeight = menuRect.height;
+
+          let y = newY;
+          // Limit y within the container (similar to mobileSelector top/bottom limit)
+          y = Math.max(containerRect.top, Math.min(y, containerRect.bottom - contextMenuHeight));
+
+          // For x, you may add similar bounding logic if needed. Here we assume x is already valid.
+          setContextPos(newX, y);
+        }
+
 
 
         function funcDeco(func) {
