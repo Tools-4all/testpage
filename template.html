@@ -1920,9 +1920,7 @@
               wasDragging = true;
               return;
             }
-            const editorRect = editorDom.getBoundingClientRect();
-            let y = editorInstance.getTopForLineNumber(startPositionLP.lineNumber) || 0;
-            mobileContextMenu.style.transform = `translateY(${y - editorRect.top - 50}px)`;
+            mobileContextMenu.style.transform = `translateY(${event.changedTouches[0].clientY}px)`;
             showContextMenu();
           }, 1000);
           const touch = event.touches[0];
