@@ -1654,8 +1654,8 @@
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
           if (!isContextMenuOpen()) {
-            setContextPos(startCoords.left, startCoords.top);
             showContextMenu();
+            setContextPos(startCoords.left, startCoords.top);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
