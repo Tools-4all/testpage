@@ -1739,12 +1739,12 @@
         function setContextPos(x, y) {
           if (editorRectGlobal === null) {
             editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
-            ["left", "top"].forEach((prop) => {
-              editorRectGlobal[prop] -= 40;
-            });
-            ["right", "bottom"].forEach((prop) => {
-              editorRectGlobal[prop] += 40;
-            });
+            editorRectGlobal = {
+              left: editorRectGlobal.left + window.scrollX,
+              top: editorRectGlobal.top + window.scrollY,
+              right: editorRectGlobal.right + window.scrollX,
+              bottom: editorRectGlobal.bottom + window.scrollY
+            };
             console.log(editorRectGlobal);
           }
           x = Math.max(editorRectGlobal.left, Math.min(x, editorRectGlobal.right - mobileContextMenu.offsetWidth));
