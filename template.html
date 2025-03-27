@@ -1676,6 +1676,7 @@
           }
           setTimeout(() => {
             becasueTouch = false;
+            isContextDragged = false;
           }, 100);
         });
 
@@ -1748,7 +1749,6 @@
           return () => {
             console.log("isContextDragged", isContextDragged)
             if (isContextDragged) {
-              isContextDragged = false;
               return;
             }
             func()
@@ -1801,7 +1801,7 @@
 
             menuItem.addEventListener('touchend', (e) => {
               e.preventDefault();
-              if (item.close) {
+              if (item.close && !isContextDragged) {
                 mobileContextMenu.classList.add('hidden');
               }
               menuItem.classList.remove('hovered');
