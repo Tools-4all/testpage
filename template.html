@@ -1727,16 +1727,16 @@
           };
           options = Object.assign({}, defaultOptions, options);
           const menuItems = [
-            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')) },
-            { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')) },
-            { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')) },
+            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false},
+            { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')), close: true },
+            { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')), close: true },
             {
               className: 'selectAll', text: 'Select All', action: funcDeco(() => {
                 const range = editorInstance.getModel().getFullModelRange();
                 editorInstance.setSelection(range);
               })
-            },
-            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()) }
+            , close: false},
+            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: true }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
           mobileInsetMenu.innerHTML = '';
@@ -1761,7 +1761,9 @@
               e.preventDefault();
               menuItem.classList.remove('hovered');
               item.action();
-              mobileContextMenu.classList.add('hidden');
+              if (item.close) {
+                mobileContextMenu.classList.add('hidden');
+              }
             }, { passive: false });
 
             mobileInsetMenu.appendChild(menuItem);
