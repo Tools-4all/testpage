@@ -1755,7 +1755,6 @@
           }
         }
         function showContextMenu(options) {
-          console.trace()
           if (isContextMenuOpen()) return;
           const theModel = editorInstance.getModel();
           const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
