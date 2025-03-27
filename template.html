@@ -1739,7 +1739,10 @@
         function setContextPos(x, y) {
           if (editorRectGlobal === null) {
             editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
-            console.log(editorRectGlobal);
+            // log each of the values of the editorRectGlobal object
+            for (const key in editorRectGlobal) {
+              console.log(key, editorRectGlobal[key]);
+            }
             editorRectGlobal = {
               left: parseInt(prompt("Enter left")),
               top: parseInt(prompt("Enter top")),
