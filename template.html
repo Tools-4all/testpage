@@ -1734,46 +1734,23 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-
+        
         function setContextPos(x, y) {
-          // Assumes these globals exist:
-          // container: the element representing your bounding area
-          // contextMenu: the context menu element
+          const editorRect = editorInstance.getDomNode().getBoundingClientRect();
 
-          const containerRect = container.getBoundingClientRect();
-          const menuRect = contextMenu.getBoundingClientRect();
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
-          // Adjust X to keep the menu within the container horizontally.
-          if (x + menuRect.width > containerRect.right) {
-            x = containerRect.right - menuRect.width;
-          }
-          if (x < containerRect.left) {
-            x = containerRect.left;
+          if (!isContextDragged) {
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
+            }
           }
 
-          // Adjust Y:
-          // Try to place the context menu above the selection if there's room.
-          if (y - menuRect.height >= containerRect.top) {
-            y = y - menuRect.height;
-          } else {
-            // If there's not enough room above, fallback to placing it at the top of the container.
-            y = containerRect.top;
-            // Alternatively, if you have another logic for below the selection line, plug it in here.
-          }
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
 
-          // Clamp Y within the container bounds.
-          if (y < containerRect.top) {
-            y = containerRect.top;
-          }
-          if (y + menuRect.height > containerRect.bottom) {
-            y = containerRect.bottom - menuRect.height;
-          }
-
-          // Apply the calculated position.
-          contextMenu.style.left = x + 'px';
-          contextMenu.style.top = y + 'px';
+          mobileContextMenu.style.left = x + 'px';
+          mobileContextMenu.style.top = y + 'px';
         }
-
 
 
         function funcDeco(func) {
