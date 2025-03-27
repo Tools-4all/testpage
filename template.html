@@ -1746,7 +1746,7 @@
             }
           }
 
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom + mobileContextMenu.offsetHeight));
 
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
