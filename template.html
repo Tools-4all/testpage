@@ -1872,6 +1872,7 @@
           }, { passive: false });
 
           selector.addEventListener('touchend', (event) => {
+            alert("this it")
             if (autoScrollInterval !== null) {
               clearInterval(autoScrollInterval);
               autoScrollInterval = null;
