@@ -1306,12 +1306,18 @@
     .mobile-context-menu {
       position: absolute;
       display: flex;
-      height: 45px;
-      background: #fff;
+      height: 30px;
+      background: #333;
       border-radius: 18px;
       max-width: 200px;
       z-index: 999;
       user-select: none;
+      color: #fff;
+    }
+
+    #compiler:not(.darkMode) .mobile-context-menu {
+      background: #f0f0f0;
+      color: #000;
     }
 
     .mobile-context-menu.hidden {
@@ -1685,15 +1691,12 @@
             { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
-
-          // Clear and set up the scrollable container
           mobileInsetMenu.innerHTML = '';
           mobileInsetMenu.style.display = 'flex';
           mobileInsetMenu.style.overflowX = 'hidden';
           mobileInsetMenu.style.flexWrap = 'nowrap';
-          mobileInsetMenu.style.width = 'calc(100% - 40px)'; // leave space for arrow (adjust as needed)
+          mobileInsetMenu.style.width = 'calc(100% - 40px)';
 
-          // Render all menu items
           menuItemsFiltered.forEach(item => {
             const menuItem = document.createElement('div');
             menuItem.className = 'mobile-menu-item ' + item.className;
@@ -1709,11 +1712,9 @@
             mobileInsetMenu.appendChild(menuItem);
           });
 
-          // Remove any existing arrow element if present.
           const existingArrow = mobileContextMenu.querySelector('.toggle-arrow');
           if (existingArrow) existingArrow.remove();
 
-          // After rendering, if the content overflows, add the scroll toggle arrow.
           setTimeout(() => {
             if (mobileInsetMenu.scrollWidth > mobileInsetMenu.clientWidth) {
               let arrow = document.createElement('div');
@@ -1721,8 +1722,7 @@
               arrow.style.display = 'flex';
               arrow.style.alignItems = 'center';
               arrow.style.justifyContent = 'center';
-              arrow.style.width = '40px'; // fixed width for arrow container
-              // Initially the arrow points to the right (Unicode ▶)
+              arrow.style.width = '40px';
               arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
 
               let isAtEnd = false;
@@ -1732,18 +1732,15 @@
                 e.preventDefault();
                 arrow.classList.remove('hovered');
                 if (!isAtEnd) {
-                  // Scroll to the end (revealing hidden items)
                   mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
                   isAtEnd = true;
                   arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(180deg);">&#9654;</span>`;
                 } else {
-                  // Scroll back to the start
                   mobileInsetMenu.scrollTo({ left: 0, behavior: 'smooth' });
                   isAtEnd = false;
                   arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
                 }
               };
-              // Append the arrow to the mobileContextMenu (so it's always on the right side)
               mobileContextMenu.appendChild(arrow);
             }
           }, 0);
