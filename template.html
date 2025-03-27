@@ -596,8 +596,6 @@
     .monaco-editor {
       width: 100%;
       height: 100%;
-      touch-action: none;
-      -webkit-overflow-scrolling: auto;
     }
 
     .outputContainer {
@@ -1652,7 +1650,7 @@
           touchStartY = touch.clientY;
           menuInitialX = mobileContextMenu.offsetLeft;
           menuInitialY = mobileContextMenu.offsetTop;
-        }, { passive: false });
+        });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
           const touch = e.touches[0];
@@ -2169,6 +2167,7 @@
         let lastDot;
 
         domNode.addEventListener("touchend", (event) => {
+          stopAll(event);
           lastTouchY = null;
           if (becasueTouch) {
             becasueTouch = false;
