@@ -1737,7 +1737,6 @@
         
         function setContextPos(x, y) {
           const editorRect = domNode.getBoundingClientRect();
-          console.log(domNode)
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
           if (!isContextDragged) {
