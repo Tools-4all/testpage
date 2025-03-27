@@ -1653,6 +1653,7 @@
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
+          stopAll(e);
           const touch = e.touches[0];
           const deltaX = touch.clientX - touchStartX;
           const deltaY = touch.clientY - touchStartY;
@@ -1661,7 +1662,6 @@
             return;
           }
 
-          stopAll(e);
           isContextDragged = true;
           let newX = menuInitialX + deltaX;
           let newY = menuInitialY + deltaY;
