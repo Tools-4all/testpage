@@ -1930,10 +1930,11 @@
               wasDragging = true;
               return;
             }
-            mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
-            mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 90 + 'px';
-            
-            showContextMenu();
+            if (!isContextMenuOpen()) {
+              mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
+              mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 90 + 'px';
+              showContextMenu();
+            }
           }, 1000);
           const touch = event.touches[0];
           const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
