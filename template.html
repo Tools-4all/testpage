@@ -1705,14 +1705,21 @@
             const menuItem = document.createElement('div');
             menuItem.className = 'mobile-menu-item ' + item.className;
             menuItem.innerHTML = `<span>${item.text}</span>`;
-            menuItem.ontouchstart = () => menuItem.classList.add('hovered');
-            menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
-            menuItem.ontouchend = (e) => {
+            menuItem.addEventListener('touchstart', (e) => {
+              menuItem.classList.add('hovered');
+            }, { passive: true });
+
+            menuItem.addEventListener('touchmove', (e) => {
+              menuItem.classList.remove('hovered');
+            }, { passive: true });
+
+            menuItem.addEventListener('touchend', (e) => {
               e.preventDefault();
               menuItem.classList.remove('hovered');
               item.action();
               mobileContextMenu.classList.add('hidden');
-            };
+            }, { passive: false });
+
             mobileInsetMenu.appendChild(menuItem);
           });
 
