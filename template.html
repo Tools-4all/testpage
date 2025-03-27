@@ -1613,6 +1613,7 @@
       let dragTouchX = null;
       let dragTouchY = null;
       let contextDiv = null;
+      let becasueTouch = false;
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
@@ -1678,7 +1679,7 @@
         });
 
         function isContextMenuOpen() {
-          return !mobileContextMenu.classList.contains('hidden');
+          return !mobileContextMenu.classList.contains('hidden') && !becasueTouch;
         }
 
         function setContextPos(x, y) {
@@ -1816,6 +1817,7 @@
             initialSelection = editorInstance.getSelection();
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
+            becasueTouch = true;
             mobileContextMenu.classList.add('hidden');
           }, { passive: false });
 
@@ -1887,7 +1889,8 @@
             touchStartPos = null;
             initialSelection = null;
             touchMoved = false;
-            // mobileContextMenu.classList.remove('hidden');
+            mobileContextMenu.classList.remove('hidden');
+            becasueTouch = false;
           });
 
         }
