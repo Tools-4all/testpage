@@ -1651,11 +1651,18 @@
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
+          const touch = e.touches[0];
+          const deltaX = touch.clientX - touchStartX;
+          const deltaY = touch.clientY - touchStartY;
+
+          if (!isContextDragged && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+            return;
+          }
+
           stopAll(e);
           isContextDragged = true;
-          const touch = e.touches[0];
-          let newX = menuInitialX + (touch.clientX - touchStartX);
-          let newY = menuInitialY + (touch.clientY - touchStartY);
+          let newX = menuInitialX + deltaX;
+          let newY = menuInitialY + deltaY;
 
           const editorRect = editorDom.getBoundingClientRect();
           const menuRect = mobileContextMenu.getBoundingClientRect();
@@ -1665,6 +1672,7 @@
 
           setContextPos(newX, newY);
         });
+
 
         mobileContextMenu.addEventListener('touchend', (e) => {
           stopAll(e);
