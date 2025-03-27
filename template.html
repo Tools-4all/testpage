@@ -1920,7 +1920,10 @@
               wasDragging = true;
               return;
             }
-            mobileContextMenu.style.transform = `translateY(${event.changedTouches[0].clientY}px)`;
+            // put it above and centered of the last press
+            mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
+            mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 10 + 'px';
+            
             showContextMenu();
           }, 1000);
           const touch = event.touches[0];
