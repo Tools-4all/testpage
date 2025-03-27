@@ -1615,6 +1615,7 @@
       let contextDiv = null;
       let becasueTouch = false;
       let theContext;
+      let isContextDragged = false;
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
@@ -1652,51 +1653,6 @@
         mobileContextMenu.appendChild(mobileInsetMenu);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
-        // In your initializeMobileSelection, add these variables:
-        let isDraggingMenu = false;
-        let dragStartX, dragStartY, initialLeft, initialTop;
-
-        // Use pointer events on mobileContextMenu:
-        mobileContextMenu.style.touchAction = 'none'; // disable default gestures
-
-        mobileContextMenu.addEventListener('pointerdown', (e) => {
-          // Prevent default behavior and capture all pointer events for this element.
-          e.preventDefault();
-          mobileContextMenu.setPointerCapture(e.pointerId);
-          isDraggingMenu = false;
-          dragStartX = e.clientX;
-          dragStartY = e.clientY;
-          // Get current position (make sure mobileContextMenu is positioned absolutely)
-          initialLeft = parseFloat(mobileContextMenu.style.left) || 0;
-          initialTop = parseFloat(mobileContextMenu.style.top) || 0;
-        });
-
-        mobileContextMenu.addEventListener('pointermove', (e) => {
-          const dx = e.clientX - dragStartX;
-          const dy = e.clientY - dragStartY;
-          if (!isDraggingMenu && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
-            isDraggingMenu = true;
-          }
-          // Calculate new position.
-          let newX = initialLeft + dx;
-          let newY = initialTop + dy;
-          // Clamp newX and newY within editorDom bounds:
-          const editorRect = editorDom.getBoundingClientRect();
-          const menuRect = mobileContextMenu.getBoundingClientRect();
-          newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
-          newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
-          mobileContextMenu.style.left = newX + 'px';
-          mobileContextMenu.style.top = newY + 'px';
-        });
-
-        mobileContextMenu.addEventListener('pointerup', (e) => {
-          mobileContextMenu.releasePointerCapture(e.pointerId);
-          // If a drag occurred, prevent a subsequent click.
-          if (isDraggingMenu) {
-            e.preventDefault();
-            e.stopImmediatePropagation();
-          }
-        });
 
         editorInstance.onDidChangeCursorSelection((e) => {
 
@@ -1731,31 +1687,32 @@
         }
 
         function setContextPos(x, y) {
-          // Get editor bounds
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
-
-          // Prevent the menu from going out on the right
           if (x + mobileContextMenu.offsetWidth > editorRect.right) {
             x = editorRect.right - mobileContextMenu.offsetWidth;
           }
-          // Prevent the menu from going out on the left
           if (x < editorRect.left) {
             x = editorRect.left;
           }
-          // Prevent the menu from going out on the bottom
           if (y + mobileContextMenu.offsetHeight > editorRect.bottom) {
             y = editorRect.bottom - mobileContextMenu.offsetHeight;
           }
-          // Prevent the menu from going out on the top
           if (y < editorRect.top) {
             y = editorRect.top;
           }
-
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
         }
 
-
+        function funcDeco(func) {
+          return () => {
+            if (isContextDragged) {
+              isContextDragged = false;
+              return;
+            }
+            func()
+          }
+        }
         function showContextMenu(options) {
           console.trace()
           if (isContextMenuOpen()) return;
@@ -1770,16 +1727,16 @@
           };
           options = Object.assign({}, defaultOptions, options);
           const menuItems = [
-            { className: 'copy', text: 'Copy', action: () => editorInstance.trigger('source', 'editor.action.clipboardCopyAction') },
-            { className: 'cut', text: 'Cut', action: () => editorInstance.trigger('source', 'editor.action.clipboardCutAction') },
-            { className: 'paste', text: 'Paste', action: () => editorInstance.trigger('source', 'editor.action.clipboardPasteAction') },
+            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')) },
+            { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')) },
+            { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')) },
             {
-              className: 'selectAll', text: 'Select All', action: () => {
+              className: 'selectAll', text: 'Select All', action: funcDeco(() => {
                 const range = editorInstance.getModel().getFullModelRange();
                 editorInstance.setSelection(range);
-              }
+              })
             },
-            { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
+            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()) }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
           mobileInsetMenu.innerHTML = '';
