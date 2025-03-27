@@ -1948,6 +1948,7 @@
               mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
               mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 90 + 'px';
               showContextMenu();
+              setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
             }
           }, 1000);
           const touch = event.touches[0];
