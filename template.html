@@ -1650,7 +1650,7 @@
           touchStartY = touch.clientY;
           menuInitialX = mobileContextMenu.offsetLeft;
           menuInitialY = mobileContextMenu.offsetTop;
-        });
+        }, { passive: false });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
           const touch = e.touches[0];
