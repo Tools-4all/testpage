@@ -1741,9 +1741,9 @@
             editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
             editorRectGlobal = {
               left: editorRectGlobal.left -180,
-              top: editorRectGlobal.top,
-              right: editorRectGlobal.right,
-              bottom: editorRectGlobal.bottom 
+              top: editorRectGlobal.top -180,
+              right: editorRectGlobal.right -180,
+              bottom: editorRectGlobal.bottom -180
             }
             console.log(editorRectGlobal);
           }
