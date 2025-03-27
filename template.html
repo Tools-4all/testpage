@@ -1736,10 +1736,10 @@
         }
 
         let editorRectGlobal = null;
-        console.log(editorRectGlobal);
         function setContextPos(x, y) {
           if (editorRectGlobal === null) {
             editorRectGlobal = editorInstance.getBoundingClientRect();
+            console.log(editorRectGlobal);
           }
           x = Math.max(editorRectGlobal.left, Math.min(x, editorRectGlobal.right - mobileContextMenu.offsetWidth));
 
