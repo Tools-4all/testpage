@@ -1755,7 +1755,8 @@
         }
 
         function funcDeco(func) {
-          return () => {
+          return (e) => {
+            stopAll(e);
             if (isContextDragged) {
               return;
             }
