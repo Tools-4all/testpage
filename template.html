@@ -1649,15 +1649,17 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
-        let menuInitialX = 0, menuInitialY = 0, touchStartX = 0, touchStartY = 0;
+        let touchStartX = 0, touchStartY = 0; // Store initial touch coordinates
+        let menuStartX = 0, menuStartY = 0;   // Store initial menu position
 
         mobileContextMenu.addEventListener('touchstart', (e) => {
           stopAll(e);
           const touch = e.touches[0];
-          touchStartX = touch.clientX;
-          touchStartY = touch.clientY;
-          menuInitialX = mobileContextMenu.offsetLeft;
-          menuInitialY = mobileContextMenu.offsetTop;
+          const editorRect = getRect();
+          touchStartX = touch.clientX; // Viewport X
+          touchStartY = touch.clientY; // Viewport Y
+          menuStartX = mobileContextMenu.offsetLeft; // Editor-relative X
+          menuStartY = mobileContextMenu.offsetTop;  // Editor-relative Y
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
@@ -1671,10 +1673,10 @@
           }
 
           isContextDragged = true;
-          let newX = menuInitialX + deltaX;
-          let newY = menuInitialY + deltaY;
+          const newX = menuStartX + deltaX; // Calculate new position from initial menu pos + delta
+          const newY = menuStartY + deltaY;
 
-          setContextPos(newX, newY);
+          setContextPos(newX, newY); // Pass editor-relative coordinates
         });
 
 
@@ -1742,8 +1744,8 @@
         function setContextPos(x, y) {
           const theRect = getRect();
 
-          const relativeX = x - theRect.left;
-          const relativeY = y - theRect.top;
+          const relativeX = x - theRect.left; // Convert viewport X to editor-relative X
+          const relativeY = y - theRect.top;  // Convert viewport Y to editor-relative Y
 
           const maxX = theRect.width - mobileContextMenu.offsetWidth;
           const maxY = theRect.height - mobileContextMenu.offsetHeight;
