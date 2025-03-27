@@ -1668,6 +1668,11 @@
           return !mobileContextMenu.classList.contains('hidden');
         }
 
+        function setContextPos(x, y) {
+          mobileContextMenu.style.left = x + 'px';
+          mobileContextMenu.style.top = y + 'px';
+        }
+
         function showContextMenu(options) {
           if (isContextMenuOpen()) return;
           const theModel = editorInstance.getModel();
