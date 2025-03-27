@@ -1734,9 +1734,10 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
+
+        const editorRectGlobal = editorDom.getBoundingClientRect();
         
         function setContextPos(x, y) {
-          const editorRect = domNode.getBoundingClientRect();
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
           if (!isContextDragged) {
