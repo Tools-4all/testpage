@@ -1667,6 +1667,7 @@
         });
 
         mobileContextMenu.addEventListener('touchend', (e) => {
+          stopAll(e);
           const touch = e.changedTouches[0];
           const touchEndX = touch.clientX;
           const touchEndY = touch.clientY;
