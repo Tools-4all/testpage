@@ -1636,6 +1636,13 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
+        document.addEventListener('touchstart', (e) => {
+          if (e.target === editorDom) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+          }
+        });
+
         mobileContextMenu.appendChild(mobileInsetMenu);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
