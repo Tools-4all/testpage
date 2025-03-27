@@ -2115,9 +2115,11 @@
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
-          if (becasueTouch && !editorInstance.getSelection().isEmpty()) {
+          if (becasueTouch) {
             becasueTouch = false;
-            theContext.classList.remove('hidden');
+            if (!editorInstance.getSelection().isEmpty()) {
+              theContext.classList.remove('hidden');
+            }
           }
           touchEnd = new Date().getTime();
           if (wasDragging) {
