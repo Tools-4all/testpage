@@ -1734,75 +1734,23 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-
-        function getCodeAreaBounds(editorInstance) {
+        
+        function setContextPos(x, y) {
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
 
-          const layout = editorInstance.getLayoutInfo();
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
-          const codeTop = editorRect.top + layout.contentTop;
-          const codeBottom = codeTop + layout.contentHeight;
-
-          const codeLeft = editorRect.left + layout.contentLeft;
-          const codeRight = codeLeft + layout.contentWidth;
-
-          return {
-            top: codeTop,
-            bottom: codeBottom,
-            left: codeLeft,
-            right: codeRight
-          };
-        }
-
-        function setContextPos(x, y) {
-          // The actual code area bounding box:
-          const codeBounds = getCodeAreaBounds(editorInstance);
-          const menuWidth = mobileContextMenu.offsetWidth;
-          const menuHeight = mobileContextMenu.offsetHeight;
-
-          console.log("setContextPos called with:", { x, y });
-          console.log("Code Area Bounds:", codeBounds);
-          console.log("Menu Dimensions:", { menuWidth, menuHeight });
-
-          // Horizontal clamp within the code area
-          const clampedX = Math.max(
-            codeBounds.left,
-            Math.min(x, codeBounds.right - menuWidth)
-          );
-          console.log("Clamped X:", clampedX);
-
-          let finalY;
           if (!isContextDragged) {
-            // If not dragging, you said you prefer "above if possible, else below"
-            const candidateAbove = y - menuHeight;
-            console.log("Candidate Above Y:", candidateAbove);
-            if (candidateAbove >= codeBounds.top) {
-              finalY = candidateAbove;
-              console.log("Using above position:", finalY);
-            } else {
-              // Otherwise, try below with a 5px gap
-              const candidateBelow = y + 5;
-              console.log("Candidate Below Y:", candidateBelow);
-              if (candidateBelow + menuHeight <= codeBounds.bottom) {
-                finalY = candidateBelow;
-                console.log("Using below position:", finalY);
-              } else {
-                // Fallback: clamp inside code area
-                finalY = Math.max(codeBounds.top, Math.min(y, codeBounds.bottom - menuHeight));
-                console.log("Fallback clamped Y:", finalY);
-              }
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
             }
-          } else {
-            // If dragging, ignore above/below logic and clamp
-            finalY = Math.max(codeBounds.top, Math.min(y, codeBounds.bottom - menuHeight));
-            console.log("Dragging mode - clamped Y:", finalY);
           }
 
-          console.log("Final position - X:", clampedX, "Y:", finalY);
-          mobileContextMenu.style.left = clampedX + 'px';
-          mobileContextMenu.style.top = finalY + 'px';
-        }
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
 
+          mobileContextMenu.style.left = x + 'px';
+          mobileContextMenu.style.top = y + 'px';
+        }
 
 
         function funcDeco(func) {
