@@ -1652,6 +1652,36 @@
         mobileContextMenu.appendChild(mobileInsetMenu);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
+        let menuInitialX = 0, menuInitialY = 0, touchStartX = 0, touchStartY = 0;
+
+        mobileContextMenu.addEventListener('touchstart', (e) => {
+          const touch = e.touches[0];
+          // Record the starting touch positions
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          // Record current menu offsets (assuming position: absolute)
+          menuInitialX = mobileContextMenu.offsetLeft;
+          menuInitialY = mobileContextMenu.offsetTop;
+        });
+
+        mobileContextMenu.addEventListener('touchmove', (e) => {
+          e.preventDefault(); // prevent scrolling while dragging
+          const touch = e.touches[0];
+          // Calculate new position
+          let newX = menuInitialX + (touch.clientX - touchStartX);
+          let newY = menuInitialY + (touch.clientY - touchStartY);
+
+          // Get boundaries from editorDom
+          const editorRect = editorDom.getBoundingClientRect();
+          const menuRect = mobileContextMenu.getBoundingClientRect();
+
+          // Clamp newX and newY so that the mobileContextMenu remains within editorDom
+          newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
+          newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
+
+          mobileContextMenu.style.left = newX + 'px';
+          mobileContextMenu.style.top = newY + 'px';
+        });
         editorInstance.onDidChangeCursorSelection((e) => {
 
           const selection = e.selection;
