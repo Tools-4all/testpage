@@ -1736,7 +1736,7 @@
                 editorInstance.setSelection(range);
               })
             , close: true},
-            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: true }
+            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: false }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
           mobileInsetMenu.innerHTML = '';
