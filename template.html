@@ -1816,6 +1816,7 @@
             initialSelection = editorInstance.getSelection();
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
+            mobileContextMenu.classList.add('hidden');
           }, { passive: false });
 
           let autoScrollInterval = null;
@@ -1886,6 +1887,7 @@
             touchStartPos = null;
             initialSelection = null;
             touchMoved = false;
+            mobileContextMenu.classList.remove('hidden');
           });
 
         }
