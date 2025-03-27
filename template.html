@@ -1799,12 +1799,27 @@
             menuItem.className = 'mobile-menu-item ' + item.className;
             menuItem.innerHTML = `<span>${item.text}</span>`;
             menuItem.addEventListener("click", (e) => {
-              stopAll(e);
               if (item.close && !isContextDragged) {
                 mobileContextMenu.classList.add('hidden');
               }
               item.action();
             });
+            menuItem.addEventListener('touchstart', (e) => {
+              menuItem.classList.add('hovered');
+            }, { passive: false });
+
+            menuItem.addEventListener('touchmove', (e) => {
+              menuItem.classList.remove('hovered');
+            }, { passive: false });
+
+            menuItem.addEventListener('touchend', (e) => {
+              e.preventDefault();
+              if (item.close && !isContextDragged) {
+                mobileContextMenu.classList.add('hidden');
+              }
+              menuItem.classList.remove('hovered');
+              item.action();
+            }, { passive: false });
 
             mobileInsetMenu.appendChild(menuItem);
           });
