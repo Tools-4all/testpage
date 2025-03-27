@@ -1663,6 +1663,7 @@
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
+          // Mark that a drag is occurring if the touch has moved beyond a threshold
           if (!isDraggingMenu) {
             const dx = e.touches[0].clientX - touchStartX;
             const dy = e.touches[0].clientY - touchStartY;
@@ -1671,7 +1672,7 @@
             }
           }
 
-          e.preventDefault(); 
+          e.preventDefault(); // already solved scrolling elsewhere
           let newX = menuInitialX + (e.touches[0].clientX - touchStartX);
           let newY = menuInitialY + (e.touches[0].clientY - touchStartY);
 
@@ -1686,6 +1687,7 @@
         });
 
         mobileContextMenu.addEventListener('touchend', (e) => {
+          // If a drag happened, cancel any subsequent click event
           if (isDraggingMenu) {
             e.preventDefault();
             e.stopPropagation();
