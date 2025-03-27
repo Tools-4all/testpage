@@ -1735,66 +1735,43 @@
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
 
-        function positionContextMenu(initialX, initialY, container, contextMenu, topmostSelectHandle) {
-          // Get bounding rectangles for container, context menu, and topmost selection handle
+        function setContextPos(x, y) {
+          // Assumes these globals exist:
+          // container: the element representing your bounding area
+          // contextMenu: the context menu element
+
           const containerRect = container.getBoundingClientRect();
           const menuRect = contextMenu.getBoundingClientRect();
-          const handleRect = topmostSelectHandle.getBoundingClientRect();
 
-          const contextMenuWidth = menuRect.width;
-          const contextMenuHeight = menuRect.height;
-
-          // Set initial x and y from parameters
-          let x = initialX;
-          let y = initialY;
-
-          // ----- Adjust X Position -----
-          // If menu overflows container's right edge, shift left
-          if (x + contextMenuWidth > containerRect.right) {
-            x = containerRect.right - contextMenuWidth;
+          // Adjust X to keep the menu within the container horizontally.
+          if (x + menuRect.width > containerRect.right) {
+            x = containerRect.right - menuRect.width;
           }
-          // Also, make sure x does not go beyond container's left edge
           if (x < containerRect.left) {
             x = containerRect.left;
           }
 
-          // ----- Adjust Y Position -----
-          // Prefer to place the context menu above the selection
-          if (initialY - contextMenuHeight >= containerRect.top) {
-            y = initialY - contextMenuHeight;
+          // Adjust Y:
+          // Try to place the context menu above the selection if there's room.
+          if (y - menuRect.height >= containerRect.top) {
+            y = y - menuRect.height;
           } else {
-            // If not enough space above, place below the topmost selection handle
-            y = handleRect.bottom;
-            // Ensure that placing below does not overflow container's bottom
-            if (y + contextMenuHeight > containerRect.bottom) {
-              y = containerRect.bottom - contextMenuHeight;
-            }
+            // If there's not enough room above, fallback to placing it at the top of the container.
+            y = containerRect.top;
+            // Alternatively, if you have another logic for below the selection line, plug it in here.
           }
 
-          // Ensure y is within container's vertical bounds
+          // Clamp Y within the container bounds.
           if (y < containerRect.top) {
             y = containerRect.top;
           }
-          if (y + contextMenuHeight > containerRect.bottom) {
-            y = containerRect.bottom - contextMenuHeight;
+          if (y + menuRect.height > containerRect.bottom) {
+            y = containerRect.bottom - menuRect.height;
           }
 
-          // Finally, call your function that applies these coordinates
-          setContextPos(x, y);
-        }
-
-        // Example drag event handler that uses similar bounding logic:
-        function onDragMove(newX, newY, container, contextMenu) {
-          const containerRect = container.getBoundingClientRect();
-          const menuRect = contextMenu.getBoundingClientRect();
-          const contextMenuHeight = menuRect.height;
-
-          let y = newY;
-          // Limit y within the container (similar to mobileSelector top/bottom limit)
-          y = Math.max(containerRect.top, Math.min(y, containerRect.bottom - contextMenuHeight));
-
-          // For x, you may add similar bounding logic if needed. Here we assume x is already valid.
-          setContextPos(newX, y);
+          // Apply the calculated position.
+          contextMenu.style.left = x + 'px';
+          contextMenu.style.top = y + 'px';
         }
 
 
