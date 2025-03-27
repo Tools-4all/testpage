@@ -1614,6 +1614,7 @@
       let dragTouchY = null;
       let contextDiv = null;
       let becasueTouch = false;
+      let theContext;
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
@@ -1633,6 +1634,7 @@
 
         const mobileContextMenu = document.createElement('div');
         mobileContextMenu.className = 'mobile-context-menu hidden';
+        theContext = mobileContextMenu;
         const mobileInsetMenu = document.createElement('div');
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
@@ -1872,7 +1874,6 @@
           }, { passive: false });
 
           selector.addEventListener('touchend', (event) => {
-            alert("this it")
             if (autoScrollInterval !== null) {
               clearInterval(autoScrollInterval);
               autoScrollInterval = null;
@@ -1890,8 +1891,6 @@
             touchStartPos = null;
             initialSelection = null;
             touchMoved = false;
-            mobileContextMenu.classList.remove('hidden');
-            becasueTouch = false;
           });
 
         }
@@ -2116,6 +2115,10 @@
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
+          if (becasueTouch) {
+            becasueTouch = false;
+            theContext.classList.remove('hidden');
+          }
           touchEnd = new Date().getTime();
           if (wasDragging) {
             stopAll(event);
