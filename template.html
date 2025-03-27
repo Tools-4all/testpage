@@ -1663,8 +1663,7 @@
           newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
           newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
 
-          mobileContextMenu.style.left = newX + 'px';
-          mobileContextMenu.style.top = newY + 'px';
+          setContextPos(newX, newY);
         });
 
         mobileContextMenu.addEventListener('touchend', (e) => {
@@ -2005,8 +2004,6 @@
               return;
             }
             if (!isContextMenuOpen()) {
-              mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
-              mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 90 + 'px';
               showContextMenu();
               setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
             }
