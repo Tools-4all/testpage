@@ -1700,7 +1700,7 @@
         });
 
         mobileContextMenu.appendChild(mobileInsetMenu);
-        editorScrollable.appendChild(mobileContextMenu);
+        editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
 
         editorInstance.onDidChangeCursorSelection((e) => {
@@ -1734,22 +1734,24 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-        
+
         function setContextPos(x, y) {
           const editorRect = domNode.getBoundingClientRect();
-          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
+          // Convert x and y from viewport coordinates to editor-relative coordinates.
+          x = x - editorRect.left;
+          y = y - editorRect.top;
 
-          if (!isContextDragged) {
-            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
-              y = y - mobileContextMenu.offsetHeight;
-            }
+          // Constrain x and y relative to the editor container
+          x = Math.max(0, Math.min(x, editorRect.width - mobileContextMenu.offsetWidth));
+          if (!isContextDragged && y - mobileContextMenu.offsetHeight >= 0) {
+            y = y - mobileContextMenu.offsetHeight;
           }
-
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
+          y = Math.max(0, Math.min(y, editorRect.height - mobileContextMenu.offsetHeight));
 
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
         }
+
 
 
         function funcDeco(func) {
