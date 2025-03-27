@@ -1649,746 +1649,696 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
-        I see the issue persists with the mobile context menu appearing above where you drag it during touchmove.From analyzing the updated code in your document and the behavior you’re describing, the gap likely stems from a coordinate mismatch or an offset not being properly accounted for in the dragging logic.Since the menu is appearing above your touch point, it suggests that the top position is being calculated with an incorrect offset or that the touch coordinates aren't aligning with the editor's coordinate system as expected.
+        let touchStartX = 0, touchStartY = 0; // Initial touch coordinates (viewport)
+        let menuStartX = 0, menuStartY = 0;   // Initial menu position (editor-relative)
+        let touchOffsetX = 0, touchOffsetY = 0; // Offset of touch within the menu
 
-          Here’s a step - by - step diagnosis and solution:
+        mobileContextMenu.addEventListener('touchstart', (e) => {
+          stopAll(e);
+          const touch = e.touches[0];
+          const editorRect = getRect();
+          touchStartX = touch.clientX; // Viewport X
+          touchStartY = touch.clientY; // Viewport Y
+          menuStartX = mobileContextMenu.offsetLeft; // Editor-relative X
+          menuStartY = mobileContextMenu.offsetTop;  // Editor-relative Y
 
-Likely Cause
-Coordinate System Mismatch:
-        touch.clientX and touch.clientY are viewport - relative coordinates.
-          mobileContextMenu.offsetLeft and offsetTop are relative to the menu's offset parent (likely the editor's DOM node).
-In setContextPos, you subtract theRect.left and theRect.top(the editor's bounding rectangle relative to the viewport) to convert to editor-relative coordinates. However, if the initial positioning or touch calculations don’t perfectly align, the menu’s position will be offset.
-Touch Offset Not Accounted For:
-            The touchmove logic uses the delta from the initial touch point(touchStartX, touchStartY) added to the menu’s initial position(menuStartX, menuStartY).If the initial touch point isn’t adjusted to be relative to the menu’s starting position(e.g., where on the menu you touched), the drag will appear offset by the distance between your touch and the menu’s top - left corner.
-CSS or Layout Interference:
-            The menu’s absolute positioning and styles(e.g., height: 40px, border - radius) might affect how the offsetTop is interpreted, especially if there’s padding, margins, or transforms involved.
-              Solution
-To fix the gap, we need to ensure the menu drags precisely from where you touch it by:
+          // Calculate the offset of the touch relative to the menu's top-left corner
+          const menuRect = mobileContextMenu.getBoundingClientRect();
+          touchOffsetX = touch.clientX - menuRect.left; // How far right from menu's left edge
+          touchOffsetY = touch.clientY - menuRect.top;  // How far down from menu's top edge
+        });
 
-Calculating the touch offset relative to the menu’s top - left corner in touchstart.
-Applying this offset during touchmove to keep the menu aligned with your finger.
-          Here’s the updated initializeMobileSelection function with these fixes:
+        mobileContextMenu.addEventListener('touchmove', (e) => {
+          stopAll(e);
+          const touch = e.touches[0];
+          const deltaX = touch.clientX - touchStartX;
+          const deltaY = touch.clientY - touchStartY;
 
-          javascript
+          if (!isContextDragged && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+            return;
+          }
 
-        Collapse
+          isContextDragged = true;
+          // Adjust the new position by the touch offset to keep the menu under your finger
+          const newX = menuStartX + deltaX - touchOffsetX;
+          const newY = menuStartY + deltaY - touchOffsetY;
 
-        Wrap
+          setContextPos(newX, newY); // Pass editor-relative coordinates
+        });
 
-        Copy
-        function initializeMobileSelection(editorInstance) {
-          const editorDom = editorInstance.getDomNode();
-          if (!editorDom) return;
 
-          const mobileSelectionsContainer = document.createElement('div');
-          mobileSelectionsContainer.className = 'mobile-selections-container hidden';
-          const mobileSelectorRight = document.createElement('div');
-          mobileSelectorRight.className = 'mobile-selector mobile-selector-right';
-          const mobileSelectorLeft = document.createElement('div');
-          mobileSelectorLeft.className = 'mobile-selector mobile-selector-left';
-          mobileSelectionsContainer.appendChild(mobileSelectorRight);
-          mobileSelectionsContainer.appendChild(mobileSelectorLeft);
+        mobileContextMenu.addEventListener('touchend', (e) => {
+          stopAll(e);
+          const touch = e.changedTouches[0];
+          const touchEndX = touch.clientX;
+          const touchEndY = touch.clientY;
+          if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
+            becasueTouch = true;
+          }
+          setTimeout(() => {
+            becasueTouch = false;
+            isContextDragged = false;
+          }, 100);
+        }, { passive: false });
 
-          const editorScrollable = editorDom;
-          editorScrollable.insertAdjacentElement('afterbegin', mobileSelectionsContainer);
 
-          const mobileContextMenu = document.createElement('div');
-          mobileContextMenu.className = 'mobile-context-menu hidden';
-          theContext = mobileContextMenu;
-          const mobileInsetMenu = document.createElement('div');
-          mobileInsetMenu.className = 'mobile-inset-menu';
-          showContextMenu();
+        document.addEventListener('touchstart', (e) => {
+          if (!isContextMenuOpen()) {
+            return;
+          }
+          if (!contextDiv.contains(e.target)) {
+            mobileContextMenu.classList.add('hidden');
+            editorInstance.setSelection(new monaco.Selection(0, 0, 0, 0));
+          }
+        });
 
-          let touchStartX = 0, touchStartY = 0; // Initial touch coordinates (viewport)
-          let menuStartX = 0, menuStartY = 0;   // Initial menu position (editor-relative)
-          let touchOffsetX = 0, touchOffsetY = 0; // Offset of touch within the menu
+        mobileContextMenu.appendChild(mobileInsetMenu);
+        editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
+        contextDiv = mobileContextMenu
 
-          mobileContextMenu.addEventListener('touchstart', (e) => {
-            stopAll(e);
-            const touch = e.touches[0];
-            const editorRect = getRect();
-            touchStartX = touch.clientX; // Viewport X
-            touchStartY = touch.clientY; // Viewport Y
-            menuStartX = mobileContextMenu.offsetLeft; // Editor-relative X
-            menuStartY = mobileContextMenu.offsetTop;  // Editor-relative Y
+        editorInstance.onDidChangeCursorSelection((e) => {
+          const selection = e.selection;
+          if (selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+            return;
+          }
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
-            // Calculate the offset of the touch relative to the menu's top-left corner
-            const menuRect = mobileContextMenu.getBoundingClientRect();
-            touchOffsetX = touch.clientX - menuRect.left; // How far right from menu's left edge
-            touchOffsetY = touch.clientY - menuRect.top;  // How far down from menu's top edge
-          });
+          if (!isContextMenuOpen()) {
+            showContextMenu();
+            const theRect = getRect();
+            setContextPos(startCoords.left + theRect.left, startCoords.top + theRect.top);
+          }
+          if (startCoords && endCoords) {
+            mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
+            mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
+            if (!wasDragging) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
+        });
 
-          mobileContextMenu.addEventListener('touchmove', (e) => {
-            stopAll(e);
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - touchStartX;
-            const deltaY = touch.clientY - touchStartY;
+        function isContextMenuOpen() {
+          return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
+        }
 
-            if (!isContextDragged && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+        function setContextPos(x, y) {
+          const theRect = getRect();
+
+          const relativeX = x; // Already editor-relative from touchmove
+          const relativeY = y; // Already editor-relative from touchmove
+
+          const maxX = theRect.width - mobileContextMenu.offsetWidth;
+          const maxY = theRect.height - mobileContextMenu.offsetHeight;
+
+          let constrainedX = Math.max(0, Math.min(relativeX, maxX));
+          let constrainedY = Math.max(0, Math.min(relativeY, maxY));
+
+          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
+            constrainedY = relativeY - mobileContextMenu.offsetHeight;
+            constrainedY = Math.max(0, constrainedY);
+          }
+
+          mobileContextMenu.style.left = `${constrainedX}px`;
+          mobileContextMenu.style.top = `${constrainedY}px`;
+        }
+
+
+        function funcDeco(func) {
+          return () => {
+            if (isContextDragged) {
               return;
             }
+            func()
+          }
+        }
+        function showContextMenu(options) {
+          if (isContextMenuOpen()) return;
+          const theModel = editorInstance.getModel();
+          const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
+          const defaultOptions = {
+            copy: isTextSelected,
+            cut: isTextSelected,
+            paste: true,
+            selectAll: true,
+            format: true
+          };
+          options = Object.assign({}, defaultOptions, options);
+          const menuItems = [
+            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false },
+            { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')), close: true },
+            { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')), close: true },
+            {
+              className: 'selectAll', text: 'Select All', action: funcDeco(() => {
+                const range = editorInstance.getModel().getFullModelRange();
+                editorInstance.setSelection(range);
+              })
+              , close: true
+            },
+            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: false }
+          ];
+          const menuItemsFiltered = menuItems.filter(item => options[item.className]);
+          mobileInsetMenu.innerHTML = '';
+          mobileInsetMenu.style.display = 'flex';
+          mobileInsetMenu.style.overflowX = 'hidden';
+          mobileInsetMenu.style.flexWrap = 'nowrap';
+          mobileInsetMenu.style.width = 'calc(100% - 40px)';
 
-            isContextDragged = true;
-            // Adjust the new position by the touch offset to keep the menu under your finger
-            const newX = menuStartX + deltaX - touchOffsetX;
-            const newY = menuStartY + deltaY - touchOffsetY;
+          menuItemsFiltered.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'mobile-menu-item ' + item.className;
+            menuItem.innerHTML = `<span>${item.text}</span>`;
+            menuItem.addEventListener('touchstart', (e) => {
+              menuItem.classList.add('hovered');
+            }, { passive: false });
 
-            setContextPos(newX, newY); // Pass editor-relative coordinates
+            menuItem.addEventListener('touchmove', (e) => {
+              menuItem.classList.remove('hovered');
+            }, { passive: false });
+
+            menuItem.addEventListener('touchend', (e) => {
+              stopAll(e);
+              if (item.close && !isContextDragged) {
+                mobileContextMenu.classList.add('hidden');
+              }
+              menuItem.classList.remove('hovered');
+              item.action();
+            }, { passive: false });
+
+            mobileInsetMenu.appendChild(menuItem);
           });
 
+          const existingArrow = mobileContextMenu.querySelector('.toggle-arrow');
+          if (existingArrow) existingArrow.remove();
 
-          mobileContextMenu.addEventListener('touchend', (e) => {
-            stopAll(e);
-            const touch = e.changedTouches[0];
-            const touchEndX = touch.clientX;
-            const touchEndY = touch.clientY;
-            if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
-              becasueTouch = true;
+          setTimeout(() => {
+            if (mobileInsetMenu.scrollWidth > mobileInsetMenu.clientWidth) {
+              let arrow = document.createElement('div');
+              arrow.className = 'mobile-menu-item toggle-arrow';
+              arrow.style.display = 'flex';
+              arrow.style.alignItems = 'center';
+              arrow.style.justifyContent = 'center';
+              arrow.style.width = '40px';
+              arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
+
+              let isAtEnd = false;
+              arrow.addEventListener('touchstart', (e) => {
+                arrow.classList.add('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchmove', (e) => {
+                arrow.classList.remove('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchend', (e) => {
+                stopAll(e);
+                if (isContextDragged) return;
+                arrow.classList.remove('hovered');
+                if (!isAtEnd) {
+                  mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
+                  isAtEnd = true;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(180deg);">&#9654;</span>`;
+                } else {
+                  mobileInsetMenu.scrollTo({ left: 0, behavior: 'smooth' });
+                  isAtEnd = false;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
+                }
+              }, { passive: false });
+
+              mobileContextMenu.appendChild(arrow);
             }
-            setTimeout(() => {
-              becasueTouch = false;
-              isContextDragged = false;
-            }, 100);
+          }, 0);
+
+          mobileContextMenu.classList.remove('hidden');
+        }
+
+
+        function handleMobileSelectorTouch(selector, isLeft) {
+          let touchStartPos, initialSelection;
+          let touchMoved = false, touchEndTimeout;
+          selector.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            wasDragging = true;
+            const touch = event.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY };
+            initialSelection = editorInstance.getSelection();
+            touchMoved = false;
+            if (touchEndTimeout) clearTimeout(touchEndTimeout);
+            becasueTouch = true;
+            mobileContextMenu.classList.add('hidden');
           }, { passive: false });
 
+          let autoScrollInterval = null;
+          const autoScrollDelay = 20;
 
-          document.addEventListener('touchstart', (e) => {
-            if (!isContextMenuOpen()) {
-              return;
-            }
-            if (!contextDiv.contains(e.target)) {
-              mobileContextMenu.classList.add('hidden');
-              editorInstance.setSelection(new monaco.Selection(0, 0, 0, 0));
-            }
-          });
-
-          mobileContextMenu.appendChild(mobileInsetMenu);
-          editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
-          contextDiv = mobileContextMenu
-
-          editorInstance.onDidChangeCursorSelection((e) => {
-            const selection = e.selection;
-            if (selection.isEmpty()) {
-              mobileSelectionsContainer.classList.add('hidden');
-              mobileContextMenu.classList.add('hidden');
-              return;
-            }
-            const startPos = selection.getStartPosition();
-            const endPos = selection.getEndPosition();
-            const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
-            const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-
-            if (!isContextMenuOpen()) {
-              showContextMenu();
-              const theRect = getRect();
-              setContextPos(startCoords.left + theRect.left, startCoords.top + theRect.top);
-            }
-            if (startCoords && endCoords) {
-              mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
-              mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
-              if (!wasDragging) {
-                mobileSelectorRight.style.visibility = 'visible';
-                mobileSelectorLeft.style.visibility = 'visible';
-              }
-              mobileSelectionsContainer.classList.remove('hidden');
-            }
-          });
-
-          function isContextMenuOpen() {
-            return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
-          }
-
-          function setContextPos(x, y) {
-            const theRect = getRect();
-
-            const relativeX = x; // Already editor-relative from touchmove
-            const relativeY = y; // Already editor-relative from touchmove
-
-            const maxX = theRect.width - mobileContextMenu.offsetWidth;
-            const maxY = theRect.height - mobileContextMenu.offsetHeight;
-
-            let constrainedX = Math.max(0, Math.min(relativeX, maxX));
-            let constrainedY = Math.max(0, Math.min(relativeY, maxY));
-
-            if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
-              constrainedY = relativeY - mobileContextMenu.offsetHeight;
-              constrainedY = Math.max(0, constrainedY);
+          selector.addEventListener('touchmove', (event) => {
+            stopAll(event);
+            const touch = event.touches[0];
+            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+            if (target && target.position) {
+              const newSelection = isLeft
+                ? new monaco.Selection(
+                  target.position.lineNumber,
+                  target.position.column,
+                  initialSelection.endLineNumber,
+                  initialSelection.endColumn
+                )
+                : new monaco.Selection(
+                  initialSelection.startLineNumber,
+                  initialSelection.startColumn,
+                  target.position.lineNumber,
+                  target.position.column
+                );
+              editorInstance.setSelection(newSelection);
+              touchMoved = true;
             }
 
-            mobileContextMenu.style.left = `${constrainedX}px`;
-            mobileContextMenu.style.top = `${constrainedY}px`;
-          }
-
-
-          function funcDeco(func) {
-            return () => {
-              if (isContextDragged) {
-                return;
-              }
-              func()
-            }
-          }
-          function showContextMenu(options) {
-            if (isContextMenuOpen()) return;
-            const theModel = editorInstance.getModel();
-            const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
-            const defaultOptions = {
-              copy: isTextSelected,
-              cut: isTextSelected,
-              paste: true,
-              selectAll: true,
-              format: true
-            };
-            options = Object.assign({}, defaultOptions, options);
-            const menuItems = [
-              { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false },
-              { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')), close: true },
-              { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')), close: true },
-              {
-                className: 'selectAll', text: 'Select All', action: funcDeco(() => {
-                  const range = editorInstance.getModel().getFullModelRange();
-                  editorInstance.setSelection(range);
-                })
-                , close: true
-              },
-              { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: false }
-            ];
-            const menuItemsFiltered = menuItems.filter(item => options[item.className]);
-            mobileInsetMenu.innerHTML = '';
-            mobileInsetMenu.style.display = 'flex';
-            mobileInsetMenu.style.overflowX = 'hidden';
-            mobileInsetMenu.style.flexWrap = 'nowrap';
-            mobileInsetMenu.style.width = 'calc(100% - 40px)';
-
-            menuItemsFiltered.forEach(item => {
-              const menuItem = document.createElement('div');
-              menuItem.className = 'mobile-menu-item ' + item.className;
-              menuItem.innerHTML = `<span>${item.text}</span>`;
-              menuItem.addEventListener('touchstart', (e) => {
-                menuItem.classList.add('hovered');
-              }, { passive: false });
-
-              menuItem.addEventListener('touchmove', (e) => {
-                menuItem.classList.remove('hovered');
-              }, { passive: false });
-
-              menuItem.addEventListener('touchend', (e) => {
-                stopAll(e);
-                if (item.close && !isContextDragged) {
-                  mobileContextMenu.classList.add('hidden');
-                }
-                menuItem.classList.remove('hovered');
-                item.action();
-              }, { passive: false });
-
-              mobileInsetMenu.appendChild(menuItem);
-            });
-
-            const existingArrow = mobileContextMenu.querySelector('.toggle-arrow');
-            if (existingArrow) existingArrow.remove();
-
-            setTimeout(() => {
-              if (mobileInsetMenu.scrollWidth > mobileInsetMenu.clientWidth) {
-                let arrow = document.createElement('div');
-                arrow.className = 'mobile-menu-item toggle-arrow';
-                arrow.style.display = 'flex';
-                arrow.style.alignItems = 'center';
-                arrow.style.justifyContent = 'center';
-                arrow.style.width = '40px';
-                arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
-
-                let isAtEnd = false;
-                arrow.addEventListener('touchstart', (e) => {
-                  arrow.classList.add('hovered');
-                }, { passive: false });
-
-                arrow.addEventListener('touchmove', (e) => {
-                  arrow.classList.remove('hovered');
-                }, { passive: false });
-
-                arrow.addEventListener('touchend', (e) => {
-                  stopAll(e);
-                  if (isContextDragged) return;
-                  arrow.classList.remove('hovered');
-                  if (!isAtEnd) {
-                    mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
-                    isAtEnd = true;
-                    arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(180deg);">&#9654;</span>`;
-                  } else {
-                    mobileInsetMenu.scrollTo({ left: 0, behavior: 'smooth' });
-                    isAtEnd = false;
-                    arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
-                  }
-                }, { passive: false });
-
-                mobileContextMenu.appendChild(arrow);
-              }
-            }, 0);
-
-            mobileContextMenu.classList.remove('hidden');
-          }
-
-
-          function handleMobileSelectorTouch(selector, isLeft) {
-            let touchStartPos, initialSelection;
-            let touchMoved = false, touchEndTimeout;
-            selector.addEventListener('touchstart', (event) => {
-              event.preventDefault();
-              wasDragging = true;
-              const touch = event.touches[0];
-              touchStartPos = { x: touch.clientX, y: touch.clientY };
-              initialSelection = editorInstance.getSelection();
-              touchMoved = false;
-              if (touchEndTimeout) clearTimeout(touchEndTimeout);
-              becasueTouch = true;
-              mobileContextMenu.classList.add('hidden');
-            }, { passive: false });
-
-            let autoScrollInterval = null;
-            const autoScrollDelay = 20;
-
-            selector.addEventListener('touchmove', (event) => {
-              stopAll(event);
-              const touch = event.touches[0];
-              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-              if (target && target.position) {
-                const newSelection = isLeft
-                  ? new monaco.Selection(
-                    target.position.lineNumber,
-                    target.position.column,
-                    initialSelection.endLineNumber,
-                    initialSelection.endColumn
-                  )
-                  : new monaco.Selection(
-                    initialSelection.startLineNumber,
-                    initialSelection.startColumn,
-                    target.position.lineNumber,
-                    target.position.column
-                  );
-                editorInstance.setSelection(newSelection);
-                touchMoved = true;
-              }
-
-              const editorScrollable = domNode;
-              const editorRect = getRect();
-              const threshold = 50;
-              const scrollStep = 6;
-              if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
-                if (autoScrollInterval !== null) {
-                  clearInterval(autoScrollInterval);
-                  autoScrollInterval = null;
-                }
-              } else {
-                if (autoScrollInterval === null) {
-                  autoScrollInterval = setInterval(() => {
-                    if (lastTouchY !== null) {
-                      if (lastTouchY < editorRect.top + threshold) {
-                        editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
-                      } else if (lastTouchY > editorRect.bottom - threshold) {
-                        editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
-                      }
-                    }
-                  }, autoScrollDelay);
-                }
-              }
-              lastTouchY = touch.clientY;
-            }, { passive: false });
-
-            selector.addEventListener('touchend', (event) => {
+            const editorScrollable = domNode;
+            const editorRect = getRect();
+            const threshold = 50;
+            const scrollStep = 6;
+            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
               if (autoScrollInterval !== null) {
                 clearInterval(autoScrollInterval);
                 autoScrollInterval = null;
               }
-              if (!touchMoved) {
-                const touch = event.changedTouches[0];
-                const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-                if (target && target.position) {
-                  const newSelection = isLeft
-                    ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
-                    : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
-                  editorInstance.setSelection(newSelection);
-                }
+            } else {
+              if (autoScrollInterval === null) {
+                autoScrollInterval = setInterval(() => {
+                  if (lastTouchY !== null) {
+                    if (lastTouchY < editorRect.top + threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                    } else if (lastTouchY > editorRect.bottom - threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                    }
+                  }
+                }, autoScrollDelay);
               }
-              touchStartPos = null;
-              initialSelection = null;
-              touchMoved = false;
-            });
-
-          }
-
-
-          handleMobileSelectorTouch(mobileSelectorLeft, true);
-          handleMobileSelectorTouch(mobileSelectorRight, false);
-          function fitScroll() {
-            const selection = editorInstance.getSelection();
-            if (!selection || selection.isEmpty()) {
-              mobileSelectionsContainer.classList.add('hidden');
-              mobileContextMenu.classList.add('hidden');
-              return;
             }
-
-            const startPos = selection.getStartPosition();
-            const endPos = selection.getEndPosition();
-            const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
-            const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
-
-            if (startCoords && endCoords) {
-              const offsetX = 10, offsetY = 22;
-              const reverseOffset = 20;
-              const editorScrollable = domNode
-              const scrollRect = editorScrollable.getBoundingClientRect();
-
-              const leftHandlePos = startCoords.top + offsetY;
-              const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
-              if (spaceBelowLeft < 50) {
-                mobileSelectorLeft.style.visibility = 'hidden';
-              } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
-                mobileSelectorLeft.style.visibility = 'visible';
-                mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
-              } else {
-                mobileSelectorLeft.style.visibility = 'visible';
-                mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
-              }
-
-              const rightHandlePos = endCoords.top + offsetY;
-              const spaceBelowRight = scrollRect.bottom - rightHandlePos;
-              if (spaceBelowRight < 50) {
-                mobileSelectorRight.style.visibility = 'hidden';
-              } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
-                mobileSelectorRight.style.visibility = 'visible';
-                mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
-              } else {
-                mobileSelectorRight.style.visibility = 'visible';
-                mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
-              }
-
-              mobileSelectionsContainer.classList.remove('hidden');
-            }
-          }
-          editorInstance.onDidScrollChange(fitScroll);
-
-
-          let longPressTimeout, startPositionLP;
-          editorDom.addEventListener('touchstart', (event) => {
-            if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
-              event.stopPropagation();
-              event.preventDefault();
-              return;
-            }
-            longPressTimeout = setTimeout(() => {
-              if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
-                wasDragging = true;
-                return;
-              }
-              if (!isContextMenuOpen()) {
-                showContextMenu();
-                setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
-              }
-            }, 1000);
-            const touch = event.touches[0];
-            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-            if (target && target.position) {
-              startPositionLP = target.position;
-            }
+            lastTouchY = touch.clientY;
           }, { passive: false });
-          editorDom.addEventListener('touchend', () => {
-            if (longPressTimeout) clearTimeout(longPressTimeout);
-          });
-          fitScroll();
-        }
-        let name = desiredName
-          ? getUniqueTabName(desiredName)
-          : getNextTabName();
-        let id = Date.now();
-        let sharedBuffer = new SharedArrayBuffer(1024);
-        let view = new Int32Array(sharedBuffer);
-        let tabEl = document.createElement("div");
-        tabEl.classList.add("tab");
-        tabEl.draggable = true;
-        let titleSpan = document.createElement("span");
-        titleSpan.classList.add("tab-title");
-        titleSpan.textContent = name;
-        tabEl.appendChild(titleSpan);
-        let closeIcon = document.createElement("i");
-        closeIcon.classList.add("fas", "fa-times", "close");
-        tabEl.appendChild(closeIcon);
-        let editorOutputWrapper = document.createElement("div");
-        editorOutputWrapper.classList.add("editor-and-output");
-        let editorContainer = document.createElement("div");
-        editorContainer.classList.add("editorContainer");
-        editorOutputWrapper.appendChild(editorContainer);
-        let outputContainer = document.createElement("div");
-        outputContainer.classList.add("outputContainer");
-        outputContainer.classList.add("allowSelect")
-        outputContainer.classList.add("resize");
-        let controlsBar = document.createElement("div");
-        controlsBar.classList.add("controls");
-        outputContainer.appendChild(controlsBar);
 
-        controlsBar.addEventListener('mousedown', function (e) {
-          e.preventDefault();
-
-          const overlay = document.createElement('div');
-          overlay.style.position = 'fixed';
-          overlay.style.top = '0';
-          overlay.style.left = '0';
-          overlay.style.width = '100%';
-          overlay.style.height = '100%';
-          overlay.style.cursor = 'ns-resize';
-          overlay.style.zIndex = '10000';
-          overlay.style.backgroundColor = 'transparent';
-          document.body.appendChild(overlay);
-
-          let startY = e.clientY;
-          let parentHeight = outputContainer.parentElement.clientHeight;
-          let startHeight = outputContainer.offsetHeight;
-
-          const MIN_HEIGHT = 30;
-          const MAX_HEIGHT = 60;
-
-          function onMouseMove(e) {
-            let dy = e.clientY - startY;
-            let newHeight = startHeight - dy;
-            let newHeightPercent = (newHeight / parentHeight) * 100;
-            newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
-            outputContainer.style.height = newHeightPercent + '%';
-          }
-
-          function onMouseUp() {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            overlay.remove();
-          }
-
-          document.addEventListener('mousemove', onMouseMove);
-          document.addEventListener('mouseup', onMouseUp);
-        });
-
-
-
-
-        let outputDiv = document.createElement("div");
-        outputDiv.classList.add("output");
-        outputDiv.setAttribute("tabindex", "0");
-        outputDiv.addEventListener("keydown", (e) => {
-          if (e.ctrlKey && e.key.toLowerCase() === "a") {
-            e.preventDefault();
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(outputDiv);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-        });
-        outputContainer.appendChild(outputDiv);
-        editorOutputWrapper.appendChild(outputContainer);
-        let tabBar = document.getElementById("tabBar");
-        let addTabBtn = document.getElementById("addTabButton");
-        let addTabBtn_media = document.getElementById("addTabButton_media");
-        tabBar.appendChild(tabEl);
-        let tabsContainer = document.getElementById("tabsContainer");
-        tabsContainer.appendChild(editorOutputWrapper);
-        let editorInstance = monaco.editor.create(editorContainer, {
-          language: "javascript",
-          theme: darkModeFlag ? "custom-dark" : "custom-light",
-          automaticLayout: true,
-          tabSize: spaces,
-          insertSpaces: true,
-          minimap: { enabled: true },
-          fontSize: 14,
-          fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
-          fontLigatures: true,
-          folding: true,
-          lineNumbers: "on",
-          wordWrap: "on",
-          scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-          contextmenu: true,
-          selectionHighlight: true,
-          renderIndentGuides: true,
-          renderLineHighlight: "all",
-          cursorStyle: "line",
-          cursorBlinking: "blink",
-          quickSuggestions: true,
-          parameterHints: true,
-          autoClosingBrackets: "always",
-          autoClosingQuotes: "always",
-          formatOnType: true,
-          formatOnPaste: true,
-          suggestOnTriggerCharacters: true,
-          smoothScrolling: true,
-          breadcrumbs: { enabled: true },
-          fixedOverflowWidgets: true,
-          folding: true,
-          minimap: { enabled: !isMobile },
-          scrollBeyondLastLine: false,
-        });
-
-        const domNode = editorInstance.getDomNode();
-        if (isMobile) {
-          initializeMobileSelection(editorInstance);
-          const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
-          let touchStart = null;
-          let touchEnd = null;
-          let eventTargetStart;
-          let lastDot;
-
-          domNode.addEventListener("touchend", (event) => {
-            lastTouchY = null;
-            if (isContextDragged) {
-              setTimeout(() => {
-                isContextDragged = false;
-              }, 300);
+          selector.addEventListener('touchend', (event) => {
+            if (autoScrollInterval !== null) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
             }
-            if (becasueTouch) {
-              becasueTouch = false;
-              if (!editorInstance.getSelection().isEmpty()) {
-                theContext.classList.remove('hidden');
+            if (!touchMoved) {
+              const touch = event.changedTouches[0];
+              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+              if (target && target.position) {
+                const newSelection = isLeft
+                  ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
+                  : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                editorInstance.setSelection(newSelection);
               }
             }
-            touchEnd = new Date().getTime();
-            if (wasDragging) {
-              stopAll(event);
-              wasDragging = false;
-              return;
-            }
-            if (theContext.contains(event.target)) {
-              return;
-            }
-            if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
-              stopAll(event);
-
-              const point = editorInstance.getTargetAtClientPoint(
-                event.changedTouches[0].clientX,
-                event.changedTouches[0].clientY
-              );
-              if (point.type === 7) {
-                return;
-              }
-              editorInstance.focus();
-
-
-              if (point && point.position) {
-                const currentPosition = editorInstance.getPosition();
-                const targetColumn = point.position.column;
-                const targetLine = point.position.lineNumber;
-                if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
-                  editorInstance.setPosition(point.position);
-                }
-              }
-              selectAction.run();
-            }
-          }, true);
-          domNode.addEventListener("touchstart", (event) => {
-            touchStart = new Date().getTime();
-            eventTargetStart = event.target;
-            dragTouchX = event.touches[0].clientX;
-            dragTouchY = event.touches[0].clientY;
+            touchStartPos = null;
+            initialSelection = null;
+            touchMoved = false;
           });
-          function blurFocus() {
-            const elem = document.activeElement
-            elem.blur()
-            editorInstance.focus()
-          }
-          function stopAll(event) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            event.stopPropagation();
-          }
 
-          domNode.addEventListener("textInput", (event) => {
-            stopAll(event)
-            if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
-              return;
-            }
-            editorInstance.trigger('keyboard', 'type', { text: event.data });
-            blurFocus()
-            if (event.data === ".") {
-              lastDot = new Date().getTime();
-            }
-          });
-          domNode.addEventListener("keyup", stopAll);
-          domNode.addEventListener("input", stopAll);
         }
 
-        editorInstance.getModel().onDidChangeOptions((e) => {
-          const tabSizeNum = editorInstance.getModel().getOptions().tabSize
-          if (tabSizeNum) {
-            tabSizeInput.value = tabSizeNum;
-            tabSizeInput.dispatchEvent(new Event("input"));
-          }
-        });
-        let tabObj = {
-          id,
-          name,
-          sharedBuffer,
-          view,
-          tabElement: tabEl,
-          editorContainer,
-          outputElement: outputDiv,
-          editorInstance,
-          worker: null,
-          editorAndOutput: editorOutputWrapper
-        };
-        tabs.push(tabObj);
-        editorInstance.onDidChangeCursorPosition(() => {
-          updateStatusPosition();
-        });
-        closeIcon.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (tabs.length === 1) {
+
+        handleMobileSelectorTouch(mobileSelectorLeft, true);
+        handleMobileSelectorTouch(mobileSelectorRight, false);
+        function fitScroll() {
+          const selection = editorInstance.getSelection();
+          if (!selection || selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
             return;
           }
-          closeTab(id);
-          if (tabs.length === 1) {
-            document.body.classList.add("lastTab");
+
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+
+          if (startCoords && endCoords) {
+            const offsetX = 10, offsetY = 22;
+            const reverseOffset = 20;
+            const editorScrollable = domNode
+            const scrollRect = editorScrollable.getBoundingClientRect();
+
+            const leftHandlePos = startCoords.top + offsetY;
+            const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
+            if (spaceBelowLeft < 50) {
+              mobileSelectorLeft.style.visibility = 'hidden';
+            } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
+            } else {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            const rightHandlePos = endCoords.top + offsetY;
+            const spaceBelowRight = scrollRect.bottom - rightHandlePos;
+            if (spaceBelowRight < 50) {
+              mobileSelectorRight.style.visibility = 'hidden';
+            } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
+            } else {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
+        }
+        editorInstance.onDidScrollChange(fitScroll);
+
+
+        let longPressTimeout, startPositionLP;
+        editorDom.addEventListener('touchstart', (event) => {
+          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
+          longPressTimeout = setTimeout(() => {
+            if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
+              wasDragging = true;
+              return;
+            }
+            if (!isContextMenuOpen()) {
+              showContextMenu();
+              setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+            }
+          }, 1000);
+          const touch = event.touches[0];
+          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+          if (target && target.position) {
+            startPositionLP = target.position;
+          }
+        }, { passive: false });
+        editorDom.addEventListener('touchend', () => {
+          if (longPressTimeout) clearTimeout(longPressTimeout);
+        });
+        fitScroll();
+      }
+      let name = desiredName
+        ? getUniqueTabName(desiredName)
+        : getNextTabName();
+      let id = Date.now();
+      let sharedBuffer = new SharedArrayBuffer(1024);
+      let view = new Int32Array(sharedBuffer);
+      let tabEl = document.createElement("div");
+      tabEl.classList.add("tab");
+      tabEl.draggable = true;
+      let titleSpan = document.createElement("span");
+      titleSpan.classList.add("tab-title");
+      titleSpan.textContent = name;
+      tabEl.appendChild(titleSpan);
+      let closeIcon = document.createElement("i");
+      closeIcon.classList.add("fas", "fa-times", "close");
+      tabEl.appendChild(closeIcon);
+      let editorOutputWrapper = document.createElement("div");
+      editorOutputWrapper.classList.add("editor-and-output");
+      let editorContainer = document.createElement("div");
+      editorContainer.classList.add("editorContainer");
+      editorOutputWrapper.appendChild(editorContainer);
+      let outputContainer = document.createElement("div");
+      outputContainer.classList.add("outputContainer");
+      outputContainer.classList.add("allowSelect")
+      outputContainer.classList.add("resize");
+      let controlsBar = document.createElement("div");
+      controlsBar.classList.add("controls");
+      outputContainer.appendChild(controlsBar);
+
+      controlsBar.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.cursor = 'ns-resize';
+        overlay.style.zIndex = '10000';
+        overlay.style.backgroundColor = 'transparent';
+        document.body.appendChild(overlay);
+
+        let startY = e.clientY;
+        let parentHeight = outputContainer.parentElement.clientHeight;
+        let startHeight = outputContainer.offsetHeight;
+
+        const MIN_HEIGHT = 30;
+        const MAX_HEIGHT = 60;
+
+        function onMouseMove(e) {
+          let dy = e.clientY - startY;
+          let newHeight = startHeight - dy;
+          let newHeightPercent = (newHeight / parentHeight) * 100;
+          newHeightPercent = Math.max(MIN_HEIGHT, Math.min(newHeightPercent, MAX_HEIGHT));
+          outputContainer.style.height = newHeightPercent + '%';
+        }
+
+        function onMouseUp() {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+          overlay.remove();
+        }
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      });
+
+
+
+
+      let outputDiv = document.createElement("div");
+      outputDiv.classList.add("output");
+      outputDiv.setAttribute("tabindex", "0");
+      outputDiv.addEventListener("keydown", (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === "a") {
+          e.preventDefault();
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(outputDiv);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      });
+      outputContainer.appendChild(outputDiv);
+      editorOutputWrapper.appendChild(outputContainer);
+      let tabBar = document.getElementById("tabBar");
+      let addTabBtn = document.getElementById("addTabButton");
+      let addTabBtn_media = document.getElementById("addTabButton_media");
+      tabBar.appendChild(tabEl);
+      let tabsContainer = document.getElementById("tabsContainer");
+      tabsContainer.appendChild(editorOutputWrapper);
+      let editorInstance = monaco.editor.create(editorContainer, {
+        language: "javascript",
+        theme: darkModeFlag ? "custom-dark" : "custom-light",
+        automaticLayout: true,
+        tabSize: spaces,
+        insertSpaces: true,
+        minimap: { enabled: true },
+        fontSize: 14,
+        fontFamily: 'Fira Code, Consolas, "Courier New", monospace',
+        fontLigatures: true,
+        folding: true,
+        lineNumbers: "on",
+        wordWrap: "on",
+        scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+        contextmenu: true,
+        selectionHighlight: true,
+        renderIndentGuides: true,
+        renderLineHighlight: "all",
+        cursorStyle: "line",
+        cursorBlinking: "blink",
+        quickSuggestions: true,
+        parameterHints: true,
+        autoClosingBrackets: "always",
+        autoClosingQuotes: "always",
+        formatOnType: true,
+        formatOnPaste: true,
+        suggestOnTriggerCharacters: true,
+        smoothScrolling: true,
+        breadcrumbs: { enabled: true },
+        fixedOverflowWidgets: true,
+        folding: true,
+        minimap: { enabled: !isMobile },
+        scrollBeyondLastLine: false,
+      });
+
+      const domNode = editorInstance.getDomNode();
+      if (isMobile) {
+        initializeMobileSelection(editorInstance);
+        const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+        let touchStart = null;
+        let touchEnd = null;
+        let eventTargetStart;
+        let lastDot;
+
+        domNode.addEventListener("touchend", (event) => {
+          lastTouchY = null;
+          if (isContextDragged) {
+            setTimeout(() => {
+              isContextDragged = false;
+            }, 300);
+          }
+          if (becasueTouch) {
+            becasueTouch = false;
+            if (!editorInstance.getSelection().isEmpty()) {
+              theContext.classList.remove('hidden');
+            }
+          }
+          touchEnd = new Date().getTime();
+          if (wasDragging) {
+            stopAll(event);
+            wasDragging = false;
+            return;
+          }
+          if (theContext.contains(event.target)) {
+            return;
+          }
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
+            stopAll(event);
+
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
+            if (point.type === 7) {
+              return;
+            }
+            editorInstance.focus();
+
+
+            if (point && point.position) {
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+                editorInstance.setPosition(point.position);
+              }
+            }
+            selectAction.run();
+          }
+        }, true);
+        domNode.addEventListener("touchstart", (event) => {
+          touchStart = new Date().getTime();
+          eventTargetStart = event.target;
+          dragTouchX = event.touches[0].clientX;
+          dragTouchY = event.touches[0].clientY;
+        });
+        function blurFocus() {
+          const elem = document.activeElement
+          elem.blur()
+          editorInstance.focus()
+        }
+        function stopAll(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          event.stopPropagation();
+        }
+
+        domNode.addEventListener("textInput", (event) => {
+          stopAll(event)
+          if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
+            return;
+          }
+          editorInstance.trigger('keyboard', 'type', { text: event.data });
+          blurFocus()
+          if (event.data === ".") {
+            lastDot = new Date().getTime();
           }
         });
-        tabEl.addEventListener("dragstart", (ev) => {
-          switchTab(id);
-          ev.dataTransfer.setData("text/plain", "");
-          ev.dataTransfer.effectAllowed = "move";
-          draggedTabId = id;
-          tabEl.classList.add("dragging");
-        });
-        tabEl.addEventListener("dragend", () => {
-          tabEl.classList.remove("dragging");
-          draggedTabId = null;
-          lastDropSide = null;
-          document.querySelectorAll(".tab")
-            .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
-        });
-        tabEl.addEventListener("dragover", (ev) => {
-          ev.preventDefault();
-          if (!draggedTabId || tabEl.classList.contains("dragging")) return;
-          let rect = tabEl.getBoundingClientRect();
-          let mid = rect.left + rect.width / 2;
-          if (ev.clientX < mid) {
-            tabEl.classList.add("tab-drop-left");
-            tabEl.classList.remove("tab-drop-right");
-            lastDropSide = "left";
-          } else {
-            tabEl.classList.add("tab-drop-right");
-            tabEl.classList.remove("tab-drop-left");
-            lastDropSide = "right";
-          }
-        });
-        tabEl.addEventListener("dragleave", () => {
-          tabEl.classList.remove("tab-drop-left", "tab-drop-right");
-        });
-        tabEl.addEventListener("drop", (ev) => {
-          ev.preventDefault();
-          tabEl.classList.remove("tab-drop-left", "tab-drop-right");
-          if (!draggedTabId) return;
-          reorderTabsByTab(draggedTabId, id, lastDropSide);
-          lastDropSide = null;
-        });
-        titleSpan.addEventListener("dblclick", () => {
-          makeTabTitleEditable(tabObj);
-        });
-        if (content !== null) {
-          editorInstance.setValue(content);
+        domNode.addEventListener("keyup", stopAll);
+        domNode.addEventListener("input", stopAll);
+      }
+
+      editorInstance.getModel().onDidChangeOptions((e) => {
+        const tabSizeNum = editorInstance.getModel().getOptions().tabSize
+        if (tabSizeNum) {
+          tabSizeInput.value = tabSizeNum;
+          tabSizeInput.dispatchEvent(new Event("input"));
+        }
+      });
+      let tabObj = {
+        id,
+        name,
+        sharedBuffer,
+        view,
+        tabElement: tabEl,
+        editorContainer,
+        outputElement: outputDiv,
+        editorInstance,
+        worker: null,
+        editorAndOutput: editorOutputWrapper
+      };
+      tabs.push(tabObj);
+      editorInstance.onDidChangeCursorPosition(() => {
+        updateStatusPosition();
+      });
+      closeIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (tabs.length === 1) {
+          return;
+        }
+        closeTab(id);
+        if (tabs.length === 1) {
+          document.body.classList.add("lastTab");
+        }
+      });
+      tabEl.addEventListener("dragstart", (ev) => {
+        switchTab(id);
+        ev.dataTransfer.setData("text/plain", "");
+        ev.dataTransfer.effectAllowed = "move";
+        draggedTabId = id;
+        tabEl.classList.add("dragging");
+      });
+      tabEl.addEventListener("dragend", () => {
+        tabEl.classList.remove("dragging");
+        draggedTabId = null;
+        lastDropSide = null;
+        document.querySelectorAll(".tab")
+          .forEach((m) => m.classList.remove("tab-drop-left", "tab-drop-right", "dragging"));
+      });
+      tabEl.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        if (!draggedTabId || tabEl.classList.contains("dragging")) return;
+        let rect = tabEl.getBoundingClientRect();
+        let mid = rect.left + rect.width / 2;
+        if (ev.clientX < mid) {
+          tabEl.classList.add("tab-drop-left");
+          tabEl.classList.remove("tab-drop-right");
+          lastDropSide = "left";
         } else {
-          editorInstance.setValue(`// ${name}
+          tabEl.classList.add("tab-drop-right");
+          tabEl.classList.remove("tab-drop-left");
+          lastDropSide = "right";
+        }
+      });
+      tabEl.addEventListener("dragleave", () => {
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
+      });
+      tabEl.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        tabEl.classList.remove("tab-drop-left", "tab-drop-right");
+        if (!draggedTabId) return;
+        reorderTabsByTab(draggedTabId, id, lastDropSide);
+        lastDropSide = null;
+      });
+      titleSpan.addEventListener("dblclick", () => {
+        makeTabTitleEditable(tabObj);
+      });
+      if (content !== null) {
+        editorInstance.setValue(content);
+      } else {
+        editorInstance.setValue(`// ${name}
 console.log("This is a log");
 console.info("This is an info");
 console.warn("This is a warning");
@@ -2430,1699 +2380,1699 @@ console.warn("This is a warning");
 console.error("This is an error");
 prompt("This is a prompt:");
 `);
+      }
+      switchTab(id);
+      if (tabs.length > 1) {
+        document.body.classList.remove("lastTab");
+      } else {
+        document.body.classList.add("lastTab");
+      }
+      return id;
+    }
+    function getUniqueTabName(baseName, tabId = null) {
+      let candidate = baseName;
+      let suffix = 1;
+      while (tabs.some((t) =>
+        t.id !== tabId && t.name.toLowerCase() === candidate.toLowerCase()
+      )) {
+        candidate = baseName + `(${suffix++})`;
+      }
+      return candidate;
+    }
+    function getNextTabName() {
+      let max = 0;
+      for (let t of tabs) {
+        let match = t.name.match(/^Tab(\d+)$/);
+        if (match) {
+          let num = parseInt(match[1], 10);
+          if (num > max) max = num;
         }
-        switchTab(id);
-        if (tabs.length > 1) {
-          document.body.classList.remove("lastTab");
+      }
+      return `Tab${max + 1}`;
+    }
+    function switchTab(tabId) {
+      if (activeTabId !== null) {
+        let current = tabs.find((x) => x.id === activeTabId);
+        if (current) {
+          current.tabElement.classList.remove("active");
+          current.editorAndOutput.classList.remove("active");
+        }
+      }
+      let newTab = tabs.find((x) => x.id === tabId);
+      if (newTab) {
+        newTab.tabElement.classList.add("active");
+        newTab.editorAndOutput.classList.add("active");
+        activeTabId = tabId;
+        updateStatusPosition();
+        currentTab = newTab;
+      }
+    }
+    function closeTab(tabId) {
+      let i = tabs.findIndex((x) => x.id === tabId);
+      if (i === -1) return;
+      let obj = tabs[i];
+      if (obj.worker) {
+        obj.worker.terminate();
+        obj.worker = null;
+      }
+      obj.tabElement.remove();
+      obj.editorAndOutput.remove();
+      tabs.splice(i, 1);
+      if (activeTabId === tabId) {
+        if (tabs.length > 0) {
+          switchTab(tabs[tabs.length - 1].id);
         } else {
-          document.body.classList.add("lastTab");
-        }
-        return id;
-      }
-      function getUniqueTabName(baseName, tabId = null) {
-        let candidate = baseName;
-        let suffix = 1;
-        while (tabs.some((t) =>
-          t.id !== tabId && t.name.toLowerCase() === candidate.toLowerCase()
-        )) {
-          candidate = baseName + `(${suffix++})`;
-        }
-        return candidate;
-      }
-      function getNextTabName() {
-        let max = 0;
-        for (let t of tabs) {
-          let match = t.name.match(/^Tab(\d+)$/);
-          if (match) {
-            let num = parseInt(match[1], 10);
-            if (num > max) max = num;
-          }
-        }
-        return `Tab${max + 1}`;
-      }
-      function switchTab(tabId) {
-        if (activeTabId !== null) {
-          let current = tabs.find((x) => x.id === activeTabId);
-          if (current) {
-            current.tabElement.classList.remove("active");
-            current.editorAndOutput.classList.remove("active");
-          }
-        }
-        let newTab = tabs.find((x) => x.id === tabId);
-        if (newTab) {
-          newTab.tabElement.classList.add("active");
-          newTab.editorAndOutput.classList.add("active");
-          activeTabId = tabId;
-          updateStatusPosition();
-          currentTab = newTab;
+          activeTabId = null;
         }
       }
-      function closeTab(tabId) {
-        let i = tabs.findIndex((x) => x.id === tabId);
-        if (i === -1) return;
-        let obj = tabs[i];
-        if (obj.worker) {
-          obj.worker.terminate();
-          obj.worker = null;
-        }
-        obj.tabElement.remove();
-        obj.editorAndOutput.remove();
-        tabs.splice(i, 1);
-        if (activeTabId === tabId) {
-          if (tabs.length > 0) {
-            switchTab(tabs[tabs.length - 1].id);
-          } else {
-            activeTabId = null;
-          }
-        }
-      }
-      async function handlePrompt(message, defaultValue, tab) {
-        return new Promise((resolve) => {
-          let container = tab.outputElement;
-          let pl = document.createElement("div");
-          pl.classList.add("prompt-line", "outputContent");
-
-          let flexContainer = document.createElement("div");
-          flexContainer.classList.add("flexContainer");
-
-          let symbolDiv = document.createElement("div");
-          symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
-          symbolDiv.textContent = `[?]`;
-
-          let messageDiv = document.createElement("div");
-          messageDiv.textContent = message;
-          messageDiv.classList.add("outputItem")
-
-          flexContainer.appendChild(symbolDiv);
-          flexContainer.appendChild(messageDiv);
-          pl.appendChild(flexContainer);
-
-          let inp = document.createElement("input");
-          inp.type = "text";
-          inp.autocomplete = "off";
-          inp.classList.add("promptInput");
-          if (defaultValue) {
-            inp.value = defaultValue;
-          }
-          inp.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-              let val = inp.value.trim();
-              inp.disabled = true;
-              inp.style.border = "none";
-              inp.style.backgroundColor = "transparent";
-              if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-                let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
-                pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
-                newContainer.appendChild(pl);
-              }
-              inp.style.height = pl.clientHeight + "px";
-              let te = new TextEncoder();
-              let encoded = te.encode(val + "\0");
-              let respBuffer = new Uint8Array(tab.sharedBuffer, 4);
-              respBuffer.fill(0);
-              respBuffer.set(encoded);
-              Atomics.store(tab.view, 0, 1);
-              Atomics.notify(tab.view, 0);
-              resolve();
-            }
-          });
-          pl.appendChild(inp);
-          container.appendChild(pl);
-          inp.style.height = pl.clientHeight + "px";
-          inp.focus();
-        });
-      }
-
-      async function handleAlert(message, tab) {
-        return new Promise((resolve) => {
-          let container = tab.outputElement;
-          const alertLine = document.createElement("div");
-          alertLine.classList.add("prompt-line", "outputContent");
-
-          let flexContainer = document.createElement("div");
-          flexContainer.classList.add("flexContainer");
-
-          let symbolDiv = document.createElement("div", "symbolDiv");
-          symbolDiv.classList.add("dontAllowSelect");
-          symbolDiv.textContent = `[!]`;
-
-          let messageDiv = document.createElement("div");
-          messageDiv.textContent = message;
-          messageDiv.classList.add("outputItem")
-
-          flexContainer.appendChild(symbolDiv);
-          flexContainer.appendChild(messageDiv);
-          alertLine.appendChild(flexContainer);
-
-          const okBtn = document.createElement("button");
-          okBtn.classList.add("vs-button");
-          okBtn.style.marginLeft = "10px";
-          okBtn.textContent = "OK";
-          alertLine.appendChild(okBtn);
-
-          container.appendChild(alertLine);
-          okBtn.focus();
-          okBtn.addEventListener("click", () => {
-            Atomics.store(tab.view, 0, 1);
-            Atomics.notify(tab.view, 0);
-            if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-              let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
-              alertLine.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
-              newContainer.appendChild(alertLine);
-            }
-            appendToOutput(container, "info", message);
-            alertLine.remove();
-            resolve();
-          });
-        });
-      }
-
-
-
-
-      async function runTab() {
-        let btn = document.getElementById("runButton");
-        btn.disabled = true;
-        let tab = tabs.find((x) => x.id === currentTab.id);
-        if (!tab) {
-          btn.disabled = false;
-          return;
-        }
-        try {
-          clearConsole(tab.outputElement);
-          if (tab.worker) {
-            tab.worker.terminate();
-            tab.worker = null;
-          }
-          await cacheWorkerCode();
-          tab.groupStack = [];
-          let w;
-          if (!nextWorker) {
-            w = new Worker(workerPath);
-          } else {
-            w = nextWorker;
-            nextWorker = null;
-          }
-          tab.worker = w;
-          w.onmessage = async (e) => {
-            let type = e.data.type;
-            let msg = e.data.message;
-
-            if (!currentTab.groupStack) {
-              currentTab.groupStack = [];
-            }
-
-            if (type === "group") {
-              const details = document.createElement("details");
-              details.open = !e.data.collapsed;
-              const summary = document.createElement("summary");
-              summary.style.display = "-webkit-box"
-              if (typeof msg === "string") {
-                summary.textContent = msg;
-              } else if (typeof msg === "object") {
-                let actualMsg = "";
-                let subMsgDiv
-                for (let key in msg) {
-                  subMsgDiv = document.createElement("div");
-                  if (msg[key][1]) {
-                    subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
-                    subMsgDiv.style.marginRight = "8px";
-                    summary.appendChild(subMsgDiv);
-                  } else {
-                    subMsgDiv = document.createElement("div");
-                    subMsgDiv.style.marginRight = "8px";
-                    subMsgDiv.innerText = msg[key][0]
-                    summary.appendChild(subMsgDiv);
-                  }
-                }
-              }
-              details.appendChild(summary);
-              let parentContainer = currentTab.groupStack.length > 0 ?
-                currentTab.groupStack[currentTab.groupStack.length - 1] :
-                currentTab.outputElement;
-              parentContainer.appendChild(details);
-              const groupLevel = currentTab.groupStack.length;
-              details.style.marginLeft = groupLevel ? "20px" : "4px";
-              currentTab.groupStack.push(details);
-            }
-            else if (type === "groupEnd") {
-              if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-                currentTab.groupStack.pop();
-              }
-            }
-
-            else if (type === "prompt") {
-              await handlePrompt(msg, e.data.default, tab);
-            }
-            else if (type === "alert") {
-              await handleAlert(msg, tab);
-            }
-            else if (type === "clear") {
-              clearConsole(tab.outputElement);
-            }
-            else if (type === "table") {
-              appendTable(tab.outputElement, e.data, msg);
-            }
-            else if (["log", "error", "warn", "info"].includes(type)) {
-              const isForce = e.data.forceUse;
-              appendToOutput(tab.outputElement, type, msg, isForce);
-            }
-            else if (type === "dir") {
-              appendDir(tab.outputElement, msg);
-            }
-          }
-
-          w.onerror = (err) => {
-            appendToOutput(tab.outputElement, "error", err.message);
-            if (flexSwitchCheckDefault.checked) {
-              appendToOutput(tab.outputElement, "log",
-                "The script has finished running with exit code 1.", true);
-            }
-          };
-          let code = tab.editorInstance.getValue();
-          w.postMessage({
-            type: "execute",
-            code,
-            sharedBuffer: tab.sharedBuffer,
-            flexSwitchCheckDefault: flexSwitchCheckDefault.checked
-          });
-        }
-        catch (ex) {
-          appendToOutput(tab.outputElement, "error", ex.message);
-          appendToOutput(tab.outputElement, "log",
-            "The script has finished running with exit code 1.", true);
-        }
-        btn.disabled = false;
-        nextWorker = new Worker(workerPath);
-      }
-      function clearConsole(outputDiv) {
-        outputDiv.innerHTML = "";
-      }
-
-      function appendDir(outputDiv, obj) {
-        let container = outputDiv;
-        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-          container = currentTab.groupStack[currentTab.groupStack.length - 1];
-        }
-        let line = document.createElement("div");
-        line.classList.add("outputContent");
-        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        line.style.marginLeft = groupLevel ? "20px" : "4px";
-        let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
-        line.classList.add(styleClass);
-        line.innerHTML = obj;
-        container.appendChild(line);
-        container.scrollTop = container.scrollHeight;
-      }
-
-      function escapeHtmlVisible(text) {
-        return text.replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;')
-          .replace(/\n/g, '\\n');
-      }
-
-
-
-      function lazyRenderTreeNode(key, tree) {
-        if (typeof tree !== 'object' || tree === null) {
-          const div = document.createElement('div');
-          let content = '';
-          if (typeof tree === 'string') {
-            content = `<span class="objinsp objinsp-highlight-string">${escapeHtmlVisible(tree)}</span>`;
-          } else if (typeof tree === 'number') {
-            content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
-          } else {
-            content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
-          }
-          if (key !== null && key !== undefined) {
-
-            div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
-          } else {
-            div.innerHTML = content;
-          }
-          return div;
-        }
-
-        let summaryText = "";
-        let childrenTree = null;
-        if (key !== null) {
-          summaryText = key;
-          childrenTree = tree;
-        } else {
-          const keys = Object.keys(tree);
-          if (keys.length > 0) {
-            summaryText = keys[0];
-            childrenTree = tree[keys[0]];
-          } else {
-            summaryText = "{}";
-            childrenTree = {};
-          }
-        }
-        if (key && summaryText.includes(":")) {
-          const both = summaryText.split(":");
-          summaryText = both[0];
-          summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
-        }
-        const detailsEl = document.createElement('details');
-        detailsEl.setAttribute('data-loaded', 'false');
-        const summaryEl = document.createElement('summary');
-        summaryEl.className = 'objinsp objinsp-summary';
-        summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
-        detailsEl.appendChild(summaryEl);
-
-        detailsEl.addEventListener('toggle', function () {
-          if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
-            const container = document.createElement('div');
-            container.className = 'objinsp-node';
-            const childKeys = Object.keys(childrenTree);
-            childKeys.forEach(function (childKey) {
-              const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
-              container.appendChild(childNode);
-            });
-            detailsEl.appendChild(container);
-            detailsEl.setAttribute('data-loaded', 'true');
-          }
-        });
-        return detailsEl;
-      }
-
-      function gotoLine(lineNumber) {
-        const model = currentTab.editorInstance.getModel();
-        if (lineNumber > model.getLineCount()) {
-          return;
-        }
-        const column = model.getLineMaxColumn(lineNumber);
-        currentTab.editorInstance.setPosition({ lineNumber, column });
-        currentTab.editorInstance.revealLineInCenter(lineNumber);
-        currentTab.editorInstance.focus();
-      }
-      const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
-
-      function appendToOutput(outputDiv, type, message, forceUse = false) {
-        let container = outputDiv;
-        if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
-          container = currentTab.groupStack[currentTab.groupStack.length - 1];
-        }
-        let line = document.createElement("div");
-        line.classList.add("outputContent");
-        var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        if (forceUse) {
-          groupLevel = 0;
-        }
-        line.style.marginLeft = groupLevel ? "20px" : "4px";
-        line.classList.add(type);
+    }
+    async function handlePrompt(message, defaultValue, tab) {
+      return new Promise((resolve) => {
+        let container = tab.outputElement;
+        let pl = document.createElement("div");
+        pl.classList.add("prompt-line", "outputContent");
 
         let flexContainer = document.createElement("div");
         flexContainer.classList.add("flexContainer");
 
         let symbolDiv = document.createElement("div");
         symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
-
-        symbolDiv.textContent = `[${symbolsMap[type]}]`;
+        symbolDiv.textContent = `[?]`;
 
         let messageDiv = document.createElement("div");
-        messageDiv.classList.add("outputItem");
-        if (type === "error" && forceUse) {
-          const lines = message.split("\n");
-          messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
-          const matches = message.match(/\(js:\d+\)/g);
-          if (matches) {
-            matches.forEach(match => {
-              const lineNumber = parseInt(match.match(/\d+/)[0]);
-              messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
-            });
-          }
-        }
-        else if (typeof message === "object") {
-          let actualMsg = "";
-          let subMsgDiv
-          for (let key in message) {
-            subMsgDiv = document.createElement("div");
-            if (message[key][1]) {
-              subMsgDiv = lazyRenderTreeNode(null, message[key][0])
-              subMsgDiv.style.marginRight = "8px";
-              messageDiv.appendChild(subMsgDiv);
-            } else {
-              subMsgDiv = document.createElement("div");
-              subMsgDiv.style.marginRight = "8px";
-              subMsgDiv.innerText = message[key][0]
-              messageDiv.appendChild(subMsgDiv);
-            }
-          }
-        } else {
-          messageDiv.textContent = message;
-        }
+        messageDiv.textContent = message;
+        messageDiv.classList.add("outputItem")
 
         flexContainer.appendChild(symbolDiv);
         flexContainer.appendChild(messageDiv);
-        line.appendChild(flexContainer);
+        pl.appendChild(flexContainer);
 
-        container.appendChild(line);
-        container.scrollTop = container.scrollHeight;
+        let inp = document.createElement("input");
+        inp.type = "text";
+        inp.autocomplete = "off";
+        inp.classList.add("promptInput");
+        if (defaultValue) {
+          inp.value = defaultValue;
+        }
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            let val = inp.value.trim();
+            inp.disabled = true;
+            inp.style.border = "none";
+            inp.style.backgroundColor = "transparent";
+            if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+              let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+              pl.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
+              newContainer.appendChild(pl);
+            }
+            inp.style.height = pl.clientHeight + "px";
+            let te = new TextEncoder();
+            let encoded = te.encode(val + "\0");
+            let respBuffer = new Uint8Array(tab.sharedBuffer, 4);
+            respBuffer.fill(0);
+            respBuffer.set(encoded);
+            Atomics.store(tab.view, 0, 1);
+            Atomics.notify(tab.view, 0);
+            resolve();
+          }
+        });
+        pl.appendChild(inp);
+        container.appendChild(pl);
+        inp.style.height = pl.clientHeight + "px";
+        inp.focus();
+      });
+    }
+
+    async function handleAlert(message, tab) {
+      return new Promise((resolve) => {
+        let container = tab.outputElement;
+        const alertLine = document.createElement("div");
+        alertLine.classList.add("prompt-line", "outputContent");
+
+        let flexContainer = document.createElement("div");
+        flexContainer.classList.add("flexContainer");
+
+        let symbolDiv = document.createElement("div", "symbolDiv");
+        symbolDiv.classList.add("dontAllowSelect");
+        symbolDiv.textContent = `[!]`;
+
+        let messageDiv = document.createElement("div");
+        messageDiv.textContent = message;
+        messageDiv.classList.add("outputItem")
+
+        flexContainer.appendChild(symbolDiv);
+        flexContainer.appendChild(messageDiv);
+        alertLine.appendChild(flexContainer);
+
+        const okBtn = document.createElement("button");
+        okBtn.classList.add("vs-button");
+        okBtn.style.marginLeft = "10px";
+        okBtn.textContent = "OK";
+        alertLine.appendChild(okBtn);
+
+        container.appendChild(alertLine);
+        okBtn.focus();
+        okBtn.addEventListener("click", () => {
+          Atomics.store(tab.view, 0, 1);
+          Atomics.notify(tab.view, 0);
+          if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+            let newContainer = currentTab.groupStack[currentTab.groupStack.length - 1];
+            alertLine.style.marginLeft = (currentTab.groupStack.length * 20) + "px";
+            newContainer.appendChild(alertLine);
+          }
+          appendToOutput(container, "info", message);
+          alertLine.remove();
+          resolve();
+        });
+      });
+    }
+
+
+
+
+    async function runTab() {
+      let btn = document.getElementById("runButton");
+      btn.disabled = true;
+      let tab = tabs.find((x) => x.id === currentTab.id);
+      if (!tab) {
+        btn.disabled = false;
+        return;
+      }
+      try {
+        clearConsole(tab.outputElement);
+        if (tab.worker) {
+          tab.worker.terminate();
+          tab.worker = null;
+        }
+        await cacheWorkerCode();
+        tab.groupStack = [];
+        let w;
+        if (!nextWorker) {
+          w = new Worker(workerPath);
+        } else {
+          w = nextWorker;
+          nextWorker = null;
+        }
+        tab.worker = w;
+        w.onmessage = async (e) => {
+          let type = e.data.type;
+          let msg = e.data.message;
+
+          if (!currentTab.groupStack) {
+            currentTab.groupStack = [];
+          }
+
+          if (type === "group") {
+            const details = document.createElement("details");
+            details.open = !e.data.collapsed;
+            const summary = document.createElement("summary");
+            summary.style.display = "-webkit-box"
+            if (typeof msg === "string") {
+              summary.textContent = msg;
+            } else if (typeof msg === "object") {
+              let actualMsg = "";
+              let subMsgDiv
+              for (let key in msg) {
+                subMsgDiv = document.createElement("div");
+                if (msg[key][1]) {
+                  subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+                  subMsgDiv.style.marginRight = "8px";
+                  summary.appendChild(subMsgDiv);
+                } else {
+                  subMsgDiv = document.createElement("div");
+                  subMsgDiv.style.marginRight = "8px";
+                  subMsgDiv.innerText = msg[key][0]
+                  summary.appendChild(subMsgDiv);
+                }
+              }
+            }
+            details.appendChild(summary);
+            let parentContainer = currentTab.groupStack.length > 0 ?
+              currentTab.groupStack[currentTab.groupStack.length - 1] :
+              currentTab.outputElement;
+            parentContainer.appendChild(details);
+            const groupLevel = currentTab.groupStack.length;
+            details.style.marginLeft = groupLevel ? "20px" : "4px";
+            currentTab.groupStack.push(details);
+          }
+          else if (type === "groupEnd") {
+            if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+              currentTab.groupStack.pop();
+            }
+          }
+
+          else if (type === "prompt") {
+            await handlePrompt(msg, e.data.default, tab);
+          }
+          else if (type === "alert") {
+            await handleAlert(msg, tab);
+          }
+          else if (type === "clear") {
+            clearConsole(tab.outputElement);
+          }
+          else if (type === "table") {
+            appendTable(tab.outputElement, e.data, msg);
+          }
+          else if (["log", "error", "warn", "info"].includes(type)) {
+            const isForce = e.data.forceUse;
+            appendToOutput(tab.outputElement, type, msg, isForce);
+          }
+          else if (type === "dir") {
+            appendDir(tab.outputElement, msg);
+          }
+        }
+
+        w.onerror = (err) => {
+          appendToOutput(tab.outputElement, "error", err.message);
+          if (flexSwitchCheckDefault.checked) {
+            appendToOutput(tab.outputElement, "log",
+              "The script has finished running with exit code 1.", true);
+          }
+        };
+        let code = tab.editorInstance.getValue();
+        w.postMessage({
+          type: "execute",
+          code,
+          sharedBuffer: tab.sharedBuffer,
+          flexSwitchCheckDefault: flexSwitchCheckDefault.checked
+        });
+      }
+      catch (ex) {
+        appendToOutput(tab.outputElement, "error", ex.message);
+        appendToOutput(tab.outputElement, "log",
+          "The script has finished running with exit code 1.", true);
+      }
+      btn.disabled = false;
+      nextWorker = new Worker(workerPath);
+    }
+    function clearConsole(outputDiv) {
+      outputDiv.innerHTML = "";
+    }
+
+    function appendDir(outputDiv, obj) {
+      let container = outputDiv;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
+      let line = document.createElement("div");
+      line.classList.add("outputContent");
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let styleClass = (darkModeFlag ? "dark-" : "light-") + "log";
+      line.classList.add(styleClass);
+      line.innerHTML = obj;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtmlVisible(text) {
+      return text.replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+        .replace(/\n/g, '\\n');
+    }
+
+
+
+    function lazyRenderTreeNode(key, tree) {
+      if (typeof tree !== 'object' || tree === null) {
+        const div = document.createElement('div');
+        let content = '';
+        if (typeof tree === 'string') {
+          content = `<span class="objinsp objinsp-highlight-string">${escapeHtmlVisible(tree)}</span>`;
+        } else if (typeof tree === 'number') {
+          content = `<span class="objinsp objinsp-highlight-number">${tree}</span>`;
+        } else {
+          content = `<span class="objinsp objinsp-highlight-primitive">${tree}</span>`;
+        }
+        if (key !== null && key !== undefined) {
+
+          div.innerHTML = `<div class="objinsp"><span class="objinsp-highlight-key"> ${key}: </span>${content}</div>`;
+        } else {
+          div.innerHTML = content;
+        }
+        return div;
       }
 
-
-      function appendTable(outputElement, tableInfo, msg) {
-        let container = outputElement;
-        if (currentTab.groupStack && currentTab.groupStack.length > 0) {
-          container = currentTab.groupStack[currentTab.groupStack.length - 1];
-        }
-
-        let tableData, headerOrder;
-        if (
-          tableInfo.table &&
-          typeof tableInfo.table === "object" &&
-          "tableData" in tableInfo.table &&
-          "headerOrder" in tableInfo.table
-        ) {
-          tableData = tableInfo.table.tableData;
-          headerOrder = tableInfo.table.headerOrder;
-        } else if (tableInfo.table && typeof tableInfo.table === "object") {
-          tableData = tableInfo.table;
-          headerOrder = Object.keys(tableData);
-          headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
+      let summaryText = "";
+      let childrenTree = null;
+      if (key !== null) {
+        summaryText = key;
+        childrenTree = tree;
+      } else {
+        const keys = Object.keys(tree);
+        if (keys.length > 0) {
+          summaryText = keys[0];
+          childrenTree = tree[keys[0]];
         } else {
-          appendToOutput(container, "error", "Invalid table data received.");
-          return;
+          summaryText = "{}";
+          childrenTree = {};
         }
+      }
+      if (key && summaryText.includes(":")) {
+        const both = summaryText.split(":");
+        summaryText = both[0];
+        summaryText += `:<span class="objinsp objinsp-highlight-value">${both[1]}</span>`;
+      }
+      const detailsEl = document.createElement('details');
+      detailsEl.setAttribute('data-loaded', 'false');
+      const summaryEl = document.createElement('summary');
+      summaryEl.className = 'objinsp objinsp-summary';
+      summaryEl.innerHTML = `<span class="objinsp objinsp-highlight-type">${summaryText}</span>`;
+      detailsEl.appendChild(summaryEl);
 
-        if (
-          !tableData ||
-          !Array.isArray(tableData["(index)"]) ||
-          headerOrder.length === 0 ||
-          tableData["(index)"].length === 0
-        ) {
-          appendToOutput(container, "log", "");
-          return;
-        }
-
-        const rowCount = tableData["(index)"].length;
-        const div = document.createElement("div");
-        div.classList.add("outputContent");
-        const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-        div.style.marginLeft = groupLevel ? "20px" : "4px";
-
-        const table = document.createElement("table");
-        table.classList.add("console-table");
-
-        const thead = document.createElement("thead");
-        const headRow = document.createElement("tr");
-        headRow.classList.add("console-table-row");
-        headerOrder.forEach(col => {
-          const th = document.createElement("th");
-          th.classList.add("console-table-header");
-          th.textContent = col;
-          headRow.appendChild(th);
-        });
-        thead.appendChild(headRow);
-        table.appendChild(thead);
-
-        const tbody = document.createElement("tbody");
-        for (let i = 0; i < rowCount; i++) {
-          const tr = document.createElement("tr");
-          tr.classList.add("console-table-row");
-          headerOrder.forEach(col => {
-            const td = document.createElement("td");
-            td.classList.add("console-table-data");
-
-            let value = tableData[col] && tableData[col][i];
-            if (typeof value === "object" && value !== null) {
-              if (Array.isArray(value)) {
-                td.textContent = `[Array(${value.length})]`;
-              } else if (value === "[Circular]") {
-                td.textContent = "{…}";
-              } else {
-                const expandable = document.createElement("span");
-                expandable.classList.add("expandable");
-                expandable.textContent = "{…}";
-                expandable.style.cursor = "pointer";
-                expandable.addEventListener("click", () => {
-                  if (expandable.classList.contains("expanded")) {
-                    expandable.classList.remove("expanded");
-                    const details = td.querySelector(".expandable-details");
-                    if (details) details.remove();
-                  } else {
-                    expandable.classList.add("expanded");
-                    const details = document.createElement("div");
-                    details.classList.add("expandable-details");
-                    details.style.marginTop = "4px";
-                    details.style.marginLeft = "20px";
-                    details.innerHTML = objectToHTML(value, 1);
-                    td.appendChild(details);
-                  }
-                });
-                td.appendChild(expandable);
-              }
-            } else if (typeof value === "function") {
-              td.textContent = value;
-            } else {
-              td.textContent = (value === "undefined") ? "undefined" : String(value);
-            }
-            tr.appendChild(td);
+      detailsEl.addEventListener('toggle', function () {
+        if (detailsEl.open && detailsEl.getAttribute('data-loaded') === 'false') {
+          const container = document.createElement('div');
+          container.className = 'objinsp-node';
+          const childKeys = Object.keys(childrenTree);
+          childKeys.forEach(function (childKey) {
+            const childNode = lazyRenderTreeNode(childKey, childrenTree[childKey]);
+            container.appendChild(childNode);
           });
-          tbody.appendChild(tr);
+          detailsEl.appendChild(container);
+          detailsEl.setAttribute('data-loaded', 'true');
         }
-        table.appendChild(tbody);
+      });
+      return detailsEl;
+    }
 
-        const symbolDiv = document.createElement("div");
-        symbolDiv.classList.add("dontAllowSelect");
-        symbolDiv.innerHTML = "[>]";
-        table.style.marginLeft = "7px";
-        symbolDiv.style.marginTop = "7px";
-        div.appendChild(symbolDiv);
-        const wrapBoth = document.createElement("div");
-        wrapBoth.style.display = "block"
-        wrapBoth.style.width = "100%"
-        const wrapTable = document.createElement("div");
-        wrapTable.style.display = "flex";
-        wrapTable.appendChild(table);
-        wrapBoth.style.width = "100%";
-        wrapBoth.appendChild(wrapTable);
-        div.appendChild(wrapBoth);
+    function gotoLine(lineNumber) {
+      const model = currentTab.editorInstance.getModel();
+      if (lineNumber > model.getLineCount()) {
+        return;
+      }
+      const column = model.getLineMaxColumn(lineNumber);
+      currentTab.editorInstance.setPosition({ lineNumber, column });
+      currentTab.editorInstance.revealLineInCenter(lineNumber);
+      currentTab.editorInstance.focus();
+    }
+    const symbolsMap = { log: ">", error: "x", warn: "!", info: "i", prompt: "?" };
+
+    function appendToOutput(outputDiv, type, message, forceUse = false) {
+      let container = outputDiv;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
+      let line = document.createElement("div");
+      line.classList.add("outputContent");
+      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      if (forceUse) {
+        groupLevel = 0;
+      }
+      line.style.marginLeft = groupLevel ? "20px" : "4px";
+      line.classList.add(type);
+
+      let flexContainer = document.createElement("div");
+      flexContainer.classList.add("flexContainer");
+
+      let symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
+
+      symbolDiv.textContent = `[${symbolsMap[type]}]`;
+
+      let messageDiv = document.createElement("div");
+      messageDiv.classList.add("outputItem");
+      if (type === "error" && forceUse) {
+        const lines = message.split("\n");
+        messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
+        const matches = message.match(/\(js:\d+\)/g);
+        if (matches) {
+          matches.forEach(match => {
+            const lineNumber = parseInt(match.match(/\d+/)[0]);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
+          });
+        }
+      }
+      else if (typeof message === "object") {
         let actualMsg = "";
         let subMsgDiv
-        for (let key in msg) {
+        for (let key in message) {
           subMsgDiv = document.createElement("div");
-          if (msg[key][1]) {
-            subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+          if (message[key][1]) {
+            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
             subMsgDiv.style.marginRight = "8px";
-            wrapBoth.appendChild(subMsgDiv);
+            messageDiv.appendChild(subMsgDiv);
           } else {
             subMsgDiv = document.createElement("div");
             subMsgDiv.style.marginRight = "8px";
-            subMsgDiv.innerText = msg[key][0]
-            wrapBoth.appendChild(subMsgDiv);
+            subMsgDiv.innerText = message[key][0]
+            messageDiv.appendChild(subMsgDiv);
           }
         }
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
+      } else {
+        messageDiv.textContent = message;
       }
 
+      flexContainer.appendChild(symbolDiv);
+      flexContainer.appendChild(messageDiv);
+      line.appendChild(flexContainer);
 
-      function objectToHTML(obj, level = 0) {
-        if (obj === null) {
-          return `<span style="opacity:0.7;">null</span>`;
+      container.appendChild(line);
+      container.scrollTop = container.scrollHeight;
+    }
+
+
+    function appendTable(outputElement, tableInfo, msg) {
+      let container = outputElement;
+      if (currentTab.groupStack && currentTab.groupStack.length > 0) {
+        container = currentTab.groupStack[currentTab.groupStack.length - 1];
+      }
+
+      let tableData, headerOrder;
+      if (
+        tableInfo.table &&
+        typeof tableInfo.table === "object" &&
+        "tableData" in tableInfo.table &&
+        "headerOrder" in tableInfo.table
+      ) {
+        tableData = tableInfo.table.tableData;
+        headerOrder = tableInfo.table.headerOrder;
+      } else if (tableInfo.table && typeof tableInfo.table === "object") {
+        tableData = tableInfo.table;
+        headerOrder = Object.keys(tableData);
+        headerOrder.sort((a, b) => (a === "(index)" ? -1 : b === "(index)" ? 1 : 0));
+      } else {
+        appendToOutput(container, "error", "Invalid table data received.");
+        return;
+      }
+
+      if (
+        !tableData ||
+        !Array.isArray(tableData["(index)"]) ||
+        headerOrder.length === 0 ||
+        tableData["(index)"].length === 0
+      ) {
+        appendToOutput(container, "log", "");
+        return;
+      }
+
+      const rowCount = tableData["(index)"].length;
+      const div = document.createElement("div");
+      div.classList.add("outputContent");
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      div.style.marginLeft = groupLevel ? "20px" : "4px";
+
+      const table = document.createElement("table");
+      table.classList.add("console-table");
+
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      headRow.classList.add("console-table-row");
+      headerOrder.forEach(col => {
+        const th = document.createElement("th");
+        th.classList.add("console-table-header");
+        th.textContent = col;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+      for (let i = 0; i < rowCount; i++) {
+        const tr = document.createElement("tr");
+        tr.classList.add("console-table-row");
+        headerOrder.forEach(col => {
+          const td = document.createElement("td");
+          td.classList.add("console-table-data");
+
+          let value = tableData[col] && tableData[col][i];
+          if (typeof value === "object" && value !== null) {
+            if (Array.isArray(value)) {
+              td.textContent = `[Array(${value.length})]`;
+            } else if (value === "[Circular]") {
+              td.textContent = "{…}";
+            } else {
+              const expandable = document.createElement("span");
+              expandable.classList.add("expandable");
+              expandable.textContent = "{…}";
+              expandable.style.cursor = "pointer";
+              expandable.addEventListener("click", () => {
+                if (expandable.classList.contains("expanded")) {
+                  expandable.classList.remove("expanded");
+                  const details = td.querySelector(".expandable-details");
+                  if (details) details.remove();
+                } else {
+                  expandable.classList.add("expanded");
+                  const details = document.createElement("div");
+                  details.classList.add("expandable-details");
+                  details.style.marginTop = "4px";
+                  details.style.marginLeft = "20px";
+                  details.innerHTML = objectToHTML(value, 1);
+                  td.appendChild(details);
+                }
+              });
+              td.appendChild(expandable);
+            }
+          } else if (typeof value === "function") {
+            td.textContent = value;
+          } else {
+            td.textContent = (value === "undefined") ? "undefined" : String(value);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+
+      const symbolDiv = document.createElement("div");
+      symbolDiv.classList.add("dontAllowSelect");
+      symbolDiv.innerHTML = "[>]";
+      table.style.marginLeft = "7px";
+      symbolDiv.style.marginTop = "7px";
+      div.appendChild(symbolDiv);
+      const wrapBoth = document.createElement("div");
+      wrapBoth.style.display = "block"
+      wrapBoth.style.width = "100%"
+      const wrapTable = document.createElement("div");
+      wrapTable.style.display = "flex";
+      wrapTable.appendChild(table);
+      wrapBoth.style.width = "100%";
+      wrapBoth.appendChild(wrapTable);
+      div.appendChild(wrapBoth);
+      let actualMsg = "";
+      let subMsgDiv
+      for (let key in msg) {
+        subMsgDiv = document.createElement("div");
+        if (msg[key][1]) {
+          subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+          subMsgDiv.style.marginRight = "8px";
+          wrapBoth.appendChild(subMsgDiv);
+        } else {
+          subMsgDiv = document.createElement("div");
+          subMsgDiv.style.marginRight = "8px";
+          subMsgDiv.innerText = msg[key][0]
+          wrapBoth.appendChild(subMsgDiv);
         }
-        if (typeof obj !== "object") {
-          return `<span>${escapeHtml(String(obj))}</span>`;
-        }
-        if (Array.isArray(obj)) {
-          let html = `<details open style="margin-left:${level * 20}px;">`;
-          html += `<summary>Array(${obj.length})</summary>`;
-          obj.forEach((value, i) => {
-            html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
-          });
-          html += `</details>`;
-          return html;
-        }
-        const keys = Object.keys(obj);
+      }
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+
+    function objectToHTML(obj, level = 0) {
+      if (obj === null) {
+        return `<span style="opacity:0.7;">null</span>`;
+      }
+      if (typeof obj !== "object") {
+        return `<span>${escapeHtml(String(obj))}</span>`;
+      }
+      if (Array.isArray(obj)) {
         let html = `<details open style="margin-left:${level * 20}px;">`;
-        html += `<summary>Object {${keys.length} keys}</summary>`;
-        keys.forEach((key) => {
-          html += `<div style="margin-left:${(level + 1) * 20}px;">
-          <strong>${escapeHtml(key)}</strong>:
-          ${objectToHTML(obj[key], level + 1)}
-        </div>`;
+        html += `<summary>Array(${obj.length})</summary>`;
+        obj.forEach((value, i) => {
+          html += `<div style="margin-left:${(level + 1) * 20}px;">[${i}] => ${objectToHTML(value, level + 1)}</div>`;
         });
         html += `</details>`;
         return html;
       }
-      function escapeHtml(str) {
-        return str
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-      require.config({
-        paths: {
-          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs"
-        }
+      const keys = Object.keys(obj);
+      let html = `<details open style="margin-left:${level * 20}px;">`;
+      html += `<summary>Object {${keys.length} keys}</summary>`;
+      keys.forEach((key) => {
+        html += `<div style="margin-left:${(level + 1) * 20}px;">
+          <strong>${escapeHtml(key)}</strong>:
+          ${objectToHTML(obj[key], level + 1)}
+        </div>`;
       });
-      window.MonacoEnvironment = {
-        getWorkerUrl: function () {
-          return "data:text/javascript;charset=utf-8," + encodeURIComponent(`
+      html += `</details>`;
+      return html;
+    }
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+    require.config({
+      paths: {
+        vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs"
+      }
+    });
+    window.MonacoEnvironment = {
+      getWorkerUrl: function () {
+        return "data:text/javascript;charset=utf-8," + encodeURIComponent(`
           self.MonacoEnvironment={baseUrl:'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/'};
           importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/base/worker/workerMain.js');
         `);
-        }
-      };
-      async function cacheWorkerCode() {
-        if (!workerBlobURL) {
-          let resp = await fetch(workerPath);
-          let code = await resp.text();
-          let blob = new Blob([code], { type: "application/javascript" });
-          workerBlobURL = URL.createObjectURL(blob);
-        }
       }
-      require(["vs/editor/editor.main"], function () {
-        monaco.languages.setMonarchTokensProvider('javascript', {
-          defaultToken: 'invalid',
-          tokenPostfix: '.js',
-
-          keywords: [
-            'break', 'case', 'catch', 'class', 'continue', 'debugger',
-            'default', 'do', 'else', 'export', 'extends', 'finally',
-            'for', 'from', 'get', 'if', 'import', 'in', 'set', 'super',
-            'switch', 'symbol', 'this', 'throw', 'try', 'while', 'with',
-            'yield', 'await', 'of'
-          ],
-
-          specialKeywords: [
-            'let', 'const', 'var', 'function',
-            'null', 'undefined', 'true', 'false', 'void', 'typeof',
-            'new', 'delete', 'instanceof'
-          ],
-
-          typeKeywords: [
-            'any', 'boolean', 'number', 'object', 'string', 'undefined'
-          ],
-
-          operators: [
-            '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**',
-            '*', '/', '%', '++', '--', '<<', '</', '>>', '>>>', '&',
-            '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=',
-            '*=', '**=', '/=', '%=', '<<=', '>>=', '>>>=', '&=', '|=',
-            '^=', '@'
-          ],
-
-          symbols: /[=><!~?:&|+\-*\/\^%]+/,
-          escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
-          digits: /\d+(_+\d+)*/,
-          octaldigits: /[0-7]+(_+[0-7]+)*/,
-          binarydigits: /[0-1]+(_+[0-1]+)*/,
-          hexdigits: /[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
-          regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
-          regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
-
-          tokenizer: {
-            root: [
-              [/[{}]/, 'delimiter.bracket'],
-              { include: 'common' }
-            ],
-
-            common: [
-              [/=>/, 'arrow'],
-
-              [/\basync(?=\s+function\b)/, 'special.keyword'],
-
-              [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
-              [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
-              [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
-
-              [/[a-z_$][\w$]*/, {
-                cases: {
-                  '@specialKeywords': 'special.keyword',
-                  '@keywords': 'keyword',
-                  '@typeKeywords': 'keyword',
-                  '@default': 'identifier'
-                }
-              }],
-              [/[A-Z][\w\$]*/, 'type.identifier'],
-
-              { include: '@whitespace' },
-
-              [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
-
-              [/[()\[\]]/, '@brackets'],
-              [/[<>](?!@symbols)/, '@brackets'],
-              [/@symbols/, {
-                cases: {
-                  '@operators': 'delimiter',
-                  '@default': ''
-                }
-              }],
-
-              [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
-              [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
-              [/0[xX](@hexdigits)/, 'number.hex'],
-              [/0[oO]?(@octaldigits)/, 'number.octal'],
-              [/0[bB](@binarydigits)/, 'number.binary'],
-              [/(@digits)/, 'number'],
-
-              [/[;,.]/, 'delimiter'],
-
-              [/"([^"\\]|\\.)*$/, 'string.invalid'],
-              [/'([^'\\]|\\.)*$/, 'string.invalid'],
-              [/"/, 'string', '@string_double'],
-              [/'/, 'string', '@string_single'],
-              [/`/, 'string', '@string_backtick']
-            ],
-
-            whitespace: [
-              [/[ \t\r\n]+/, ''],
-              [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
-              [/\/\*/, 'comment', '@comment'],
-              [/\/\/.*$/, 'comment']
-            ],
-
-            comment: [
-              [/[^\/*]+/, 'comment'],
-              [/\*\//, 'comment', '@pop'],
-              [/[\/*]/, 'comment']
-            ],
-
-            jsdoc: [
-              [/[^\/*]+/, 'comment.doc'],
-              [/\*\//, 'comment.doc', '@pop'],
-              [/[\/*]/, 'comment.doc']
-            ],
-
-            regexp: [
-              [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
-              [/(\[)(\^?)(?=(?:[^\]\\\/]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
-              [/(\()(\?:|\?=|\?!)/, ['regexp.escape.control', 'regexp.escape.control']],
-              [/[()]/, 'regexp.escape.control'],
-              [/@regexpctl/, 'regexp.escape.control'],
-              [/[^\\\/]/, 'regexp'],
-              [/@regexpesc/, 'regexp.escape'],
-              [/\\\./, 'regexp.invalid'],
-              [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']]
-            ],
-
-            regexrange: [
-              [/-/, 'regexp.escape.control'],
-              [/\^/, 'regexp.invalid'],
-              [/@regexpesc/, 'regexp.escape'],
-              [/[^\]]/, 'regexp'],
-              [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
-            ],
-
-            string_double: [
-              [/[^\\"]+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/"/, 'string', '@pop']
-            ],
-
-            string_single: [
-              [/[^\\']+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/'/, 'string', '@pop']
-            ],
-
-            string_backtick: [
-              [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
-              [/[^\\`$]+/, 'string'],
-              [/@escapes/, 'string.escape'],
-              [/\\./, 'string.escape.invalid'],
-              [/`/, 'string', '@pop']
-            ],
-
-            bracketCounting: [
-              [/\{/, 'delimiter.bracket', '@bracketCounting'],
-              [/\}/, 'delimiter.bracket', '@pop'],
-              { include: 'common' }
-            ]
-          }
-        });
-
-        monaco.editor.defineTheme('custom-dark', {
-          base: 'vs-dark',
-          inherit: true,
-          rules: [
-            { token: 'special.keyword', foreground: '569cd6' },
-            { token: 'keyword', foreground: 'c586c0' },
-            { token: 'identifier', foreground: '9CDCFE' },
-            { token: 'delimiter', foreground: 'D4D4D4' },
-            { token: 'operator', foreground: 'D4D4D4' },
-            { token: 'method', foreground: 'dcdcaa' },
-            { token: 'attribute', foreground: '9cdcfe' },
-            { token: 'arrow', foreground: '569cd6' },
-            { token: 'type.identifier', foreground: '4EC9B0' },
-            { token: 'function', foreground: 'dcdcaa' },
-            { token: 'comment', foreground: '6A9955' },
-            { token: 'string', foreground: 'CE9178' },
-            { token: 'number', foreground: 'B5CEA8' },
-            { token: 'regexp', foreground: 'D16969' },
-            { token: 'string.escape', foreground: 'd7ba7d' },
-            { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
-            { token: 'string.escape.js', foreground: 'd7ba7d' },
-          ],
-          colors: {
-            'editor.background': '#1E1E1E'
-          }
-        });
-
-        monaco.editor.defineTheme('custom-light', {
-          base: 'vs',
-          inherit: true,
-          rules: [
-            { token: 'special.keyword', foreground: '0000FF' },
-            { token: 'keyword', foreground: 'af00db' },
-            { token: 'identifier', foreground: '0070c1' },
-            { token: 'attribute', foreground: '001080' },
-            { token: 'delimiter', foreground: '000000' },
-            { token: 'operator', foreground: '000000' },
-            { token: 'arrow', foreground: '0000FF' },
-            { token: 'method', foreground: '795e26' },
-            { token: 'function', foreground: '795e26' },
-            { token: 'type.identifier', foreground: '267f99' },
-            { token: 'comment', foreground: '008000' },
-            { token: 'string', foreground: 'a31515' },
-            { token: 'string.escape', foreground: 'a31515' },
-            { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
-            { token: 'string.escape.js', foreground: 'ee0000' },
-            { token: 'number', foreground: '098658' },
-            { token: 'regexp', foreground: 'd16969' }
-          ],
-          colors: {
-            'editor.background': '#ffffff',
-            'editor.foreground': '#333333'
-          }
-        });
-        loadSettings();
-        createTab();
-      });
-
-      function updateStatusPosition() {
-        if (activeTabId === null) {
-          document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
-          return;
-        }
-        let t = tabs.find((x) => x.id === activeTabId);
-        if (!t) return;
-        let pos = t.editorInstance.getPosition();
-        if (pos) {
-          document.getElementById("statusPosition").textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
-        }
+    };
+    async function cacheWorkerCode() {
+      if (!workerBlobURL) {
+        let resp = await fetch(workerPath);
+        let code = await resp.text();
+        let blob = new Blob([code], { type: "application/javascript" });
+        workerBlobURL = URL.createObjectURL(blob);
       }
-      document.getElementById('addTabButton').addEventListener("click", () => {
-        createTab();
-      });
-      document.getElementById('addTabButton_media').addEventListener("click", () => {
-        createTab();
-      });
-      document.getElementById("tabBar").addEventListener("click", (e) => {
-        let clickedTab = tabs.find((t) =>
-          t.tabElement === e.target || t.tabElement.contains(e.target)
-        );
-        if (clickedTab) {
-          switchTab(clickedTab.id);
-        }
-      });
-      ["gitIcon", "settingsIcon", "exportIcon"].forEach((iconId) => {
-        let el = document.getElementById(iconId);
-        el.addEventListener("click", (e) => {
-          let alreadyActive = e.currentTarget.classList.contains("active");
-          document.querySelectorAll(".icon")
-            .forEach((b) => b.classList.remove("active"));
-          document.querySelectorAll(".sidebar-panel")
-            .forEach((p) => p.classList.remove("active"));
-          if (!alreadyActive) {
-            e.currentTarget.classList.add("active");
-            let targetPanel = e.currentTarget.getAttribute("data-target");
-            document.getElementById(targetPanel).classList.add("active");
-          }
-        });
-      });
-      document.getElementById("searchIcon").addEventListener("click", () => {
-        if (activeTabId === null) return;
-        let t = tabs.find((x) => x.id === activeTabId);
-        if (!t) return;
-        if (isMobile) {
-          document.querySelectorAll(".sidebar-panel")
-            .forEach((p) => p.classList.remove("active"));
-          document.querySelectorAll(".icon")
-            .forEach((b) => b.classList.remove("active"));
+    }
+    require(["vs/editor/editor.main"], function () {
+      monaco.languages.setMonarchTokensProvider('javascript', {
+        defaultToken: 'invalid',
+        tokenPostfix: '.js',
 
+        keywords: [
+          'break', 'case', 'catch', 'class', 'continue', 'debugger',
+          'default', 'do', 'else', 'export', 'extends', 'finally',
+          'for', 'from', 'get', 'if', 'import', 'in', 'set', 'super',
+          'switch', 'symbol', 'this', 'throw', 'try', 'while', 'with',
+          'yield', 'await', 'of'
+        ],
+
+        specialKeywords: [
+          'let', 'const', 'var', 'function',
+          'null', 'undefined', 'true', 'false', 'void', 'typeof',
+          'new', 'delete', 'instanceof'
+        ],
+
+        typeKeywords: [
+          'any', 'boolean', 'number', 'object', 'string', 'undefined'
+        ],
+
+        operators: [
+          '<=', '>=', '==', '!=', '===', '!==', '=>', '+', '-', '**',
+          '*', '/', '%', '++', '--', '<<', '</', '>>', '>>>', '&',
+          '|', '^', '!', '~', '&&', '||', '?', ':', '=', '+=', '-=',
+          '*=', '**=', '/=', '%=', '<<=', '>>=', '>>>=', '&=', '|=',
+          '^=', '@'
+        ],
+
+        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        digits: /\d+(_+\d+)*/,
+        octaldigits: /[0-7]+(_+[0-7]+)*/,
+        binarydigits: /[0-1]+(_+[0-1]+)*/,
+        hexdigits: /[0-9a-fA-F]+(_+[0-9a-fA-F]+)*/,
+        regexpctl: /[(){}\[\]\$\^|\-*+?\.]/,
+        regexpesc: /\\(?:[bBdDfnrstvwWn0\\\/]|@regexpctl|c[A-Z]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/,
+
+        tokenizer: {
+          root: [
+            [/[{}]/, 'delimiter.bracket'],
+            { include: 'common' }
+          ],
+
+          common: [
+            [/=>/, 'arrow'],
+
+            [/\basync(?=\s+function\b)/, 'special.keyword'],
+
+            [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
+            [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
+            [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
+
+            [/[a-z_$][\w$]*/, {
+              cases: {
+                '@specialKeywords': 'special.keyword',
+                '@keywords': 'keyword',
+                '@typeKeywords': 'keyword',
+                '@default': 'identifier'
+              }
+            }],
+            [/[A-Z][\w\$]*/, 'type.identifier'],
+
+            { include: '@whitespace' },
+
+            [/\/(?=([^\\\/]|\\.)+\/([gimsuy]*)(\s*)(\.|;|\/|,|\)|\]|\}|$))/, { token: 'regexp', bracket: '@open', next: '@regexp' }],
+
+            [/[()\[\]]/, '@brackets'],
+            [/[<>](?!@symbols)/, '@brackets'],
+            [/@symbols/, {
+              cases: {
+                '@operators': 'delimiter',
+                '@default': ''
+              }
+            }],
+
+            [/(@digits)[eE]([\-+]?(@digits))?/, 'number.float'],
+            [/(@digits)\.(@digits)([eE][\-+]?(@digits))?/, 'number.float'],
+            [/0[xX](@hexdigits)/, 'number.hex'],
+            [/0[oO]?(@octaldigits)/, 'number.octal'],
+            [/0[bB](@binarydigits)/, 'number.binary'],
+            [/(@digits)/, 'number'],
+
+            [/[;,.]/, 'delimiter'],
+
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            [/"/, 'string', '@string_double'],
+            [/'/, 'string', '@string_single'],
+            [/`/, 'string', '@string_backtick']
+          ],
+
+          whitespace: [
+            [/[ \t\r\n]+/, ''],
+            [/\/\*\*(?!\/)/, 'comment.doc', '@jsdoc'],
+            [/\/\*/, 'comment', '@comment'],
+            [/\/\/.*$/, 'comment']
+          ],
+
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ],
+
+          jsdoc: [
+            [/[^\/*]+/, 'comment.doc'],
+            [/\*\//, 'comment.doc', '@pop'],
+            [/[\/*]/, 'comment.doc']
+          ],
+
+          regexp: [
+            [/(\{)(\d+(?:,\d*)?)(\})/, ['regexp.escape.control', 'regexp.escape.control', 'regexp.escape.control']],
+            [/(\[)(\^?)(?=(?:[^\]\\\/]|\\.)+)/, ['regexp.escape.control', { token: 'regexp.escape.control', next: '@regexrange' }]],
+            [/(\()(\?:|\?=|\?!)/, ['regexp.escape.control', 'regexp.escape.control']],
+            [/[()]/, 'regexp.escape.control'],
+            [/@regexpctl/, 'regexp.escape.control'],
+            [/[^\\\/]/, 'regexp'],
+            [/@regexpesc/, 'regexp.escape'],
+            [/\\\./, 'regexp.invalid'],
+            [/(\/)([gimsuy]*)/, [{ token: 'regexp', bracket: '@close', next: '@pop' }, 'keyword.other']]
+          ],
+
+          regexrange: [
+            [/-/, 'regexp.escape.control'],
+            [/\^/, 'regexp.invalid'],
+            [/@regexpesc/, 'regexp.escape'],
+            [/[^\]]/, 'regexp'],
+            [/\]/, { token: 'regexp.escape.control', next: '@pop', bracket: '@close' }]
+          ],
+
+          string_double: [
+            [/[^\\"]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/"/, 'string', '@pop']
+          ],
+
+          string_single: [
+            [/[^\\']+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/'/, 'string', '@pop']
+          ],
+
+          string_backtick: [
+            [/\$\{/, { token: 'delimiter.bracket', next: '@bracketCounting' }],
+            [/[^\\`$]+/, 'string'],
+            [/@escapes/, 'string.escape'],
+            [/\\./, 'string.escape.invalid'],
+            [/`/, 'string', '@pop']
+          ],
+
+          bracketCounting: [
+            [/\{/, 'delimiter.bracket', '@bracketCounting'],
+            [/\}/, 'delimiter.bracket', '@pop'],
+            { include: 'common' }
+          ]
         }
-        t.editorInstance.getAction("actions.find").run();
       });
-      document.addEventListener("click", (event) => {
-        if (!event.target.closest(".vs-navbar-item")) {
-          closeDropdowns();
-          activeDropdown = null;
+
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'special.keyword', foreground: '569cd6' },
+          { token: 'keyword', foreground: 'c586c0' },
+          { token: 'identifier', foreground: '9CDCFE' },
+          { token: 'delimiter', foreground: 'D4D4D4' },
+          { token: 'operator', foreground: 'D4D4D4' },
+          { token: 'method', foreground: 'dcdcaa' },
+          { token: 'attribute', foreground: '9cdcfe' },
+          { token: 'arrow', foreground: '569cd6' },
+          { token: 'type.identifier', foreground: '4EC9B0' },
+          { token: 'function', foreground: 'dcdcaa' },
+          { token: 'comment', foreground: '6A9955' },
+          { token: 'string', foreground: 'CE9178' },
+          { token: 'number', foreground: 'B5CEA8' },
+          { token: 'regexp', foreground: 'D16969' },
+          { token: 'string.escape', foreground: 'd7ba7d' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'string.escape.js', foreground: 'd7ba7d' },
+        ],
+        colors: {
+          'editor.background': '#1E1E1E'
         }
       });
-      document.querySelectorAll(".vs-navbar-item").forEach((item) => {
-        item.addEventListener("click", (evt) => {
+
+      monaco.editor.defineTheme('custom-light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'special.keyword', foreground: '0000FF' },
+          { token: 'keyword', foreground: 'af00db' },
+          { token: 'identifier', foreground: '0070c1' },
+          { token: 'attribute', foreground: '001080' },
+          { token: 'delimiter', foreground: '000000' },
+          { token: 'operator', foreground: '000000' },
+          { token: 'arrow', foreground: '0000FF' },
+          { token: 'method', foreground: '795e26' },
+          { token: 'function', foreground: '795e26' },
+          { token: 'type.identifier', foreground: '267f99' },
+          { token: 'comment', foreground: '008000' },
+          { token: 'string', foreground: 'a31515' },
+          { token: 'string.escape', foreground: 'a31515' },
+          { token: 'string.escape.invalid', foreground: 'ffffff', background: 'e51400' },
+          { token: 'string.escape.js', foreground: 'ee0000' },
+          { token: 'number', foreground: '098658' },
+          { token: 'regexp', foreground: 'd16969' }
+        ],
+        colors: {
+          'editor.background': '#ffffff',
+          'editor.foreground': '#333333'
+        }
+      });
+      loadSettings();
+      createTab();
+    });
+
+    function updateStatusPosition() {
+      if (activeTabId === null) {
+        document.getElementById("statusPosition").textContent = "Ln 0, Col 0";
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      if (!t) return;
+      let pos = t.editorInstance.getPosition();
+      if (pos) {
+        document.getElementById("statusPosition").textContent = `Ln ${pos.lineNumber}, Col ${pos.column}`;
+      }
+    }
+    document.getElementById('addTabButton').addEventListener("click", () => {
+      createTab();
+    });
+    document.getElementById('addTabButton_media').addEventListener("click", () => {
+      createTab();
+    });
+    document.getElementById("tabBar").addEventListener("click", (e) => {
+      let clickedTab = tabs.find((t) =>
+        t.tabElement === e.target || t.tabElement.contains(e.target)
+      );
+      if (clickedTab) {
+        switchTab(clickedTab.id);
+      }
+    });
+    ["gitIcon", "settingsIcon", "exportIcon"].forEach((iconId) => {
+      let el = document.getElementById(iconId);
+      el.addEventListener("click", (e) => {
+        let alreadyActive = e.currentTarget.classList.contains("active");
+        document.querySelectorAll(".icon")
+          .forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".sidebar-panel")
+          .forEach((p) => p.classList.remove("active"));
+        if (!alreadyActive) {
+          e.currentTarget.classList.add("active");
+          let targetPanel = e.currentTarget.getAttribute("data-target");
+          document.getElementById(targetPanel).classList.add("active");
+        }
+      });
+    });
+    document.getElementById("searchIcon").addEventListener("click", () => {
+      if (activeTabId === null) return;
+      let t = tabs.find((x) => x.id === activeTabId);
+      if (!t) return;
+      if (isMobile) {
+        document.querySelectorAll(".sidebar-panel")
+          .forEach((p) => p.classList.remove("active"));
+        document.querySelectorAll(".icon")
+          .forEach((b) => b.classList.remove("active"));
+
+      }
+      t.editorInstance.getAction("actions.find").run();
+    });
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest(".vs-navbar-item")) {
+        closeDropdowns();
+        activeDropdown = null;
+      }
+    });
+    document.querySelectorAll(".vs-navbar-item").forEach((item) => {
+      item.addEventListener("click", (evt) => {
+        let dropdownId = evt.currentTarget.getAttribute("data-dropdown");
+        let dd = document.getElementById(dropdownId);
+        document.querySelectorAll(".vs-navbar-dropdown")
+          .forEach((d) => d.classList.remove("active"));
+        if (dd) {
+          dd.classList.toggle("active");
+          activeDropdown = dd.classList.contains("active") ? dd : null;
+        }
+      });
+      item.addEventListener("mouseover", (evt) => {
+        if (activeDropdown) {
           let dropdownId = evt.currentTarget.getAttribute("data-dropdown");
           let dd = document.getElementById(dropdownId);
-          document.querySelectorAll(".vs-navbar-dropdown")
-            .forEach((d) => d.classList.remove("active"));
-          if (dd) {
-            dd.classList.toggle("active");
-            activeDropdown = dd.classList.contains("active") ? dd : null;
+          if (activeDropdown !== dd) {
+            activeDropdown.classList.remove("active");
+            dd.classList.add("active");
+            activeDropdown = dd;
           }
-        });
-        item.addEventListener("mouseover", (evt) => {
-          if (activeDropdown) {
-            let dropdownId = evt.currentTarget.getAttribute("data-dropdown");
-            let dd = document.getElementById(dropdownId);
-            if (activeDropdown !== dd) {
-              activeDropdown.classList.remove("active");
-              dd.classList.add("active");
-              activeDropdown = dd;
-            }
-          }
-        });
+        }
       });
-      tabSizeInput.addEventListener("input", () => {
-        spaces = parseInt(tabSizeInput.value, 10);
-        tabSizeDisplay.textContent = spaces;
-        document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
-        tabs.forEach((t) => {
-          t.editorInstance.updateOptions({ tabSize: spaces });
-        });
+    });
+    tabSizeInput.addEventListener("input", () => {
+      spaces = parseInt(tabSizeInput.value, 10);
+      tabSizeDisplay.textContent = spaces;
+      document.getElementById("statusSpaces").textContent = `Spaces: ${spaces}`;
+      tabs.forEach((t) => {
+        t.editorInstance.updateOptions({ tabSize: spaces });
       });
-      let redoBtn = document.getElementById("redoBtn");
-      let undoBtn = document.getElementById("undoBtn");
-      function toggleDisabled(el, disabled) {
-        if (disabled) {
-          el.classList.add("disabled");
-          el.style.color = "grey";
-          el.style.cursor = "default";
+    });
+    let redoBtn = document.getElementById("redoBtn");
+    let undoBtn = document.getElementById("undoBtn");
+    function toggleDisabled(el, disabled) {
+      if (disabled) {
+        el.classList.add("disabled");
+        el.style.color = "grey";
+        el.style.cursor = "default";
+      } else {
+        el.classList.remove("disabled");
+        el.style.cursor = "pointer";
+        if (darkModeFlag) {
+          el.style.color = "white";
         } else {
-          el.classList.remove("disabled");
-          el.style.cursor = "pointer";
-          if (darkModeFlag) {
-            el.style.color = "white";
-          } else {
-            el.style.color = "black";
-          }
+          el.style.color = "black";
         }
       }
-      function updateUndoRedoButtons() {
-        if (activeTabId === null) {
-          toggleDisabled(undoBtn, true);
-          toggleDisabled(redoBtn, true);
-          return;
-        }
-        let t = tabs.find((x) => x.id === activeTabId);
-        if (!t) return;
-        let model = t.editorInstance.getModel();
-        if (!model) return;
-        toggleDisabled(undoBtn, !model.canUndo());
-        toggleDisabled(redoBtn, !model.canRedo());
+    }
+    function updateUndoRedoButtons() {
+      if (activeTabId === null) {
+        toggleDisabled(undoBtn, true);
+        toggleDisabled(redoBtn, true);
+        return;
       }
-      document.addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.key === "s") {
-          e.preventDefault();
-          document.getElementById("saveScriptBtn")
-            .dispatchEvent(new MouseEvent("click"));
-        } else if ((e.ctrlKey && e.key === "z") ||
-          (e.ctrlKey && e.shiftKey && e.key === "Z")) {
-          setTimeout(() => updateUndoRedoButtons(), 100);
-        }
-      });
-      redoBtn.addEventListener("click", () => {
-        if (activeTabId === null) return;
-        let t = tabs.find((x) => x.id === activeTabId);
-        t.editorInstance.trigger("redo", "redo", null);
-        updateUndoRedoButtons();
-      });
-      undoBtn.addEventListener("click", () => {
-        if (activeTabId === null) return;
-        let t = tabs.find((x) => x.id === activeTabId);
-        t.editorInstance.trigger("undo", "undo", null);
-        updateUndoRedoButtons();
-      });
-      setInterval(() => updateUndoRedoButtons(), 500);
-      document.getElementById("uploadFileBtn").addEventListener("click", () => {
-        let input = document.createElement("input");
-        input.type = "file";
-        input.accept = ".js";
-        input.style.display = "none";
-        input.addEventListener("change", async (e) => {
-          let file = e.target.files[0];
-          let reader = new FileReader();
-          reader.onload = (evt) => {
-            let newTabName = getUniqueTabName(file.name);
-            createTab(newTabName, evt.target.result);
-            closeDropdowns();
-          };
-          reader.readAsText(file);
-        });
-        document.body.appendChild(input);
-        input.click();
-        input.remove();
-      });
-      document.getElementById("saveScriptBtn").addEventListener("click", () => {
-        if (activeTabId === null) return;
-        let t = tabs.find((x) => x.id === activeTabId);
-        let content = t.editorInstance.getValue();
-        let blob = new Blob([content], { type: "text/javascript" });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
-        a.click();
-        URL.revokeObjectURL(url);
-        closeDropdowns();
-      });
-      function closeDropdowns() {
-        setTimeout(() => {
-          activeDropdown = null;
-          document.querySelectorAll(".vs-navbar-dropdown")
-            .forEach((d) => d.classList.remove("active"));
-          document.querySelectorAll(".vs-navbar-item")
-            .forEach((i) => i.classList.remove("active"));
-        }, 100);
+      let t = tabs.find((x) => x.id === activeTabId);
+      if (!t) return;
+      let model = t.editorInstance.getModel();
+      if (!model) return;
+      toggleDisabled(undoBtn, !model.canUndo());
+      toggleDisabled(redoBtn, !model.canRedo());
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "s") {
+        e.preventDefault();
+        document.getElementById("saveScriptBtn")
+          .dispatchEvent(new MouseEvent("click"));
+      } else if ((e.ctrlKey && e.key === "z") ||
+        (e.ctrlKey && e.shiftKey && e.key === "Z")) {
+        setTimeout(() => updateUndoRedoButtons(), 100);
       }
-      let gitInp = document.getElementById("gitUrl");
-      let loadGitButton = document.getElementById("loadGitButton");
-      gitInp.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") loadGitButton.click();
+    });
+    redoBtn.addEventListener("click", () => {
+      if (activeTabId === null) return;
+      let t = tabs.find((x) => x.id === activeTabId);
+      t.editorInstance.trigger("redo", "redo", null);
+      updateUndoRedoButtons();
+    });
+    undoBtn.addEventListener("click", () => {
+      if (activeTabId === null) return;
+      let t = tabs.find((x) => x.id === activeTabId);
+      t.editorInstance.trigger("undo", "undo", null);
+      updateUndoRedoButtons();
+    });
+    setInterval(() => updateUndoRedoButtons(), 500);
+    document.getElementById("uploadFileBtn").addEventListener("click", () => {
+      let input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".js";
+      input.style.display = "none";
+      input.addEventListener("change", async (e) => {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.onload = (evt) => {
+          let newTabName = getUniqueTabName(file.name);
+          createTab(newTabName, evt.target.result);
+          closeDropdowns();
+        };
+        reader.readAsText(file);
       });
-      gitInp.addEventListener("input", () => {
-        if (!gitInp.value.trim()) {
-          loadGitButton.disabled = true;
-        } else {
-          loadGitButton.disabled = false;
+      document.body.appendChild(input);
+      input.click();
+      input.remove();
+    });
+    document.getElementById("saveScriptBtn").addEventListener("click", () => {
+      if (activeTabId === null) return;
+      let t = tabs.find((x) => x.id === activeTabId);
+      let content = t.editorInstance.getValue();
+      let blob = new Blob([content], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
+      closeDropdowns();
+    });
+    function closeDropdowns() {
+      setTimeout(() => {
+        activeDropdown = null;
+        document.querySelectorAll(".vs-navbar-dropdown")
+          .forEach((d) => d.classList.remove("active"));
+        document.querySelectorAll(".vs-navbar-item")
+          .forEach((i) => i.classList.remove("active"));
+      }, 100);
+    }
+    let gitInp = document.getElementById("gitUrl");
+    let loadGitButton = document.getElementById("loadGitButton");
+    gitInp.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadGitButton.click();
+    });
+    gitInp.addEventListener("input", () => {
+      if (!gitInp.value.trim()) {
+        loadGitButton.disabled = true;
+      } else {
+        loadGitButton.disabled = false;
+      }
+    });
+    loadGitButton.addEventListener("click", async () => {
+      let urlVal = gitInp.value.trim();
+      if (!urlVal) return;
+      let fileName = "untitled.js";
+      try {
+        new URL(urlVal);
+      } catch (e) {
+        showAlert("Invalid URL");
+        return;
+      }
+      let normalized = normalizeUrl(urlVal);
+      let parsed = parseGitHubUrl(normalized);
+      if (parsed.isRawFile) {
+        let slashIdx = parsed.rawUrl.lastIndexOf("/");
+        if (slashIdx !== -1) {
+          fileName = parsed.rawUrl.substring(slashIdx + 1);
         }
-      });
-      loadGitButton.addEventListener("click", async () => {
-        let urlVal = gitInp.value.trim();
-        if (!urlVal) return;
-        let fileName = "untitled.js";
-        try {
-          new URL(urlVal);
-        } catch (e) {
-          showAlert("Invalid URL");
-          return;
+      } else if (parsed.isFile) {
+        let slashIdx = parsed.path.lastIndexOf("/");
+        if (slashIdx !== -1) {
+          fileName = parsed.path.substring(slashIdx + 1);
         }
-        let normalized = normalizeUrl(urlVal);
-        let parsed = parseGitHubUrl(normalized);
+      }
+      try {
+        let fileContent;
         if (parsed.isRawFile) {
-          let slashIdx = parsed.rawUrl.lastIndexOf("/");
-          if (slashIdx !== -1) {
-            fileName = parsed.rawUrl.substring(slashIdx + 1);
-          }
+          fileContent = await fetchRawFile(parsed.rawUrl);
         } else if (parsed.isFile) {
-          let slashIdx = parsed.path.lastIndexOf("/");
-          if (slashIdx !== -1) {
-            fileName = parsed.path.substring(slashIdx + 1);
-          }
-        }
-        try {
-          let fileContent;
-          if (parsed.isRawFile) {
-            fileContent = await fetchRawFile(parsed.rawUrl);
-          } else if (parsed.isFile) {
-            let fileData = await fetchFromGit(parsed.owner, parsed.repo, parsed.path, parsed.branch);
-            if (!fileData.content) {
-              showAlert("Failed to fetch file content.");
-              return;
-            }
-            fileContent = atob(fileData.content);
-          } else {
-            showAlert("Invalid GitHub file URL. Must point to a specific file.");
+          let fileData = await fetchFromGit(parsed.owner, parsed.repo, parsed.path, parsed.branch);
+          if (!fileData.content) {
+            showAlert("Failed to fetch file content.");
             return;
           }
-          createTab(fileName, fileContent);
-        } catch (err) {
-          showAlert(`Error fetching file: ${err.message}`);
-        }
-      });
-      function normalizeUrl(u) {
-        if (u.endsWith(".git")) {
-          u = u.slice(0, -4);
-        }
-        if (!u.startsWith("http://") && !u.startsWith("https://")) {
-          u = "https://" + u;
-        }
-        if (u.startsWith("http://")) {
-          u = "https://" + u.substring(7);
-        }
-        return u;
-      }
-      function parseGitHubUrl(u) {
-        if (u.includes("raw.githubusercontent.com")) {
-          let match = u.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
-          if (match) {
-            return { isRawFile: true, rawUrl: u };
-          }
-          return { isRawFile: false };
-        }
-        let m = u.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/);
-        if (!m) return { isFile: false };
-        return {
-          owner: m[1],
-          repo: m[2],
-          branch: m[3],
-          path: m[4],
-          isFile: true
-        };
-      }
-      async function fetchFromGit(owner, repo, path, branch = "main") {
-        let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
-        let resp = await fetch(apiUrl);
-        if (!resp.ok) {
-          throw new Error(`Failed to fetch file: ${resp.statusText}`);
-        }
-        let data = await resp.json();
-        if (data.type !== "file") {
-          throw new Error("The URL does not point to a valid file.");
-        }
-        return data;
-      }
-      async function fetchRawFile(rawUrl) {
-        let r = await fetch(rawUrl);
-        if (!r.ok) {
-          throw new Error(`Failed to fetch raw file: ${r.statusText}`);
-        }
-        return await r.text();
-      }
-      function makeTabTitleEditable(tabObj) {
-        let span = tabObj.tabElement.querySelector(".tab-title");
-        let closeIcon = tabObj.tabElement.querySelector(".close");
-        if (!span) return;
-        closeIcon.style.display = "none";
-        let oldName = tabObj.name;
-        let input = document.createElement("input");
-        input.type = "text";
-        input.value = oldName;
-        input.classList.add("tab-title-edit");
-        tabObj.tabElement.replaceChild(input, span);
-        input.focus();
-        input.select();
-        let done = false;
-        let finalize = () => {
-          if (done) return;
-          done = true;
-          let newVal = input.value.trim();
-          if (!newVal || newVal === oldName) {
-            newVal = oldName;
-          } else {
-            newVal = getUniqueTabName(newVal, tabObj.id);
-          }
-          tabObj.name = newVal;
-          let newSpan = document.createElement("span");
-          newSpan.classList.add("tab-title");
-          newSpan.textContent = newVal;
-          newSpan.addEventListener("dblclick", () => {
-            makeTabTitleEditable(tabObj);
-          });
-          tabObj.tabElement.replaceChild(newSpan, input);
-          closeIcon.style.display = "block";
-        };
-        input.addEventListener("blur", finalize);
-        input.addEventListener("keydown", (evt) => {
-          if (evt.key === "Enter") {
-            evt.preventDefault();
-            finalize();
-          } else if (evt.key === "Escape") {
-            evt.preventDefault();
-            input.value = oldName;
-            finalize();
-          }
-        });
-      }
-
-      function arrayBufferToBase64(buffer) {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const chunkSize = 0x8000;
-        for (let i = 0; i < bytes.length; i += chunkSize) {
-          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-        }
-        return window.btoa(binary);
-      }
-
-      document.addEventListener("DOMContentLoaded", async function () {
-        await cacheWorkerCode();
-        nextWorker = new Worker(workerBlobURL);
-      });
-
-
-      function exportCode() {
-        switch (exportSelect.value) {
-          case "allZip":
-            exportAllZip();
-            break;
-          case "image":
-            exportImage();
-            break;
-          case "pdf":
-            exportPDF();
-            break;
-          case "current":
-            exportCurrent();
-            break;
-        }
-      }
-
-      function exportAllZip() {
-        if (tabs.length === 0) {
+          fileContent = atob(fileData.content);
+        } else {
+          showAlert("Invalid GitHub file URL. Must point to a specific file.");
           return;
         }
-        if (tabs.length === 1) {
+        createTab(fileName, fileContent);
+      } catch (err) {
+        showAlert(`Error fetching file: ${err.message}`);
+      }
+    });
+    function normalizeUrl(u) {
+      if (u.endsWith(".git")) {
+        u = u.slice(0, -4);
+      }
+      if (!u.startsWith("http://") && !u.startsWith("https://")) {
+        u = "https://" + u;
+      }
+      if (u.startsWith("http://")) {
+        u = "https://" + u.substring(7);
+      }
+      return u;
+    }
+    function parseGitHubUrl(u) {
+      if (u.includes("raw.githubusercontent.com")) {
+        let match = u.match(/^https:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(.+)$/);
+        if (match) {
+          return { isRawFile: true, rawUrl: u };
+        }
+        return { isRawFile: false };
+      }
+      let m = u.match(/^https:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/([^\/]+)\/(.+)$/);
+      if (!m) return { isFile: false };
+      return {
+        owner: m[1],
+        repo: m[2],
+        branch: m[3],
+        path: m[4],
+        isFile: true
+      };
+    }
+    async function fetchFromGit(owner, repo, path, branch = "main") {
+      let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+      let resp = await fetch(apiUrl);
+      if (!resp.ok) {
+        throw new Error(`Failed to fetch file: ${resp.statusText}`);
+      }
+      let data = await resp.json();
+      if (data.type !== "file") {
+        throw new Error("The URL does not point to a valid file.");
+      }
+      return data;
+    }
+    async function fetchRawFile(rawUrl) {
+      let r = await fetch(rawUrl);
+      if (!r.ok) {
+        throw new Error(`Failed to fetch raw file: ${r.statusText}`);
+      }
+      return await r.text();
+    }
+    function makeTabTitleEditable(tabObj) {
+      let span = tabObj.tabElement.querySelector(".tab-title");
+      let closeIcon = tabObj.tabElement.querySelector(".close");
+      if (!span) return;
+      closeIcon.style.display = "none";
+      let oldName = tabObj.name;
+      let input = document.createElement("input");
+      input.type = "text";
+      input.value = oldName;
+      input.classList.add("tab-title-edit");
+      tabObj.tabElement.replaceChild(input, span);
+      input.focus();
+      input.select();
+      let done = false;
+      let finalize = () => {
+        if (done) return;
+        done = true;
+        let newVal = input.value.trim();
+        if (!newVal || newVal === oldName) {
+          newVal = oldName;
+        } else {
+          newVal = getUniqueTabName(newVal, tabObj.id);
+        }
+        tabObj.name = newVal;
+        let newSpan = document.createElement("span");
+        newSpan.classList.add("tab-title");
+        newSpan.textContent = newVal;
+        newSpan.addEventListener("dblclick", () => {
+          makeTabTitleEditable(tabObj);
+        });
+        tabObj.tabElement.replaceChild(newSpan, input);
+        closeIcon.style.display = "block";
+      };
+      input.addEventListener("blur", finalize);
+      input.addEventListener("keydown", (evt) => {
+        if (evt.key === "Enter") {
+          evt.preventDefault();
+          finalize();
+        } else if (evt.key === "Escape") {
+          evt.preventDefault();
+          input.value = oldName;
+          finalize();
+        }
+      });
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+      }
+      return window.btoa(binary);
+    }
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      await cacheWorkerCode();
+      nextWorker = new Worker(workerBlobURL);
+    });
+
+
+    function exportCode() {
+      switch (exportSelect.value) {
+        case "allZip":
+          exportAllZip();
+          break;
+        case "image":
+          exportImage();
+          break;
+        case "pdf":
+          exportPDF();
+          break;
+        case "current":
           exportCurrent();
+          break;
+      }
+    }
+
+    function exportAllZip() {
+      if (tabs.length === 0) {
+        return;
+      }
+      if (tabs.length === 1) {
+        exportCurrent();
+        return;
+      }
+
+      exportModalContent.innerHTML = "";
+
+      let checklistContainer = document.createElement("div");
+      checklistContainer.style.display = "flex";
+      checklistContainer.style.flexWrap = "wrap";
+      checklistContainer.style.gap = "10px";
+      checklistContainer.style.padding = "10px";
+
+      tabs.forEach((tab) => {
+        let checkboxWrapper = document.createElement("div");
+        checkboxWrapper.style.display = "flex";
+        checkboxWrapper.style.alignItems = "center";
+        checkboxWrapper.style.flex = "1 0 auto";
+
+        let checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = true;
+        checkbox.id = "export-tab-" + tab.id;
+        checkbox.dataset.tabId = tab.id;
+
+        let label = document.createElement("label");
+        label.htmlFor = checkbox.id;
+        label.textContent = tab.name;
+        label.style.marginLeft = "5px";
+
+        checkboxWrapper.appendChild(checkbox);
+        checkboxWrapper.appendChild(label);
+        checklistContainer.appendChild(checkboxWrapper);
+      });
+      exportModalContent.appendChild(checklistContainer);
+
+      let exportBtn = document.createElement("button");
+      exportBtn.textContent = "Export";
+      exportBtn.classList.add("exportBtn");
+      exportBtn.style.marginTop = "20px";
+
+      function updateExportButtonState() {
+        let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
+        exportBtn.disabled = selectedCount === 0;
+      }
+
+      checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
+        cb.addEventListener("change", updateExportButtonState);
+      });
+      updateExportButtonState();
+
+      exportModalContent.appendChild(exportBtn);
+
+      exportBtn.addEventListener("click", function () {
+        let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
+        let selectedTabs = [];
+        selectedCheckboxes.forEach((cb) => {
+          let tabId = parseInt(cb.dataset.tabId, 10);
+          let tabObj = tabs.find((t) => t.id === tabId);
+          if (tabObj) {
+            selectedTabs.push(tabObj);
+          }
+        });
+        closeModal("close");
+
+        if (selectedTabs.length === 0) {
           return;
         }
 
-        exportModalContent.innerHTML = "";
-
-        let checklistContainer = document.createElement("div");
-        checklistContainer.style.display = "flex";
-        checklistContainer.style.flexWrap = "wrap";
-        checklistContainer.style.gap = "10px";
-        checklistContainer.style.padding = "10px";
-
-        tabs.forEach((tab) => {
-          let checkboxWrapper = document.createElement("div");
-          checkboxWrapper.style.display = "flex";
-          checkboxWrapper.style.alignItems = "center";
-          checkboxWrapper.style.flex = "1 0 auto";
-
-          let checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = true;
-          checkbox.id = "export-tab-" + tab.id;
-          checkbox.dataset.tabId = tab.id;
-
-          let label = document.createElement("label");
-          label.htmlFor = checkbox.id;
-          label.textContent = tab.name;
-          label.style.marginLeft = "5px";
-
-          checkboxWrapper.appendChild(checkbox);
-          checkboxWrapper.appendChild(label);
-          checklistContainer.appendChild(checkboxWrapper);
-        });
-        exportModalContent.appendChild(checklistContainer);
-
-        let exportBtn = document.createElement("button");
-        exportBtn.textContent = "Export";
-        exportBtn.classList.add("exportBtn");
-        exportBtn.style.marginTop = "20px";
-
-        function updateExportButtonState() {
-          let selectedCount = checklistContainer.querySelectorAll("input[type='checkbox']:checked").length;
-          exportBtn.disabled = selectedCount === 0;
-        }
-
-        checklistContainer.querySelectorAll("input[type='checkbox']").forEach((cb) => {
-          cb.addEventListener("change", updateExportButtonState);
-        });
-        updateExportButtonState();
-
-        exportModalContent.appendChild(exportBtn);
-
-        exportBtn.addEventListener("click", function () {
-          let selectedCheckboxes = checklistContainer.querySelectorAll("input[type='checkbox']:checked");
-          let selectedTabs = [];
-          selectedCheckboxes.forEach((cb) => {
-            let tabId = parseInt(cb.dataset.tabId, 10);
-            let tabObj = tabs.find((t) => t.id === tabId);
-            if (tabObj) {
-              selectedTabs.push(tabObj);
-            }
-          });
-          closeModal("close");
-
-          if (selectedTabs.length === 0) {
-            return;
-          }
-
-          if (selectedTabs.length === 1) {
-            let t = selectedTabs[0];
-            let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement("a");
-            a.href = url;
-            a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
-            a.click();
-            URL.revokeObjectURL(url);
-          } else {
-            let zip = new JSZip();
-            selectedTabs.forEach((t) => {
-              let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
-              zip.file(fileName, t.editorInstance.getValue());
-            });
-            zip.generateAsync({ type: "blob" }).then((content) => {
-              let a = document.createElement("a");
-              a.href = URL.createObjectURL(content);
-              a.download = "scripts.zip";
-              a.click();
-            });
-          }
-        });
-
-        displayModal();
-      }
-
-
-      async function takeImage(domElem) {
-        const canvas = await html2canvas(domElem, {
-          scale: 2,
-          logging: false,
-          backgroundColor: null,
-          willReadFrequently: true,
-          allowTaint: true,
-          useCORS: true
-        });
-
-        return canvas.toDataURL("image/png");
-      }
-
-      async function getOutputDivClone() {
-        const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
-        const outputWrapper = document.createElement('div');
-        outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
-        outputWrapper.style.backgroundColor = backgroundColor;
-        tempOutputDiv = currentTab.outputElement.cloneNode(true);
-        outputWrapper.appendChild(tempOutputDiv);
-        tempOutputDiv.classList.add(...currentTab.outputElement.classList);
-        tempOutputDiv.style.width = maxWidth;
-        tempOutputDiv.style.maxWidth = maxWidth;
-        tempOutputDiv.style.height = 'auto';
-        tempOutputDiv.style.overflowY = 'visible';
-        return outputWrapper;
-      }
-
-      async function getEditorDiv() {
-        const model = currentTab.editorInstance.getModel();
-        const code = model.getValue();
-        const language = "javascript";
-
-        const codeLines = code.split('\n');
-
-        const highlightedLines = await Promise.all(
-          codeLines.map((line) => monaco.editor.colorize(line, language, {}))
-        );
-
-        const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
-        const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-        const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
-        const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.style.backgroundColor = backgroundColor;
-        wrapperDiv.style.fontFamily = fontFamily;
-        wrapperDiv.style.fontSize = `${fontSize}px`;
-        wrapperDiv.style.lineHeight = `${lineHeight}px`;
-        wrapperDiv.style.whiteSpace = "pre-wrap";
-        wrapperDiv.style.width = '100%';
-        wrapperDiv.style.color = textColor;
-
-        document.addEventListener('DOMContentLoaded', function () {
-          if (window.screen.width < 768) {
-            wrapperDiv.style.transform = "scale(0.7)";
-            showAlert("Please note that the code may not be displayed properly on small screens.");
-          }
-        });
-
-        codeLines.forEach((line, index) => {
-          const lineWrapper = document.createElement('div');
-          lineWrapper.style.display = "flex";
-          lineWrapper.style.alignItems = "flex-start";
-
-          const lineNumberDiv = document.createElement('div');
-          lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-          lineNumberDiv.textContent = index + 1;
-
-          const codeLineDiv = document.createElement('div');
-          codeLineDiv.classList.add("codeLineDiv")
-          codeLineDiv.innerHTML = highlightedLines[index] || '';
-
-          lineWrapper.appendChild(lineNumberDiv);
-          lineWrapper.appendChild(codeLineDiv);
-          wrapperDiv.appendChild(lineWrapper);
-        });
-        return wrapperDiv;
-      }
-
-
-      async function exportImage() {
-        const wrapperBoth = document.createElement('div');
-        wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const editorTextDiv = document.createElement('div');
-        editorTextDiv.classList.add("headerText")
-        editorTextDiv.contentEditable = true;
-        wrapperBoth.appendChild(editorTextDiv);
-        wrapperBoth.appendChild(await getEditorDiv());
-        const exportBtnsWrapper = document.createElement('div');
-        exportBtnsWrapper.classList.add("exportBtnsWrapper");
-        if (currentTab.outputElement.innerHTML.trim()) {
-          const textDiv = document.createElement('div');
-          textDiv.classList.add("headerText")
-          textDiv.contentEditable = true;
-          wrapperBoth.appendChild(textDiv);
-          wrapperBoth.appendChild(await getOutputDivClone());
-          const headerTextCheckbox = document.createElement("input");
-          headerTextCheckbox.type = "checkbox";
-          headerTextCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(headerTextCheckbox);
-          headerTextCheckbox.checked = true;
-          headerTextCheckbox.addEventListener("change", () => {
-            textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-          });
-          const exportCheckbox = document.createElement("input");
-          exportCheckbox.type = "checkbox";
-          exportCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(exportCheckbox);
-          exportCheckbox.checked = true;
-          exportCheckbox.addEventListener("change", () => {
-            tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-            headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-          });
-        }
-        const editorHeaderCheckbox = document.createElement("input");
-        editorHeaderCheckbox.type = "checkbox";
-        editorHeaderCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-        editorHeaderCheckbox.checked = true;
-        editorHeaderCheckbox.addEventListener("change", () => {
-          editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
-        });
-        exportModalContent.appendChild(wrapperBoth);
-        const exportBtn = document.createElement('button');
-        exportBtn.textContent = "Export Image";
-        exportBtn.classList.add("exportBtn");
-        exportBtnsWrapper.appendChild(exportBtn);
-        exportModalContent.appendChild(exportBtnsWrapper);
-        exportBtn.onclick = async function () {
-          exportBtn.disabled = true;
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const imgSrc = await takeImage(wrapperBoth);
-          closeModal("close");
-          const bothImg = new Image();
-          bothImg.src = imgSrc;
-          let theyReady = false;
-
-          bothImg.onload = () => {
-            theyReady = true;
-          };
-
-          while (!theyReady) {
-            await new Promise((resolve) => setTimeout(resolve, 150));
-          }
-
-          canvas.width = bothImg.width;
-          canvas.height = bothImg.height
-          ctx.drawImage(bothImg, 0, 0);
-
-          const a = document.createElement('a');
-          a.href = canvas.toDataURL("image/png");
-          a.download = `${currentTab.name}.png`;
+        if (selectedTabs.length === 1) {
+          let t = selectedTabs[0];
+          let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+          let url = URL.createObjectURL(blob);
+          let a = document.createElement("a");
+          a.href = url;
+          a.download = t.name.endsWith(".js") ? t.name : t.name + ".js";
           a.click();
-        }
-
-        displayModal()
-      }
-
-
-      async function exportPDF() {
-        const editorDiv = await getEditorDiv();
-        const wrapBoth = document.createElement('div');
-        wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const editorTextDiv = document.createElement('div');
-        editorTextDiv.classList.add("headerText")
-        editorTextDiv.contentEditable = true;
-        wrapBoth.appendChild(editorTextDiv);
-        exportModalContent.appendChild(wrapBoth);
-        wrapBoth.appendChild(editorDiv);
-        const exportBtnsWrapper = document.createElement('div');
-        exportBtnsWrapper.classList.add("exportBtnsWrapper");
-        if (currentTab.outputElement.innerHTML.trim()) {
-          const outputDiv = await getOutputDivClone();
-          outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-          const textDiv = document.createElement('div');
-          textDiv.classList.add("headerText")
-          textDiv.contentEditable = true;
-          wrapBoth.appendChild(textDiv);
-          wrapBoth.appendChild(outputDiv);
-          const headerTextCheckbox = document.createElement("input");
-          headerTextCheckbox.type = "checkbox";
-          headerTextCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(headerTextCheckbox);
-          headerTextCheckbox.checked = true;
-          headerTextCheckbox.addEventListener("change", () => {
-            textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          URL.revokeObjectURL(url);
+        } else {
+          let zip = new JSZip();
+          selectedTabs.forEach((t) => {
+            let fileName = t.name.endsWith(".js") ? t.name : t.name + ".js";
+            zip.file(fileName, t.editorInstance.getValue());
           });
-          const exportCheckbox = document.createElement("input");
-          exportCheckbox.type = "checkbox";
-          exportCheckbox.classList.add("exportCheckbox");
-          exportBtnsWrapper.appendChild(exportCheckbox);
-          exportCheckbox.checked = true;
-          exportCheckbox.addEventListener("change", () => {
-            outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-            headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+          zip.generateAsync({ type: "blob" }).then((content) => {
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "scripts.zip";
+            a.click();
           });
         }
-        const editorHeaderCheckbox = document.createElement("input");
-        editorHeaderCheckbox.type = "checkbox";
-        editorHeaderCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-        editorHeaderCheckbox.checked = true;
-        editorHeaderCheckbox.addEventListener("change", () => {
-          editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+
+      displayModal();
+    }
+
+
+    async function takeImage(domElem) {
+      const canvas = await html2canvas(domElem, {
+        scale: 2,
+        logging: false,
+        backgroundColor: null,
+        willReadFrequently: true,
+        allowTaint: true,
+        useCORS: true
+      });
+
+      return canvas.toDataURL("image/png");
+    }
+
+    async function getOutputDivClone() {
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const outputWrapper = document.createElement('div');
+      outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.style.backgroundColor = backgroundColor;
+      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      outputWrapper.appendChild(tempOutputDiv);
+      tempOutputDiv.classList.add(...currentTab.outputElement.classList);
+      tempOutputDiv.style.width = maxWidth;
+      tempOutputDiv.style.maxWidth = maxWidth;
+      tempOutputDiv.style.height = 'auto';
+      tempOutputDiv.style.overflowY = 'visible';
+      return outputWrapper;
+    }
+
+    async function getEditorDiv() {
+      const model = currentTab.editorInstance.getModel();
+      const code = model.getValue();
+      const language = "javascript";
+
+      const codeLines = code.split('\n');
+
+      const highlightedLines = await Promise.all(
+        codeLines.map((line) => monaco.editor.colorize(line, language, {}))
+      );
+
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.style.backgroundColor = backgroundColor;
+      wrapperDiv.style.fontFamily = fontFamily;
+      wrapperDiv.style.fontSize = `${fontSize}px`;
+      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.whiteSpace = "pre-wrap";
+      wrapperDiv.style.width = '100%';
+      wrapperDiv.style.color = textColor;
+
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.screen.width < 768) {
+          wrapperDiv.style.transform = "scale(0.7)";
+          showAlert("Please note that the code may not be displayed properly on small screens.");
+        }
+      });
+
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
+        lineWrapper.style.alignItems = "flex-start";
+
+        const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.textContent = index + 1;
+
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.classList.add("codeLineDiv")
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
+      return wrapperDiv;
+    }
+
+
+    async function exportImage() {
+      const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapperBoth.appendChild(editorTextDiv);
+      wrapperBoth.appendChild(await getEditorDiv());
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapperBoth.appendChild(textDiv);
+        wrapperBoth.appendChild(await getOutputDivClone());
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
-        const exportBtn = document.createElement('button');
-        exportBtn.textContent = "Export PDF";
-        exportBtn.classList.add("exportBtn");
-        exportBtnsWrapper.appendChild(exportBtn);
-        exportModalContent.appendChild(exportBtnsWrapper);
-        exportBtn.onclick = async function () {
-          exportBtn.disabled = true;
-          const contentWidth = wrapBoth.offsetWidth;
-          const contentHeight = wrapBoth.offsetHeight;
-          let doc = new jsPDF({
-            orientation: contentWidth > contentHeight ? 'l' : 'p',
-            unit: 'px',
-            format: [contentWidth, contentHeight]
-          });
-          await new Promise(resolve => {
-            doc.html(wrapBoth, {
-              callback: resolve,
-              x: 0,
-              y: 0,
-              margin: [0, 0, 0, 0],
-              html2canvas: { scale: 1, logging: false }
-            });
-          });
-          closeModal("close");
-          if (doc.internal.getNumberOfPages() > 1) {
-            for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
-              doc.deletePage(i);
-            }
-          }
-          doc.save(`${currentTab.name}.pdf`);
-        }
-        displayModal();
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
       }
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+      exportModalContent.appendChild(wrapperBoth);
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        let theyReady = false;
 
-      function exportCurrent() {
-        if (activeTabId === null) {
-          return;
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
+        while (!theyReady) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
         }
-        let t = tabs.find((x) => x.id === activeTabId);
-        let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height
+        ctx.drawImage(bothImg, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${currentTab.name}.png`;
         a.click();
-        URL.revokeObjectURL(url);
       }
 
-      function displayModal() {
-        modal.classList.add("active");
-        modal.dispatchEvent(new Event("modalOpened"));
-      }
+      displayModal()
+    }
 
-      function closeModal(event) {
-        if (event.target === modal || event === "close") {
-          modal.classList.remove("active");
-          modal.dispatchEvent(new Event("modalClosed"));
-        }
-      }
 
-      function showAlert(message) {
-        exportModalContent.innerHTML = "";
-        const wrapBoth = document.createElement('div');
-        wrapBoth.classList.add("alertWrap");
-        let alertDiv = document.createElement("div");
-        alertDiv.classList.add("alertText");
-        alertDiv.textContent = message;
-        const btn = document.createElement("alertButton");
-        btn.textContent = "Close";
-        btn.classList.add("exportBtn");
-        btn.addEventListener("click", () => {
-          closeModal("close");
+    async function exportPDF() {
+      const editorDiv = await getEditorDiv();
+      const wrapBoth = document.createElement('div');
+      wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText")
+      editorTextDiv.contentEditable = true;
+      wrapBoth.appendChild(editorTextDiv);
+      exportModalContent.appendChild(wrapBoth);
+      wrapBoth.appendChild(editorDiv);
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      if (currentTab.outputElement.innerHTML.trim()) {
+        const outputDiv = await getOutputDivClone();
+        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
+        wrapBoth.appendChild(textDiv);
+        wrapBoth.appendChild(outputDiv);
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
-        wrapBoth.appendChild(alertDiv);
-        wrapBoth.appendChild(btn);
-        exportModalContent.appendChild(wrapBoth);
-        displayModal();
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
       }
-
-      modal.addEventListener("modalOpened", () => {
-        document.addEventListener("click", closeModal);
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
-      modal.addEventListener("modalClosed", () => {
-        document.removeEventListener("click", closeModal);
-        exportModalContent.innerHTML = "";
-      });
-
-      function modalIsOpen() {
-        return modal.classList.contains("active");
-      }
-
-      const getEventNames = (root) => {
-        let events = [];
-
-        const objectHasSubPrototype = (object, comp) => {
-          let proto = Object.getPrototypeOf(object);
-
-          while (proto !== null && proto !== EventTarget) {
-            proto = Object.getPrototypeOf(proto);
-          }
-
-          return (proto !== null);
-        };
-
-        const addEventNames = (propNames) => {
-          propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
-            propName = propName.substr(2);
-            if (events.indexOf(propName) === -1) {
-              events.push(propName);
-            }
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export PDF";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const contentWidth = wrapBoth.offsetWidth;
+        const contentHeight = wrapBoth.offsetHeight;
+        let doc = new jsPDF({
+          orientation: contentWidth > contentHeight ? 'l' : 'p',
+          unit: 'px',
+          format: [contentWidth, contentHeight]
+        });
+        await new Promise(resolve => {
+          doc.html(wrapBoth, {
+            callback: resolve,
+            x: 0,
+            y: 0,
+            margin: [0, 0, 0, 0],
+            html2canvas: { scale: 1, logging: false }
           });
-        };
-
-        Object.getOwnPropertyNames(root).forEach((name) => {
-          let value = root[name];
-
-          if (value) {
-            if (objectHasSubPrototype(value, EventTarget)) {
-              let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
-              addEventNames(propNames);
-
-              propNames = Object.getOwnPropertyNames(window);
-              addEventNames(propNames);
-            }
-          }
         });
+        closeModal("close");
+        if (doc.internal.getNumberOfPages() > 1) {
+          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+            doc.deletePage(i);
+          }
+        }
+        doc.save(`${currentTab.name}.pdf`);
+      }
+      displayModal();
+    }
 
-        return events;
+    function exportCurrent() {
+      if (activeTabId === null) {
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function displayModal() {
+      modal.classList.add("active");
+      modal.dispatchEvent(new Event("modalOpened"));
+    }
+
+    function closeModal(event) {
+      if (event.target === modal || event === "close") {
+        modal.classList.remove("active");
+        modal.dispatchEvent(new Event("modalClosed"));
+      }
+    }
+
+    function showAlert(message) {
+      exportModalContent.innerHTML = "";
+      const wrapBoth = document.createElement('div');
+      wrapBoth.classList.add("alertWrap");
+      let alertDiv = document.createElement("div");
+      alertDiv.classList.add("alertText");
+      alertDiv.textContent = message;
+      const btn = document.createElement("alertButton");
+      btn.textContent = "Close";
+      btn.classList.add("exportBtn");
+      btn.addEventListener("click", () => {
+        closeModal("close");
+      });
+      wrapBoth.appendChild(alertDiv);
+      wrapBoth.appendChild(btn);
+      exportModalContent.appendChild(wrapBoth);
+      displayModal();
+    }
+
+    modal.addEventListener("modalOpened", () => {
+      document.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("modalClosed", () => {
+      document.removeEventListener("click", closeModal);
+      exportModalContent.innerHTML = "";
+    });
+
+    function modalIsOpen() {
+      return modal.classList.contains("active");
+    }
+
+    const getEventNames = (root) => {
+      let events = [];
+
+      const objectHasSubPrototype = (object, comp) => {
+        let proto = Object.getPrototypeOf(object);
+
+        while (proto !== null && proto !== EventTarget) {
+          proto = Object.getPrototypeOf(proto);
+        }
+
+        return (proto !== null);
       };
 
-      function focusTab(tabElem) {
-        if (!tabElem) { tabElem = currentTab }
-        tabElem.editorInstance.focus()
-      }
+      const addEventNames = (propNames) => {
+        propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
+          propName = propName.substr(2);
+          if (events.indexOf(propName) === -1) {
+            events.push(propName);
+          }
+        });
+      };
 
-      document.getElementById("selectAllBtn").addEventListener("click", () => {
-        const range = currentTab.editorInstance.getModel().getFullModelRange();
-        currentTab.editorInstance.setSelection(range);
-        focusTab()
-        closeDropdowns()
+      Object.getOwnPropertyNames(root).forEach((name) => {
+        let value = root[name];
+
+        if (value) {
+          if (objectHasSubPrototype(value, EventTarget)) {
+            let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
+            addEventNames(propNames);
+
+            propNames = Object.getOwnPropertyNames(window);
+            addEventNames(propNames);
+          }
+        }
       });
 
-      document.getElementById("showContext").addEventListener("click", () => {
-        focusTab()
-        currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
-        closeDropdowns()
-      })
+      return events;
+    };
+
+    function focusTab(tabElem) {
+      if (!tabElem) { tabElem = currentTab }
+      tabElem.editorInstance.focus()
+    }
+
+    document.getElementById("selectAllBtn").addEventListener("click", () => {
+      const range = currentTab.editorInstance.getModel().getFullModelRange();
+      currentTab.editorInstance.setSelection(range);
+      focusTab()
+      closeDropdowns()
+    });
+
+    document.getElementById("showContext").addEventListener("click", () => {
+      focusTab()
+      currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
+      closeDropdowns()
+    })
 
 
   </script>
