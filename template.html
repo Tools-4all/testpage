@@ -1662,6 +1662,7 @@
 
         function showContextMenu(options) {
           const theModel = editorInstance.getModel();
+          console.log("istextselected", theModel.getValueInRange(editorInstance.getSelection()));
           const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
           const defaultOptions = {
             copy: isTextSelected,
@@ -1684,54 +1685,69 @@
             { className: 'format', text: 'Format', action: () => editorInstance.getAction('editor.action.formatDocument').run() }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
+
+          // Clear and set up the scrollable container
           mobileInsetMenu.innerHTML = '';
+          mobileInsetMenu.style.display = 'flex';
+          mobileInsetMenu.style.overflowX = 'hidden';
+          mobileInsetMenu.style.flexWrap = 'nowrap';
+          mobileInsetMenu.style.width = 'calc(100% - 40px)'; // leave space for arrow (adjust as needed)
 
-          const toggleThreshold = 3;
-          let isExpanded = false; 
+          // Render all menu items
+          menuItemsFiltered.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'mobile-menu-item ' + item.className;
+            menuItem.innerHTML = `<span>${item.text}</span>`;
+            menuItem.ontouchstart = () => menuItem.classList.add('hovered');
+            menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
+            menuItem.ontouchend = (e) => {
+              e.preventDefault();
+              menuItem.classList.remove('hovered');
+              item.action();
+              mobileContextMenu.classList.add('hidden');
+            };
+            mobileInsetMenu.appendChild(menuItem);
+          });
 
-          function renderMenuItems() {
-            mobileInsetMenu.innerHTML = '';
+          // Remove any existing arrow element if present.
+          const existingArrow = mobileContextMenu.querySelector('.toggle-arrow');
+          if (existingArrow) existingArrow.remove();
 
-            let itemsToRender;
-            if (menuItemsFiltered.length > toggleThreshold && !isExpanded) {
-              itemsToRender = menuItemsFiltered.slice(0, 2);
-            } else {
-              itemsToRender = menuItemsFiltered;
-            }
-
-            itemsToRender.forEach(item => {
-              const menuItem = document.createElement('div');
-              menuItem.className = 'mobile-menu-item ' + item.className;
-              menuItem.innerHTML = `<span>${item.text}</span>`;
-              menuItem.ontouchstart = () => menuItem.classList.add('hovered');
-              menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
-              menuItem.ontouchend = (e) => {
-                e.preventDefault();
-                menuItem.classList.remove('hovered');
-                item.action();
-                mobileContextMenu.classList.add('hidden');
-              };
-              mobileInsetMenu.appendChild(menuItem);
-            });
-
-            if (menuItemsFiltered.length > toggleThreshold) {
-              const arrow = document.createElement('div');
+          // After rendering, if the content overflows, add the scroll toggle arrow.
+          setTimeout(() => {
+            if (mobileInsetMenu.scrollWidth > mobileInsetMenu.clientWidth) {
+              let arrow = document.createElement('div');
               arrow.className = 'mobile-menu-item toggle-arrow';
+              arrow.style.display = 'flex';
+              arrow.style.alignItems = 'center';
+              arrow.style.justifyContent = 'center';
+              arrow.style.width = '40px'; // fixed width for arrow container
+              // Initially the arrow points to the right (Unicode ▶)
               arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
+
+              let isAtEnd = false;
               arrow.ontouchstart = () => arrow.classList.add('hovered');
               arrow.ontouchmove = () => arrow.classList.remove('hovered');
               arrow.ontouchend = (e) => {
                 e.preventDefault();
                 arrow.classList.remove('hovered');
-                isExpanded = !isExpanded;
-                arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(${isExpanded ? '180deg' : '0deg'});">&#9654;</span>`;
-                renderMenuItems();
+                if (!isAtEnd) {
+                  // Scroll to the end (revealing hidden items)
+                  mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
+                  isAtEnd = true;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(180deg);">&#9654;</span>`;
+                } else {
+                  // Scroll back to the start
+                  mobileInsetMenu.scrollTo({ left: 0, behavior: 'smooth' });
+                  isAtEnd = false;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
+                }
               };
-              mobileInsetMenu.appendChild(arrow);
+              // Append the arrow to the mobileContextMenu (so it's always on the right side)
+              mobileContextMenu.appendChild(arrow);
             }
-          }
+          }, 0);
 
-          renderMenuItems();
           mobileContextMenu.classList.remove('hidden');
         }
 
