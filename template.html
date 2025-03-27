@@ -1640,6 +1640,45 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
+        let menuInitialX = 0, menuInitialY = 0, touchStartX = 0, touchStartY = 0;
+
+        mobileContextMenu.addEventListener('touchstart', (e) => {
+          const touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          menuInitialX = mobileContextMenu.offsetLeft;
+          menuInitialY = mobileContextMenu.offsetTop;
+        });
+
+        mobileContextMenu.addEventListener('touchmove', (e) => {
+          isContextDragged = true;
+          const touch = e.touches[0];
+          let newX = menuInitialX + (touch.clientX - touchStartX);
+          let newY = menuInitialY + (touch.clientY - touchStartY);
+
+          const editorRect = editorDom.getBoundingClientRect();
+          const menuRect = mobileContextMenu.getBoundingClientRect();
+
+          newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
+          newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
+
+          mobileContextMenu.style.left = newX + 'px';
+          mobileContextMenu.style.top = newY + 'px';
+        });
+
+        mobileContextMenu.addEventListener('touchend', (e) => {
+          const touch = e.changedTouches[0];
+          const touchEndX = touch.clientX;
+          const touchEndY = touch.clientY;
+          if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
+            becasueTouch = true;
+          }
+          setTimeout(() => {
+            becasueTouch = false;
+          }, 100);
+        });
+
+
         document.addEventListener('touchstart', (e) => {
           if (!isContextMenuOpen()) {
             return;
@@ -1727,7 +1766,7 @@
           };
           options = Object.assign({}, defaultOptions, options);
           const menuItems = [
-            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false},
+            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false },
             { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')), close: true },
             { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')), close: true },
             {
@@ -1735,7 +1774,8 @@
                 const range = editorInstance.getModel().getFullModelRange();
                 editorInstance.setSelection(range);
               })
-            , close: true},
+              , close: true
+            },
             { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: false }
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
