@@ -569,7 +569,7 @@
       position: relative;
       flex: 1;
       overflow: hidden;
-    
+
     }
 
     .editor-and-output {
@@ -1662,7 +1662,6 @@
 
         function showContextMenu(options) {
           const theModel = editorInstance.getModel();
-          console.log("istextselected", theModel.getValueInRange(editorInstance.getSelection()));
           const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
           const defaultOptions = {
             copy: isTextSelected,
@@ -1686,22 +1685,56 @@
           ];
           const menuItemsFiltered = menuItems.filter(item => options[item.className]);
           mobileInsetMenu.innerHTML = '';
-          menuItemsFiltered.forEach(item => {
-            const menuItem = document.createElement('div');
-            menuItem.className = 'mobile-menu-item ' + item.className;
-            menuItem.innerHTML = `<span>${item.text}</span>`;
-            menuItem.ontouchstart = () => menuItem.classList.add('hovered');
-            menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
-            menuItem.ontouchend = (e) => {
-              e.preventDefault();
-              menuItem.classList.remove('hovered');
-              item.action();
-              mobileContextMenu.classList.add('hidden');
-            };
-            mobileInsetMenu.appendChild(menuItem);
-          });
+
+          const toggleThreshold = 3;
+          let isExpanded = false; 
+
+          function renderMenuItems() {
+            mobileInsetMenu.innerHTML = '';
+
+            let itemsToRender;
+            if (menuItemsFiltered.length > toggleThreshold && !isExpanded) {
+              itemsToRender = menuItemsFiltered.slice(0, 2);
+            } else {
+              itemsToRender = menuItemsFiltered;
+            }
+
+            itemsToRender.forEach(item => {
+              const menuItem = document.createElement('div');
+              menuItem.className = 'mobile-menu-item ' + item.className;
+              menuItem.innerHTML = `<span>${item.text}</span>`;
+              menuItem.ontouchstart = () => menuItem.classList.add('hovered');
+              menuItem.ontouchmove = () => menuItem.classList.remove('hovered');
+              menuItem.ontouchend = (e) => {
+                e.preventDefault();
+                menuItem.classList.remove('hovered');
+                item.action();
+                mobileContextMenu.classList.add('hidden');
+              };
+              mobileInsetMenu.appendChild(menuItem);
+            });
+
+            if (menuItemsFiltered.length > toggleThreshold) {
+              const arrow = document.createElement('div');
+              arrow.className = 'mobile-menu-item toggle-arrow';
+              arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
+              arrow.ontouchstart = () => arrow.classList.add('hovered');
+              arrow.ontouchmove = () => arrow.classList.remove('hovered');
+              arrow.ontouchend = (e) => {
+                e.preventDefault();
+                arrow.classList.remove('hovered');
+                isExpanded = !isExpanded;
+                arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(${isExpanded ? '180deg' : '0deg'});">&#9654;</span>`;
+                renderMenuItems();
+              };
+              mobileInsetMenu.appendChild(arrow);
+            }
+          }
+
+          renderMenuItems();
           mobileContextMenu.classList.remove('hidden');
         }
+
 
         showContextMenuFunc = showContextMenu;
 
