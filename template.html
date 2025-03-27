@@ -1740,33 +1740,28 @@
           const menuWidth = mobileContextMenu.offsetWidth;
           const menuHeight = mobileContextMenu.offsetHeight;
 
-          // X - לא חורג מהעורך
+          // Clamp x within editor horizontally.
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - menuWidth));
 
-          let finalY;
-
+          let newY;
           if (!isContextDragged) {
-            // נסה למקם מעל, אם נכנס
-            const above = y - menuHeight;
-            if (above >= editorRect.top) {
-              finalY = above;
-            } else {
-              // אם לא נכנס מעל, נסה מתחת
-              const below = y + 5;
-              if (below + menuHeight <= editorRect.bottom) {
-                finalY = below;
-              } else {
-                // אם גם לא מעל וגם לא מתחת – תכניס בכוח בתוך העורך
-                finalY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
+            // Always try to position the menu above the selection.
+            newY = y - menuHeight;
+            // If that would put it above the editor, then position it below the selection.
+            if (newY < editorRect.top) {
+              newY = y + 5; // 5px gap below selection handle
+              // If placing it below would cause overflow at the bottom, clamp to the bottom.
+              if (newY + menuHeight > editorRect.bottom) {
+                newY = editorRect.bottom - menuHeight;
               }
             }
           } else {
-            // בגרירה – פשוט תוודא שלא יוצא מהעורך
-            finalY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
+            // When dragging, ignore above/below logic and just clamp y.
+            newY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
           }
 
           mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = finalY + 'px';
+          mobileContextMenu.style.top = newY + 'px';
         }
 
 
