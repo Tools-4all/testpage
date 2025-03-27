@@ -1652,36 +1652,46 @@
         mobileContextMenu.appendChild(mobileInsetMenu);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
-        let menuInitialX = 0, menuInitialY = 0, touchStartX = 0, touchStartY = 0;
+        let isDraggingMenu = false;
 
         mobileContextMenu.addEventListener('touchstart', (e) => {
-          const touch = e.touches[0];
-          // Record the starting touch positions
-          touchStartX = touch.clientX;
-          touchStartY = touch.clientY;
-          // Record current menu offsets (assuming position: absolute)
+          isDraggingMenu = false;
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
           menuInitialX = mobileContextMenu.offsetLeft;
           menuInitialY = mobileContextMenu.offsetTop;
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
-          e.preventDefault(); // prevent scrolling while dragging
-          const touch = e.touches[0];
-          // Calculate new position
-          let newX = menuInitialX + (touch.clientX - touchStartX);
-          let newY = menuInitialY + (touch.clientY - touchStartY);
+          if (!isDraggingMenu) {
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+              isDraggingMenu = true;
+            }
+          }
 
-          // Get boundaries from editorDom
+          e.preventDefault(); 
+          let newX = menuInitialX + (e.touches[0].clientX - touchStartX);
+          let newY = menuInitialY + (e.touches[0].clientY - touchStartY);
+
           const editorRect = editorDom.getBoundingClientRect();
           const menuRect = mobileContextMenu.getBoundingClientRect();
 
-          // Clamp newX and newY so that the mobileContextMenu remains within editorDom
           newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
           newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
 
           mobileContextMenu.style.left = newX + 'px';
           mobileContextMenu.style.top = newY + 'px';
         });
+
+        mobileContextMenu.addEventListener('touchend', (e) => {
+          if (isDraggingMenu) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        });
+
         editorInstance.onDidChangeCursorSelection((e) => {
 
           const selection = e.selection;
