@@ -1739,11 +1739,12 @@
         function setContextPos(x, y) {
           if (editorRectGlobal === null) {
             editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
+            console.log(editorRectGlobal);
             editorRectGlobal = {
-              left: editorRectGlobal.left + 200,
-              top: editorRectGlobal.top + 200,
-              right: editorRectGlobal.right +200,
-              bottom: editorRectGlobal.bottom +200
+              left: parseInt(prompt("Enter left")),
+              top: parseInt(prompt("Enter top")),
+              right: parseInt(prompt("Enter right")),
+              bottom: parseInt(prompt("Enter bottom"))
             }
             console.log(editorRectGlobal);
           }
