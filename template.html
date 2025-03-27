@@ -1873,10 +1873,6 @@
             return;
           }
 
-          if (!isContextMenuOpen) {
-            showContextMenuFunc();
-          }
-
           const startPos = selection.getStartPosition();
           const endPos = selection.getEndPosition();
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
