@@ -1757,7 +1757,8 @@
 
         function funcDeco(func) {
           return () => {
-            if (isContextDragged) {
+            if (isContextDragged) 
+            {
               return;
             }
             func()
@@ -2169,6 +2170,11 @@
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
+          if (isContextDragged) {
+            setTimeout(() => {
+              isContextDragged = false;
+            }, 100);
+          }
           if (becasueTouch) {
             becasueTouch = false;
             if (!editorInstance.getSelection().isEmpty()) {
