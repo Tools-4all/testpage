@@ -1743,12 +1743,12 @@
           if (!isContextDragged && y + mobileContextMenu.offsetHeight >= editorRectGlobal.bottom) {
             y = y - mobileContextMenu.offsetHeight;
           }
-
+          
           if (!isContextDragged && y < editorRectGlobal.top) {
             y = y + mobileContextMenu.offsetHeight;
           }
-
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
+          
+          y = Math.max(editorRectGlobal.top, Math.min(y, editorRectGlobal.bottom - mobileContextMenu.offsetHeight));
 
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
