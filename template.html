@@ -1707,11 +1707,11 @@
             menuItem.innerHTML = `<span>${item.text}</span>`;
             menuItem.addEventListener('touchstart', (e) => {
               menuItem.classList.add('hovered');
-            }, { passive: true });
+            }, { passive: false });
 
             menuItem.addEventListener('touchmove', (e) => {
               menuItem.classList.remove('hovered');
-            }, { passive: true });
+            }, { passive: false });
 
             menuItem.addEventListener('touchend', (e) => {
               e.preventDefault();
@@ -1737,9 +1737,15 @@
               arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
 
               let isAtEnd = false;
-              arrow.ontouchstart = () => arrow.classList.add('hovered');
-              arrow.ontouchmove = () => arrow.classList.remove('hovered');
-              arrow.ontouchend = (e) => {
+              arrow.addEventListener('touchstart', (e) => {
+                arrow.classList.add('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchmove', (e) => {
+                arrow.classList.remove('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchend', (e) => {
                 e.preventDefault();
                 arrow.classList.remove('hovered');
                 if (!isAtEnd) {
@@ -1751,7 +1757,8 @@
                   isAtEnd = false;
                   arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
                 }
-              };
+              }, { passive: false });
+
               mobileContextMenu.appendChild(arrow);
             }
           }, 0);
