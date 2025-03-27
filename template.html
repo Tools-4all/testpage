@@ -1740,18 +1740,18 @@
         }
 
         function setContextPos(x, y) {
-          const theRect = editorRectGlobal()
+          const theRect = getRect();
 
           const relativeX = x - editorRect.left;
           const relativeY = y - editorRect.top;
 
-          const maxX = editorRectGlobal.width - mobileContextMenu.offsetWidth;
-          const maxY = editorRectGlobal.height - mobileContextMenu.offsetHeight;
+          const maxX = theRect.width - mobileContextMenu.offsetWidth;
+          const maxY = theRect.height - mobileContextMenu.offsetHeight;
 
           let constrainedX = Math.max(0, Math.min(relativeX, maxX));
           let constrainedY = Math.max(0, Math.min(relativeY, maxY));
 
-          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > editorRectGlobal.height) {
+          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
             constrainedY = relativeY - mobileContextMenu.offsetHeight;
             constrainedY = Math.max(0, constrainedY);
           }
