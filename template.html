@@ -1641,7 +1641,6 @@
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
         editorInstance.onDidChangeCursorSelection((e) => {
-          showContextMenu();
 
           const selection = e.selection;
           if (selection.isEmpty()) {
@@ -1649,6 +1648,7 @@
             mobileContextMenu.classList.add('hidden');
             return;
           }
+          showContextMenu();
           const startPos = selection.getStartPosition();
           const endPos = selection.getEndPosition();
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
