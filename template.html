@@ -1740,33 +1740,33 @@
           const menuWidth = mobileContextMenu.offsetWidth;
           const menuHeight = mobileContextMenu.offsetHeight;
 
-          // Clamp x to remain fully within editor bounds.
+          // X - לא חורג מהעורך
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - menuWidth));
 
-          let desiredY;
-          if (!isContextDragged) {
-            // Candidate position above the selection handle:
-            const aboveY = y - menuHeight;
-            // Candidate position below the selection handle (with a 5px gap):
-            const belowY = y + 5;
+          let finalY;
 
-            // If there is room above, use it:
-            if (aboveY >= editorRect.top) {
-              desiredY = aboveY;
-            } else if (belowY + menuHeight <= editorRect.bottom) {
-              // Not enough room above, but room below
-              desiredY = belowY;
+          if (!isContextDragged) {
+            // נסה למקם מעל, אם נכנס
+            const above = y - menuHeight;
+            if (above >= editorRect.top) {
+              finalY = above;
             } else {
-              // Neither fits perfectly, so clamp y to editor bounds.
-              desiredY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
+              // אם לא נכנס מעל, נסה מתחת
+              const below = y + 5;
+              if (below + menuHeight <= editorRect.bottom) {
+                finalY = below;
+              } else {
+                // אם גם לא מעל וגם לא מתחת – תכניס בכוח בתוך העורך
+                finalY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
+              }
             }
           } else {
-            // When dragging, only enforce the bounds.
-            desiredY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
+            // בגרירה – פשוט תוודא שלא יוצא מהעורך
+            finalY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
           }
 
           mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = desiredY + 'px';
+          mobileContextMenu.style.top = finalY + 'px';
         }
 
 
