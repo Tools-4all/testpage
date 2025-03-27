@@ -1746,6 +1746,7 @@
 
         function funcDeco(func) {
           return () => {
+            console.log("isContextDragged", isContextDragged)
             if (isContextDragged) {
               isContextDragged = false;
               return;
