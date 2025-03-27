@@ -1613,7 +1613,6 @@
       let dragTouchX = null;
       let dragTouchY = null;
       let contextDiv = null;
-      let showContextMenuFunc = null;
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
@@ -1774,8 +1773,6 @@
           mobileContextMenu.classList.remove('hidden');
         }
 
-
-        showContextMenuFunc = showContextMenu;
 
         function handleMobileSelectorTouch(selector, isLeft) {
           let touchStartPos, initialSelection;
