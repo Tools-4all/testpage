@@ -1679,11 +1679,32 @@
           }
 
           isContextDragged = true;
-          // Adjust the new position by the touch offset to keep the menu under your finger
-          const newX = menuStartX + deltaX - touchOffsetX;
-          const newY = menuStartY + deltaY - touchOffsetY;
 
-          setContextPos(newX, newY); // Pass editor-relative coordinates
+          // Calculate the new position based on the center of the menu
+          const menuWidth = mobileContextMenu.offsetWidth;
+          const menuHeight = mobileContextMenu.offsetHeight;
+          const editorRect = getRect();
+
+          // Initial center position (relative to editor)
+          const initialCenterX = menuStartX + menuWidth / 2;
+          const initialCenterY = menuStartY + menuHeight / menuHeight / 2;
+
+          // New center position after dragging (relative to editor)
+          const newCenterX = initialCenterX + deltaX;
+          const newCenterY = initialCenterY + deltaY;
+
+          // Convert center position to top-left position
+          const newX = newCenterX - menuWidth / 2;
+          const newY = newCenterY - menuHeight / 2;
+
+          // Constrain within editor bounds
+          const maxX = editorRect.width - menuWidth;
+          const maxY = editorRect.height - menuHeight;
+          const constrainedX = Math.max(0, Math.min(newX, maxX));
+          const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+          // Apply the new position
+          setContextPos(constrainedX, constrainedY);
         });
 
 
@@ -1750,18 +1771,14 @@
 
         function setContextPos(x, y) {
           const theRect = getRect();
-
-          const relativeX = x; // Already editor-relative from touchmove
-          const relativeY = y; // Already editor-relative from touchmove
-
           const maxX = theRect.width - mobileContextMenu.offsetWidth;
           const maxY = theRect.height - mobileContextMenu.offsetHeight;
 
-          let constrainedX = Math.max(0, Math.min(relativeX, maxX));
-          let constrainedY = Math.max(0, Math.min(relativeY, maxY));
+          let constrainedX = Math.max(0, Math.min(x, maxX));
+          let constrainedY = Math.max(0, Math.min(y, maxY));
 
           if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
-            constrainedY = relativeY - mobileContextMenu.offsetHeight;
+            constrainedY = y - mobileContextMenu.offsetHeight;
             constrainedY = Math.max(0, constrainedY);
           }
 
