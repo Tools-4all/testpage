@@ -1742,8 +1742,8 @@
         function setContextPos(x, y) {
           const theRect = getRect();
 
-          const relativeX = x - editorRect.left;
-          const relativeY = y - editorRect.top;
+          const relativeX = x - theRect.left;
+          const relativeY = y - theRect.top;
 
           const maxX = theRect.width - mobileContextMenu.offsetWidth;
           const maxY = theRect.height - mobileContextMenu.offsetHeight;
