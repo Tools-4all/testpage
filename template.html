@@ -1643,6 +1643,7 @@
         let menuInitialX = 0, menuInitialY = 0, touchStartX = 0, touchStartY = 0;
 
         mobileContextMenu.addEventListener('touchstart', (e) => {
+          stopAll(e);
           const touch = e.touches[0];
           touchStartX = touch.clientX;
           touchStartY = touch.clientY;
