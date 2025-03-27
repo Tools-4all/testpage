@@ -1652,45 +1652,49 @@
         mobileContextMenu.appendChild(mobileInsetMenu);
         editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
         contextDiv = mobileContextMenu
+        // In your initializeMobileSelection, add these variables:
         let isDraggingMenu = false;
+        let dragStartX, dragStartY, initialLeft, initialTop;
 
-        mobileContextMenu.addEventListener('touchstart', (e) => {
+        // Use pointer events on mobileContextMenu:
+        mobileContextMenu.style.touchAction = 'none'; // disable default gestures
+
+        mobileContextMenu.addEventListener('pointerdown', (e) => {
+          // Prevent default behavior and capture all pointer events for this element.
+          e.preventDefault();
+          mobileContextMenu.setPointerCapture(e.pointerId);
           isDraggingMenu = false;
-          touchStartX = e.touches[0].clientX;
-          touchStartY = e.touches[0].clientY;
-          menuInitialX = mobileContextMenu.offsetLeft;
-          menuInitialY = mobileContextMenu.offsetTop;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          // Get current position (make sure mobileContextMenu is positioned absolutely)
+          initialLeft = parseFloat(mobileContextMenu.style.left) || 0;
+          initialTop = parseFloat(mobileContextMenu.style.top) || 0;
         });
 
-        mobileContextMenu.addEventListener('touchmove', (e) => {
-          // Mark that a drag is occurring if the touch has moved beyond a threshold
-          if (!isDraggingMenu) {
-            const dx = e.touches[0].clientX - touchStartX;
-            const dy = e.touches[0].clientY - touchStartY;
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
-              isDraggingMenu = true;
-            }
+        mobileContextMenu.addEventListener('pointermove', (e) => {
+          const dx = e.clientX - dragStartX;
+          const dy = e.clientY - dragStartY;
+          if (!isDraggingMenu && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+            isDraggingMenu = true;
           }
-
-          e.preventDefault(); // already solved scrolling elsewhere
-          let newX = menuInitialX + (e.touches[0].clientX - touchStartX);
-          let newY = menuInitialY + (e.touches[0].clientY - touchStartY);
-
+          // Calculate new position.
+          let newX = initialLeft + dx;
+          let newY = initialTop + dy;
+          // Clamp newX and newY within editorDom bounds:
           const editorRect = editorDom.getBoundingClientRect();
           const menuRect = mobileContextMenu.getBoundingClientRect();
-
           newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
           newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
-
           mobileContextMenu.style.left = newX + 'px';
           mobileContextMenu.style.top = newY + 'px';
         });
 
-        mobileContextMenu.addEventListener('touchend', (e) => {
-          // If a drag happened, cancel any subsequent click event
+        mobileContextMenu.addEventListener('pointerup', (e) => {
+          mobileContextMenu.releasePointerCapture(e.pointerId);
+          // If a drag occurred, prevent a subsequent click.
           if (isDraggingMenu) {
             e.preventDefault();
-            e.stopPropagation();
+            e.stopImmediatePropagation();
           }
         });
 
