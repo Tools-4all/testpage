@@ -1734,22 +1734,28 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-        
-        function setContextPos(x, y) {
-          const editorRect = domNode.getBoundingClientRect();
-          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
+        // Calculate once when the editor is created:
+        const editorRect = domNode.getBoundingClientRect();
+        const offsetX = editorRect.left;
+        const offsetY = editorRect.top;
+
+        // Then in setContextPos:
+        function setContextPos(x, y) {
+          // Adjust x/y relative to the editor's offset.
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
           if (!isContextDragged) {
             if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
               y = y - mobileContextMenu.offsetHeight;
             }
           }
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom + mobileContextMenu.offsetHeight));
 
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
-
-          mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = y + 'px';
+          // Now subtract the cached offset to get coordinates relative to the editor.
+          mobileContextMenu.style.left = (x - offsetX) + 'px';
+          mobileContextMenu.style.top = (y - offsetY) + 'px';
         }
+
 
 
         function funcDeco(func) {
