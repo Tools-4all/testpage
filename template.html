@@ -1735,21 +1735,24 @@
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
 
-        function setContextPos(x, y) {
+        function setContextPos(eventX, eventY) {
           const editorRect = domNode.getBoundingClientRect();
-          // Convert x and y from viewport coordinates to editor-relative coordinates.
-          x = x - editorRect.left;
-          y = y - editorRect.top;
+          // Calculate the relative position (delta) inside the editor.
+          let deltaX = eventX - editorRect.left;
+          let deltaY = eventY - editorRect.top;
 
-          // Constrain x and y relative to the editor container
-          x = Math.max(0, Math.min(x, editorRect.width - mobileContextMenu.offsetWidth));
-          if (!isContextDragged && y - mobileContextMenu.offsetHeight >= 0) {
-            y = y - mobileContextMenu.offsetHeight;
+          // Adjust Y: if there’s room above, shift up by the menu’s height.
+          if (!isContextDragged && deltaY - mobileContextMenu.offsetHeight >= 0) {
+            deltaY = deltaY - mobileContextMenu.offsetHeight;
           }
-          y = Math.max(0, Math.min(y, editorRect.height - mobileContextMenu.offsetHeight));
 
-          mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = y + 'px';
+          // Constrain the delta values so the menu stays within the editor
+          deltaX = Math.max(0, Math.min(deltaX, editorRect.width - mobileContextMenu.offsetWidth));
+          deltaY = Math.max(0, Math.min(deltaY, editorRect.height - mobileContextMenu.offsetHeight));
+
+          // Now convert back to viewport coordinates:
+          mobileContextMenu.style.left = (editorRect.left + deltaX) + 'px';
+          mobileContextMenu.style.top = (editorRect.top + deltaY) + 'px';
         }
 
 
