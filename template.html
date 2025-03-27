@@ -1808,7 +1808,7 @@
             }, { passive: false });
 
             menuItem.addEventListener('touchend', (e) => {
-              e.preventDefault();
+              stopAll(e);
               if (item.close && !isContextDragged) {
                 mobileContextMenu.classList.add('hidden');
               }
@@ -1842,7 +1842,7 @@
               }, { passive: false });
 
               arrow.addEventListener('touchend', (e) => {
-                e.preventDefault();
+                stopAll(e);
                 arrow.classList.remove('hovered');
                 if (!isAtEnd) {
                   mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
