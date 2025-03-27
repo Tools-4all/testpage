@@ -2115,7 +2115,7 @@
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
-          if (becasueTouch) {
+          if (becasueTouch && !editorInstance.getSelection().isEmpty()) {
             becasueTouch = false;
             theContext.classList.remove('hidden');
           }
