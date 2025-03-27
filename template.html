@@ -1649,23 +1649,22 @@
         mobileInsetMenu.className = 'mobile-inset-menu';
         showContextMenu();
 
-        let touchStartX = 0, touchStartY = 0; // Initial touch coordinates (viewport)
-        let menuStartX = 0, menuStartY = 0;   // Initial menu position (editor-relative)
-        let touchOffsetX = 0, touchOffsetY = 0; // Offset of touch within the menu
+        let touchStartX = 0, touchStartY = 0; 
+        let menuStartX = 0, menuStartY = 0;  
+        let touchOffsetX = 0, touchOffsetY = 0;
 
         mobileContextMenu.addEventListener('touchstart', (e) => {
           stopAll(e);
           const touch = e.touches[0];
           const editorRect = getRect();
-          touchStartX = touch.clientX; // Viewport X
-          touchStartY = touch.clientY; // Viewport Y
-          menuStartX = mobileContextMenu.offsetLeft; // Editor-relative X
-          menuStartY = mobileContextMenu.offsetTop;  // Editor-relative Y
+          touchStartX = touch.clientX; 
+          touchStartY = touch.clientY; 
+          menuStartX = mobileContextMenu.offsetLeft;
+          menuStartY = mobileContextMenu.offsetTop; 
 
-          // Calculate the offset of the touch relative to the menu's top-left corner
           const menuRect = mobileContextMenu.getBoundingClientRect();
-          touchOffsetX = touch.clientX - menuRect.left; // How far right from menu's left edge
-          touchOffsetY = touch.clientY - menuRect.top;  // How far down from menu's top edge
+          touchOffsetX = touch.clientX - menuRect.left;
+          touchOffsetY = touch.clientY - menuRect.top; 
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
@@ -1679,31 +1678,19 @@
           }
 
           isContextDragged = true;
-
-          // Calculate the new position based on the center of the menu
           const menuWidth = mobileContextMenu.offsetWidth;
           const menuHeight = mobileContextMenu.offsetHeight;
           const editorRect = getRect();
-
-          // Initial center position (relative to editor)
           const initialCenterX = menuStartX + menuWidth / 2;
           const initialCenterY = menuStartY + menuHeight / menuHeight / 2;
-
-          // New center position after dragging (relative to editor)
           const newCenterX = initialCenterX + deltaX;
           const newCenterY = initialCenterY + deltaY;
-
-          // Convert center position to top-left position
           const newX = newCenterX - menuWidth / 2;
           const newY = newCenterY - menuHeight / 2;
-
-          // Constrain within editor bounds
           const maxX = editorRect.width - menuWidth;
           const maxY = editorRect.height - menuHeight;
           const constrainedX = Math.max(0, Math.min(newX, maxX));
           const constrainedY = Math.max(0, Math.min(newY, maxY));
-
-          // Apply the new position
           setContextPos(constrainedX, constrainedY);
         });
 
@@ -2003,7 +1990,7 @@
             const offsetX = 10, offsetY = 22;
             const reverseOffset = 20;
             const editorScrollable = domNode
-            const scrollRect = editorScrollable.getBoundingClientRect();
+            const scrollRect = getRect();
 
             const leftHandlePos = startCoords.top + offsetY;
             const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
