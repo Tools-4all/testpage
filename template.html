@@ -1666,11 +1666,9 @@
           let newX = menuInitialX + deltaX;
           let newY = menuInitialY + deltaY;
 
-          const editorRect = editorDom.getBoundingClientRect();
-          const menuRect = mobileContextMenu.getBoundingClientRect();
-
-          newX = Math.max(0, Math.min(newX, editorRect.width - menuRect.width));
-          newY = Math.max(0, Math.min(newY, editorRect.height - menuRect.height));
+          const editorRect = domNode.getBoundingClientRect();
+          newX = Math.max(editorRect.left, Math.min(newX, editorRect.right - mobileContextMenu.offsetWidth));
+          newY = Math.max(editorRect.top, Math.min(newY, editorRect.bottom - mobileContextMenu.offsetHeight));
 
           setContextPos(newX, newY);
         });
@@ -1739,26 +1737,25 @@
 
         function setContextPos(x, y) {
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
-          if (x + mobileContextMenu.offsetWidth > editorRect.right) {
-            x = editorRect.right - mobileContextMenu.offsetWidth;
+
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
+
+          if (!isContextDragged) {
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
+            }
           }
-          if (x < editorRect.left) {
-            x = editorRect.left;
-          }
-          if (y + mobileContextMenu.offsetHeight > editorRect.bottom) {
-            y = editorRect.bottom - mobileContextMenu.offsetHeight;
-          }
-          if (y < editorRect.top) {
-            y = editorRect.top;
-          }
+
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
+
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
         }
 
+
         function funcDeco(func) {
           return () => {
-            if (isContextDragged) 
-            {
+            if (isContextDragged) {
               return;
             }
             func()
