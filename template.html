@@ -1617,6 +1617,14 @@
       let becasueTouch = false;
       let theContext;
       let isContextDragged = false;
+      let editorRectGlobal = null;
+
+      function getRect() {
+        if (editorRectGlobal === null) {
+          editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
+        }
+        return editorRectGlobal;
+      }
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
@@ -1713,7 +1721,8 @@
 
           if (!isContextMenuOpen()) {
             showContextMenu();
-            setContextPos(startCoords.left + editorRect.left, startCoords.top + editorRect.top);
+            const theRect = getRect();
+            setContextPos(startCoords.left + theRect.left, startCoords.top + theRect.top);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
@@ -1730,12 +1739,8 @@
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
 
-        let editorRectGlobal = null;
         function setContextPos(x, y) {
-          if (editorRectGlobal === null) {
-            editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
-            console.log(editorRectGlobal);
-          }
+          const theRect = editorRectGlobal()
 
           const relativeX = x - editorRect.left;
           const relativeY = y - editorRect.top;
@@ -1906,7 +1911,7 @@
             }
 
             const editorScrollable = domNode;
-            const editorRect = editorScrollable.getBoundingClientRect();
+            const editorRect = getRect();
             const threshold = 50;
             const scrollStep = 6;
             if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
