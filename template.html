@@ -1648,14 +1648,15 @@
             mobileContextMenu.classList.add('hidden');
             return;
           }
-          if (!isContextMenuOpen()) {
-            setContextPos(e.position.left, e.position.top);
-          }
-          showContextMenu();
           const startPos = selection.getStartPosition();
           const endPos = selection.getEndPosition();
           const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+
+          if (!isContextMenuOpen()) {
+            setContextPos(startCoords.left, startCoords.top);
+          }
+          showContextMenu();
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
             mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
