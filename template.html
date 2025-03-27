@@ -1737,20 +1737,38 @@
 
         function setContextPos(x, y) {
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
+          const menuWidth = mobileContextMenu.offsetWidth;
+          const menuHeight = mobileContextMenu.offsetHeight;
 
-          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
+          // Clamp x to remain fully within editor bounds.
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - menuWidth));
 
+          let desiredY;
           if (!isContextDragged) {
-            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
-              y = y - mobileContextMenu.offsetHeight;
+            // Candidate position above the selection handle:
+            const aboveY = y - menuHeight;
+            // Candidate position below the selection handle (with a 5px gap):
+            const belowY = y + 5;
+
+            // If there is room above, use it:
+            if (aboveY >= editorRect.top) {
+              desiredY = aboveY;
+            } else if (belowY + menuHeight <= editorRect.bottom) {
+              // Not enough room above, but room below
+              desiredY = belowY;
+            } else {
+              // Neither fits perfectly, so clamp y to editor bounds.
+              desiredY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
             }
+          } else {
+            // When dragging, only enforce the bounds.
+            desiredY = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
           }
 
-          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
-
           mobileContextMenu.style.left = x + 'px';
-          mobileContextMenu.style.top = y + 'px';
+          mobileContextMenu.style.top = desiredY + 'px';
         }
+
 
 
         function funcDeco(func) {
