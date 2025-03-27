@@ -1780,7 +1780,7 @@
             initialSelection = editorInstance.getSelection();
             touchMoved = false;
             if (touchEndTimeout) clearTimeout(touchEndTimeout);
-          });
+          }, { passive: false });
 
           let autoScrollInterval = null;
           const autoScrollDelay = 20;
@@ -1931,7 +1931,7 @@
           if (target && target.position) {
             startPositionLP = target.position;
           }
-        });
+        }, { passive: false });
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
