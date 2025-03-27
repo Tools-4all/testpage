@@ -2170,11 +2170,7 @@
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
-          if (isContextDragged) {
-            setTimeout(() => {
-              isContextDragged = false;
-            }, 100);
-          }
+          if (isContextDragged) {}
           if (becasueTouch) {
             becasueTouch = false;
             if (!editorInstance.getSelection().isEmpty()) {
