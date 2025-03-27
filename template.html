@@ -1734,37 +1734,22 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-
-        // Cache the desired vertical offset once (e.g. the menu’s height)
-        let cachedOffsetY = null;
-
-        function setContextPos(eventX, eventY) {
+        
+        function setContextPos(x, y) {
           const editorRect = domNode.getBoundingClientRect();
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
-          // If we haven't computed the offset yet, do it now.
-          // Here we assume you want the menu to appear exactly mobileContextMenu.offsetHeight above the event.
-          if (cachedOffsetY === null) {
-            cachedOffsetY = mobileContextMenu.offsetHeight;
+          if (!isContextDragged) {
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
+            }
           }
 
-          // Adjust the event's y coordinate by subtracting the cached offset.
-          let adjustedY = eventY - cachedOffsetY;
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
 
-          // Constrain X relative to the editor’s boundaries.
-          let constrainedX = Math.max(
-            editorRect.left,
-            Math.min(eventX, editorRect.right - mobileContextMenu.offsetWidth)
-          );
-          // Constrain Y relative to the editor’s boundaries.
-          let constrainedY = Math.max(
-            editorRect.top,
-            Math.min(adjustedY, editorRect.bottom - mobileContextMenu.offsetHeight)
-          );
-
-          mobileContextMenu.style.left = constrainedX + 'px';
-          mobileContextMenu.style.top = constrainedY + 'px';
+          mobileContextMenu.style.left = x + 'px';
+          mobileContextMenu.style.top = y + 'px';
         }
-
 
 
         function funcDeco(func) {
