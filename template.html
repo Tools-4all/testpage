@@ -1648,6 +1648,9 @@
             mobileContextMenu.classList.add('hidden');
             return;
           }
+          if (!isContextMenuOpen()) {
+            setContextPos(e.position.left, e.position.top);
+          }
           showContextMenu();
           const startPos = selection.getStartPosition();
           const endPos = selection.getEndPosition();
