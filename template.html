@@ -1736,14 +1736,16 @@
         }
 
         const editorRectGlobal = editorDom.getBoundingClientRect();
-        
+        console.log(editorRectGlobal);
         function setContextPos(x, y) {
-          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
+          x = Math.max(editorRectGlobal.left, Math.min(x, editorRectGlobal.right - mobileContextMenu.offsetWidth));
 
-          if (!isContextDragged) {
-            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
-              y = y - mobileContextMenu.offsetHeight;
-            }
+          if (!isContextDragged && y + mobileContextMenu.offsetHeight >= editorRectGlobal.bottom) {
+            y = y - mobileContextMenu.offsetHeight;
+          }
+
+          if (!isContextDragged && y < editorRectGlobal.top) {
+            y = y + mobileContextMenu.offsetHeight;
           }
 
           y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
