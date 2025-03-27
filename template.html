@@ -1651,6 +1651,7 @@
         });
 
         mobileContextMenu.addEventListener('touchmove', (e) => {
+          console.log("touchmove")
           stopAll(e);
           isContextDragged = true;
           const touch = e.touches[0];
