@@ -1620,6 +1620,10 @@
 
       function initializeMobileSelection(editorInstance) {
         const editorDom = editorInstance.getDomNode();
+        const editorRect = domNode.getBoundingClientRect();
+        const offsetX = editorRect.left;
+        const offsetY = editorRect.top;
+
         if (!editorDom) return;
 
         const mobileSelectionsContainer = document.createElement('div');
@@ -1663,12 +1667,14 @@
           }
 
           isContextDragged = true;
-          let newX = menuInitialX + deltaX;
-          let newY = menuInitialY + deltaY;
+          let newX = touch.clientX - offsetX;
+          let newY = touch.clientY - offsetY;
 
-          const editorRect = domNode.getBoundingClientRect();
-          newX = Math.max(editorRect.left, Math.min(newX, editorRect.right - mobileContextMenu.offsetWidth));
-          newY = Math.max(editorRect.top, Math.min(newY, editorRect.bottom - mobileContextMenu.offsetHeight));
+          newX = Math.max(0, Math.min(newX, domNode.offsetWidth - mobileContextMenu.offsetWidth));
+          newY = Math.max(0, Math.min(newY, domNode.offsetHeight - mobileContextMenu.offsetHeight));
+
+          mobileContextMenu.style.left = newX + 'px';
+          mobileContextMenu.style.top = newY + 'px';
 
           setContextPos(newX, newY);
         });
@@ -1735,14 +1741,9 @@
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
 
-        // Calculate once when the editor is created:
-        const editorRect = domNode.getBoundingClientRect();
-        const offsetX = editorRect.left;
-        const offsetY = editorRect.top;
-
-        // Then in setContextPos:
         function setContextPos(x, y) {
-          // Adjust x/y relative to the editor's offset.
+          // Here x and y are global (viewport) coordinates.
+          // Clamp them to the editor's rect:
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
           if (!isContextDragged) {
             if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
@@ -1751,10 +1752,11 @@
           }
           y = Math.max(editorRect.top, Math.min(y, editorRect.bottom + mobileContextMenu.offsetHeight));
 
-          // Now subtract the cached offset to get coordinates relative to the editor.
+          // Convert to coordinates relative to the editor:
           mobileContextMenu.style.left = (x - offsetX) + 'px';
           mobileContextMenu.style.top = (y - offsetY) + 'px';
         }
+
 
 
 
