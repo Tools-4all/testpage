@@ -1672,8 +1672,6 @@
           if (isContextMenuOpen()) return;
           const theModel = editorInstance.getModel();
           const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
-          // show traceback
-          console.trace();
           const defaultOptions = {
             copy: isTextSelected,
             cut: isTextSelected,
@@ -2073,7 +2071,6 @@
         let eventTargetStart;
         let lastDot;
 
-        console.log(domNode)
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
           touchEnd = new Date().getTime();
@@ -2124,7 +2121,6 @@
         }
 
         domNode.addEventListener("textInput", (event) => {
-          console.log("textInput", event)
           stopAll(event)
           if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
             return;
