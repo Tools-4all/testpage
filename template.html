@@ -1735,24 +1735,34 @@
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
 
+        // Cache the desired vertical offset once (e.g. the menu’s height)
+        let cachedOffsetY = null;
+
         function setContextPos(eventX, eventY) {
           const editorRect = domNode.getBoundingClientRect();
-          // Calculate the relative position (delta) inside the editor.
-          let deltaX = eventX - editorRect.left;
-          let deltaY = eventY - editorRect.top;
 
-          // Adjust Y: if there’s room above, shift up by the menu’s height.
-          if (!isContextDragged && deltaY - mobileContextMenu.offsetHeight >= 0) {
-            deltaY = deltaY - mobileContextMenu.offsetHeight;
+          // If we haven't computed the offset yet, do it now.
+          // Here we assume you want the menu to appear exactly mobileContextMenu.offsetHeight above the event.
+          if (cachedOffsetY === null) {
+            cachedOffsetY = mobileContextMenu.offsetHeight;
           }
 
-          // Constrain the delta values so the menu stays within the editor
-          deltaX = Math.max(0, Math.min(deltaX, editorRect.width - mobileContextMenu.offsetWidth));
-          deltaY = Math.max(0, Math.min(deltaY, editorRect.height - mobileContextMenu.offsetHeight));
+          // Adjust the event's y coordinate by subtracting the cached offset.
+          let adjustedY = eventY - cachedOffsetY;
 
-          // Now convert back to viewport coordinates:
-          mobileContextMenu.style.left = (editorRect.left + deltaX) + 'px';
-          mobileContextMenu.style.top = (editorRect.top + deltaY) + 'px';
+          // Constrain X relative to the editor’s boundaries.
+          let constrainedX = Math.max(
+            editorRect.left,
+            Math.min(eventX, editorRect.right - mobileContextMenu.offsetWidth)
+          );
+          // Constrain Y relative to the editor’s boundaries.
+          let constrainedY = Math.max(
+            editorRect.top,
+            Math.min(adjustedY, editorRect.bottom - mobileContextMenu.offsetHeight)
+          );
+
+          mobileContextMenu.style.left = constrainedX + 'px';
+          mobileContextMenu.style.top = constrainedY + 'px';
         }
 
 
