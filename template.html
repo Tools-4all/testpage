@@ -1737,31 +1737,20 @@
 
         function setContextPos(x, y) {
           const editorRect = editorInstance.getDomNode().getBoundingClientRect();
-          const menuHeight = mobileContextMenu.offsetHeight;
 
-          // Clamp x within the editor horizontally.
           x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
-          // If not dragging, attempt to position above the selection if there’s enough room
           if (!isContextDragged) {
-            // Use a small tolerance (e.g. 5px) to decide if there's enough room
-            if (y - menuHeight >= editorRect.top + 5) {
-              // Place the menu above the selection
-              y = y - menuHeight;
-            } else {
-              // Not enough room above; position it below the selection handle
-              // But ensure it does not overflow the bottom edge.
-              y = Math.min(y, editorRect.bottom - menuHeight);
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
             }
-          } else {
-            // When dragging, ignore the “above/below” logic and just clamp y to the editor bounds.
-            y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - menuHeight));
           }
+
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
 
           mobileContextMenu.style.left = x + 'px';
           mobileContextMenu.style.top = y + 'px';
         }
-
 
 
         function funcDeco(func) {
