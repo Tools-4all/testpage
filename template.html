@@ -1734,36 +1734,22 @@
         function isContextMenuOpen() {
           return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
         }
-
-        function setContextPos(pointerX, pointerY) {
-          // Calculate the desired position based on pointer location and the original drag offset
-          let desiredX = pointerX - dragOffsetX;
-          let desiredY = pointerY - dragOffsetY;
-
-          // Get the bounding rectangle of the editor (the container of your context menu)
+        
+        function setContextPos(x, y) {
           const editorRect = domNode.getBoundingClientRect();
-          const menuWidth = mobileContextMenu.offsetWidth;
-          const menuHeight = mobileContextMenu.offsetHeight;
+          x = Math.max(editorRect.left, Math.min(x, editorRect.right - mobileContextMenu.offsetWidth));
 
-          // Constrain desiredX within the editor's horizontal bounds
-          let constrainedX = Math.max(editorRect.left, Math.min(desiredX, editorRect.right - menuWidth));
-
-          // Adjust desiredY if the menu should appear above the pointer (if not dragged)
-          if (!isContextDragged && (desiredY - menuHeight >= editorRect.top)) {
-            desiredY = desiredY - menuHeight;
+          if (!isContextDragged) {
+            if (y - mobileContextMenu.offsetHeight >= editorRect.top) {
+              y = y - mobileContextMenu.offsetHeight;
+            }
           }
-          // Constrain desiredY within vertical bounds
-          let constrainedY = Math.max(editorRect.top, Math.min(desiredY, editorRect.bottom + menuHeight));
 
-          // Convert viewport coordinates into coordinates relative to the editor container.
-          // This assumes the context menu is a child of the editor container.
-          let relativeX = constrainedX - editorRect.left;
-          let relativeY = constrainedY - editorRect.top;
+          y = Math.max(editorRect.top, Math.min(y, editorRect.bottom - mobileContextMenu.offsetHeight));
 
-          mobileContextMenu.style.left = relativeX + 'px';
-          mobileContextMenu.style.top = relativeY + 'px';
+          mobileContextMenu.style.left = x + 'px';
+          mobileContextMenu.style.top = y + 'px';
         }
-
 
 
         function funcDeco(func) {
