@@ -1920,9 +1920,8 @@
               wasDragging = true;
               return;
             }
-            // put it above and centered of the last press
             mobileContextMenu.style.left = event.changedTouches[0].clientX - mobileContextMenu.offsetWidth / 2 + 'px';
-            mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight - 10 + 'px';
+            mobileContextMenu.style.top = event.changedTouches[0].clientY - mobileContextMenu.offsetHeight + 70 + 'px';
             
             showContextMenu();
           }, 1000);
