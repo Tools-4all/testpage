@@ -1795,7 +1795,7 @@
             } else {
               // Place just below the start selector, ensuring room for end selector
               x = selectionCenterX;
-              y = selectionTopY + selectorHeight + parseInt(prompt("space below: ")) || 5; // Below start selector
+              y = selectionTopY + selectorHeight + 20; // Below start selector
               // Adjust if end selector is pushed up
               const spaceBelow = theRect.height - selectionBottomY;
               if (spaceBelow < selectorHeight + 5) {
