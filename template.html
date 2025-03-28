@@ -1778,25 +1778,21 @@
           const theRect = getRect();
           const menuWidth = mobileContextMenu.offsetWidth || 200;
           const menuHeight = mobileContextMenu.offsetHeight || 40;
-          const selectorHeight = 25; // Height of mobile selectors
+          const selectorHeight = 25; 
           let x, y;
 
           if (startCoords && endCoords) {
-            // Selection exists, position relative to it
             const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
             const selectionTopY = Math.min(startCoords.top, endCoords.top);
-            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight; // Below selector
+            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight; 
 
-            // Try above the selection
             const spaceAbove = selectionTopY;
             if (spaceAbove >= menuHeight + 5) {
               x = selectionCenterX;
-              y = selectionTopY - menuHeight - 5; // Above selection with padding
+              y = selectionTopY - menuHeight - 5; 
             } else {
-              // Place just below the start selector, ensuring room for end selector
               x = selectionCenterX;
-              y = selectionTopY + selectorHeight + 20; // Below start selector
-              // Adjust if end selector is pushed up
+              y = selectionTopY + selectorHeight + 20; 
               const spaceBelow = theRect.height - selectionBottomY;
               if (spaceBelow < selectorHeight + 5) {
                 y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
@@ -1812,14 +1808,12 @@
               y = touch.clientY + 5 - theRect.top; // Below touch if no room above
             }
           } else if (dragTouchY !== null) {
-            // Fallback to last touch if no event provided
             x = dragTouchX - menuWidth / 2 - theRect.left;
             y = dragTouchY - menuHeight - 5 - theRect.top;
             if (y < 0) {
               y = dragTouchY + 5 - theRect.top;
             }
           } else {
-            // Fallback: center of editor
             x = (theRect.width - menuWidth) / 2;
             y = (theRect.height - menuHeight) / 2;
           }
