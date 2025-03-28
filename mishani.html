@@ -17,6 +17,7 @@
       padding: 0;
     }
 
+
     body {
       user-select: none;
       -webkit-user-drag: none;
@@ -568,6 +569,7 @@
       position: relative;
       flex: 1;
       overflow: hidden;
+
     }
 
     .editor-and-output {
@@ -1027,7 +1029,6 @@
         margin-left: 10px;
         margin-right: 10px;
       } */
-
       #activityBar {
         width: 40px;
       }
@@ -1265,6 +1266,117 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+
+    .context-view li.action-item:nth-child(3),
+    .context-view li.action-item:nth-child(6) {
+      display: none !important;
+    }
+
+    .mobile-selections-container {
+      position: absolute;
+      top: 0;
+      z-index: 9999;
+    }
+
+    .mobile-selections-container.hidden {
+      display: none !important;
+    }
+
+    .mobile-selector {
+      width: 25px;
+      height: 25px;
+      background: #7a77ff;
+      position: absolute;
+      border-radius: 50%;
+      /* margin-top: 25px; */
+      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+      touch-action: none;
+    }
+
+    .mobile-selector-right {
+      border-top-left-radius: 0;
+      margin-left: -8px;
+    }
+
+    .mobile-selector-left {
+      border-top-right-radius: 0;
+      margin-left: -35px;
+    }
+
+    .mobile-context-menu {
+      position: absolute;
+      display: flex;
+      height: 40px;
+      background: #333;
+      border-radius: 18px;
+      max-width: 200px;
+      z-index: 999;
+      user-select: none;
+      color: #fff;
+      touch-action: none;
+    }
+
+    #compiler:not(.darkMode) .mobile-context-menu {
+      background: #f0f0f0;
+      color: #000;
+    }
+
+    .mobile-context-menu.hidden {
+      display: none !important;
+    }
+
+
+    .mobile-inset-menu {
+      display: flex;
+      max-width: 200px;
+      padding-left: 5px;
+      overflow: scroll;
+    }
+
+    .mobile-menu-item {
+      position: relative;
+      display: flex;
+      padding: 0 16px;
+      align-items: center;
+      height: 100%;
+      font-size: 14px;
+      color: #fff;
+      white-space: nowrap;
+      line-height: 20px;
+      transition: 0.2s;
+    }
+
+    #compiler:not(.darkMode) .mobile-menu-item {
+      color: #000;
+    }
+
+    .mobile-menu-item.hovered {
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-arrow {
+      position: absolute;
+      width: 45px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-arrow-left {
+      left: 0;
+      display: none;
+    }
+
+    .mobile-arrow-right {
+      right: 0;
+    }
+
+    .mobile-arrow svg {
+      width: 24px;
+      height: 24px;
+      fill: #000;
+    }
   </style>
 </head>
 
@@ -1284,8 +1396,8 @@
       <div class="vs-navbar-item" data-dropdown="editDropdown">
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
-          <div class="vs-navbar-dropdown-item"> </div>
-          <div class="vs-navbar-dropdown-item"> </div>
+          <div class="vs-navbar-dropdown-item" id="selectAllBtn">Select All</div>
+          <div class="vs-navbar-dropdown-item" id="showContext">Show context Menu</div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -1295,17 +1407,6 @@
       </button>
       <div id="addTabButton"><i class="fas fa-plus"></i></div>
       <div id="lightModeDiv" onclick="changeToLightMode()">
-        <!-- <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <circle cx="12" cy="12" r="5" stroke="white" stroke-width="2" fill="none" />
-          <line x1="12" y1="2" x2="12" y2="4" stroke="white" stroke-width="2" />
-          <line x1="12" y1="20" x2="12" y2="22" stroke="white" stroke-width="2" />
-          <line x1="2" y1="12" x2="4" y2="12" stroke="white" stroke-width="2" />
-          <line x1="20" y1="12" x2="22" y2="12" stroke="white" stroke-width="2" />
-          <line x1="5.5" y1="5.5" x2="7" y2="7" stroke="white" stroke-width="2" />
-          <line x1="17" y1="5.5" x2="18.5" y2="7" stroke="white" stroke-width="2" />
-          <line x1="5.5" y1="18.5" x2="7" y2="17" stroke="white" stroke-width="2" />
-          <line x1="17" y1="18.5" x2="18.5" y2="17" stroke="white" stroke-width="2" />
-        </svg> -->
         <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
@@ -1377,6 +1478,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script>
+    console.warn = () => { };
     const workerPath = "{% url 'betzi_test_js' %}";
     const { jsPDF } = window.jspdf;
     let currentTab = null;
@@ -1396,14 +1498,18 @@
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     const modal = document.getElementById("exportModal");
     const exportModalContent = document.getElementById("exportModalContent");
+
+    let isMobile;
     if (window.innerWidth < 768) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
       compiler.style.margin = '0';
       document.getElementById("fullScreenBtn").style.display = 'none';
+      isMobile = true;
     } else {
       window.onload = function () {
         compiler.style.width = '60%';
+        isMobile = false;
         fullScreen();
       };
     }
@@ -1501,7 +1607,449 @@
         b.appendChild(x.tabElement);
       });
     }
+
     function createTab(desiredName = null, content = null) {
+      let wasDragging = false;
+      let lastTouchY = null;
+      let dragTouchX = null;
+      let dragTouchY = null;
+      let contextDiv = null;
+      let becasueTouch = false;
+      let theContext;
+      let isContextDragged = false;
+      let editorRectGlobal = null;
+
+      function getRect() {
+        if (editorRectGlobal === null) {
+          editorRectGlobal = editorInstance.getDomNode().getBoundingClientRect();
+        }
+        return editorRectGlobal;
+      }
+
+      function initializeMobileSelection(editorInstance) {
+        const editorDom = editorInstance.getDomNode();
+        if (!editorDom) return;
+
+        const mobileSelectionsContainer = document.createElement('div');
+        mobileSelectionsContainer.className = 'mobile-selections-container hidden';
+        const mobileSelectorRight = document.createElement('div');
+        mobileSelectorRight.className = 'mobile-selector mobile-selector-right';
+        const mobileSelectorLeft = document.createElement('div');
+        mobileSelectorLeft.className = 'mobile-selector mobile-selector-left';
+        mobileSelectionsContainer.appendChild(mobileSelectorRight);
+        mobileSelectionsContainer.appendChild(mobileSelectorLeft);
+
+        const editorScrollable = editorDom;
+        editorScrollable.insertAdjacentElement('afterbegin', mobileSelectionsContainer);
+
+        const mobileContextMenu = document.createElement('div');
+        mobileContextMenu.className = 'mobile-context-menu hidden';
+        theContext = mobileContextMenu;
+        const mobileInsetMenu = document.createElement('div');
+        mobileInsetMenu.className = 'mobile-inset-menu';
+        showContextMenu();
+
+        let touchStartX = 0, touchStartY = 0;
+        let menuStartX = 0, menuStartY = 0;
+        let touchOffsetX = 0, touchOffsetY = 0;
+
+        mobileContextMenu.addEventListener('touchstart', (e) => {
+          stopAll(e);
+          const touch = e.touches[0];
+          const editorRect = getRect();
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          menuStartX = mobileContextMenu.offsetLeft;
+          menuStartY = mobileContextMenu.offsetTop;
+
+          const menuRect = mobileContextMenu.getBoundingClientRect();
+          touchOffsetX = touch.clientX - menuRect.left;
+          touchOffsetY = touch.clientY - menuRect.top;
+        });
+
+        mobileContextMenu.addEventListener('touchmove', (e) => {
+          stopAll(e);
+          const touch = e.touches[0];
+          const deltaX = touch.clientX - touchStartX;
+          const deltaY = touch.clientY - touchStartY;
+
+          if (!isContextDragged && Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) {
+            return;
+          }
+
+          isContextDragged = true;
+          const menuWidth = mobileContextMenu.offsetWidth;
+          const menuHeight = mobileContextMenu.offsetHeight;
+          const editorRect = getRect();
+          const initialCenterX = menuStartX + menuWidth / 2;
+          const initialCenterY = menuStartY + menuHeight / menuHeight / 2;
+          const newCenterX = initialCenterX + deltaX;
+          const newCenterY = initialCenterY + deltaY;
+          const newX = newCenterX - menuWidth / 2;
+          const newY = newCenterY - menuHeight / 2;
+          const maxX = editorRect.width - menuWidth;
+          const maxY = editorRect.height - menuHeight;
+          const constrainedX = Math.max(0, Math.min(newX, maxX));
+          const constrainedY = Math.max(0, Math.min(newY, maxY));
+          setContextPos(constrainedX, constrainedY);
+        });
+
+
+        mobileContextMenu.addEventListener('touchend', (e) => {
+          stopAll(e);
+          const touch = e.changedTouches[0];
+          const touchEndX = touch.clientX;
+          const touchEndY = touch.clientY;
+          if (Math.abs(touchEndX - touchStartX) < 10 && Math.abs(touchEndY - touchStartY) < 10) {
+            becasueTouch = true;
+          }
+          setTimeout(() => {
+            becasueTouch = false;
+            isContextDragged = false;
+          }, 100);
+        }, { passive: false });
+
+
+        document.addEventListener('touchstart', (e) => {
+          if (!isContextMenuOpen()) {
+            return;
+          }
+          if (!contextDiv.contains(e.target)) {
+            mobileContextMenu.classList.add('hidden');
+            editorInstance.setSelection(new monaco.Selection(0, 0, 0, 0));
+          }
+        });
+
+        mobileContextMenu.appendChild(mobileInsetMenu);
+        editorScrollable.insertAdjacentElement('afterbegin', mobileContextMenu);
+        contextDiv = mobileContextMenu
+
+        editorInstance.onDidChangeCursorSelection((e) => {
+          const selection = e.selection;
+          if (selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+            return;
+          }
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+
+          if (!isContextMenuOpen()) {
+            showContextMenu();
+            const theRect = getRect();
+            setContextPos(startCoords.left + theRect.left, startCoords.top + theRect.top);
+          }
+          if (startCoords && endCoords) {
+            mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
+            mobileSelectorRight.style.transform = `translate(${endCoords.left + 10}px, ${endCoords.top + 22}px)`;
+            if (!wasDragging) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorLeft.style.visibility = 'visible';
+            }
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
+        });
+
+        function isContextMenuOpen() {
+          return !mobileContextMenu.classList.contains('hidden') || becasueTouch;
+        }
+
+        function setContextPos(x, y) {
+          const theRect = getRect();
+          const maxX = theRect.width - mobileContextMenu.offsetWidth;
+          const maxY = theRect.height - mobileContextMenu.offsetHeight;
+
+          let constrainedX = Math.max(0, Math.min(x, maxX));
+          let constrainedY = Math.max(0, Math.min(y, maxY));
+
+          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
+            constrainedY = y - mobileContextMenu.offsetHeight;
+            constrainedY = Math.max(0, constrainedY);
+          }
+
+          mobileContextMenu.style.left = `${constrainedX}px`;
+          mobileContextMenu.style.top = `${constrainedY}px`;
+        }
+
+
+        function funcDeco(func) {
+          return () => {
+            if (isContextDragged) {
+              return;
+            }
+            func()
+          }
+        }
+        function showContextMenu(options) {
+          if (isContextMenuOpen()) return;
+          const theModel = editorInstance.getModel();
+          const isTextSelected = theModel.getValueInRange(editorInstance.getSelection()) !== '';
+          const defaultOptions = {
+            copy: isTextSelected,
+            cut: isTextSelected,
+            paste: true,
+            selectAll: true,
+            format: true
+          };
+          options = Object.assign({}, defaultOptions, options);
+          const menuItems = [
+            { className: 'copy', text: 'Copy', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCopyAction')), close: false },
+            { className: 'cut', text: 'Cut', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardCutAction')), close: true },
+            { className: 'paste', text: 'Paste', action: funcDeco(() => editorInstance.trigger('source', 'editor.action.clipboardPasteAction')), close: true },
+            {
+              className: 'selectAll', text: 'Select All', action: funcDeco(() => {
+                const range = editorInstance.getModel().getFullModelRange();
+                editorInstance.setSelection(range);
+              })
+              , close: true
+            },
+            { className: 'format', text: 'Format', action: funcDeco(() => editorInstance.getAction('editor.action.formatDocument').run()), close: false }
+          ];
+          const menuItemsFiltered = menuItems.filter(item => options[item.className]);
+          mobileInsetMenu.innerHTML = '';
+          mobileInsetMenu.style.display = 'flex';
+          mobileInsetMenu.style.overflowX = 'hidden';
+          mobileInsetMenu.style.flexWrap = 'nowrap';
+          mobileInsetMenu.style.width = 'calc(100% - 40px)';
+
+          menuItemsFiltered.forEach(item => {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'mobile-menu-item ' + item.className;
+            menuItem.innerHTML = `<span>${item.text}</span>`;
+            menuItem.addEventListener('touchstart', (e) => {
+              menuItem.classList.add('hovered');
+            }, { passive: false });
+
+            menuItem.addEventListener('touchmove', (e) => {
+              menuItem.classList.remove('hovered');
+            }, { passive: false });
+
+            menuItem.addEventListener('touchend', (e) => {
+              stopAll(e);
+              if (item.close && !isContextDragged) {
+                mobileContextMenu.classList.add('hidden');
+              }
+              menuItem.classList.remove('hovered');
+              item.action();
+            }, { passive: false });
+
+            mobileInsetMenu.appendChild(menuItem);
+          });
+
+          const existingArrow = mobileContextMenu.querySelector('.toggle-arrow');
+          if (existingArrow) existingArrow.remove();
+
+          setTimeout(() => {
+            if (mobileInsetMenu.scrollWidth > mobileInsetMenu.clientWidth) {
+              let arrow = document.createElement('div');
+              arrow.className = 'mobile-menu-item toggle-arrow';
+              arrow.style.display = 'flex';
+              arrow.style.alignItems = 'center';
+              arrow.style.justifyContent = 'center';
+              arrow.style.width = '40px';
+              arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s;">&#9654;</span>`;
+
+              let isAtEnd = false;
+              arrow.addEventListener('touchstart', (e) => {
+                arrow.classList.add('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchmove', (e) => {
+                arrow.classList.remove('hovered');
+              }, { passive: false });
+
+              arrow.addEventListener('touchend', (e) => {
+                stopAll(e);
+                if (isContextDragged) return;
+                arrow.classList.remove('hovered');
+                if (!isAtEnd) {
+                  mobileInsetMenu.scrollTo({ left: mobileInsetMenu.scrollWidth, behavior: 'smooth' });
+                  isAtEnd = true;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(180deg);">&#9654;</span>`;
+                } else {
+                  mobileInsetMenu.scrollTo({ left: 0, behavior: 'smooth' });
+                  isAtEnd = false;
+                  arrow.innerHTML = `<span style="display:inline-block; transition: transform 0.3s; transform: rotate(0deg);">&#9654;</span>`;
+                }
+              }, { passive: false });
+
+              mobileContextMenu.appendChild(arrow);
+            }
+          }, 0);
+
+          mobileContextMenu.classList.remove('hidden');
+        }
+
+
+        function handleMobileSelectorTouch(selector, isLeft) {
+          let touchStartPos, initialSelection;
+          let touchMoved = false, touchEndTimeout;
+          selector.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            wasDragging = true;
+            const touch = event.touches[0];
+            touchStartPos = { x: touch.clientX, y: touch.clientY };
+            initialSelection = editorInstance.getSelection();
+            touchMoved = false;
+            if (touchEndTimeout) clearTimeout(touchEndTimeout);
+            becasueTouch = true;
+            mobileContextMenu.classList.add('hidden');
+          }, { passive: false });
+
+          let autoScrollInterval = null;
+          const autoScrollDelay = 20;
+
+          selector.addEventListener('touchmove', (event) => {
+            stopAll(event);
+            const touch = event.touches[0];
+            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+            if (target && target.position) {
+              const newSelection = isLeft
+                ? new monaco.Selection(
+                  target.position.lineNumber,
+                  target.position.column,
+                  initialSelection.endLineNumber,
+                  initialSelection.endColumn
+                )
+                : new monaco.Selection(
+                  initialSelection.startLineNumber,
+                  initialSelection.startColumn,
+                  target.position.lineNumber,
+                  target.position.column
+                );
+              editorInstance.setSelection(newSelection);
+              touchMoved = true;
+            }
+
+            const editorScrollable = domNode;
+            const editorRect = getRect();
+            const threshold = 50;
+            const scrollStep = 6;
+            if (touch.clientY >= editorRect.top + threshold && touch.clientY <= editorRect.bottom - threshold) {
+              if (autoScrollInterval !== null) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
+              }
+            } else {
+              if (autoScrollInterval === null) {
+                autoScrollInterval = setInterval(() => {
+                  if (lastTouchY !== null) {
+                    if (lastTouchY < editorRect.top + threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() - scrollStep);
+                    } else if (lastTouchY > editorRect.bottom - threshold) {
+                      editorInstance.setScrollTop(editorInstance.getScrollTop() + scrollStep);
+                    }
+                  }
+                }, autoScrollDelay);
+              }
+            }
+            lastTouchY = touch.clientY;
+          }, { passive: false });
+
+          selector.addEventListener('touchend', (event) => {
+            if (autoScrollInterval !== null) {
+              clearInterval(autoScrollInterval);
+              autoScrollInterval = null;
+            }
+            if (!touchMoved) {
+              const touch = event.changedTouches[0];
+              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+              if (target && target.position) {
+                const newSelection = isLeft
+                  ? new monaco.Selection(target.position.lineNumber, target.position.column, initialSelection.endLineNumber, initialSelection.endColumn)
+                  : new monaco.Selection(initialSelection.startLineNumber, initialSelection.startColumn, target.position.lineNumber, target.position.column);
+                editorInstance.setSelection(newSelection);
+              }
+            }
+            touchStartPos = null;
+            initialSelection = null;
+            touchMoved = false;
+          });
+
+        }
+
+
+        handleMobileSelectorTouch(mobileSelectorLeft, true);
+        handleMobileSelectorTouch(mobileSelectorRight, false);
+        function fitScroll() {
+          const selection = editorInstance.getSelection();
+          if (!selection || selection.isEmpty()) {
+            mobileSelectionsContainer.classList.add('hidden');
+            mobileContextMenu.classList.add('hidden');
+            return;
+          }
+
+          const startPos = selection.getStartPosition();
+          const endPos = selection.getEndPosition();
+          const startCoords = editorInstance.getScrolledVisiblePosition(startPos);
+          const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
+
+          if (startCoords && endCoords) {
+            const offsetX = 10, offsetY = 22;
+            const reverseOffset = 20;
+            const editorScrollable = domNode
+            const scrollRect = getRect();
+
+            const leftHandlePos = startCoords.top + offsetY;
+            const spaceBelowLeft = scrollRect.bottom - leftHandlePos;
+            if (spaceBelowLeft < 50) {
+              mobileSelectorLeft.style.visibility = 'hidden';
+            } else if (spaceBelowLeft >= 50 && spaceBelowLeft < 90) {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top - reverseOffset}px) rotate(+90deg)`;
+            } else {
+              mobileSelectorLeft.style.visibility = 'visible';
+              mobileSelectorLeft.style.transform = `translate(${startCoords.left + offsetX}px, ${startCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            const rightHandlePos = endCoords.top + offsetY;
+            const spaceBelowRight = scrollRect.bottom - rightHandlePos;
+            if (spaceBelowRight < 50) {
+              mobileSelectorRight.style.visibility = 'hidden';
+            } else if (spaceBelowRight >= 50 && spaceBelowRight < 90) {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top - reverseOffset}px) rotate(-90deg)`;
+            } else {
+              mobileSelectorRight.style.visibility = 'visible';
+              mobileSelectorRight.style.transform = `translate(${endCoords.left + offsetX}px, ${endCoords.top + offsetY}px) rotate(0deg)`;
+            }
+
+            mobileSelectionsContainer.classList.remove('hidden');
+          }
+        }
+        editorInstance.onDidScrollChange(fitScroll);
+
+
+        let longPressTimeout, startPositionLP;
+        editorDom.addEventListener('touchstart', (event) => {
+          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
+          longPressTimeout = setTimeout(() => {
+            if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
+              wasDragging = true;
+              return;
+            }
+            if (!isContextMenuOpen()) {
+              showContextMenu();
+              setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+            }
+          }, 1000);
+          const touch = event.touches[0];
+          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+          if (target && target.position) {
+            startPositionLP = target.position;
+          }
+        }, { passive: false });
+        editorDom.addEventListener('touchend', () => {
+          if (longPressTimeout) clearTimeout(longPressTimeout);
+        });
+        fitScroll();
+      }
       let name = desiredName
         ? getUniqueTabName(desiredName)
         : getNextTabName();
@@ -1527,7 +2075,6 @@
       outputContainer.classList.add("outputContainer");
       outputContainer.classList.add("allowSelect")
       outputContainer.classList.add("resize");
-      // outputContainer.classList.add(darkModeFlag ? "darkMode" : "lightMode");
       let controlsBar = document.createElement("div");
       controlsBar.classList.add("controls");
       outputContainer.appendChild(controlsBar);
@@ -1626,7 +2173,97 @@
         breadcrumbs: { enabled: true },
         fixedOverflowWidgets: true,
         folding: true,
+        minimap: { enabled: !isMobile },
+        scrollBeyondLastLine: false,
       });
+
+      const domNode = editorInstance.getDomNode();
+      if (isMobile) {
+        initializeMobileSelection(editorInstance);
+        const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+        let touchStart = null;
+        let touchEnd = null;
+        let eventTargetStart;
+        let lastDot;
+
+        domNode.addEventListener("touchend", (event) => {
+          lastTouchY = null;
+          if (isContextDragged) {
+            setTimeout(() => {
+              isContextDragged = false;
+            }, 300);
+          }
+          if (becasueTouch) {
+            becasueTouch = false;
+            if (!editorInstance.getSelection().isEmpty()) {
+              theContext.classList.remove('hidden');
+            }
+          }
+          touchEnd = new Date().getTime();
+          if (wasDragging) {
+            stopAll(event);
+            wasDragging = false;
+            return;
+          }
+          if (theContext.contains(event.target)) {
+            return;
+          }
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
+            stopAll(event);
+
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
+            if (point.type === 7) {
+              return;
+            }
+            editorInstance.focus();
+
+
+            if (point && point.position) {
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+                editorInstance.setPosition(point.position);
+              }
+            }
+            selectAction.run();
+          }
+        }, true);
+        domNode.addEventListener("touchstart", (event) => {
+          touchStart = new Date().getTime();
+          eventTargetStart = event.target;
+          dragTouchX = event.touches[0].clientX;
+          dragTouchY = event.touches[0].clientY;
+        });
+        function blurFocus() {
+          const elem = document.activeElement
+          elem.blur()
+          editorInstance.focus()
+        }
+        function stopAll(event) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          event.stopPropagation();
+        }
+
+        domNode.addEventListener("textInput", (event) => {
+          stopAll(event)
+          if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
+            return;
+          }
+          editorInstance.trigger('keyboard', 'type', { text: event.data });
+          blurFocus()
+          if (event.data === ".") {
+            lastDot = new Date().getTime();
+          }
+        });
+        domNode.addEventListener("keyup", stopAll);
+        domNode.addEventListener("input", stopAll);
+      }
+
       editorInstance.getModel().onDidChangeOptions((e) => {
         const tabSizeNum = editorInstance.getModel().getOptions().tabSize
         if (tabSizeNum) {
@@ -1706,6 +2343,41 @@
         editorInstance.setValue(content);
       } else {
         editorInstance.setValue(`// ${name}
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
+console.log("This is a log");
+console.info("This is an info");
+console.warn("This is a warning");
+console.error("This is an error");
+prompt("This is a prompt:");
 console.log("This is a log");
 console.info("This is an info");
 console.warn("This is a warning");
@@ -2115,7 +2787,6 @@ prompt("This is a prompt:");
         groupLevel = 0;
       }
       line.style.marginLeft = groupLevel ? "20px" : "4px";
-      // let styleClass = (darkModeFlag ? "dark-" : "light-") + type;
       line.classList.add(type);
 
       let flexContainer = document.createElement("div");
@@ -2627,13 +3298,18 @@ prompt("This is a prompt:");
       if (activeTabId === null) return;
       let t = tabs.find((x) => x.id === activeTabId);
       if (!t) return;
+      if (isMobile) {
+        document.querySelectorAll(".sidebar-panel")
+          .forEach((p) => p.classList.remove("active"));
+        document.querySelectorAll(".icon")
+          .forEach((b) => b.classList.remove("active"));
+
+      }
       t.editorInstance.getAction("actions.find").run();
     });
     document.addEventListener("click", (event) => {
       if (!event.target.closest(".vs-navbar-item")) {
-        document.querySelectorAll(".vs-navbar-dropdown").forEach((d) => {
-          d.classList.remove("active");
-        });
+        closeDropdowns();
         activeDropdown = null;
       }
     });
@@ -2754,8 +3430,13 @@ prompt("This is a prompt:");
       closeDropdowns();
     });
     function closeDropdowns() {
-      document.querySelectorAll(".vs-navbar-dropdown")
-        .forEach((d) => d.classList.remove("active"));
+      setTimeout(() => {
+        activeDropdown = null;
+        document.querySelectorAll(".vs-navbar-dropdown")
+          .forEach((d) => d.classList.remove("active"));
+        document.querySelectorAll(".vs-navbar-item")
+          .forEach((i) => i.classList.remove("active"));
+      }, 100);
     }
     let gitInp = document.getElementById("gitUrl");
     let loadGitButton = document.getElementById("loadGitButton");
@@ -3086,7 +3767,6 @@ prompt("This is a prompt:");
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
-      // const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
@@ -3094,7 +3774,6 @@ prompt("This is a prompt:");
       wrapperDiv.style.lineHeight = `${lineHeight}px`;
       wrapperDiv.style.whiteSpace = "pre-wrap";
       wrapperDiv.style.width = '100%';
-      // wrapperDiv.style.maxWidth = maxWidth;
       wrapperDiv.style.color = textColor;
 
       document.addEventListener('DOMContentLoaded', function () {
@@ -3341,6 +4020,64 @@ prompt("This is a prompt:");
     function modalIsOpen() {
       return modal.classList.contains("active");
     }
+
+    const getEventNames = (root) => {
+      let events = [];
+
+      const objectHasSubPrototype = (object, comp) => {
+        let proto = Object.getPrototypeOf(object);
+
+        while (proto !== null && proto !== EventTarget) {
+          proto = Object.getPrototypeOf(proto);
+        }
+
+        return (proto !== null);
+      };
+
+      const addEventNames = (propNames) => {
+        propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
+          propName = propName.substr(2);
+          if (events.indexOf(propName) === -1) {
+            events.push(propName);
+          }
+        });
+      };
+
+      Object.getOwnPropertyNames(root).forEach((name) => {
+        let value = root[name];
+
+        if (value) {
+          if (objectHasSubPrototype(value, EventTarget)) {
+            let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
+            addEventNames(propNames);
+
+            propNames = Object.getOwnPropertyNames(window);
+            addEventNames(propNames);
+          }
+        }
+      });
+
+      return events;
+    };
+
+    function focusTab(tabElem) {
+      if (!tabElem) { tabElem = currentTab }
+      tabElem.editorInstance.focus()
+    }
+
+    document.getElementById("selectAllBtn").addEventListener("click", () => {
+      const range = currentTab.editorInstance.getModel().getFullModelRange();
+      currentTab.editorInstance.setSelection(range);
+      focusTab()
+      closeDropdowns()
+    });
+
+    document.getElementById("showContext").addEventListener("click", () => {
+      focusTab()
+      currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
+      closeDropdowns()
+    })
+
 
   </script>
 
