@@ -1782,25 +1782,34 @@
           let x, y;
 
           if (startCoords && endCoords) {
-            // Selection case (unchanged)
             const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
             const selectionTopY = Math.min(startCoords.top, endCoords.top);
             const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight;
+            const selectionHeight = selectionBottomY - selectionTopY;
 
-            const spaceAbove = selectionTopY;
-            if (spaceAbove >= menuHeight + 5) {
-              x = selectionCenterX;
-              y = selectionTopY - menuHeight - 5;
+            // Check if the selection spans most of the editor (e.g., "Select All")
+            const editorVisibleHeight = theRect.height;
+            if (selectionHeight > editorVisibleHeight * 0.8) { // Threshold: 80% of editor height
+              // Center the menu in the editor
+              x = (theRect.width - menuWidth) / 2; // Center horizontally
+              y = (theRect.height - menuHeight) / 2; // Center vertically
             } else {
-              x = selectionCenterX;
-              y = selectionTopY + selectorHeight + 20;
-              const spaceBelow = theRect.height - selectionBottomY;
-              if (spaceBelow < selectorHeight + 5) {
-                y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
+              // Existing logic for smaller selections
+              const spaceAbove = selectionTopY;
+              if (spaceAbove >= menuHeight + 5) {
+                x = selectionCenterX;
+                y = selectionTopY - menuHeight - 5; // Above selection
+              } else {
+                x = selectionCenterX;
+                y = selectionTopY + selectorHeight + 20; // Below selection
+                const spaceBelow = theRect.height - selectionBottomY;
+                if (spaceBelow < selectorHeight + 5) {
+                  y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
+                }
               }
             }
           } else {
-            // No-selection case
+            // No-selection case (unchanged)
             if (event) {
               // Touch event (long press)
               const touch = event.touches ? event.touches[0] : event;
