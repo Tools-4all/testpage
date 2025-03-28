@@ -1224,6 +1224,12 @@
       background-color: white;
     }
 
+    .headerText:empty:before {
+      content: attr(data-placeholder);
+      color: #aaa;
+      pointer-events: none;
+    }
+
     .handPointer {
       cursor: pointer;
     }
@@ -3816,8 +3822,9 @@ prompt("This is a prompt:");
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       if (currentTab.outputElement.innerHTML.trim()) {
         const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
+        textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
+        textDiv.setAttribute("data-placeholder", "Enter title here...");
         wrapperBoth.appendChild(textDiv);
         wrapperBoth.appendChild(await getOutputDivClone());
         const headerTextCheckbox = document.createElement("input");
