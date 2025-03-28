@@ -1681,7 +1681,7 @@
           const menuHeight = mobileContextMenu.offsetHeight;
           const editorRect = getRect();
           const initialCenterX = menuStartX + menuWidth / 2;
-          const initialCenterY = menuStartY + menuHeight / menuHeight / 2;
+          const initialCenterY = menuStartY + menuHeight / 2;
           const newCenterX = initialCenterX + deltaX;
           const newCenterY = initialCenterY + deltaY;
           const newX = newCenterX - menuWidth / 2;
@@ -1975,9 +1975,6 @@
 
           selector.addEventListener('touchmove', (event) => {
             stopAll(event);
-            if (isContextDragged) {
-              return;
-            }
             const touch = event.touches[0];
             const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
             if (target && target.position) {
