@@ -1778,45 +1778,65 @@
           const theRect = getRect();
           const menuWidth = mobileContextMenu.offsetWidth || 200;
           const menuHeight = mobileContextMenu.offsetHeight || 40;
-          const selectorHeight = 25; 
+          const selectorHeight = 25;
           let x, y;
 
           if (startCoords && endCoords) {
+            // Selection case (unchanged)
             const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
             const selectionTopY = Math.min(startCoords.top, endCoords.top);
-            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight; 
+            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight;
 
             const spaceAbove = selectionTopY;
             if (spaceAbove >= menuHeight + 5) {
               x = selectionCenterX;
-              y = selectionTopY - menuHeight - 5; 
+              y = selectionTopY - menuHeight - 5;
             } else {
               x = selectionCenterX;
-              y = selectionTopY + selectorHeight + 20; 
+              y = selectionTopY + selectorHeight + 20;
               const spaceBelow = theRect.height - selectionBottomY;
               if (spaceBelow < selectorHeight + 5) {
                 y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
               }
             }
-          } else if (event) {
-            console.log("via event", event)
-            // No selection, use event coordinates
-            const touch = event.touches ? event.touches[0] : event;
-            x = touch.clientX - menuWidth / 2 - theRect.left;
-            y = touch.clientY - menuHeight - 5 - theRect.top; // Above touch point
-            // Ensure it stays within bounds
-            if (y < 0) {
-              y = touch.clientY + 5 - theRect.top; // Below touch if no room above
-            }
-          } else if (dragTouchY !== null) {
-            x = dragTouchX - menuWidth / 2 - theRect.left;
-            y = dragTouchY - menuHeight - 5 - theRect.top;
-            if (y < 0) {
-              y = dragTouchY + 5 - theRect.top;
-            }
           } else {
-            x = (theRect.width - menuWidth) / 2;
-            y = (theRect.height - menuHeight) / 2;
+            // No-selection case
+            if (event) {
+              // Touch event (long press)
+              const touch = event.touches ? event.touches[0] : event;
+              x = touch.clientX - menuWidth / 2 - theRect.left;
+              y = touch.clientY - menuHeight - 5 - theRect.top;
+              if (y < 0) {
+                y = touch.clientY + 5 - theRect.top;
+              }
+            } else {
+              // Dropdown trigger or fallback
+              const cursorPos = editorInstance.getPosition();
+              if (cursorPos) {
+                const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
+                if (coords) {
+                  x = coords.left - menuWidth / 2;
+                  y = coords.top + 20;  // Below cursor
+                  if (y + menuHeight > theRect.height) {
+                    y = coords.top - menuHeight - 5;  // Above if no room below
+                  }
+                }
+              }
+              // Fallback to dragTouchX/Y if cursor position unavailable
+              if (!cursorPos || !coords) {
+                if (dragTouchY !== null) {
+                  x = dragTouchX - menuWidth / 2 - theRect.left;
+                  y = dragTouchY - menuHeight - 5 - theRect.top;
+                  if (y < 0) {
+                    y = dragTouchY + 5 - theRect.top;
+                  }
+                } else {
+                  // Ultimate fallback: center of editor
+                  x = (theRect.width - menuWidth) / 2;
+                  y = (theRect.height - menuHeight) / 2;
+                }
+              }
+            }
           }
 
           setContextPos(x, y);
@@ -2076,25 +2096,26 @@
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
-          const touchs = event.touches[0];
-          dragTouchX = touchs.clientX; 
-          dragTouchY = touchs.clientY;
+          const touch = event.touches[0];
+          dragTouchX = touch.clientX;  // Always update coordinates
+          dragTouchY = touch.clientY;
+
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
             event.preventDefault();
             return;
           }
+
+          clearTimeout(longPressTimeout);  // Clear any existing timeout
           longPressTimeout = setTimeout(() => {
-            if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
-              wasDragging = true;
-              return;
-            }
+            if (wasDragging) return;  // Skip if dragging occurred (checked via touchmove)
             if (!isContextMenuOpen()) {
               showContextMenu();
-              setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+              const editorRect = getRect();
+              setContextPos(dragTouchX - editorRect.left, dragTouchY - editorRect.top);
             }
           }, 1000);
-          const touch = event.touches[0];
+
           const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
           if (target && target.position) {
             startPositionLP = target.position;
