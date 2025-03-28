@@ -1757,15 +1757,17 @@
 
         function setContextPos(x, y) {
           const theRect = getRect();
+          const menuHeight = mobileContextMenu.offsetHeight || 40;
           const maxX = theRect.width - mobileContextMenu.offsetWidth;
-          const maxY = theRect.height - mobileContextMenu.offsetHeight;
+          const maxY = theRect.height - menuHeight;
 
           let constrainedX = Math.max(0, Math.min(x, maxX));
           let constrainedY = Math.max(0, Math.min(y, maxY));
 
-          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
-            constrainedY = y - mobileContextMenu.offsetHeight;
-            constrainedY = Math.max(0, constrainedY);
+          if (isContextDragged) {
+            if (constrainedY + menuHeight > theRect.height) {
+              constrainedY = Math.max(0, y - menuHeight);
+            }
           }
 
           mobileContextMenu.style.left = `${constrainedX}px`;
@@ -1774,31 +1776,48 @@
 
         function positionContextMenu(startCoords, endCoords, event = null) {
           const theRect = getRect();
-          const menuWidth = mobileContextMenu.offsetWidth || 200; // Default width if not yet rendered
-          const menuHeight = mobileContextMenu.offsetHeight || 40; // Default height if not yet rendered
+          const menuWidth = mobileContextMenu.offsetWidth || 200;
+          const menuHeight = mobileContextMenu.offsetHeight || 40;
+          const selectorHeight = 25; // Height of mobile selectors
           let x, y;
 
           if (startCoords && endCoords) {
             // Selection exists, position relative to it
             const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
             const selectionTopY = Math.min(startCoords.top, endCoords.top);
-            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + 22; // Below the selector
+            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight; // Below selector
 
             // Try above the selection
             const spaceAbove = selectionTopY;
             if (spaceAbove >= menuHeight + 5) {
               x = selectionCenterX;
-              y = selectionTopY - menuHeight - 5; // Small padding
+              y = selectionTopY - menuHeight - 5; // Above selection with padding
             } else {
-              // Place below the selection, under the closest selector
+              // Place just below the start selector, ensuring room for end selector
               x = selectionCenterX;
-              y = selectionBottomY + 5; // Small padding below the selector
+              y = selectionTopY + selectorHeight + 5; // Below start selector
+              // Adjust if end selector is pushed up
+              const spaceBelow = theRect.height - selectionBottomY;
+              if (spaceBelow < selectorHeight + 5) {
+                y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
+              }
             }
           } else if (event) {
             // No selection, use event coordinates
             const touch = event.touches ? event.touches[0] : event;
             x = touch.clientX - menuWidth / 2 - theRect.left;
-            y = touch.clientY - menuHeight - 5 - theRect.top; // Above the touch point
+            y = touch.clientY - menuHeight - 5 - theRect.top; // Above touch point
+            // Ensure it stays within bounds
+            if (y < 0) {
+              y = touch.clientY + 5 - theRect.top; // Below touch if no room above
+            }
+          } else if (dragTouchY !== null) {
+            // Fallback to last touch if no event provided
+            x = dragTouchX - menuWidth / 2 - theRect.left;
+            y = dragTouchY - menuHeight - 5 - theRect.top;
+            if (y < 0) {
+              y = dragTouchY + 5 - theRect.top;
+            }
           } else {
             // Fallback: center of editor
             x = (theRect.width - menuWidth) / 2;
@@ -2062,8 +2081,8 @@
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
-          const touchs = event.touches;
-          dragTouchX = touchs.clientX;
+          const touchs = event.touches[0];
+          dragTouchX = touchs.clientX; 
           dragTouchY = touchs.clientY;
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
