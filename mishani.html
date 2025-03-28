@@ -3811,129 +3811,129 @@ prompt("This is a prompt:");
 
 
     async function exportImage() {
-  const wrapperBoth = document.createElement('div');
-  wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-  // Create a toolbar for text formatting above the headerText div
-  const textToolbar = document.createElement('div');
-  textToolbar.id = 'textToolbar';
-  
-  // Button to change text color to red
-  const btnRed = document.createElement('button');
-  btnRed.textContent = 'Red';
-  btnRed.addEventListener('click', () => {
-    document.execCommand('foreColor', false, 'red');
-  });
-  textToolbar.appendChild(btnRed);
-  
-  // Button to change text color to blue
-  const btnBlue = document.createElement('button');
-  btnBlue.textContent = 'Blue';
-  btnBlue.addEventListener('click', () => {
-    document.execCommand('foreColor', false, 'blue');
-  });
-  textToolbar.appendChild(btnBlue);
-  
-  // Button to change font family
-  const btnFont = document.createElement('button');
-  btnFont.textContent = 'Comic Sans';
-  btnFont.addEventListener('click', () => {
-    document.execCommand('fontName', false, 'Comic Sans MS');
-  });
-  textToolbar.appendChild(btnFont);
-  
-  // Append the toolbar to the wrapper
-  wrapperBoth.appendChild(textToolbar);
+      // Create a toolbar for text formatting above the headerText div
+      const textToolbar = document.createElement('div');
+      textToolbar.id = 'textToolbar';
 
-  // Create the title div with the placeholder
-  const textDiv = document.createElement('div');
-  textDiv.classList.add("headerText");
-  textDiv.contentEditable = true;
-  textDiv.setAttribute("data-placeholder", "Enter title here...");
-  // wrapperBoth.appendChild(textDiv);
+      // Button to change text color to red
+      const btnRed = document.createElement('button');
+      btnRed.textContent = 'Red';
+      btnRed.addEventListener('click', () => {
+        document.execCommand('foreColor', false, 'red');
+      });
+      textToolbar.appendChild(btnRed);
 
-  // Add the editor text div and additional editor content
-  const editorTextDiv = document.createElement('div');
-  editorTextDiv.classList.add("headerText");
-  editorTextDiv.contentEditable = true;
-  wrapperBoth.appendChild(editorTextDiv);
-  wrapperBoth.appendChild(await getEditorDiv());
+      // Button to change text color to blue
+      const btnBlue = document.createElement('button');
+      btnBlue.textContent = 'Blue';
+      btnBlue.addEventListener('click', () => {
+        document.execCommand('foreColor', false, 'blue');
+      });
+      textToolbar.appendChild(btnBlue);
 
-  // Continue with your export buttons logic
-  const exportBtnsWrapper = document.createElement('div');
-  exportBtnsWrapper.classList.add("exportBtnsWrapper");
-  
-  if (currentTab.outputElement.innerHTML.trim()) {
-    wrapperBoth.appendChild(textDiv);
-    wrapperBoth.appendChild(await getOutputDivClone());
-    
-    const headerTextCheckbox = document.createElement("input");
-    headerTextCheckbox.type = "checkbox";
-    headerTextCheckbox.classList.add("exportCheckbox");
-    exportBtnsWrapper.appendChild(headerTextCheckbox);
-    headerTextCheckbox.checked = true;
-    headerTextCheckbox.addEventListener("change", () => {
-      textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
-    });
-    
-    const exportCheckbox = document.createElement("input");
-    exportCheckbox.type = "checkbox";
-    exportCheckbox.classList.add("exportCheckbox");
-    exportBtnsWrapper.appendChild(exportCheckbox);
-    exportCheckbox.checked = true;
-    exportCheckbox.addEventListener("change", () => {
-      tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-      headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
-    });
-  }
-  
-  const editorHeaderCheckbox = document.createElement("input");
-  editorHeaderCheckbox.type = "checkbox";
-  editorHeaderCheckbox.classList.add("exportCheckbox");
-  exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-  editorHeaderCheckbox.checked = true;
-  editorHeaderCheckbox.addEventListener("change", () => {
-    editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
-  });
-  
-  exportModalContent.appendChild(wrapperBoth);
-  
-  const exportBtn = document.createElement('button');
-  exportBtn.textContent = "Export Image";
-  exportBtn.classList.add("exportBtn");
-  exportBtnsWrapper.appendChild(exportBtn);
-  exportModalContent.appendChild(exportBtnsWrapper);
-  
-  exportBtn.onclick = async function () {
-    exportBtn.disabled = true;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const imgSrc = await takeImage(wrapperBoth);
-    closeModal("close");
-    const bothImg = new Image();
-    bothImg.src = imgSrc;
-    let theyReady = false;
-    
-    bothImg.onload = () => {
-      theyReady = true;
-    };
-    
-    while (!theyReady) {
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // Button to change font family
+      const btnFont = document.createElement('button');
+      btnFont.textContent = 'Comic Sans';
+      btnFont.addEventListener('click', () => {
+        document.execCommand('fontName', false, 'Comic Sans MS');
+      });
+      textToolbar.appendChild(btnFont);
+
+      // Append the toolbar to the wrapper
+      wrapperBoth.appendChild(textToolbar);
+
+      // Create the title div with the placeholder
+      const textDiv = document.createElement('div');
+      textDiv.classList.add("headerText");
+      textDiv.contentEditable = true;
+      textDiv.setAttribute("data-placeholder", "Enter title here...");
+      // wrapperBoth.appendChild(textDiv);
+
+      // Add the editor text div and additional editor content
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText");
+      editorTextDiv.contentEditable = true;
+      wrapperBoth.appendChild(editorTextDiv);
+      wrapperBoth.appendChild(await getEditorDiv());
+
+      // Continue with your export buttons logic
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+
+      if (currentTab.outputElement.innerHTML.trim()) {
+        wrapperBoth.appendChild(textDiv);
+        wrapperBoth.appendChild(await getOutputDivClone());
+
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportBtnsWrapper.appendChild(exportCheckbox);
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+        });
+      }
+
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+
+      exportModalContent.appendChild(wrapperBoth);
+
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportModalContent.appendChild(exportBtnsWrapper);
+
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        let theyReady = false;
+
+        bothImg.onload = () => {
+          theyReady = true;
+        };
+
+        while (!theyReady) {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+        }
+
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height;
+        ctx.drawImage(bothImg, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${currentTab.name}.png`;
+        a.click();
+      };
+
+      displayModal();
     }
-    
-    canvas.width = bothImg.width;
-    canvas.height = bothImg.height;
-    ctx.drawImage(bothImg, 0, 0);
-    
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL("image/png");
-    a.download = `${currentTab.name}.png`;
-    a.click();
-  };
-  
-  displayModal();
-}
 
 
 
@@ -4131,6 +4131,7 @@ prompt("This is a prompt:");
       closeDropdowns()
     })
 
+    alert(1);
 
   </script>
 
