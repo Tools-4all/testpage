@@ -1804,10 +1804,10 @@
             if (event) {
               // Touch event (long press)
               const touch = event.touches ? event.touches[0] : event;
-              x = touch.clientX - menuWidth / 2 - theRect.left;
-              y = touch.clientY - menuHeight - 5 - theRect.top;
+              x = touch.clientX - theRect.left - menuWidth / 2;  // Center horizontally
+              y = touch.clientY - theRect.top - menuHeight - 5;  // Above touch point
               if (y < 0) {
-                y = touch.clientY + 5 - theRect.top;
+                y = touch.clientY - theRect.top + 5;  // Below if no room above
               }
             } else {
               // Dropdown trigger or fallback
@@ -1815,20 +1815,20 @@
               if (cursorPos) {
                 const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
                 if (coords) {
-                  x = coords.left - menuWidth / 2;
-                  y = coords.top + 20;  // Below cursor
-                  if (y + menuHeight > theRect.height) {
-                    y = coords.top - menuHeight - 5;  // Above if no room below
+                  x = coords.left - menuWidth / 2;  // Center horizontally
+                  y = coords.top - menuHeight - 5;  // Above cursor
+                  if (y < 0) {
+                    y = coords.top + 20;  // Below if no room above
                   }
                 }
               }
               // Fallback to dragTouchX/Y if cursor position unavailable
               if (!cursorPos || !coords) {
                 if (dragTouchY !== null) {
-                  x = dragTouchX - menuWidth / 2 - theRect.left;
-                  y = dragTouchY - menuHeight - 5 - theRect.top;
+                  x = dragTouchX - theRect.left - menuWidth / 2;
+                  y = dragTouchY - theRect.top - menuHeight - 5;
                   if (y < 0) {
-                    y = dragTouchY + 5 - theRect.top;
+                    y = dragTouchY - theRect.top + 5;
                   }
                 } else {
                   // Ultimate fallback: center of editor
@@ -2108,11 +2108,15 @@
 
           clearTimeout(longPressTimeout);  // Clear any existing timeout
           longPressTimeout = setTimeout(() => {
-            if (wasDragging) return;  // Skip if dragging occurred (checked via touchmove)
+            if (wasDragging) return;  // Skip if dragging occurred
             if (!isContextMenuOpen()) {
               showContextMenu();
               const editorRect = getRect();
-              setContextPos(dragTouchX - editorRect.left, dragTouchY - editorRect.top);
+              const menuWidth = mobileContextMenu.offsetWidth || 200;
+              const menuHeight = mobileContextMenu.offsetHeight || 40;
+              const x = dragTouchX - editorRect.left - menuWidth / 2;  // Center horizontally
+              const y = dragTouchY - editorRect.top - menuHeight - 5;  // Above touch point
+              setContextPos(x, y);
             }
           }, 1000);
 
