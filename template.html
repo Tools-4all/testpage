@@ -1774,19 +1774,19 @@
 
         function positionContextMenu(startCoords, endCoords, event = null) {
           const theRect = getRect();
-          const menuWidth = mobileContextMenu.offsetWidth;
-          const menuHeight = mobileContextMenu.offsetHeight;
+          const menuWidth = mobileContextMenu.offsetWidth || 200; // Default width if not yet rendered
+          const menuHeight = mobileContextMenu.offsetHeight || 40; // Default height if not yet rendered
           let x, y;
 
           if (startCoords && endCoords) {
             // Selection exists, position relative to it
-            const selectionCenterX = (startCoords.left + endCoords.left) / 2 + theRect.left - menuWidth / 2;
-            const selectionTopY = Math.min(startCoords.top, endCoords.top) + theRect.top;
-            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + theRect.top + 22; // Below the selector
+            const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
+            const selectionTopY = Math.min(startCoords.top, endCoords.top);
+            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + 22; // Below the selector
 
             // Try above the selection
             const spaceAbove = selectionTopY;
-            if (spaceAbove >= menuHeight) {
+            if (spaceAbove >= menuHeight + 5) {
               x = selectionCenterX;
               y = selectionTopY - menuHeight - 5; // Small padding
             } else {
@@ -1797,8 +1797,8 @@
           } else if (event) {
             // No selection, use event coordinates
             const touch = event.touches ? event.touches[0] : event;
-            x = touch.clientX - menuWidth / 2;
-            y = touch.clientY - menuHeight - 5; // Above the touch point
+            x = touch.clientX - menuWidth / 2 - theRect.left;
+            y = touch.clientY - menuHeight - 5 - theRect.top; // Above the touch point
           } else {
             // Fallback: center of editor
             x = (theRect.width - menuWidth) / 2;
@@ -1807,7 +1807,6 @@
 
           setContextPos(x, y);
         }
-
 
         function funcDeco(func) {
           return () => {
@@ -1915,7 +1914,7 @@
           }, 0);
 
           mobileContextMenu.classList.remove('hidden');
-          if (!isTextSelected && lastTouchY !== null) {
+          if (!isTextSelected && dragTouchY !== null) {
             positionContextMenu(null, null, { clientX: dragTouchX, clientY: dragTouchY });
           }
 
@@ -2063,6 +2062,9 @@
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
+          const touchs = event.touches;
+          dragTouchX = touchs.clientX;
+          dragTouchY = touchs.clientY;
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
             event.preventDefault();
