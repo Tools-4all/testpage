@@ -1799,6 +1799,7 @@
               }
             }
           } else if (event) {
+            console.log("via event", event)
             // No selection, use event coordinates
             const touch = event.touches ? event.touches[0] : event;
             x = touch.clientX - menuWidth / 2 - theRect.left;
