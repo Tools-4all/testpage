@@ -2122,6 +2122,13 @@
               const x = dragTouchX - editorRect.left - menuWidth / 2;  
               const y = dragTouchY - editorRect.top - menuHeight - 5; 
               setContextPos(x, y);
+              if (window.getSelection().isEmpty()) {
+                const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
+                if (target && target.position) {
+                  editorInstance.setPosition(target.position);
+                  editorInstance.focus();
+                }
+              }
             }
           }, 1000);
 
