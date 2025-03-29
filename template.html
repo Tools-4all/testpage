@@ -2099,55 +2099,40 @@
 
 
         let longPressTimeout, startPositionLP;
-        let longPressTimer = null;
-        const LONG_PRESS_DELAY = 500;
         editorDom.addEventListener('touchstart', (e) => {
           stopAll(e);
           const touch = e.touches[0];
-          touchStartX = touch.clientX;
-          touchStartY = touch.clientY;
+          const editorRect = getRect();
+          const relativeX = touch.clientX - editorRect.left;
+          const relativeY = touch.clientY - editorRect.top;
 
-          // Clear any existing timer
-          if (longPressTimer) clearTimeout(longPressTimer);
+          // Convert screen coordinates to editor position
+          const position = editorInstance.getPositionAt({
+            left: relativeX,
+            top: relativeY
+          });
 
-          // Start long press detection
-          longPressTimer = setTimeout(() => {
-            const editorRect = getRect();
-            const x = touchStartX - editorRect.left;
-            const y = touchStartY - editorRect.top;
-
-            // Get editor layout info
-            const layoutInfo = editorInstance.getLayoutInfo();
-            const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20; // Default to 20px
-            const scrollTop = editorInstance.getScrollTop();
-            const model = editorInstance.getModel();
-            const totalLines = model.getLineCount();
-
-            // Estimate line number from Y-coordinate
-            const relativeY = y + scrollTop; // Adjust for scroll
-            let lineNumber = Math.floor(relativeY / lineHeight) + 1;
-            lineNumber = Math.max(1, Math.min(lineNumber, totalLines)); // Clamp to valid lines
-
-            // Determine column (end of line if beyond text)
-            const lineContent = model.getLineContent(lineNumber);
-            const maxColumn = lineContent.length + 1; // +1 for end of line
-            const defaultFontWidth = 10; // Fallback font width in pixels
-            const relativeX = x - (layoutInfo.glyphMarginWidth || 0) - (layoutInfo.lineNumbersWidth || 0);
-            let column = relativeX > 0 ? Math.floor(relativeX / defaultFontWidth) + 1 : 1;
-            column = Math.max(1, Math.min(column, maxColumn)); // Clamp to valid column
-
-            // Set the cursor position
-            const position = { lineNumber, column };
+          if (position) {
+            // Set cursor position to where the user touched
             editorInstance.setPosition(position);
-            editorInstance.revealPositionInCenterIfOutsideViewport(position);
+            editorInstance.revealPosition(position);
 
-            // If no selection, show context menu at this position
-            const selection = editorInstance.getSelection();
-            if (selection.isEmpty()) {
-              showContextMenu();
-              positionContextMenu(null, null, e); // Position menu based on touch event
-            }
-          }, LONG_PRESS_DELAY);
+            // Store touch coordinates for context menu positioning
+            dragTouchX = touch.clientX;
+            dragTouchY = touch.clientY;
+
+            // Handle long press
+            touchTimer = setTimeout(() => {
+              if (!isContextMenuOpen() && !editorInstance.getSelection().isEmpty()) {
+                showContextMenu();
+                positionContextMenu(null, null, e);
+              } else if (!isContextMenuOpen()) {
+                showContextMenu();
+                positionContextMenu(null, null, e);
+              }
+              wasDragging = false;
+            }, 500);
+          }
         }, { passive: false });
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
