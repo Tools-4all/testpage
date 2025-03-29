@@ -2100,9 +2100,7 @@
 
         let longPressTimeout, startPositionLP;
         let longPressTimer = null;
-        const LONG_PRESS_DELAY = 500; // 500ms for long press
-
-        // Handle long touch to set cursor and show context menu
+        const LONG_PRESS_DELAY = 500;
         editorDom.addEventListener('touchstart', (e) => {
           stopAll(e);
           const touch = e.touches[0];
@@ -2118,20 +2116,36 @@
             const x = touchStartX - editorRect.left;
             const y = touchStartY - editorRect.top;
 
-            // Convert touch coordinates to Monaco position using getPositionAt
-            const position = editorInstance.getPositionAt({ pageX: touchStartX, pageY: touchStartY });
+            // Get editor layout info
+            const layoutInfo = editorInstance.getLayoutInfo();
+            const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
+            const scrollTop = editorInstance.getScrollTop();
+            const model = editorInstance.getModel();
+            const totalLines = model.getLineCount();
 
-            if (position) {
-              // Move cursor to the touched position
-              editorInstance.setPosition(position);
-              editorInstance.revealPositionInCenterIfOutsideViewport(position);
+            // Estimate line number from Y-coordinate
+            const relativeY = y + scrollTop; // Adjust for scroll
+            let lineNumber = Math.floor(relativeY / lineHeight) + 1;
+            lineNumber = Math.max(1, Math.min(lineNumber, totalLines)); // Clamp to valid lines
 
-              // If no selection, show context menu at this position
-              const selection = editorInstance.getSelection();
-              if (selection.isEmpty()) {
-                showContextMenu();
-                positionContextMenu(null, null, e); // Position menu based on touch event
-              }
+            // Determine column (end of line if beyond text)
+            const lineContent = model.getLineContent(lineNumber);
+            const maxColumn = lineContent.length + 1; // +1 for end of line
+            const fontWidth = layoutInfo.fontInfo.typicalHalfwidthCharacterWidth || 10; // Fallback width
+            const relativeX = x - layoutInfo.glyphMarginWidth - layoutInfo.lineNumbersWidth;
+            let column = Math.floor(relativeX / fontWidth) + 1;
+            column = Math.max(1, Math.min(column, maxColumn)); // Clamp to valid column
+
+            // Set the cursor position
+            const position = { lineNumber, column };
+            editorInstance.setPosition(position);
+            editorInstance.revealPositionInCenterIfOutsideViewport(position);
+
+            // If no selection, show context menu at this position
+            const selection = editorInstance.getSelection();
+            if (selection.isEmpty()) {
+              showContextMenu();
+              positionContextMenu(null, null, e); // Position menu based on touch event
             }
           }, LONG_PRESS_DELAY);
         }, { passive: false });
