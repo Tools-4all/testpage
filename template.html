@@ -2118,11 +2118,8 @@
             const x = touchStartX - editorRect.left;
             const y = touchStartY - editorRect.top;
 
-            // Convert touch coordinates to Monaco position
-            const position = editorInstance.getPositionFromScrolledVisiblePosition({
-              left: x,
-              top: y
-            }) || editorInstance.getPositionAt({ pageX: touchStartX, pageY: touchStartY });
+            // Convert touch coordinates to Monaco position using getPositionAt
+            const position = editorInstance.getPositionAt({ pageX: touchStartX, pageY: touchStartY });
 
             if (position) {
               // Move cursor to the touched position
