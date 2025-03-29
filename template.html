@@ -2115,13 +2115,6 @@
           longPressTimeout = setTimeout(() => {
             if (wasDragging) return;  
             if (!isContextMenuOpen()) {
-              showContextMenu();
-              const editorRect = getRect();
-              const menuWidth = mobileContextMenu.offsetWidth || 200;
-              const menuHeight = mobileContextMenu.offsetHeight || 40;
-              const x = dragTouchX - editorRect.left - menuWidth / 2;  
-              const y = dragTouchY - editorRect.top - menuHeight - 5; 
-              setContextPos(x, y);
               if (editorInstance.getSelection().isEmpty()) {
                 const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
                 if (target && target.position) {
@@ -2129,6 +2122,13 @@
                   editorInstance.focus();
                 }
               }
+              showContextMenu();
+              const editorRect = getRect();
+              const menuWidth = mobileContextMenu.offsetWidth || 200;
+              const menuHeight = mobileContextMenu.offsetHeight || 40;
+              const x = dragTouchX - editorRect.left - menuWidth / 2;  
+              const y = dragTouchY - editorRect.top - menuHeight - 5; 
+              setContextPos(x, y);
             }
           }, 1000);
 
