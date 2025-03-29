@@ -2099,39 +2099,40 @@
 
 
         let longPressTimeout, startPositionLP;
-        editorDom.addEventListener('touchstart', (e) => {
-          stopAll(e);
-          const touch = e.touches[0];
-          const editorRect = getRect();
-          const relativeX = touch.clientX - editorRect.left;
-          const relativeY = touch.clientY - editorRect.top;
+        editorDom.addEventListener('touchstart', (event) => {
+          const touch = event.touches[0];
+          dragTouchX = touch.clientX;
+          dragTouchY = touch.clientY;
 
-          // Convert screen coordinates to editor position
-          const position = editorInstance.getPositionAt({
-            left: relativeX,
-            top: relativeY
-          });
+          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
 
-          if (position) {
-            // Set cursor position to where the user touched
-            editorInstance.setPosition(position);
-            editorInstance.revealPosition(position);
+          clearTimeout(longPressTimeout);
+          longPressTimeout = setTimeout(() => {
+            if (wasDragging) return;
+            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+            if (target && target.position) {
+              // Move cursor to the touched position
+              editorInstance.setPosition(target.position);
+              editorInstance.revealPosition(target.position);
+            }
+            if (!isContextMenuOpen()) {
+              showContextMenu();
+              const editorRect = getRect();
+              const menuWidth = mobileContextMenu.offsetWidth || 200;
+              const menuHeight = mobileContextMenu.offsetHeight || 40;
+              const x = dragTouchX - editorRect.left - menuWidth / 2;
+              const y = dragTouchY - editorRect.top - menuHeight - 5;
+              setContextPos(x, y);
+            }
+          }, 1000);
 
-            // Store touch coordinates for context menu positioning
-            dragTouchX = touch.clientX;
-            dragTouchY = touch.clientY;
-
-            // Handle long press
-            touchTimer = setTimeout(() => {
-              if (!isContextMenuOpen() && !editorInstance.getSelection().isEmpty()) {
-                showContextMenu();
-                positionContextMenu(null, null, e);
-              } else if (!isContextMenuOpen()) {
-                showContextMenu();
-                positionContextMenu(null, null, e);
-              }
-              wasDragging = false;
-            }, 500);
+          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+          if (target && target.position) {
+            startPositionLP = target.position;
           }
         }, { passive: false });
         editorDom.addEventListener('touchend', () => {
