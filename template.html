@@ -2118,7 +2118,7 @@
 
             // Get editor layout info
             const layoutInfo = editorInstance.getLayoutInfo();
-            const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight);
+            const lineHeight = editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20; // Default to 20px
             const scrollTop = editorInstance.getScrollTop();
             const model = editorInstance.getModel();
             const totalLines = model.getLineCount();
@@ -2131,9 +2131,9 @@
             // Determine column (end of line if beyond text)
             const lineContent = model.getLineContent(lineNumber);
             const maxColumn = lineContent.length + 1; // +1 for end of line
-            const fontWidth = layoutInfo.fontInfo.typicalHalfwidthCharacterWidth || 10; // Fallback width
-            const relativeX = x - layoutInfo.glyphMarginWidth - layoutInfo.lineNumbersWidth;
-            let column = Math.floor(relativeX / fontWidth) + 1;
+            const defaultFontWidth = 10; // Fallback font width in pixels
+            const relativeX = x - (layoutInfo.glyphMarginWidth || 0) - (layoutInfo.lineNumbersWidth || 0);
+            let column = relativeX > 0 ? Math.floor(relativeX / defaultFontWidth) + 1 : 1;
             column = Math.max(1, Math.min(column, maxColumn)); // Clamp to valid column
 
             // Set the cursor position
