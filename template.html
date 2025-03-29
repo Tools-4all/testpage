@@ -2304,14 +2304,19 @@
             }
             editorInstance.focus();
 
-
+            const touch = event.changedTouches[0];
+            const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
+            if (target && target.position) {
+              // Move cursor to the touched position
+              editorInstance.setPosition(target.position);
+              editorInstance.revealPosition(target.position);
+            }
             if (point && point.position) {
-              const touch = event.changedTouches[0];
-              const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-              if (target && target.position) {
-                // Move cursor to the touched position
-                editorInstance.setPosition(target.position);
-                editorInstance.revealPosition(target.position);
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+                editorInstance.setPosition(point.position);
               }
             }
             selectAction.run();
