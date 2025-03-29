@@ -1740,8 +1740,8 @@
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
           if (!isContextMenuOpen()) {
-            showContextMenu(); 
-            positionContextMenu(startCoords, endCoords); 
+            showContextMenu();
+            positionContextMenu(startCoords, endCoords);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
@@ -1791,14 +1791,14 @@
             const selectionHeight = selectionBottomY - selectionTopY;
 
             const editorVisibleHeight = theRect.height;
-            if (selectionHeight > editorVisibleHeight * 0.8) { 
-              x = (theRect.width - menuWidth) / 2; 
-              y = (theRect.height - menuHeight) / 2; 
+            if (selectionHeight > editorVisibleHeight * 0.8) {
+              x = (theRect.width - menuWidth) / 2;
+              y = (theRect.height - menuHeight) / 2;
             } else {
               const spaceAbove = selectionTopY;
               if (spaceAbove >= menuHeight + 5) {
                 x = selectionCenterX;
-                y = selectionTopY - menuHeight - 5; 
+                y = selectionTopY - menuHeight - 5;
               } else {
                 x = selectionCenterX;
                 y = selectionTopY + selectorHeight + 20;
@@ -1811,20 +1811,20 @@
           } else {
             if (event) {
               const touch = event.touches ? event.touches[0] : event;
-              x = touch.clientX - theRect.left - menuWidth / 2;  
-              y = touch.clientY - theRect.top - menuHeight - 5;  
+              x = touch.clientX - theRect.left - menuWidth / 2;
+              y = touch.clientY - theRect.top - menuHeight - 5;
               if (y < 0) {
-                y = touch.clientY - theRect.top + 5; 
+                y = touch.clientY - theRect.top + 5;
               }
             } else {
               const cursorPos = editorInstance.getPosition();
               if (cursorPos) {
                 const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
                 if (coords) {
-                  x = coords.left - menuWidth / 2;  
-                  y = coords.top - menuHeight - 5; 
+                  x = coords.left - menuWidth / 2;
+                  y = coords.top - menuHeight - 5;
                   if (y < 0) {
-                    y = coords.top + 20;  
+                    y = coords.top + 20;
                   }
                 }
               }
@@ -2099,35 +2099,44 @@
 
 
         let longPressTimeout, startPositionLP;
-        editorDom.addEventListener('touchstart', (event) => {
-          const touch = event.touches[0];
-          dragTouchX = touch.clientX; 
-          dragTouchY = touch.clientY;
+        let longPressTimer = null;
+        const LONG_PRESS_DELAY = 500; // 500ms for long press
 
-          if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-          }
+        // Handle long touch to set cursor and show context menu
+        editorDom.addEventListener('touchstart', (e) => {
+          stopAll(e);
+          const touch = e.touches[0];
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
 
-          clearTimeout(longPressTimeout); 
-          longPressTimeout = setTimeout(() => {
-            if (wasDragging) return;  
-            if (!isContextMenuOpen()) {
-              showContextMenu();
-              const editorRect = getRect();
-              const menuWidth = mobileContextMenu.offsetWidth || 200;
-              const menuHeight = mobileContextMenu.offsetHeight || 40;
-              const x = dragTouchX - editorRect.left - menuWidth / 2;  
-              const y = dragTouchY - editorRect.top - menuHeight - 5; 
-              setContextPos(x, y);
+          // Clear any existing timer
+          if (longPressTimer) clearTimeout(longPressTimer);
+
+          // Start long press detection
+          longPressTimer = setTimeout(() => {
+            const editorRect = getRect();
+            const x = touchStartX - editorRect.left;
+            const y = touchStartY - editorRect.top;
+
+            // Convert touch coordinates to Monaco position
+            const position = editorInstance.getPositionFromScrolledVisiblePosition({
+              left: x,
+              top: y
+            }) || editorInstance.getPositionAt({ pageX: touchStartX, pageY: touchStartY });
+
+            if (position) {
+              // Move cursor to the touched position
+              editorInstance.setPosition(position);
+              editorInstance.revealPositionInCenterIfOutsideViewport(position);
+
+              // If no selection, show context menu at this position
+              const selection = editorInstance.getSelection();
+              if (selection.isEmpty()) {
+                showContextMenu();
+                positionContextMenu(null, null, e); // Position menu based on touch event
+              }
             }
-          }, 1000);
-
-          const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
-          if (target && target.position) {
-            startPositionLP = target.position;
-          }
+          }, LONG_PRESS_DELAY);
         }, { passive: false });
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
