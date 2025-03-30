@@ -2305,7 +2305,12 @@
         minimap: { enabled: !isMobile },
         scrollBeyondLastLine: false,
       });
-
+      const inputArea = editorContainer.querySelector(".monaco-editor .inputarea");
+      if (inputArea) {
+        inputArea.setAttribute("autocapitalize", "off");
+        inputArea.setAttribute("autocomplete", "off");
+        inputArea.setAttribute("spellcheck", "false");
+      }
       const domNode = editorInstance.getDomNode();
       if (isMobile) {
         initializeMobileSelection(editorInstance);
