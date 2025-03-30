@@ -2276,13 +2276,11 @@
         let touchEnd = null;
         let eventTargetStart;
         let lastDot;
-
-
         let lastTapTime = 0;
         let lastTapX = 0;
         let lastTapY = 0;
-        const doubleTapThreshold = 300; // Max time between taps (ms)
-        const proximityThreshold = 30;  // Max distance between taps (pixels)
+        const doubleTapThreshold = 300;
+        const proximityThreshold = 30;
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
@@ -2297,6 +2295,7 @@
               theContext.classList.remove('hidden');
             }
           }
+          touchEnd = new Date().getTime();
           if (wasDragging) {
             stopAll(event);
             wasDragging = false;
@@ -2305,44 +2304,80 @@
           if (theContext.contains(event.target)) {
             return;
           }
-
-          // Double-tap detection
-          const currentTime = new Date().getTime();
-          const currentX = event.changedTouches[0].clientX;
-          const currentY = event.changedTouches[0].clientY;
-          const timeDiff = currentTime - lastTapTime;
-          const xDiff = Math.abs(currentX - lastTapX);
-          const yDiff = Math.abs(currentY - lastTapY);
-          const distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-
-          if (timeDiff < doubleTapThreshold && distance < proximityThreshold) {
-            // Double-tap detected
+          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
 
-            const point = editorInstance.getTargetAtClientPoint(currentX, currentY);
-            if (point && point.type !== 7) { // Avoid triggering on non-content areas
-              editorInstance.focus();
-              if (point.position) {
+            const point = editorInstance.getTargetAtClientPoint(
+              event.changedTouches[0].clientX,
+              event.changedTouches[0].clientY
+            );
+            if (point.type === 7) {
+              return;
+            }
+            editorInstance.focus();
+
+
+            if (point && point.position) {
+              const currentPosition = editorInstance.getPosition();
+              const targetColumn = point.position.column;
+              const targetLine = point.position.lineNumber;
+              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
                 editorInstance.setPosition(point.position);
               }
-              selectAction.run();
             }
-
-            // Reset to prevent triple-tap interference
-            lastTapTime = 0;
-          } else {
-            // Update last tap info for next comparison
-            lastTapTime = currentTime;
-            lastTapX = currentX;
-            lastTapY = currentY;
+            selectAction.run();
           }
         }, true);
-        domNode.addEventListener("touchstart", (event) => {
-          touchStart = new Date().getTime();
-          eventTargetStart = event.target;
-          dragTouchX = event.touches[0].clientX;
-          dragTouchY = event.touches[0].clientY;
-        });
+        domNode.addEventListener("touchstart", (e) => {
+          const touchStart = new Date().getTime();
+          eventTargetStart = e.target;
+          dragTouchX = e.touches[0].clientX;
+          dragTouchY = e.touches[0].clientY;
+
+          // Double-tap detection variables
+          const doubleTapThreshold = 300; // Time in ms
+          const proximityThreshold = 30;  // Distance in pixels
+          if (!lastTapTime) {
+            lastTapTime = 0;
+            lastTapX = 0;
+            lastTapY = 0;
+          }
+
+          // Calculate distance from last tap
+          const distance = Math.sqrt(
+            Math.pow(dragTouchX - lastTapX, 2) + Math.pow(dragTouchY - lastTapY, 2)
+          );
+
+          // Check for double tap
+          if (
+            touchStart - lastTapTime < doubleTapThreshold &&
+            distance < proximityThreshold
+          ) {
+            // Get position in editor from touch coordinates
+            const editorRect = domNode.getBoundingClientRect();
+            const position = editorInstance.getPositionFromDomPosition({
+              x: dragTouchX - editorRect.left,
+              y: dragTouchY - editorRect.top
+            });
+
+            if (position) {
+              // Set cursor to the tapped position
+              editorInstance.setPosition(position);
+              editorInstance.focus();
+
+              // Execute smart select expand
+              const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+              if (selectAction) {
+                selectAction.run();
+              }
+            }
+          }
+
+          // Update last tap details
+          lastTapTime = touchStart;
+          lastTapX = dragTouchX;
+          lastTapY = dragTouchY;
+        }, { passive: false });
         function blurFocus() {
           const elem = document.activeElement
           elem.blur()
