@@ -156,9 +156,9 @@ function parseCSSStyles(styleString) {
     return styleString
         .split(';')
         .map(s => s.trim())
-        .filter(s => s) // Remove empty entries
+        .filter(s => s) 
         .filter(s => {
-            const property = s.split(':')[0].trim(); // Extract property name
+            const property = s.split(':')[0].trim(); 
             return allowedProperties.includes(property);
         });
 }
