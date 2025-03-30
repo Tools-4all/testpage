@@ -4375,7 +4375,7 @@ prompt("This is a prompt:");
       editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
       editorTextDiv.addEventListener('blur', () => hideToolbar());
       if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapperBoth.querySelectorAll('.headerText')[1];
+        const textDiv = wrapBoth.querySelectorAll('.headerText')[1];
         textDiv.addEventListener('focus', () => showToolbar(textDiv));
         textDiv.addEventListener('blur', () => hideToolbar());
       }
