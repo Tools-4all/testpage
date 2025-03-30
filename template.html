@@ -2332,8 +2332,7 @@
           dragTouchX = event.touches[0].clientX;
           dragTouchY = event.touches[0].clientY;
           if (lastTapX && lastTapY && privousTime) {
-            // check if distance is less than 10px and time is less than 300ms
-            if ( Math.abs(lastTapX - event.touches[0].clientX) < 10 && Math.abs(lastTapY - event.touches[0].clientY) < 10 && touchStart - privousTime < 300) {
+            if (Math.abs(lastTapX - event.touches[0].clientX) < 10 && Math.abs(lastTapY - event.touches[0].clientY) < 10 && touchStart - privousTime < 300) {
               stopAll(event);
               wasDragging = true;
               editorInstance.trigger('keyboard', 'editor.action.smartSelect.expand');
