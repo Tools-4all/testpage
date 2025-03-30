@@ -136,12 +136,33 @@ function parseFormatSpecifiers(formatString, args) {
     return result;
 }
 
-// Utility function to parse CSS styles for %c
+const allowedProperties = [
+    'color',
+    'background',
+    'background-color',
+    'font-weight',
+    'font-style',
+    'text-decoration',
+    'font-size',
+    'font-family',
+    'line-height',
+    'letter-spacing',
+    'word-spacing',
+    'text-transform',
+    'text-shadow'
+];
+
 function parseCSSStyles(styleString) {
-    return styleString.split(';').map(s => s.trim()).filter(s => s);
+    return styleString
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s) // Remove empty entries
+        .filter(s => {
+            const property = s.split(':')[0].trim(); // Extract property name
+            return allowedProperties.includes(property);
+        });
 }
 
-// Utility function to parse ANSI escape sequences
 function parseANSIEscapeSequences(message) {
     const ansiRegex = /\x1B\[([\d;]*)m/g;
     const result = [];
@@ -167,7 +188,6 @@ function parseANSIEscapeSequences(message) {
     return result;
 }
 
-// ANSI code to CSS mapping
 const ansiStyles = {
     '0': () => ({ reset: true }),
     '1': () => ({ 'font-weight': 'bold' }),
@@ -183,21 +203,17 @@ const ansiStyles = {
     '55': () => ({ 'text-decoration': 'none' }),
 };
 
-// Color codes (dark theme mapping from documentation)
 const ansiColors = {
-    // Foreground
     '30': '#000000', '31': '#ed4e4c', '32': '#01c800', '33': '#d2c057',
     '34': '#2774f0', '35': '#a142f4', '36': '#12b5cb', '37': '#cfd0d0',
     '90': '#898989', '91': '#f28b82', '92': '#01c801', '93': '#ddfb55',
     '94': '#669df6', '95': '#d670d6', '96': '#84f0ff', '97': '#FFFFFF',
-    // Background
     '40': '#000000', '41': '#ed4e4c', '42': '#01c800', '43': '#d2c057',
     '44': '#2774f0', '45': '#a142f4', '46': '#12b5cb', '47': '#cfd0d0',
     '100': '#898989', '101': '#f28b82', '102': '#01c801', '103': '#ddfb55',
     '104': '#669df6', '105': '#d670d6', '106': '#84f0ff', '107': '#FFFFFF',
 };
 
-// Apply ANSI codes to styles
 function applyANSICodes(currentStyles, codes) {
     let styles = currentStyles.filter(s => !s.includes('color') && !s.includes('background'));
     for (const code of codes) {
@@ -217,7 +233,7 @@ function applyANSICodes(currentStyles, codes) {
             const prop = (code >= 40 && code <= 49) || (code >= 100 && code <= 107) ? 'background' : 'color';
             styles = styles.filter(s => !s.startsWith(prop));
             styles.push(`${prop}: ${ansiColors[code]}`);
-        } else if (code === 38 || code === 48) { // 38;2;R;G;B or 48;2;R;G;B
+        } else if (code === 38 || code === 48) {
             const index = codes.indexOf(code);
             if (index + 4 < codes.length && codes[index + 1] === 2) {
                 const r = codes[index + 2];
@@ -232,7 +248,6 @@ function applyANSICodes(currentStyles, codes) {
     return styles;
 }
 
-// Process message for both specifiers and ANSI sequences
 function processConsoleMessage(args) {
     if (!args.length) return [{ text: '', styles: [] }];
 
