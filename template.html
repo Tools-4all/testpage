@@ -1388,6 +1388,13 @@
       height: 24px;
       fill: #000;
     }
+
+    #richTextToolbar button,
+    #richTextToolbar select,
+    #richTextToolbar input {
+      margin-right: 5px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 
@@ -3877,6 +3884,82 @@ prompt("This is a prompt:");
       displayModal();
     }
 
+    // Apply basic formatting using execCommand
+    function applyFormat(command) {
+      document.execCommand(command, false, null);
+    }
+
+    // Apply font size by wrapping selection in a span
+    function applyFontSize(size) {
+      if (!size) return;
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
+        document.execCommand('insertHTML', false, html);
+      }
+    }
+
+    // Apply text color by wrapping selection in a span
+    function applyColor(color) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const html = `<span style="color: ${color}">${range.toString()}</span>`;
+        document.execCommand('insertHTML', false, html);
+      }
+    }
+
+    // Apply font family by wrapping selection in a span
+    function applyFontFamily(family) {
+      if (!family) return;
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const html = `<span style="font-family: ${family}">${range.toString()}</span>`;
+        document.execCommand('insertHTML', false, html);
+      }
+    }
+
+    // Apply text alignment to the entire header div
+    function applyAlignment(align) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const commonAncestor = range.commonAncestorContainer;
+        let parentElement = commonAncestor.nodeType === 1 ? commonAncestor : commonAncestor.parentElement;
+        while (parentElement && !parentElement.classList.contains('headerText')) {
+          parentElement = parentElement.parentElement;
+        }
+        if (parentElement) {
+          parentElement.style.textAlign = align;
+        }
+      }
+    }
+
+    function selectionChangeHandler() {
+      const selection = window.getSelection();
+      const toolbar = document.getElementById('richTextToolbar');
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const commonAncestor = range.commonAncestorContainer;
+        const isInHeader = currentHeaderDivs.some(div => div.contains(commonAncestor));
+        if (isInHeader && !selection.isCollapsed) {
+          const rect = range.getBoundingClientRect();
+          const modalRect = exportModalContent.getBoundingClientRect();
+          const left = rect.left - modalRect.left;
+          const top = rect.top - modalRect.top - toolbar.offsetHeight - 5;
+          toolbar.style.left = `${left}px`;
+          toolbar.style.top = `${top}px`;
+          toolbar.style.display = 'block';
+        } else {
+          toolbar.style.display = 'none';
+        }
+      } else {
+        toolbar.style.display = 'none';
+      }
+    }
+
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
@@ -3964,18 +4047,25 @@ prompt("This is a prompt:");
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
+      editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
+      editorTextDiv.textContent = "Editor Header"; // Optional default text
       wrapperBoth.appendChild(editorTextDiv);
       wrapperBoth.appendChild(await getEditorDiv());
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
+
+      let tempOutputDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
         const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
+        textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
+        textDiv.textContent = "Output Header"; // Optional default text
         wrapperBoth.appendChild(textDiv);
-        wrapperBoth.appendChild(await getOutputDivClone());
+        const outputClone = await getOutputDivClone();
+        tempOutputDiv = outputClone.querySelector('.output');
+        wrapperBoth.appendChild(outputClone);
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -3984,16 +4074,18 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
         exportBtnsWrapper.appendChild(exportCheckbox);
         exportCheckbox.checked = true;
         exportCheckbox.addEventListener("change", () => {
-          tempOutputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
+
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4002,14 +4094,60 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
+      // Create the rich text toolbar
+      const toolbar = document.createElement('div');
+      toolbar.id = 'richTextToolbar';
+      toolbar.style.position = 'absolute';
+      toolbar.style.display = 'none';
+      toolbar.style.background = 'white';
+      toolbar.style.border = '1px solid #ccc';
+      toolbar.style.padding = '5px';
+      toolbar.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+      toolbar.style.zIndex = '10000';
+      toolbar.innerHTML = `
+        <button onclick="applyFormat('bold')">B</button>
+        <button onclick="applyFormat('italic')">I</button>
+        <button onclick="applyFormat('underline')">U</button>
+        <select onchange="applyFontSize(this.value)">
+            <option value="">Font Size</option>
+            <option value="12px">12px</option>
+            <option value="16px">16px</option>
+            <option value="20px">20px</option>
+        </select>
+        <input type="color" onchange="applyColor(this.value)">
+        <select onchange="applyFontFamily(this.value)">
+            <option value="">Font Family</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+        </select>
+        <button onclick="applyAlignment('left')">Left</button>
+        <button onclick="applyAlignment('center')">Center</button>
+        <button onclick="applyAlignment('right')">Right</button>
+    `;
+
       exportModalContent.appendChild(wrapperBoth);
+      exportModalContent.appendChild(toolbar);
+      exportModalContent.appendChild(exportBtnsWrapper);
+
+      // Set up header divs for rich text editing
+      currentHeaderDivs = [editorTextDiv];
+      if (currentTab.outputElement.innerHTML.trim()) {
+        currentHeaderDivs.push(wrapperBoth.querySelectorAll('.headerText')[1]);
+      }
+
+      // Add selection change listener
+      document.addEventListener('selectionchange', selectionChangeHandler);
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
-      exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
+        toolbar.style.display = 'none'; // Hide toolbar before capture(\'2 capture
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
@@ -4027,16 +4165,16 @@ prompt("This is a prompt:");
         }
 
         canvas.width = bothImg.width;
-        canvas.height = bothImg.height
+        canvas.height = bothImg.height;
         ctx.drawImage(bothImg, 0, 0);
 
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
         a.click();
-      }
+      };
 
-      displayModal()
+      displayModal();
     }
 
 
@@ -4045,21 +4183,26 @@ prompt("This is a prompt:");
       const wrapBoth = document.createElement('div');
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText")
+      editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
+      editorTextDiv.textContent = "Editor Header"; // Optional default text
       wrapBoth.appendChild(editorTextDiv);
-      exportModalContent.appendChild(wrapBoth);
       wrapBoth.appendChild(editorDiv);
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
+
+      let outputDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
-        const outputDiv = await getOutputDivClone();
-        outputDiv.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        const outputClone = await getOutputDivClone();
+        outputDiv = outputClone.querySelector('.output');
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText")
+        textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
+        textDiv.textContent = "Output Header"; // Optional default text
         wrapBoth.appendChild(textDiv);
-        wrapBoth.appendChild(outputDiv);
+        wrapBoth.appendChild(outputClone);
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4068,16 +4211,18 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
         exportBtnsWrapper.appendChild(exportCheckbox);
         exportCheckbox.checked = true;
         exportCheckbox.addEventListener("change", () => {
-          outputDiv.style.display = exportCheckbox.checked ? "block" : "none";
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
+          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
+
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4086,13 +4231,60 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
+      // Create the rich text toolbar
+      const toolbar = document.createElement('div');
+      toolbar.id = 'richTextToolbar';
+      toolbar.style.position = 'absolute';
+      toolbar.style.display = 'none';
+      toolbar.style.background = 'white';
+      toolbar.style.border = '1px solid #ccc';
+      toolbar.style.padding = '5px';
+      toolbar.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+      toolbar.style.zIndex = '10000';
+      toolbar.innerHTML = `
+        <button onclick="applyFormat('bold')">B</button>
+        <button onclick="applyFormat('italic')">I</button>
+        <button onclick="applyFormat('underline')">U</button>
+        <select onchange="applyFontSize(this.value)">
+            <option value="">Font Size</option>
+            <option value="12px">12px</option>
+            <option value="16px">16px</option>
+            <option value="20px">20px</option>
+        </select>
+        <input type="color" onchange="applyColor(this.value)">
+        <select onchange="applyFontFamily(this.value)">
+            <option value="">Font Family</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+        </select>
+        <button onclick="applyAlignment('left')">Left</button>
+        <button onclick="applyAlignment('center')">Center</button>
+        <button onclick="applyAlignment('right')">Right</button>
+    `;
+
+      exportModalContent.appendChild(wrapBoth);
+      exportModalContent.appendChild(toolbar);
+      exportModalContent.appendChild(exportBtnsWrapper);
+
+      // Set up header divs for rich text editing
+      currentHeaderDivs = [editorTextDiv];
+      if (currentTab.outputElement.innerHTML.trim()) {
+        currentHeaderDivs.push(wrapBoth.querySelectorAll('.headerText')[1]);
+      }
+
+      // Add selection change listener
+      document.addEventListener('selectionchange', selectionChangeHandler);
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
-      exportModalContent.appendChild(exportBtnsWrapper);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
+        toolbar.style.display = 'none'; // Hide toolbar before capture
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
         let doc = new jsPDF({
@@ -4116,7 +4308,8 @@ prompt("This is a prompt:");
           }
         }
         doc.save(`${currentTab.name}.pdf`);
-      }
+      };
+
       displayModal();
     }
 
@@ -4143,6 +4336,9 @@ prompt("This is a prompt:");
       if (event.target === modal || event === "close") {
         modal.classList.remove("active");
         modal.dispatchEvent(new Event("modalClosed"));
+        document.removeEventListener('selectionchange', selectionChangeHandler);
+        const toolbar = document.getElementById('richTextToolbar');
+        if (toolbar) toolbar.style.display = 'none';
       }
     }
 
