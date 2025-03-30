@@ -2156,11 +2156,11 @@
                   }
                 }
                 // showContextMenu();
-                // const editorRect = getRect();
-                // const menuWidth = mobileContextMenu.offsetWidth || 200;
-                // const menuHeight = mobileContextMenu.offsetHeight || 40;
-                // const x = currentTouchX - editorRect.left - menuWidth / 2;
-                // const y = currentTouchY - editorRect.top - menuHeight - 5;
+                const editorRect = getRect();
+                const menuWidth = mobileContextMenu.offsetWidth || 200;
+                const menuHeight = mobileContextMenu.offsetHeight || 40;
+                const x = currentTouchX - editorRect.left - menuWidth / 2;
+                const y = currentTouchY - editorRect.top - menuHeight - 5;
                 // setContextPos(x, y);
                 doShow.show = true;
                 doShow.x = x;
