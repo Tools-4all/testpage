@@ -2103,24 +2103,12 @@
         }
         editorInstance.onDidScrollChange(fitScroll);
 
-        const touchMoveHandler = (moveEvent) => {
-          const moveTouch = moveEvent.touches[0];
-          currentTouchX = moveTouch.clientX;
-          currentTouchY = moveTouch.clientY;
-
-          const deltaX = Math.abs(currentTouchX - initialTouchX);
-          const deltaY = Math.abs(currentTouchY - initialTouchY);
-          if (deltaX > threshold || deltaY > threshold) {
-            hasMovedSignificantly = true;
-          }
-        };
-
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
-          const initialTouchX = touch.clientX; 
-          const initialTouchY = touch.clientY; 
-          let currentTouchX = initialTouchX;   
+          const initialTouchX = touch.clientX;
+          const initialTouchY = touch.clientY;
+          let currentTouchX = initialTouchX;
           let currentTouchY = initialTouchY;
           let hasMovedSignificantly = false;
           const threshold = 10;
@@ -2131,12 +2119,31 @@
           }
 
           clearTimeout(longPressTimeout);
+          const touchMoveHandler = (moveEvent) => {
+            const moveTouch = moveEvent.touches[0];
+            currentTouchX = moveTouch.clientX;
+            currentTouchY = moveTouch.clientY;
 
+            const deltaX = Math.abs(currentTouchX - initialTouchX);
+            const deltaY = Math.abs(currentTouchY - initialTouchY);
+            if (deltaX > threshold || deltaY > threshold) {
+              hasMovedSignificantly = true;
+            }
+          };
+
+          const touchEndHandler = () => {
+            editorDom.removeEventListener('touchmove', touchMoveHandler);
+            editorDom.removeEventListener('touchend', touchEndHandler);
+            if (longPressTimeout) {
+              clearTimeout(longPressTimeout);
+            }
+          };
           editorDom.addEventListener('touchmove', touchMoveHandler, { passive: false });
           editorDom.addEventListener('touchend', touchEndHandler, { passive: false });
 
           longPressTimeout = setTimeout(() => {
             editorDom.removeEventListener('touchmove', touchMoveHandler);
+            editorDom.removeEventListener('touchend', touchEndHandler);
 
             if (!hasMovedSignificantly) {
               if (!isContextMenuOpen()) {
@@ -2163,10 +2170,6 @@
             startPositionLP = target.position;
           }
         }, { passive: false });
-        editorDom.addEventListener('touchend', () => {
-          if (longPressTimeout) clearTimeout(longPressTimeout);
-        });
-        editorDom.removeEventListener('touchmove', touchMoveHandler);
         fitScroll();
         stopAll(event)
       }
