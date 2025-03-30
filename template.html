@@ -2140,6 +2140,7 @@
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
         fitScroll();
+        stopAll(event);
       }
       let name = desiredName
         ? getUniqueTabName(desiredName)
