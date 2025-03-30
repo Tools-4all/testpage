@@ -2110,6 +2110,10 @@
           dragTouchX = touch.clientX;
           dragTouchY = touch.clientY;
 
+          // Store initial touch coordinates
+          const initialTouchX = touch.clientX;
+          const initialTouchY = touch.clientY;
+
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
             event.preventDefault();
@@ -2119,21 +2123,30 @@
           clearTimeout(longPressTimeout);
           longPressTimeout = setTimeout(() => {
             if (wasDragging) return;
-            if (!isContextMenuOpen()) {
-              if (editorInstance.getSelection().isEmpty()) {
-                const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
-                if (target && target.position) {
-                  editorInstance.setPosition(target.position);
-                  editorInstance.focus();
+
+            // Calculate the distance moved since the initial touch
+            const deltaX = Math.abs(dragTouchX - initialTouchX);
+            const deltaY = Math.abs(dragTouchY - initialTouchY);
+            const threshold = 10; // Define a threshold in pixels (adjust as needed)
+
+            // Only proceed if the touch hasn't moved beyond the threshold
+            if (deltaX <= threshold && deltaY <= threshold) {
+              if (!isContextMenuOpen()) {
+                if (editorInstance.getSelection().isEmpty()) {
+                  const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
+                  if (target && target.position) {
+                    editorInstance.setPosition(target.position);
+                    editorInstance.focus();
+                  }
                 }
+                showContextMenu();
+                const editorRect = getRect();
+                const menuWidth = mobileContextMenu.offsetWidth || 200;
+                const menuHeight = mobileContextMenu.offsetHeight || 40;
+                const x = dragTouchX - editorRect.left - menuWidth / 2;
+                const y = dragTouchY - editorRect.top - menuHeight - 5;
+                setContextPos(x, y);
               }
-              showContextMenu();
-              const editorRect = getRect();
-              const menuWidth = mobileContextMenu.offsetWidth || 200;
-              const menuHeight = mobileContextMenu.offsetHeight || 40;
-              const x = dragTouchX - editorRect.left - menuWidth / 2;
-              const y = dragTouchY - editorRect.top - menuHeight - 5;
-              setContextPos(x, y);
             }
           }, 1000);
 
