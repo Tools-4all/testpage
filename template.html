@@ -2936,52 +2936,51 @@ prompt("This is a prompt:");
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
-      let line = document.createElement("div");
-      line.classList.add("outputContent");
-      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      if (forceUse) {
-        groupLevel = 0;
-      }
-      line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let line = document.createElement('div');
+      line.classList.add('outputContent');
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      line.style.marginLeft = groupLevel ? '20px' : '4px';
       line.classList.add(type);
 
-      let flexContainer = document.createElement("div");
-      flexContainer.classList.add("flexContainer");
+      let flexContainer = document.createElement('div');
+      flexContainer.classList.add('flexContainer');
 
-      let symbolDiv = document.createElement("div");
-      symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
-
+      let symbolDiv = document.createElement('div');
+      symbolDiv.classList.add('dontAllowSelect', 'symbolDiv');
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
 
-      let messageDiv = document.createElement("div");
-      messageDiv.classList.add("outputItem");
-      if (type === "error" && forceUse) {
-        const lines = message.split("\n");
-        messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
+      let messageDiv = document.createElement('div');
+      messageDiv.classList.add('outputItem');
+
+      if (type === 'error' && forceUse) {
+        const lines = message.split('\n');
+        messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join('\n')}</div></div>`;
         const matches = message.match(/\(js:\d+\)/g);
         if (matches) {
           matches.forEach(match => {
             const lineNumber = parseInt(match.match(/\d+/)[0]);
-            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(
+              match,
+              `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`
+            );
           });
         }
-      }
-      else if (typeof message === "object") {
-        let actualMsg = "";
-        let subMsgDiv
-        for (let key in message) {
-          subMsgDiv = document.createElement("div");
-          if (message[key][1]) {
-            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
-            subMsgDiv.style.marginRight = "8px";
-            messageDiv.appendChild(subMsgDiv);
+      } else if (Array.isArray(message)) {
+        message.forEach(segment => {
+          if (segment.isObject) {
+            const objDiv = lazyRenderTreeNode(null, segment.object);
+            objDiv.style.marginRight = '8px';
+            messageDiv.appendChild(objDiv);
           } else {
-            subMsgDiv = document.createElement("div");
-            subMsgDiv.style.marginRight = "8px";
-            subMsgDiv.innerText = message[key][0]
-            messageDiv.appendChild(subMsgDiv);
+            const span = document.createElement('span');
+            span.textContent = segment.text;
+            if (segment.styles && segment.styles.length) {
+              span.style.cssText = segment.styles.join('; ');
+            }
+            span.style.marginRight = '8px';
+            messageDiv.appendChild(span);
           }
-        }
+        });
       } else {
         messageDiv.textContent = message;
       }
@@ -2993,7 +2992,6 @@ prompt("This is a prompt:");
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
-
 
     function appendTable(outputElement, tableInfo, msg) {
       let container = outputElement;

@@ -64,6 +64,196 @@ const wrapperPrefixLines = [
     '(() => {'
 ];
 
+function parseFormatSpecifiers(formatString, args) {
+    const result = [];
+    let currentText = '';
+    let styles = [];
+    let argIndex = 0;
+
+    const specifierRegex = /%[sidfoOc]/g;
+    let match;
+    let lastIndex = 0;
+
+    while ((match = specifierRegex.exec(formatString)) !== null) {
+        // Text before the specifier
+        if (match.index > lastIndex) {
+            currentText += formatString.slice(lastIndex, match.index);
+        }
+
+        const specifier = match[0];
+        const arg = args[argIndex++];
+
+        switch (specifier) {
+            case '%s':
+                currentText += String(arg);
+                break;
+            case '%i':
+            case '%d':
+                currentText += Number.isNaN(parseInt(arg)) ? 'NaN' : parseInt(arg);
+                break;
+            case '%f':
+                currentText += Number.isNaN(parseFloat(arg)) ? 'NaN' : parseFloat(arg);
+                break;
+            case '%o':
+            case '%O':
+                if (currentText) {
+                    result.push({ text: currentText, styles: styles.slice() });
+                    currentText = '';
+                }
+                result.push({ object: createNodeObject(null, arg, new Set()), isObject: true });
+                break;
+            case '%c':
+                if (currentText) {
+                    result.push({ text: currentText, styles: styles.slice() });
+                    currentText = '';
+                }
+                styles = arg ? parseCSSStyles(arg) : [];
+                break;
+            default:
+                currentText += specifier; // Unrecognized specifier, treat as literal
+        }
+        lastIndex = match.index + specifier.length;
+    }
+
+    // Remaining text after last specifier
+    if (lastIndex < formatString.length) {
+        currentText += formatString.slice(lastIndex);
+    }
+    if (currentText) {
+        result.push({ text: currentText, styles: styles.slice() });
+    }
+
+    // Append remaining arguments if any
+    while (argIndex < args.length) {
+        const remainingArg = args[argIndex++];
+        if (typeof remainingArg === 'object' && remainingArg !== null) {
+            result.push({ object: createNodeObject(null, remainingArg, new Set()), isObject: true });
+        } else {
+            result.push({ text: String(remainingArg), styles: [] });
+        }
+    }
+
+    return result;
+}
+
+// Utility function to parse CSS styles for %c
+function parseCSSStyles(styleString) {
+    return styleString.split(';').map(s => s.trim()).filter(s => s);
+}
+
+// Utility function to parse ANSI escape sequences
+function parseANSIEscapeSequences(message) {
+    const ansiRegex = /\x1B\[([\d;]*)m/g;
+    const result = [];
+    let lastIndex = 0;
+    let styles = [];
+
+    let match;
+    while ((match = ansiRegex.exec(message)) !== null) {
+        if (match.index > lastIndex) {
+            result.push({ text: message.slice(lastIndex, match.index), styles: styles.slice() });
+        }
+
+        const codes = match[1] ? match[1].split(';').map(Number) : [0];
+        styles = applyANSICodes(styles, codes);
+
+        lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < message.length) {
+        result.push({ text: message.slice(lastIndex), styles: styles.slice() });
+    }
+
+    return result;
+}
+
+// ANSI code to CSS mapping
+const ansiStyles = {
+    '0': () => ({ reset: true }),
+    '1': () => ({ 'font-weight': 'bold' }),
+    '2': () => ({ 'font-weight': 'lighter' }),
+    '3': () => ({ 'font-style': 'italic' }),
+    '4': () => ({ 'text-decoration': 'underline' }),
+    '9': () => ({ 'text-decoration': 'line-through' }),
+    '22': () => ({ 'font-weight': 'normal' }),
+    '23': () => ({ 'font-style': 'normal' }),
+    '24': () => ({ 'text-decoration': 'none' }),
+    '29': () => ({ 'text-decoration': 'none' }),
+    '53': () => ({ 'text-decoration': 'overline' }),
+    '55': () => ({ 'text-decoration': 'none' }),
+};
+
+// Color codes (dark theme mapping from documentation)
+const ansiColors = {
+    // Foreground
+    '30': '#000000', '31': '#ed4e4c', '32': '#01c800', '33': '#d2c057',
+    '34': '#2774f0', '35': '#a142f4', '36': '#12b5cb', '37': '#cfd0d0',
+    '90': '#898989', '91': '#f28b82', '92': '#01c801', '93': '#ddfb55',
+    '94': '#669df6', '95': '#d670d6', '96': '#84f0ff', '97': '#FFFFFF',
+    // Background
+    '40': '#000000', '41': '#ed4e4c', '42': '#01c800', '43': '#d2c057',
+    '44': '#2774f0', '45': '#a142f4', '46': '#12b5cb', '47': '#cfd0d0',
+    '100': '#898989', '101': '#f28b82', '102': '#01c801', '103': '#ddfb55',
+    '104': '#669df6', '105': '#d670d6', '106': '#84f0ff', '107': '#FFFFFF',
+};
+
+// Apply ANSI codes to styles
+function applyANSICodes(currentStyles, codes) {
+    let styles = currentStyles.filter(s => !s.includes('color') && !s.includes('background'));
+    for (const code of codes) {
+        if (code === 0) {
+            styles = [];
+        } else if (ansiStyles[code]) {
+            const style = ansiStyles[code]();
+            if (style.reset) {
+                styles = [];
+            } else {
+                Object.entries(style).forEach(([prop, val]) => {
+                    styles = styles.filter(s => !s.startsWith(prop));
+                    styles.push(`${prop}: ${val}`);
+                });
+            }
+        } else if (code >= 30 && code <= 107) {
+            const prop = (code >= 40 && code <= 49) || (code >= 100 && code <= 107) ? 'background' : 'color';
+            styles = styles.filter(s => !s.startsWith(prop));
+            styles.push(`${prop}: ${ansiColors[code]}`);
+        } else if (code === 38 || code === 48) { // 38;2;R;G;B or 48;2;R;G;B
+            const index = codes.indexOf(code);
+            if (index + 4 < codes.length && codes[index + 1] === 2) {
+                const r = codes[index + 2];
+                const g = codes[index + 3];
+                const b = codes[index + 4];
+                const prop = code === 38 ? 'color' : 'background';
+                styles = styles.filter(s => !s.startsWith(prop));
+                styles.push(`${prop}: rgb(${r},${g},${b})`);
+            }
+        }
+    }
+    return styles;
+}
+
+// Process message for both specifiers and ANSI sequences
+function processConsoleMessage(args) {
+    if (!args.length) return [{ text: '', styles: [] }];
+
+    const firstArg = args[0];
+    if (typeof firstArg === 'string' && /%[sidfoOc]/.test(firstArg)) {
+        return parseFormatSpecifiers(firstArg, args.slice(1));
+    } else if (typeof firstArg === 'string' && /\x1B\[[\d;]*m/.test(firstArg)) {
+        return parseANSIEscapeSequences(firstArg);
+    } else {
+        const result = [];
+        args.forEach(arg => {
+            if (typeof arg === 'object' && arg !== null) {
+                result.push({ object: createNodeObject(null, arg, new Set()), isObject: true });
+            } else {
+                result.push({ text: String(arg), styles: [] });
+            }
+        });
+        return result;
+    }
+}
+
 function arrayToString(arr) {
     const out = arr.map((item) => {
         return getStringOfKeyValue(item);
@@ -932,19 +1122,19 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
+                self.postMessage({ type: "log", message: processConsoleMessage(...args) });
             },
             error: (...args) => {
-                self.postMessage({ type: "error", message: getObjectOrStringForLog(...args), forceUse: false });
+                self.postMessage({ type: "error", message: processConsoleMessage(...args), forceUse: false });
             },
             warn: (...args) => {
-                self.postMessage({ type: "warn", message: getObjectOrStringForLog(...args) });
+                self.postMessage({ type: "warn", message: processConsoleMessage(...args) });
             },
             info: (...args) => {
-                self.postMessage({ type: "info", message: getObjectOrStringForLog(...args) });
+                self.postMessage({ type: "info", message: processConsoleMessage(...args) });
             },
             debug: (...args) => {
-                self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
+                self.postMessage({ type: "log", message: processConsoleMessage(...args) });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
@@ -970,7 +1160,7 @@ self.addEventListener("message", (event) => {
                     type: "table",
                     table: tableData,
                     object: getObjectOrString(data),
-                    message: getObjectOrStringForLog(data)
+                    message: processConsoleMessage([data])
                 });
             },
 
