@@ -598,6 +598,13 @@
       height: 100%;
       /* -webkit-user-select: text !important;
       user-select: text !important; */
+      text-transform: none !important;
+      /* Prevent any accidental transformations */
+    }
+
+    .monaco-editor .inputarea {
+      autocapitalize: none !important;
+      -webkit-autocapitalize: none !important;
     }
 
     .outputContainer {
