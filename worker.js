@@ -60,6 +60,11 @@ const wrapperPrefixLines = [
     'var arrayToString = undefined;',
     'var getStringOfKeyValue = undefined;',
     'var getObjectOrStringForDir = undefined;',
+    'parseFormatSpecifiers = undefined;',
+    'parseCSSStyles = undefined;',
+    'parseANSIEscapeSequences = undefined;',
+    'applyANSICodes = undefined;',
+    'processConsoleMessage = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
@@ -75,7 +80,6 @@ function parseFormatSpecifiers(formatString, args) {
     let lastIndex = 0;
 
     while ((match = specifierRegex.exec(formatString)) !== null) {
-        // Text before the specifier
         if (match.index > lastIndex) {
             currentText += formatString.slice(lastIndex, match.index);
         }
@@ -110,12 +114,11 @@ function parseFormatSpecifiers(formatString, args) {
                 styles = arg ? parseCSSStyles(arg) : [];
                 break;
             default:
-                currentText += specifier; // Unrecognized specifier, treat as literal
+                currentText += specifier; 
         }
         lastIndex = match.index + specifier.length;
     }
 
-    // Remaining text after last specifier
     if (lastIndex < formatString.length) {
         currentText += formatString.slice(lastIndex);
     }
@@ -123,7 +126,6 @@ function parseFormatSpecifiers(formatString, args) {
         result.push({ text: currentText, styles: styles.slice() });
     }
 
-    // Append remaining arguments if any
     while (argIndex < args.length) {
         const remainingArg = args[argIndex++];
         if (typeof remainingArg === 'object' && remainingArg !== null) {
