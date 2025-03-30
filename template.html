@@ -1629,6 +1629,8 @@
       let isContextDragged = false;
       let editorRectGlobal = null;
       let doShow = {show: false, x: 0, y: 0};
+      let showContextFunc = null;
+      let setContextPosFunc = null;
 
       function getRect() {
         if (editorRectGlobal === null) {
@@ -1783,6 +1785,7 @@
           mobileContextMenu.style.left = `${constrainedX}px`;
           mobileContextMenu.style.top = `${constrainedY}px`;
         }
+        showContextFunc = showContextMenu;
 
         function positionContextMenu(startCoords, endCoords, event = null) {
           const theRect = getRect();
@@ -1964,7 +1967,7 @@
           }
 
         }
-
+        showContextFunc = showContextMenu;
 
         function handleMobileSelectorTouch(selector, isLeft) {
           let touchStartPos, initialSelection;
@@ -2339,8 +2342,8 @@
             return;
           }
           if (doShow.show) {
-            showContextMenu();
-            setContextPos(doShow.x, doShow.y);
+            showContextFunc();
+            showContextFunc(doShow.x, doShow.y);
             doShow.show = false;
             doShow.x = 0;
             doShow.y = 0;
