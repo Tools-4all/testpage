@@ -79,7 +79,9 @@ function adjustArgsForConsole(args) {
         if (arg instanceof Error) {
             const adjustedError = Object.assign({}, arg);
             adjustedError.stack = relativeStack(arg);
-            return adjustedError;
+            const err = new CustomError(adjustedError.message);
+            err.stack = adjustedError.stack;
+            return err;
         }
         return arg;
     });
