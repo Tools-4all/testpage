@@ -2338,7 +2338,10 @@
               editorInstance.trigger('keyboard', 'editor.action.smartSelect.expand');
               return;
             }
-          }
+          } 
+          lastTapX = event.touches[0].clientX;
+          lastTapY = event.touches[0].clientY;
+          privousTime = touchStart;
         });
         function blurFocus() {
           const elem = document.activeElement
