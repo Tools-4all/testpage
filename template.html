@@ -3998,7 +3998,7 @@ prompt("This is a prompt:");
       const headerRect = headerDiv.getBoundingClientRect();
       const modalRect = exportModalContent.getBoundingClientRect();
       let left = headerRect.left - modalRect.left;
-      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 5;
+      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10; // Increased from 5 to 10
       const toolbarWidth = toolbar.offsetWidth;
       const modalWidth = modalRect.width;
       if (left < 0) left = 0;
@@ -4009,9 +4009,13 @@ prompt("This is a prompt:");
     }
 
     // Hide the toolbar
+    let isToolbarActive = false;
+
     function hideToolbar() {
-      const toolbar = document.getElementById('richTextToolbar');
-      toolbar.style.display = 'none';
+      if (!isToolbarActive) {
+        const toolbar = document.getElementById('richTextToolbar');
+        toolbar.style.display = 'none';
+      }
     }
 
     // Apply style to selection without overwriting existing styles
@@ -4226,6 +4230,18 @@ prompt("This is a prompt:");
         textDiv.addEventListener('blur', () => hideToolbar());
       }
 
+      toolbar.addEventListener('mouseenter', () => {
+        isToolbarActive = true;
+      });
+      toolbar.addEventListener('mouseleave', () => {
+        isToolbarActive = false;
+        setTimeout(hideToolbar, 100);
+      });
+      toolbar.addEventListener('click', (event) => {
+        event.stopPropagation();
+        isToolbarActive = true;
+      });
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
@@ -4359,10 +4375,23 @@ prompt("This is a prompt:");
       editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
       editorTextDiv.addEventListener('blur', () => hideToolbar());
       if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapBoth.querySelectorAll('.headerText')[1];
+        const textDiv = wrapperBoth.querySelectorAll('.headerText')[1];
         textDiv.addEventListener('focus', () => showToolbar(textDiv));
         textDiv.addEventListener('blur', () => hideToolbar());
       }
+
+      toolbar.addEventListener('mouseenter', () => {
+        isToolbarActive = true;
+      });
+      toolbar.addEventListener('mouseleave', () => {
+        isToolbarActive = false;
+        setTimeout(hideToolbar, 100);
+      });
+      toolbar.addEventListener('click', (event) => {
+        event.stopPropagation();
+        isToolbarActive = true;
+      });
+
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
