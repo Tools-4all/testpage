@@ -2279,8 +2279,9 @@
         let lastTapTime = 0;
         let lastTapX = 0;
         let lastTapY = 0;
-        const doubleTapThreshold = 300;
-        const proximityThreshold = 30;
+        const doubleTapThreshold = 300; // Time in ms for double-tap detection
+        const proximityThreshold = 30;  // Distance in pixels for tap proximity
+        let tapCount = 0;               // Track number of taps
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
@@ -2329,54 +2330,66 @@
           }
         }, true);
         domNode.addEventListener("touchstart", (e) => {
+          const touch = e.touches[0];
           const touchStart = new Date().getTime();
           eventTargetStart = e.target;
-          dragTouchX = e.touches[0].clientX;
-          dragTouchY = e.touches[0].clientY;
-
-          // Double-tap detection variables
-          const doubleTapThreshold = 300; // Time in ms
-          const proximityThreshold = 30;  // Distance in pixels
-          if (!lastTapTime) {
-            lastTapTime = 0;
-            lastTapX = 0;
-            lastTapY = 0;
-          }
+          dragTouchX = touch.clientX;
+          dragTouchY = touch.clientY;
 
           // Calculate distance from last tap
           const distance = Math.sqrt(
             Math.pow(dragTouchX - lastTapX, 2) + Math.pow(dragTouchY - lastTapY, 2)
           );
 
-          // Check for double tap
-          if (
-            touchStart - lastTapTime < doubleTapThreshold &&
-            distance < proximityThreshold
-          ) {
-            // Get position in editor from touch coordinates
-            const editorRect = domNode.getBoundingClientRect();
-            const position = editorInstance.getPositionFromDomPosition({
-              x: dragTouchX - editorRect.left,
-              y: dragTouchY - editorRect.top
-            });
+          // Double-tap detection
+          if (touchStart - lastTapTime < doubleTapThreshold && distance < proximityThreshold) {
+            tapCount++;
+            if (tapCount === 2) {
+              // Double-tap confirmed
+              const editorRect = domNode.getBoundingClientRect();
+              const position = editorInstance.getPositionFromDomPosition({
+                x: dragTouchX - editorRect.left,
+                y: dragTouchY - editorRect.top
+              });
 
-            if (position) {
-              // Set cursor to the tapped position
-              editorInstance.setPosition(position);
-              editorInstance.focus();
-
-              // Execute smart select expand
-              const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
-              if (selectAction) {
-                selectAction.run();
+              if (position) {
+                editorInstance.setPosition(position);
+                editorInstance.focus();
+                const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+                if (selectAction) {
+                  selectAction.run();
+                }
               }
+              tapCount = 0; // Reset after double-tap action
             }
+          } else {
+            tapCount = 1; // First tap of a potential double-tap sequence
           }
 
           // Update last tap details
           lastTapTime = touchStart;
           lastTapX = dragTouchX;
           lastTapY = dragTouchY;
+
+          // Optional: Add long-press detection (uncomment if desired)
+          /*
+          clearTimeout(longPressTimeout);
+          longPressTimeout = setTimeout(() => {
+              const editorRect = domNode.getBoundingClientRect();
+              const position = editorInstance.getPositionFromDomPosition({
+                  x: dragTouchX - editorRect.left,
+                  y: dragTouchY - editorRect.top
+              });
+              if (position) {
+                  editorInstance.setPosition(position);
+                  editorInstance.focus();
+                  const selectAction = editorInstance.getAction("editor.action.smartSelect.expand");
+                  if (selectAction) {
+                      selectAction.run();
+                  }
+              }
+          }, 500); // 500ms for long press
+          */
         }, { passive: false });
         function blurFocus() {
           const elem = document.activeElement
