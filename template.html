@@ -1628,6 +1628,7 @@
       let theContext;
       let isContextDragged = false;
       let editorRectGlobal = null;
+      let doShow = {show: false, x: 0, y: 0};
 
       function getRect() {
         if (editorRectGlobal === null) {
@@ -2154,13 +2155,16 @@
                     editorInstance.focus();
                   }
                 }
-                showContextMenu();
-                const editorRect = getRect();
-                const menuWidth = mobileContextMenu.offsetWidth || 200;
-                const menuHeight = mobileContextMenu.offsetHeight || 40;
-                const x = currentTouchX - editorRect.left - menuWidth / 2;
-                const y = currentTouchY - editorRect.top - menuHeight - 5;
-                setContextPos(x, y);
+                // showContextMenu();
+                // const editorRect = getRect();
+                // const menuWidth = mobileContextMenu.offsetWidth || 200;
+                // const menuHeight = mobileContextMenu.offsetHeight || 40;
+                // const x = currentTouchX - editorRect.left - menuWidth / 2;
+                // const y = currentTouchY - editorRect.top - menuHeight - 5;
+                // setContextPos(x, y);
+                doShow.show = true;
+                doShow.x = x;
+                doShow.y = y;
               }
             }
           }, 1000);
@@ -2332,6 +2336,14 @@
             return;
           }
           if (theContext.contains(event.target)) {
+            return;
+          }
+          if (doShow.show) {
+            showContextMenu();
+            setContextPos(doShow.x, doShow.y);
+            doShow.show = false;
+            doShow.x = 0;
+            doShow.y = 0;
             return;
           }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
