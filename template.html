@@ -1169,7 +1169,6 @@
 
     .previewModal-content {
       background-color: #fefefe;
-      /* margin: 15% auto; */
       position: absolute;
       top: 50%;
       left: 50%;
@@ -1395,11 +1394,38 @@
       fill: #000;
     }
 
+    #richTextToolbar {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      padding: 5px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+    }
+
     #richTextToolbar button,
     #richTextToolbar select,
     #richTextToolbar input {
       margin-right: 5px;
-      vertical-align: middle;
+      padding: 2px 5px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    #richTextToolbar button:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    #richTextToolbar input[type="number"] {
+      width: 50px;
+    }
+
+    #richTextToolbar input[type="color"] {
+      width: 30px;
+      height: 20px;
+      padding: 0;
     }
   </style>
 </head>
@@ -3966,6 +3992,59 @@ prompt("This is a prompt:");
       }
     }
 
+    // Show toolbar above the focused header div
+    function showToolbar(headerDiv) {
+      const toolbar = document.getElementById('richTextToolbar');
+      const headerRect = headerDiv.getBoundingClientRect();
+      const modalRect = exportModalContent.getBoundingClientRect();
+      let left = headerRect.left - modalRect.left;
+      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 5;
+      const toolbarWidth = toolbar.offsetWidth;
+      const modalWidth = modalRect.width;
+      if (left < 0) left = 0;
+      if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
+      toolbar.style.left = `${left}px`;
+      toolbar.style.top = `${top}px`;
+      toolbar.style.display = 'block';
+    }
+
+    // Hide the toolbar
+    function hideToolbar() {
+      const toolbar = document.getElementById('richTextToolbar');
+      toolbar.style.display = 'none';
+    }
+
+    // Apply style to selection without overwriting existing styles
+    function applyStyleToSelection(styleProperty, value) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let span = range.commonAncestorContainer;
+        if (span.nodeType === 3) span = span.parentNode;
+        if (span.nodeName === 'SPAN') {
+          span.style[styleProperty] = value;
+        } else {
+          const html = `<span style="${styleProperty}: ${value}">${range.toString()}</span>`;
+          document.execCommand('insertHTML', false, html);
+        }
+      }
+    }
+
+    // Updated formatting functions
+    function applyFontSize(size) {
+      if (!size) return;
+      applyStyleToSelection('fontSize', size);
+    }
+
+    function applyColor(color) {
+      applyStyleToSelection('color', color);
+    }
+
+    function applyFontFamily(family) {
+      if (!family) return;
+      applyStyleToSelection('fontFamily', family);
+    }
+
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
@@ -4106,21 +4185,11 @@ prompt("This is a prompt:");
       toolbar.id = 'richTextToolbar';
       toolbar.style.position = 'absolute';
       toolbar.style.display = 'none';
-      toolbar.style.background = 'white';
-      toolbar.style.border = '1px solid #ccc';
-      toolbar.style.padding = '5px';
-      toolbar.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-      toolbar.style.zIndex = '10000';
       toolbar.innerHTML = `
-        <button onclick="applyFormat('bold')">B</button>
-        <button onclick="applyFormat('italic')">I</button>
-        <button onclick="applyFormat('underline')">U</button>
-        <select onchange="applyFontSize(this.value)">
-            <option value="">Font Size</option>
-            <option value="12px">12px</option>
-            <option value="16px">16px</option>
-            <option value="20px">20px</option>
-        </select>
+        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
         <input type="color" onchange="applyColor(this.value)">
         <select onchange="applyFontFamily(this.value)">
             <option value="">Font Family</option>
@@ -4128,23 +4197,34 @@ prompt("This is a prompt:");
             <option value="Times New Roman">Times New Roman</option>
             <option value="Courier New">Courier New</option>
         </select>
-        <button onclick="applyAlignment('left')">Left</button>
-        <button onclick="applyAlignment('center')">Center</button>
-        <button onclick="applyAlignment('right')">Right</button>
+        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
     `;
+
+      // Set toolbar theme
+      if (darkModeFlag) {
+        toolbar.style.background = '#333';
+        toolbar.style.borderColor = '#555';
+        toolbar.style.color = '#fff';
+      } else {
+        toolbar.style.background = '#f0f0f0';
+        toolbar.style.borderColor = '#ccc';
+        toolbar.style.color = '#000';
+      }
 
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Set up header divs for rich text editing
-      currentHeaderDivs = [editorTextDiv];
+      // Add focus and blur event listeners
+      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
+      editorTextDiv.addEventListener('blur', () => hideToolbar());
       if (currentTab.outputElement.innerHTML.trim()) {
-        currentHeaderDivs.push(wrapperBoth.querySelectorAll('.headerText')[1]);
+        const textDiv = wrapperBoth.querySelectorAll('.headerText')[1];
+        textDiv.addEventListener('focus', () => showToolbar(textDiv));
+        textDiv.addEventListener('blur', () => hideToolbar());
       }
-
-      // Add selection change listener
-      document.addEventListener('selectionchange', selectionChangeHandler);
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
@@ -4153,7 +4233,7 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture(\'2 capture
+        toolbar.style.display = 'none'; // Hide toolbar before capture
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
@@ -4243,21 +4323,11 @@ prompt("This is a prompt:");
       toolbar.id = 'richTextToolbar';
       toolbar.style.position = 'absolute';
       toolbar.style.display = 'none';
-      toolbar.style.background = 'white';
-      toolbar.style.border = '1px solid #ccc';
-      toolbar.style.padding = '5px';
-      toolbar.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-      toolbar.style.zIndex = '10000';
       toolbar.innerHTML = `
-        <button onclick="applyFormat('bold')">B</button>
-        <button onclick="applyFormat('italic')">I</button>
-        <button onclick="applyFormat('underline')">U</button>
-        <select onchange="applyFontSize(this.value)">
-            <option value="">Font Size</option>
-            <option value="12px">12px</option>
-            <option value="16px">16px</option>
-            <option value="20px">20px</option>
-        </select>
+        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
         <input type="color" onchange="applyColor(this.value)">
         <select onchange="applyFontFamily(this.value)">
             <option value="">Font Family</option>
@@ -4265,23 +4335,34 @@ prompt("This is a prompt:");
             <option value="Times New Roman">Times New Roman</option>
             <option value="Courier New">Courier New</option>
         </select>
-        <button onclick="applyAlignment('left')">Left</button>
-        <button onclick="applyAlignment('center')">Center</button>
-        <button onclick="applyAlignment('right')">Right</button>
+        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
     `;
+
+      // Set toolbar theme
+      if (darkModeFlag) {
+        toolbar.style.background = '#333';
+        toolbar.style.borderColor = '#555';
+        toolbar.style.color = '#fff';
+      } else {
+        toolbar.style.background = '#f0f0f0';
+        toolbar.style.borderColor = '#ccc';
+        toolbar.style.color = '#000';
+      }
 
       exportModalContent.appendChild(wrapBoth);
       exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Set up header divs for rich text editing
-      currentHeaderDivs = [editorTextDiv];
+      // Add focus and blur event listeners
+      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
+      editorTextDiv.addEventListener('blur', () => hideToolbar());
       if (currentTab.outputElement.innerHTML.trim()) {
-        currentHeaderDivs.push(wrapBoth.querySelectorAll('.headerText')[1]);
+        const textDiv = wrapBoth.querySelectorAll('.headerText')[1];
+        textDiv.addEventListener('focus', () => showToolbar(textDiv));
+        textDiv.addEventListener('blur', () => hideToolbar());
       }
-
-      // Add selection change listener
-      document.addEventListener('selectionchange', selectionChangeHandler);
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
@@ -4342,7 +4423,6 @@ prompt("This is a prompt:");
       if (event.target === modal || event === "close") {
         modal.classList.remove("active");
         modal.dispatchEvent(new Event("modalClosed"));
-        document.removeEventListener('selectionchange', selectionChangeHandler);
         const toolbar = document.getElementById('richTextToolbar');
         if (toolbar) toolbar.style.display = 'none';
       }
