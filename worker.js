@@ -1122,19 +1122,19 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                self.postMessage({ type: "log", message: processConsoleMessage(...args) });
+                self.postMessage({ type: "log", message: processConsoleMessage(args) });
             },
             error: (...args) => {
-                self.postMessage({ type: "error", message: processConsoleMessage(...args), forceUse: false });
+                self.postMessage({ type: "error", message: processConsoleMessage(args), forceUse: false });
             },
             warn: (...args) => {
-                self.postMessage({ type: "warn", message: processConsoleMessage(...args) });
+                self.postMessage({ type: "warn", message: processConsoleMessage(args) });
             },
             info: (...args) => {
-                self.postMessage({ type: "info", message: processConsoleMessage(...args) });
+                self.postMessage({ type: "info", message: processConsoleMessage(args) });
             },
             debug: (...args) => {
-                self.postMessage({ type: "log", message: processConsoleMessage(...args) });
+                self.postMessage({ type: "log", message: processConsoleMessage(args) });
             },
             clear: () => self.postMessage({ type: "clear" }),
 
