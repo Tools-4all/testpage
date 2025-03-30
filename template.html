@@ -1506,14 +1506,17 @@
       compiler.style.height = '100vh';
       compiler.style.margin = '0';
       document.getElementById("fullScreenBtn").style.display = 'none';
-      isMobile = true;
     } else {
       window.onload = function () {
         compiler.style.width = '60%';
-        isMobile = false;
         fullScreen();
       };
     }
+    function isMobileDevice() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    }
+    isMobile = isMobileDevice();
 
     function stopAll(event) {
       event.preventDefault();
