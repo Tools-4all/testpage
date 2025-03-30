@@ -64,7 +64,7 @@ const wrapperPrefixLines = [
     'parseCSSStyles = undefined;',
     'parseANSIEscapeSequences = undefined;',
     'applyANSICodes = undefined;',
-    'processConsoleMessage = undefined;',
+    // 'processConsoleMessage = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
