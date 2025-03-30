@@ -1032,16 +1032,9 @@ function relativeStack(error) {
         }
     }
 
-    if (!result.length) return '';
+    if (!result.length) return error.stack; // Fallback to original stack if parsing fails
 
-    const last = result[result.length - 1];
-    if (!/userCode \(js:\d+\)/.test(last)) {
-        const lnMatch = last.match(/js:(\d+)/);
-        const ln = lnMatch ? lnMatch[1] : '?';
-        result.push(`at userCode (js:${ln})`);
-    }
-
-    return result.join('\n');
+    return `${error.name}: ${error.message}\n${result.join('\n')}`;
 }
 
 
