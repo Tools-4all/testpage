@@ -1070,9 +1070,6 @@
       #addTabButton_media {
         display: block;
       }
-      #showContext {
-        display: none;
-      }
     }
 
     @media (max-width: 675px) {
@@ -1404,7 +1401,6 @@
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item" id="selectAllBtn">Select All</div>
-          <div class="vs-navbar-dropdown-item" id="showContext">Show context Menu</div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -4181,12 +4177,6 @@ prompt("This is a prompt:");
       focusTab()
       closeDropdowns()
     });
-
-    document.getElementById("showContext").addEventListener("click", () => {
-      focusTab()
-      currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
-      closeDropdowns()
-    })
 
 
   </script>
