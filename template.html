@@ -1517,6 +1517,13 @@
         fullScreen();
       };
     }
+
+    function stopAll(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+
     function fullScreen() {
       if (compiler.style.width === "60%") {
         compiler.style.width = "100%";
@@ -1740,8 +1747,8 @@
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
           if (!isContextMenuOpen()) {
-            showContextMenu(); 
-            positionContextMenu(startCoords, endCoords); 
+            showContextMenu();
+            positionContextMenu(startCoords, endCoords);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
@@ -1791,14 +1798,14 @@
             const selectionHeight = selectionBottomY - selectionTopY;
 
             const editorVisibleHeight = theRect.height;
-            if (selectionHeight > editorVisibleHeight * 0.8) { 
-              x = (theRect.width - menuWidth) / 2; 
-              y = (theRect.height - menuHeight) / 2; 
+            if (selectionHeight > editorVisibleHeight * 0.8) {
+              x = (theRect.width - menuWidth) / 2;
+              y = (theRect.height - menuHeight) / 2;
             } else {
               const spaceAbove = selectionTopY;
               if (spaceAbove >= menuHeight + 5) {
                 x = selectionCenterX;
-                y = selectionTopY - menuHeight - 5; 
+                y = selectionTopY - menuHeight - 5;
               } else {
                 x = selectionCenterX;
                 y = selectionTopY + selectorHeight + 20;
@@ -1811,20 +1818,20 @@
           } else {
             if (event) {
               const touch = event.touches ? event.touches[0] : event;
-              x = touch.clientX - theRect.left - menuWidth / 2;  
-              y = touch.clientY - theRect.top - menuHeight - 5;  
+              x = touch.clientX - theRect.left - menuWidth / 2;
+              y = touch.clientY - theRect.top - menuHeight - 5;
               if (y < 0) {
-                y = touch.clientY - theRect.top + 5; 
+                y = touch.clientY - theRect.top + 5;
               }
             } else {
               const cursorPos = editorInstance.getPosition();
               if (cursorPos) {
                 const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
                 if (coords) {
-                  x = coords.left - menuWidth / 2;  
-                  y = coords.top - menuHeight - 5; 
+                  x = coords.left - menuWidth / 2;
+                  y = coords.top - menuHeight - 5;
                   if (y < 0) {
-                    y = coords.top + 20;  
+                    y = coords.top + 20;
                   }
                 }
               }
@@ -2101,7 +2108,7 @@
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
-          dragTouchX = touch.clientX; 
+          dragTouchX = touch.clientX;
           dragTouchY = touch.clientY;
 
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
@@ -2110,9 +2117,9 @@
             return;
           }
 
-          clearTimeout(longPressTimeout); 
+          clearTimeout(longPressTimeout);
           longPressTimeout = setTimeout(() => {
-            if (wasDragging) return;  
+            if (wasDragging) return;
             if (!isContextMenuOpen()) {
               if (editorInstance.getSelection().isEmpty()) {
                 const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
@@ -2125,8 +2132,8 @@
               const editorRect = getRect();
               const menuWidth = mobileContextMenu.offsetWidth || 200;
               const menuHeight = mobileContextMenu.offsetHeight || 40;
-              const x = dragTouchX - editorRect.left - menuWidth / 2;  
-              const y = dragTouchY - editorRect.top - menuHeight - 5; 
+              const x = dragTouchX - editorRect.left - menuWidth / 2;
+              const y = dragTouchY - editorRect.top - menuHeight - 5;
               setContextPos(x, y);
             }
           }, 1000);
@@ -2140,7 +2147,7 @@
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
         fitScroll();
-        stopAll(event);
+        stopAll()
       }
       let name = desiredName
         ? getUniqueTabName(desiredName)
@@ -2339,7 +2346,7 @@
               editorInstance.trigger('keyboard', 'editor.action.smartSelect.expand');
               return;
             }
-          } 
+          }
           lastTapX = event.touches[0].clientX;
           lastTapY = event.touches[0].clientY;
           privousTime = touchStart;
@@ -2349,12 +2356,6 @@
           elem.blur()
           editorInstance.focus()
         }
-        function stopAll(event) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          event.stopPropagation();
-        }
-
         domNode.addEventListener("textInput", (event) => {
           stopAll(event)
           if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
