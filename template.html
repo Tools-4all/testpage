@@ -2103,17 +2103,27 @@
         }
         editorInstance.onDidScrollChange(fitScroll);
 
+        const touchMoveHandler = (moveEvent) => {
+          const moveTouch = moveEvent.touches[0];
+          currentTouchX = moveTouch.clientX;
+          currentTouchY = moveTouch.clientY;
+
+          const deltaX = Math.abs(currentTouchX - initialTouchX);
+          const deltaY = Math.abs(currentTouchY - initialTouchY);
+          if (deltaX > threshold || deltaY > threshold) {
+            hasMovedSignificantly = true;
+          }
+        };
 
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
-          const initialTouchX = touch.clientX; // Initial X coordinate
-          const initialTouchY = touch.clientY; // Initial Y coordinate
-          let currentTouchX = initialTouchX;   // Current X coordinate (updated in touchmove)
-          let currentTouchY = initialTouchY;   // Current Y coordinate (updated in touchmove)
-          let hasMovedSignificantly = false;   // Flag to track significant movement
-          const threshold = 10;                // Movement threshold in pixels
-
+          const initialTouchX = touch.clientX; 
+          const initialTouchY = touch.clientY; 
+          let currentTouchX = initialTouchX;   
+          let currentTouchY = initialTouchY;
+          let hasMovedSignificantly = false;
+          const threshold = 10;
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
             event.preventDefault();
@@ -2122,40 +2132,12 @@
 
           clearTimeout(longPressTimeout);
 
-          // Define touchmove handler
-          const touchMoveHandler = (moveEvent) => {
-            const moveTouch = moveEvent.touches[0];
-            currentTouchX = moveTouch.clientX;
-            currentTouchY = moveTouch.clientY;
-
-            // Check if movement exceeds threshold
-            const deltaX = Math.abs(currentTouchX - initialTouchX);
-            const deltaY = Math.abs(currentTouchY - initialTouchY);
-            if (deltaX > threshold || deltaY > threshold) {
-              hasMovedSignificantly = true;
-              wasDragging = true; // Optional: Mark as dragging if used elsewhere
-            }
-          };
-
-          // Define touchend handler
-          const touchEndHandler = () => {
-            // Remove listeners and clear timeout when touch ends
-            editorDom.removeEventListener('touchmove', touchMoveHandler);
-            editorDom.removeEventListener('touchend', touchEndHandler);
-            clearTimeout(longPressTimeout);
-            wasDragging = false; // Reset dragging flag
-          };
-
-          // Add the listeners
           editorDom.addEventListener('touchmove', touchMoveHandler, { passive: false });
           editorDom.addEventListener('touchend', touchEndHandler, { passive: false });
 
           longPressTimeout = setTimeout(() => {
-            // Remove listeners after timeout completes (whether menu shows or not)
             editorDom.removeEventListener('touchmove', touchMoveHandler);
-            editorDom.removeEventListener('touchend', touchEndHandler);
 
-            // Only show context menu if touch hasn't moved significantly
             if (!hasMovedSignificantly) {
               if (!isContextMenuOpen()) {
                 if (editorInstance.getSelection().isEmpty()) {
@@ -2184,6 +2166,7 @@
         editorDom.addEventListener('touchend', () => {
           if (longPressTimeout) clearTimeout(longPressTimeout);
         });
+        editorDom.removeEventListener('touchmove', touchMoveHandler);
         fitScroll();
         stopAll(event)
       }
