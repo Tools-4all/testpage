@@ -1501,7 +1501,12 @@
     const exportModalContent = document.getElementById("exportModalContent");
 
     let isMobile;
-    if (window.innerWidth < 768) {
+    function isMobileDevice() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    }
+    isMobile = isMobileDevice();
+    if (isMobile) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
       compiler.style.margin = '0';
@@ -1511,12 +1516,7 @@
         fullScreen();
       };
     }
-    function isMobileDevice() {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-    }
-    isMobile = isMobileDevice();
-    if (isMobile) document.getElementById("fullScreenBtn").style.display = 'none';
+
 
     function stopAll(event) {
       event.preventDefault();
