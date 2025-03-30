@@ -596,6 +596,17 @@
     .monaco-editor {
       width: 100%;
       height: 100%;
+      text-transform: none !important;
+      user-select: none !important;
+      /* -webkit-user-drag: none !important;
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important; */
+    }
+
+    .monaco-editor .inputarea {
+      autocapitalize: none !important;
+      -webkit-autocapitalize: none !important;
     }
 
     .outputContainer {
@@ -1224,12 +1235,6 @@
       background-color: white;
     }
 
-    .headerText:empty:before {
-      content: attr(data-placeholder);
-      color: #aaa;
-      pointer-events: none;
-    }
-
     .handPointer {
       cursor: pointer;
     }
@@ -1315,7 +1320,7 @@
       height: 40px;
       background: #333;
       border-radius: 18px;
-      max-width: 200px;
+      max-width: 220px;
       z-index: 999;
       user-select: none;
       color: #fff;
@@ -1403,7 +1408,6 @@
         Edit
         <div class="vs-navbar-dropdown" id="editDropdown">
           <div class="vs-navbar-dropdown-item" id="selectAllBtn">Select All</div>
-          <div class="vs-navbar-dropdown-item" id="showContext">Show context Menu</div>
         </div>
       </div>
       <div id="undoBtn"><i class="fa-solid fa-arrow-rotate-left"></i></div>
@@ -1506,19 +1510,29 @@
     const exportModalContent = document.getElementById("exportModalContent");
 
     let isMobile;
-    if (window.innerWidth < 768) {
+    function isMobileDevice() {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+    }
+    isMobile = isMobileDevice();
+    if (isMobile) {
       compiler.style.width = '100%';
       compiler.style.height = '100vh';
       compiler.style.margin = '0';
-      document.getElementById("fullScreenBtn").style.display = 'none';
-      isMobile = true;
     } else {
       window.onload = function () {
         compiler.style.width = '60%';
-        isMobile = false;
         fullScreen();
       };
     }
+
+
+    function stopAll(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      event.stopPropagation();
+    }
+
     function fullScreen() {
       if (compiler.style.width === "60%") {
         compiler.style.width = "100%";
@@ -1624,6 +1638,9 @@
       let theContext;
       let isContextDragged = false;
       let editorRectGlobal = null;
+      let doShow = { show: false, x: 0, y: 0 };
+      let showContextFunc = null;
+      let setContextPosFunc = null;
 
       function getRect() {
         if (editorRectGlobal === null) {
@@ -1653,7 +1670,6 @@
         theContext = mobileContextMenu;
         const mobileInsetMenu = document.createElement('div');
         mobileInsetMenu.className = 'mobile-inset-menu';
-        showContextMenu();
 
         let touchStartX = 0, touchStartY = 0;
         let menuStartX = 0, menuStartY = 0;
@@ -1688,7 +1704,7 @@
           const menuHeight = mobileContextMenu.offsetHeight;
           const editorRect = getRect();
           const initialCenterX = menuStartX + menuWidth / 2;
-          const initialCenterY = menuStartY + menuHeight / menuHeight / 2;
+          const initialCenterY = menuStartY + menuHeight / 2;
           const newCenterX = initialCenterX + deltaX;
           const newCenterY = initialCenterY + deltaY;
           const newX = newCenterX - menuWidth / 2;
@@ -1744,8 +1760,7 @@
 
           if (!isContextMenuOpen()) {
             showContextMenu();
-            const theRect = getRect();
-            setContextPos(startCoords.left + theRect.left, startCoords.top + theRect.top);
+            positionContextMenu(startCoords, endCoords);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
@@ -1764,21 +1779,92 @@
 
         function setContextPos(x, y) {
           const theRect = getRect();
+          const menuHeight = mobileContextMenu.offsetHeight || 40;
           const maxX = theRect.width - mobileContextMenu.offsetWidth;
-          const maxY = theRect.height - mobileContextMenu.offsetHeight;
+          const maxY = theRect.height - menuHeight;
 
           let constrainedX = Math.max(0, Math.min(x, maxX));
           let constrainedY = Math.max(0, Math.min(y, maxY));
 
-          if (isContextDragged && constrainedY + mobileContextMenu.offsetHeight > theRect.height) {
-            constrainedY = y - mobileContextMenu.offsetHeight;
-            constrainedY = Math.max(0, constrainedY);
+          if (isContextDragged) {
+            if (constrainedY + menuHeight > theRect.height) {
+              constrainedY = Math.max(0, y - menuHeight);
+            }
           }
 
           mobileContextMenu.style.left = `${constrainedX}px`;
           mobileContextMenu.style.top = `${constrainedY}px`;
         }
+        showContextFunc = showContextMenu;
 
+        function positionContextMenu(startCoords, endCoords, event = null) {
+          const theRect = getRect();
+          const menuWidth = mobileContextMenu.offsetWidth || 200;
+          const menuHeight = mobileContextMenu.offsetHeight || 40;
+          const selectorHeight = 25;
+          let x, y;
+
+          if (startCoords && endCoords) {
+            const selectionCenterX = (startCoords.left + endCoords.left) / 2 - menuWidth / 2;
+            const selectionTopY = Math.min(startCoords.top, endCoords.top);
+            const selectionBottomY = Math.max(startCoords.top, endCoords.top) + selectorHeight;
+            const selectionHeight = selectionBottomY - selectionTopY;
+
+            const editorVisibleHeight = theRect.height;
+            if (selectionHeight > editorVisibleHeight * 0.8) {
+              x = (theRect.width - menuWidth) / 2;
+              y = (theRect.height - menuHeight) / 2;
+            } else {
+              const spaceAbove = selectionTopY;
+              if (spaceAbove >= menuHeight + 5) {
+                x = selectionCenterX;
+                y = selectionTopY - menuHeight - 5;
+              } else {
+                x = selectionCenterX;
+                y = selectionTopY + selectorHeight + 20;
+                const spaceBelow = theRect.height - selectionBottomY;
+                if (spaceBelow < selectorHeight + 5) {
+                  y = Math.max(0, selectionBottomY - menuHeight - selectorHeight - 5);
+                }
+              }
+            }
+          } else {
+            if (event) {
+              const touch = event.touches ? event.touches[0] : event;
+              x = touch.clientX - theRect.left - menuWidth / 2;
+              y = touch.clientY - theRect.top - menuHeight - 5;
+              if (y < 0) {
+                y = touch.clientY - theRect.top + 5;
+              }
+            } else {
+              const cursorPos = editorInstance.getPosition();
+              if (cursorPos) {
+                const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
+                if (coords) {
+                  x = coords.left - menuWidth / 2;
+                  y = coords.top - menuHeight - 5;
+                  if (y < 0) {
+                    y = coords.top + 20;
+                  }
+                }
+              }
+              if (!cursorPos || !coords) {
+                if (dragTouchY !== null) {
+                  x = dragTouchX - theRect.left - menuWidth / 2;
+                  y = dragTouchY - theRect.top - menuHeight - 5;
+                  if (y < 0) {
+                    y = dragTouchY - theRect.top + 5;
+                  }
+                } else {
+                  x = (theRect.width - menuWidth) / 2;
+                  y = (theRect.height - menuHeight) / 2;
+                }
+              }
+            }
+          }
+
+          setContextPos(x, y);
+        }
 
         function funcDeco(func) {
           return () => {
@@ -1886,8 +1972,12 @@
           }, 0);
 
           mobileContextMenu.classList.remove('hidden');
-        }
+          if (!isTextSelected && dragTouchY !== null) {
+            positionContextMenu(null, null, { clientX: dragTouchX, clientY: dragTouchY });
+          }
 
+        }
+        showContextFunc = showContextMenu;
 
         function handleMobileSelectorTouch(selector, isLeft) {
           let touchStartPos, initialSelection;
@@ -2027,34 +2117,76 @@
         }
         editorInstance.onDidScrollChange(fitScroll);
 
-
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
+          const touch = event.touches[0];
+          const initialTouchX = touch.clientX;
+          const initialTouchY = touch.clientY;
+          let currentTouchX = initialTouchX;
+          let currentTouchY = initialTouchY;
+          let hasMovedSignificantly = false;
+          const threshold = 10;
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
             event.stopPropagation();
             event.preventDefault();
             return;
           }
-          longPressTimeout = setTimeout(() => {
-            if (Math.abs(dragTouchX - event.changedTouches[0].clientX) > 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) > 10) {
-              wasDragging = true;
-              return;
+
+          clearTimeout(longPressTimeout);
+          const touchMoveHandler = (moveEvent) => {
+            const moveTouch = moveEvent.touches[0];
+            currentTouchX = moveTouch.clientX;
+            currentTouchY = moveTouch.clientY;
+
+            const deltaX = Math.abs(currentTouchX - initialTouchX);
+            const deltaY = Math.abs(currentTouchY - initialTouchY);
+            if (deltaX > threshold || deltaY > threshold) {
+              hasMovedSignificantly = true;
             }
-            if (!isContextMenuOpen()) {
-              showContextMenu();
-              setContextPos(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+          };
+
+          const touchEndHandler = () => {
+            editorDom.removeEventListener('touchmove', touchMoveHandler);
+            editorDom.removeEventListener('touchend', touchEndHandler);
+            if (longPressTimeout) {
+              clearTimeout(longPressTimeout);
+            }
+          };
+          editorDom.addEventListener('touchmove', touchMoveHandler, { passive: false });
+          editorDom.addEventListener('touchend', touchEndHandler, { passive: false });
+
+          longPressTimeout = setTimeout(() => {
+            editorDom.removeEventListener('touchmove', touchMoveHandler);
+            editorDom.removeEventListener('touchend', touchEndHandler);
+
+            if (!hasMovedSignificantly) {
+              if (!isContextMenuOpen()) {
+                if (editorInstance.getSelection().isEmpty()) {
+                  const target = editorInstance.getTargetAtClientPoint(currentTouchX, currentTouchY);
+                  if (target && target.position) {
+                    editorInstance.setPosition(target.position);
+                    editorInstance.focus();
+                  }
+                }
+                const editorRect = getRect();
+                const menuWidth = mobileContextMenu.offsetWidth || 200;
+                const menuHeight = mobileContextMenu.offsetHeight || 40;
+                const x = currentTouchX - editorRect.left - menuWidth / 2;
+                const y = currentTouchY - editorRect.top - menuHeight - 5;
+                doShow.show = true;
+                doShow.x = x;
+                doShow.y = y;
+              }
             }
           }, 1000);
-          const touch = event.touches[0];
+
           const target = editorInstance.getTargetAtClientPoint(touch.clientX, touch.clientY);
           if (target && target.position) {
             startPositionLP = target.position;
           }
         }, { passive: false });
-        editorDom.addEventListener('touchend', () => {
-          if (longPressTimeout) clearTimeout(longPressTimeout);
-        });
         fitScroll();
+        stopAll(event)
       }
       let name = desiredName
         ? getUniqueTabName(desiredName)
@@ -2162,7 +2294,7 @@
         lineNumbers: "on",
         wordWrap: "on",
         scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
-        contextmenu: true,
+        contextmenu: !isMobile,
         selectionHighlight: true,
         renderIndentGuides: true,
         renderLineHighlight: "all",
@@ -2182,7 +2314,12 @@
         minimap: { enabled: !isMobile },
         scrollBeyondLastLine: false,
       });
-
+      const inputArea = editorContainer.querySelector(".monaco-editor .inputarea");
+      if (inputArea) {
+        inputArea.setAttribute("autocapitalize", "off");
+        inputArea.setAttribute("autocomplete", "off");
+        inputArea.setAttribute("spellcheck", "false");
+      }
       const domNode = editorInstance.getDomNode();
       if (isMobile) {
         initializeMobileSelection(editorInstance);
@@ -2191,6 +2328,9 @@
         let touchEnd = null;
         let eventTargetStart;
         let lastDot;
+        let privousTime = null;
+        let lastTapX = null;
+        let lastTapY = null;
 
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
@@ -2213,6 +2353,13 @@
           }
           if (theContext.contains(event.target)) {
             return;
+          }
+          if (doShow.show) {
+            showContextFunc();
+            showContextFunc(doShow.x, doShow.y);
+            doShow.show = false;
+            doShow.x = 0;
+            doShow.y = 0;
           }
           if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
             stopAll(event);
@@ -2243,18 +2390,23 @@
           eventTargetStart = event.target;
           dragTouchX = event.touches[0].clientX;
           dragTouchY = event.touches[0].clientY;
+          if (lastTapX && lastTapY && privousTime) {
+            if (Math.abs(lastTapX - event.touches[0].clientX) < 10 && Math.abs(lastTapY - event.touches[0].clientY) < 10 && touchStart - privousTime < 300) {
+              stopAll(event);
+              wasDragging = true;
+              editorInstance.trigger('keyboard', 'editor.action.smartSelect.expand');
+              return;
+            }
+          }
+          lastTapX = event.touches[0].clientX;
+          lastTapY = event.touches[0].clientY;
+          privousTime = touchStart;
         });
         function blurFocus() {
           const elem = document.activeElement
           elem.blur()
           editorInstance.focus()
         }
-        function stopAll(event) {
-          event.preventDefault();
-          event.stopImmediatePropagation();
-          event.stopPropagation();
-        }
-
         domNode.addEventListener("textInput", (event) => {
           stopAll(event)
           if (event.data.length > 1 || new Date().getTime() - lastDot < 20) {
@@ -2786,52 +2938,51 @@ prompt("This is a prompt:");
       if (currentTab.groupStack && currentTab.groupStack.length > 0 && !forceUse) {
         container = currentTab.groupStack[currentTab.groupStack.length - 1];
       }
-      let line = document.createElement("div");
-      line.classList.add("outputContent");
-      var groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
-      if (forceUse) {
-        groupLevel = 0;
-      }
-      line.style.marginLeft = groupLevel ? "20px" : "4px";
+      let line = document.createElement('div');
+      line.classList.add('outputContent');
+      const groupLevel = currentTab.groupStack ? currentTab.groupStack.length : 0;
+      line.style.marginLeft = groupLevel ? '20px' : '4px';
       line.classList.add(type);
 
-      let flexContainer = document.createElement("div");
-      flexContainer.classList.add("flexContainer");
+      let flexContainer = document.createElement('div');
+      flexContainer.classList.add('flexContainer');
 
-      let symbolDiv = document.createElement("div");
-      symbolDiv.classList.add("dontAllowSelect", "symbolDiv");
-
+      let symbolDiv = document.createElement('div');
+      symbolDiv.classList.add('dontAllowSelect', 'symbolDiv');
       symbolDiv.textContent = `[${symbolsMap[type]}]`;
 
-      let messageDiv = document.createElement("div");
-      messageDiv.classList.add("outputItem");
-      if (type === "error" && forceUse) {
-        const lines = message.split("\n");
-        messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join("\n")}</div></div>`;
+      let messageDiv = document.createElement('div');
+      messageDiv.classList.add('outputItem');
+
+      if (type === 'error' && forceUse) {
+        const lines = message.split('\n');
+        messageDiv.innerHTML = `<div>${lines[0]}\n<div style="margin-left: 20px;">${lines.slice(1).join('\n')}</div></div>`;
         const matches = message.match(/\(js:\d+\)/g);
         if (matches) {
           matches.forEach(match => {
             const lineNumber = parseInt(match.match(/\d+/)[0]);
-            messageDiv.innerHTML = messageDiv.innerHTML.replace(match, `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`);
+            messageDiv.innerHTML = messageDiv.innerHTML.replace(
+              match,
+              `<span class="error-line handPointer" onclick="gotoLine(${lineNumber})">${match}</span>`
+            );
           });
         }
-      }
-      else if (typeof message === "object") {
-        let actualMsg = "";
-        let subMsgDiv
-        for (let key in message) {
-          subMsgDiv = document.createElement("div");
-          if (message[key][1]) {
-            subMsgDiv = lazyRenderTreeNode(null, message[key][0])
-            subMsgDiv.style.marginRight = "8px";
-            messageDiv.appendChild(subMsgDiv);
+      } else if (Array.isArray(message)) {
+        message.forEach(segment => {
+          if (segment.isObject) {
+            const objDiv = lazyRenderTreeNode(null, segment.object);
+            objDiv.style.marginRight = '8px';
+            messageDiv.appendChild(objDiv);
           } else {
-            subMsgDiv = document.createElement("div");
-            subMsgDiv.style.marginRight = "8px";
-            subMsgDiv.innerText = message[key][0]
-            messageDiv.appendChild(subMsgDiv);
+            const span = document.createElement('span');
+            span.textContent = segment.text;
+            if (segment.styles && segment.styles.length) {
+              span.style.cssText = segment.styles.join('; ');
+            }
+            span.style.marginRight = '8px';
+            messageDiv.appendChild(span);
           }
-        }
+        });
       } else {
         messageDiv.textContent = message;
       }
@@ -2843,7 +2994,6 @@ prompt("This is a prompt:");
       container.appendChild(line);
       container.scrollTop = container.scrollHeight;
     }
-
 
     function appendTable(outputElement, tableInfo, msg) {
       let container = outputElement;
@@ -3813,60 +3963,19 @@ prompt("This is a prompt:");
     async function exportImage() {
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-
-      // Create a toolbar for text formatting above the headerText div
-      const textToolbar = document.createElement('div');
-      textToolbar.id = 'textToolbar';
-
-      // Button to change text color to red
-      const btnRed = document.createElement('button');
-      btnRed.textContent = 'Red';
-      btnRed.addEventListener('click', () => {
-        document.execCommand('foreColor', false, 'red');
-      });
-      textToolbar.appendChild(btnRed);
-
-      // Button to change text color to blue
-      const btnBlue = document.createElement('button');
-      btnBlue.textContent = 'Blue';
-      btnBlue.addEventListener('click', () => {
-        document.execCommand('foreColor', false, 'blue');
-      });
-      textToolbar.appendChild(btnBlue);
-
-      // Button to change font family
-      const btnFont = document.createElement('button');
-      btnFont.textContent = 'Comic Sans';
-      btnFont.addEventListener('click', () => {
-        document.execCommand('fontName', false, 'Comic Sans MS');
-      });
-      textToolbar.appendChild(btnFont);
-
-      // Append the toolbar to the wrapper
-      wrapperBoth.appendChild(textToolbar);
-
-      // Create the title div with the placeholder
-      const textDiv = document.createElement('div');
-      textDiv.classList.add("headerText");
-      textDiv.contentEditable = true;
-      textDiv.setAttribute("data-placeholder", "Enter title here...");
-      // wrapperBoth.appendChild(textDiv);
-
-      // Add the editor text div and additional editor content
       const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText");
+      editorTextDiv.classList.add("headerText")
       editorTextDiv.contentEditable = true;
       wrapperBoth.appendChild(editorTextDiv);
       wrapperBoth.appendChild(await getEditorDiv());
-
-      // Continue with your export buttons logic
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-
       if (currentTab.outputElement.innerHTML.trim()) {
+        const textDiv = document.createElement('div');
+        textDiv.classList.add("headerText")
+        textDiv.contentEditable = true;
         wrapperBoth.appendChild(textDiv);
         wrapperBoth.appendChild(await getOutputDivClone());
-
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -3875,7 +3984,6 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
-
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -3886,7 +3994,6 @@ prompt("This is a prompt:");
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "hidden" : "visible";
         });
       }
-
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -3895,15 +4002,12 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
-
       exportModalContent.appendChild(wrapperBoth);
-
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
       exportModalContent.appendChild(exportBtnsWrapper);
-
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         const canvas = document.createElement('canvas');
@@ -3923,18 +4027,17 @@ prompt("This is a prompt:");
         }
 
         canvas.width = bothImg.width;
-        canvas.height = bothImg.height;
+        canvas.height = bothImg.height
         ctx.drawImage(bothImg, 0, 0);
 
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
         a.click();
-      };
+      }
 
-      displayModal();
+      displayModal()
     }
-
 
 
     async function exportPDF() {
@@ -4125,13 +4228,6 @@ prompt("This is a prompt:");
       closeDropdowns()
     });
 
-    document.getElementById("showContext").addEventListener("click", () => {
-      focusTab()
-      currentTab.editorInstance.trigger('editor.action.showContextMenu', 'editor.action.showContextMenu', null);
-      closeDropdowns()
-    })
-
-    alert(1);
 
   </script>
 
