@@ -69,23 +69,9 @@ const wrapperPrefixLines = [
     'var ansiStyles = undefined;',
     'var ansiColors = undefined;',
     'var objectToStringForNode = undefined;',
-    'var getObjectOrStringForTable = undefined;',
     '//# sourceURL=1919191.js',
     '(() => {'
 ];
-
-function adjustArgsForConsole(args) {
-    return args.map(arg => {
-        if (arg instanceof Error) {
-            const adjustedError = Object.assign({}, arg);
-            adjustedError.stack = relativeStack(arg);
-            const err = new CustomError(adjustedError.message);
-            err.stack = adjustedError.stack;
-            return err;
-        }
-        return arg;
-    });
-}
 
 function parseFormatSpecifiers(formatString, args) {
     const result = [];
@@ -1034,9 +1020,16 @@ function relativeStack(error) {
         }
     }
 
-    if (!result.length) return error.stack; // Fallback to original stack if parsing fails
+    if (!result.length) return '';
 
-    return `${error.name}: ${error.message}\n${result.join('\n')}`;
+    const last = result[result.length - 1];
+    if (!/userCode \(js:\d+\)/.test(last)) {
+        const lnMatch = last.match(/js:(\d+)/);
+        const ln = lnMatch ? lnMatch[1] : '?';
+        result.push(`at userCode (js:${ln})`);
+    }
+
+    return result.join('\n');
 }
 
 
@@ -1150,23 +1143,18 @@ self.addEventListener("message", (event) => {
         const headers = [];
         const customConsole = {
             log: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "log", message: processConsoleMessage(args) });
             },
             error: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "error", message: processConsoleMessage(args), forceUse: false });
             },
             warn: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "warn", message: processConsoleMessage(args) });
             },
             info: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "info", message: processConsoleMessage(args) });
             },
             debug: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "log", message: processConsoleMessage(args) });
             },
             clear: () => self.postMessage({ type: "clear" }),
@@ -1242,18 +1230,15 @@ self.addEventListener("message", (event) => {
             },
             timeStamp: (label) => self.postMessage({ type: "warn", message: `console.timeStamp is not implemented yet.` }),
             trace: (...args) => {
-                args = adjustArgsForConsole(args);
                 const stack = getStack();
                 args.push(stack);
                 self.postMessage({ type: "log", message: getObjectOrStringForLog(...args) });
             },
             group: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "group", message: getObjectOrStringForLog(...args), collapsed: false });
                 groupLevel++;
             },
             groupCollapsed: (...args) => {
-                args = adjustArgsForConsole(args);
                 self.postMessage({ type: "group", message: getObjectOrStringForLog(...argss), collapsed: true });
                 groupLevel++;
             },
@@ -1300,7 +1285,6 @@ self.addEventListener("message", (event) => {
             },
 
             timeLog: (label = "default", ...args) => {
-                args = adjustArgsForConsole(args);
                 if (timers[label]) {
                     const duration = performance.now() - timers[label];
                     const msg = `${label}: ${duration} ms`;
