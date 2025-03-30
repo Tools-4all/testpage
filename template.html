@@ -1740,8 +1740,8 @@
           const endCoords = editorInstance.getScrolledVisiblePosition(endPos);
 
           if (!isContextMenuOpen()) {
-            showContextMenu(); 
-            positionContextMenu(startCoords, endCoords); 
+            showContextMenu();
+            positionContextMenu(startCoords, endCoords);
           }
           if (startCoords && endCoords) {
             mobileSelectorLeft.style.transform = `translate(${startCoords.left + 10}px, ${startCoords.top + 22}px)`;
@@ -1791,14 +1791,14 @@
             const selectionHeight = selectionBottomY - selectionTopY;
 
             const editorVisibleHeight = theRect.height;
-            if (selectionHeight > editorVisibleHeight * 0.8) { 
-              x = (theRect.width - menuWidth) / 2; 
-              y = (theRect.height - menuHeight) / 2; 
+            if (selectionHeight > editorVisibleHeight * 0.8) {
+              x = (theRect.width - menuWidth) / 2;
+              y = (theRect.height - menuHeight) / 2;
             } else {
               const spaceAbove = selectionTopY;
               if (spaceAbove >= menuHeight + 5) {
                 x = selectionCenterX;
-                y = selectionTopY - menuHeight - 5; 
+                y = selectionTopY - menuHeight - 5;
               } else {
                 x = selectionCenterX;
                 y = selectionTopY + selectorHeight + 20;
@@ -1811,20 +1811,20 @@
           } else {
             if (event) {
               const touch = event.touches ? event.touches[0] : event;
-              x = touch.clientX - theRect.left - menuWidth / 2;  
-              y = touch.clientY - theRect.top - menuHeight - 5;  
+              x = touch.clientX - theRect.left - menuWidth / 2;
+              y = touch.clientY - theRect.top - menuHeight - 5;
               if (y < 0) {
-                y = touch.clientY - theRect.top + 5; 
+                y = touch.clientY - theRect.top + 5;
               }
             } else {
               const cursorPos = editorInstance.getPosition();
               if (cursorPos) {
                 const coords = editorInstance.getScrolledVisiblePosition(cursorPos);
                 if (coords) {
-                  x = coords.left - menuWidth / 2;  
-                  y = coords.top - menuHeight - 5; 
+                  x = coords.left - menuWidth / 2;
+                  y = coords.top - menuHeight - 5;
                   if (y < 0) {
-                    y = coords.top + 20;  
+                    y = coords.top + 20;
                   }
                 }
               }
@@ -2101,7 +2101,7 @@
         let longPressTimeout, startPositionLP;
         editorDom.addEventListener('touchstart', (event) => {
           const touch = event.touches[0];
-          dragTouchX = touch.clientX; 
+          dragTouchX = touch.clientX;
           dragTouchY = touch.clientY;
 
           if (mobileContextMenu.contains(event.target) || mobileSelectionsContainer.contains(event.target)) {
@@ -2110,9 +2110,9 @@
             return;
           }
 
-          clearTimeout(longPressTimeout); 
+          clearTimeout(longPressTimeout);
           longPressTimeout = setTimeout(() => {
-            if (wasDragging) return;  
+            if (wasDragging) return;
             if (!isContextMenuOpen()) {
               if (editorInstance.getSelection().isEmpty()) {
                 const target = editorInstance.getTargetAtClientPoint(dragTouchX, dragTouchY);
@@ -2125,8 +2125,8 @@
               const editorRect = getRect();
               const menuWidth = mobileContextMenu.offsetWidth || 200;
               const menuHeight = mobileContextMenu.offsetHeight || 40;
-              const x = dragTouchX - editorRect.left - menuWidth / 2;  
-              const y = dragTouchY - editorRect.top - menuHeight - 5; 
+              const x = dragTouchX - editorRect.left - menuWidth / 2;
+              const y = dragTouchY - editorRect.top - menuHeight - 5;
               setContextPos(x, y);
             }
           }, 1000);
@@ -2277,6 +2277,13 @@
         let eventTargetStart;
         let lastDot;
 
+
+        let lastTapTime = 0;
+        let lastTapX = 0;
+        let lastTapY = 0;
+        const doubleTapThreshold = 300; // Max time between taps (ms)
+        const proximityThreshold = 30;  // Max distance between taps (pixels)
+
         domNode.addEventListener("touchend", (event) => {
           lastTouchY = null;
           if (isContextDragged) {
@@ -2290,7 +2297,6 @@
               theContext.classList.remove('hidden');
             }
           }
-          touchEnd = new Date().getTime();
           if (wasDragging) {
             stopAll(event);
             wasDragging = false;
@@ -2299,28 +2305,36 @@
           if (theContext.contains(event.target)) {
             return;
           }
-          if (touchEnd - touchStart > 700 && event.target === eventTargetStart && Math.abs(dragTouchX - event.changedTouches[0].clientX) < 10 && Math.abs(dragTouchY - event.changedTouches[0].clientY) < 10) {
+
+          // Double-tap detection
+          const currentTime = new Date().getTime();
+          const currentX = event.changedTouches[0].clientX;
+          const currentY = event.changedTouches[0].clientY;
+          const timeDiff = currentTime - lastTapTime;
+          const xDiff = Math.abs(currentX - lastTapX);
+          const yDiff = Math.abs(currentY - lastTapY);
+          const distance = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+
+          if (timeDiff < doubleTapThreshold && distance < proximityThreshold) {
+            // Double-tap detected
             stopAll(event);
 
-            const point = editorInstance.getTargetAtClientPoint(
-              event.changedTouches[0].clientX,
-              event.changedTouches[0].clientY
-            );
-            if (point.type === 7) {
-              return;
-            }
-            editorInstance.focus();
-
-
-            if (point && point.position) {
-              const currentPosition = editorInstance.getPosition();
-              const targetColumn = point.position.column;
-              const targetLine = point.position.lineNumber;
-              if (currentPosition.column !== targetColumn && currentPosition.lineNumber !== targetLine) {
+            const point = editorInstance.getTargetAtClientPoint(currentX, currentY);
+            if (point && point.type !== 7) { // Avoid triggering on non-content areas
+              editorInstance.focus();
+              if (point.position) {
                 editorInstance.setPosition(point.position);
               }
+              selectAction.run();
             }
-            selectAction.run();
+
+            // Reset to prevent triple-tap interference
+            lastTapTime = 0;
+          } else {
+            // Update last tap info for next comparison
+            lastTapTime = currentTime;
+            lastTapX = currentX;
+            lastTapY = currentY;
           }
         }, true);
         domNode.addEventListener("touchstart", (event) => {
