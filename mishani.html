@@ -4447,7 +4447,20 @@ prompt("This is a prompt:");
       <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
       <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
       </div>
-  `;
+      `;
+
+      editorToolbar.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          if (button.classList.contains('active')) {
+            button.classList.remove('active');
+            button.style.backgroundColor = '';
+          } else {
+            button.classList.add('active');
+            button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+          }
+        });
+      });
+
       wrapBoth.appendChild(editorToolbar);
 
       function repositionToolbar(toolbar, element) {
@@ -4536,6 +4549,18 @@ prompt("This is a prompt:");
       <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
       </div>
        `;
+
+        outputToolbar.querySelectorAll('button').forEach(button => {
+          button.addEventListener('click', () => {
+            if (button.classList.contains('active')) {
+              button.classList.remove('active');
+              button.style.backgroundColor = '';
+            } else {
+              button.classList.add('active');
+              button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+            }
+          });
+        });
 
         wrapBoth.appendChild(outputToolbar);
 
