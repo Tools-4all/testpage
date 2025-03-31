@@ -1397,7 +1397,8 @@
       fill: #000;
     }
 
-    #richTextToolbar {
+    #editorRichTextToolbar,
+    #outputRichTextToolbar {
       margin: 20px;
       display: flex;
       align-items: center;
@@ -1407,9 +1408,12 @@
       z-index: 10000;
     }
 
-    #richTextToolbar button,
-    #richTextToolbar select,
-    #richTextToolbar input {
+    #editorRichTextToolbar button,
+    #editorRichTextToolbar select,
+    #editorRichTextToolbar input,
+    #outputRichTextToolbar button,
+    #outputRichTextToolbar select,
+    #outputRichTextToolbar input {
       margin-right: 5px;
       padding: 2px 5px;
       border: none;
@@ -1417,15 +1421,18 @@
       cursor: pointer;
     }
 
-    #richTextToolbar button:hover {
+    #editorRichTextToolbar button:hover,
+    #outputRichTextToolbar button:hover {
       background: rgba(0, 0, 0, 0.1);
     }
 
-    #richTextToolbar input[type="number"] {
+    #editorRichTextToolbar input[type="number"],
+    #outputRichTextToolbar input[type="number"] {
       width: 50px;
     }
 
-    #richTextToolbar input[type="color"] {
+    #editorRichTextToolbar input[type="color"],
+    #outputRichTextToolbar input[type="color"] {
       width: 30px;
       height: 20px;
       padding: 0;
