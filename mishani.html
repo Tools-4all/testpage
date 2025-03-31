@@ -4215,6 +4215,16 @@ prompt("This is a prompt:");
         editorToolbar.style.background = '#f0f0f0';
         editorToolbar.style.borderColor = '#ccc';
         editorToolbar.style.color = '#000';
+
+        editorToolbar.querySelectorAll('button').forEach(button => {
+          button.style.color = '#000';
+        });
+        editorToolbar.querySelectorAll('input, select').forEach(input => {
+          input.style.backgroundColor = '#fff';
+          input.style.color = '#000';
+          input.style.border = '1px solid #ccc';
+        });
+
         editorTextDiv.style.color = '#000000';
         editorTextDiv.style.border = '1px solid #c0c0c0';
       }
@@ -4283,11 +4293,20 @@ prompt("This is a prompt:");
           });
           outputTextDiv.style.color = '#fff';
           outputTextDiv.style.border = '1px solid #333';
-          console.log("dark mode");
+
         } else {
           outputToolbar.style.background = '#f0f0f0';
           outputToolbar.style.borderColor = '#ccc';
           outputToolbar.style.color = '#000';
+
+          outputToolbar.querySelectorAll('button').forEach(button => {
+            button.style.color = '#000';
+          });
+          outputToolbar.querySelectorAll('input, select').forEach(input => {
+            input.style.backgroundColor = '#fff';
+            input.style.color = '#000';
+            input.style.border = '1px solid #ccc';
+          });
           outputTextDiv.style.color = '#000000';
           outputTextDiv.style.border = '1px solid #c0c0c0';
         }
@@ -4445,6 +4464,16 @@ prompt("This is a prompt:");
         editorToolbar.style.background = '#f0f0f0';
         editorToolbar.style.borderColor = '#ccc';
         editorToolbar.style.color = '#000';
+
+        editorToolbar.querySelectorAll('button').forEach(button => {
+          button.style.color = '#000';
+        });
+        editorToolbar.querySelectorAll('input, select').forEach(input => {
+          input.style.backgroundColor = '#fff';
+          input.style.color = '#000';
+          input.style.border = '1px solid #ccc';
+        });
+
         editorTextDiv.style.color = '#000000';
         editorTextDiv.style.border = '1px solid #c0c0c0';
       }
@@ -4532,14 +4561,24 @@ prompt("This is a prompt:");
             input.style.color = '#fff';
             input.style.border = '1px solid #777';
           });
-          outputTextDiv.style.color = '#fff';
-          outputTextDiv.style.border = '1px solid #333';
+          textDiv.style.color = '#fff';
+          textDiv.style.border = '1px solid #333';
         } else {
           outputToolbar.style.background = '#f0f0f0';
           outputToolbar.style.borderColor = '#ccc';
           outputToolbar.style.color = '#000';
-          outputTextDiv.style.color = '#000000';
-          outputTextDiv.style.border = '1px solid #c0c0c0';
+
+          outputToolbar.querySelectorAll('button').forEach(button => {
+            button.style.color = '#000';
+          });
+          outputToolbar.querySelectorAll('input, select').forEach(input => {
+            input.style.backgroundColor = '#fff';
+            input.style.color = '#000';
+            input.style.border = '1px solid #ccc';
+          });
+
+          textDiv.style.color = '#000000';
+          textDiv.style.border = '1px solid #c0c0c0';
         }
 
         textDiv.addEventListener('click', () => repositionToolbar(outputToolbar, textDiv));
