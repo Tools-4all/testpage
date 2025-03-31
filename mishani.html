@@ -4330,10 +4330,16 @@ prompt("This is a prompt:");
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header";
-      // When clicked or focused, reposition toolbar above this text
-      editorTextDiv.addEventListener('focus', () => showToolbarFor(editorTextDiv));
-      editorTextDiv.addEventListener('click', () => showToolbarFor(editorTextDiv));
+      editorTextDiv.textContent = "Enter your title here..."; // Optional default text
+      const hederFlag = true;
+      // editorTextDiv.addEventListener('focus', () => showToolbarFor(editorTextDiv));
+      // editorTextDiv.addEventListener('click', () => showToolbarFor(editorTextDiv));
+      editorTextDiv.addEventListener('focus', () => {
+        if (hederFlag) {
+          editorTextDiv.textContent = "";
+          hederFlag = false;
+        }
+      });
       wrapBoth.appendChild(editorTextDiv);
 
       wrapBoth.appendChild(editorDiv);
