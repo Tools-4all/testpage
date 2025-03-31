@@ -4297,7 +4297,6 @@ prompt("This is a prompt:");
       wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Create editor toolbar
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
       editorToolbar.innerHTML = `
@@ -4327,7 +4326,6 @@ prompt("This is a prompt:");
       }
       wrapBoth.appendChild(editorToolbar);
 
-      // Utility function to reposition a given toolbar above a given element
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapBoth.getBoundingClientRect();
@@ -4335,7 +4333,6 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
 
-      // Create editor header text with event listeners to reposition its toolbar
       let headerFlag = true;
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
@@ -4353,14 +4350,11 @@ prompt("This is a prompt:");
 
       wrapBoth.appendChild(editorDiv);
 
-      // Create export buttons wrapper
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
-      // If output exists, create a second toolbar and output header text
       let outputToolbar;
       if (currentTab.outputElement.innerHTML.trim()) {
-        // Create output toolbar
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
         outputToolbar.innerHTML = `
@@ -4390,14 +4384,21 @@ prompt("This is a prompt:");
         }
         wrapBoth.appendChild(outputToolbar);
 
-        // Create output clone and its header text
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
         const textDiv = document.createElement('div');
         textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header";
+        textDiv.textContent = "Enter your output title here...";
+        let outputFlag = true;
+        textDiv.addEventListener('focus', () => {
+          if (outputFlag) {
+            textDiv.textContent = "";
+            outputFlag = false;
+          }
+          repositionToolbar(outputToolbar, textDiv);
+        });
         textDiv.addEventListener('focus', () => repositionToolbar(outputToolbar, textDiv));
         textDiv.addEventListener('click', () => repositionToolbar(outputToolbar, textDiv));
         wrapBoth.appendChild(textDiv);
