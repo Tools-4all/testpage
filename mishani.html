@@ -4140,14 +4140,12 @@ prompt("This is a prompt:");
 
 
     async function exportImage() {
-      // Create a container with relative positioning so that absolute elements are relative to it.
+
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
+      wrapBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // ---------------------------
-      // Create the Editor Toolbar
-      // ---------------------------
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
       editorToolbar.innerHTML = `
@@ -4179,7 +4177,6 @@ prompt("This is a prompt:");
       editorToolbar.style.display = 'block';
       wrapperBoth.appendChild(editorToolbar);
 
-      // Utility: reposition a given toolbar so that it appears directly above the target element.
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
@@ -4187,9 +4184,6 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
 
-      // -------------------------------
-      // Create the Editor Header Text
-      // -------------------------------
       let headerFlag = true;
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
@@ -4205,22 +4199,14 @@ prompt("This is a prompt:");
       editorTextDiv.addEventListener('click', () => repositionToolbar(editorToolbar, editorTextDiv));
       wrapperBoth.appendChild(editorTextDiv);
 
-      // Append the editor content (the actual editorDiv)
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
-      // ------------------------------
-      // Create the Export Buttons Wrapper
-      // ------------------------------
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
-      // ------------------------------
-      // If output exists, create output header and its toolbar
-      // ------------------------------
       let outputToolbar;
       if (currentTab.outputElement.innerHTML.trim()) {
-        // Create a separate toolbar for the output header
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
         outputToolbar.innerHTML = `
@@ -4248,11 +4234,8 @@ prompt("This is a prompt:");
           outputToolbar.style.borderColor = '#ccc';
           outputToolbar.style.color = '#000';
         }
-        outputToolbar.style.position = 'absolute';
-        outputToolbar.style.display = 'block';
         wrapperBoth.appendChild(outputToolbar);
 
-        // Create the output header text element.
         let outputFlag = true;
         const outputTextDiv = document.createElement('div');
         outputTextDiv.classList.add("headerText");
@@ -4266,7 +4249,6 @@ prompt("This is a prompt:");
           repositionToolbar(outputToolbar, outputTextDiv);
         });
         outputTextDiv.addEventListener('click', () => repositionToolbar(outputToolbar, outputTextDiv));
-        // Set the text styles for output based on dark mode.
         if (darkModeFlag) {
           outputTextDiv.style.color = '#bababa';
           outputTextDiv.style.border = '1px solid #333';
@@ -4278,12 +4260,10 @@ prompt("This is a prompt:");
         }
         wrapperBoth.appendChild(outputTextDiv);
 
-        // Append the output content.
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
 
-        // Checkboxes to toggle the output header text and output content.
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4304,9 +4284,6 @@ prompt("This is a prompt:");
         });
       }
 
-      // ------------------------------
-      // Checkbox for the Editor Header
-      // ------------------------------
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4316,23 +4293,17 @@ prompt("This is a prompt:");
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
-      // ------------------------------
-      // Append everything to the modal content
-      // ------------------------------
+
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Set initial toolbar positions.
       repositionToolbar(editorToolbar, editorTextDiv);
       if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        // Here we assume the second headerText element is the output header.
         const outputHeader = wrapperBoth.querySelectorAll('.headerText')[1];
         repositionToolbar(outputToolbar, outputHeader);
       }
 
-      // ------------------------------
-      // Export Image Button and Capture Logic
-      // ------------------------------
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
@@ -4340,12 +4311,10 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        // Hide toolbars before capture so they don’t appear in the final image.
         editorToolbar.style.display = 'none';
         if (outputToolbar) {
           outputToolbar.style.display = 'none';
         }
-        // Capture the image of the container.
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
