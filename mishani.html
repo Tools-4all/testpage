@@ -1425,7 +1425,7 @@
 
     #editorRichTextToolbar input[type="number"],
     #outputRichTextToolbar input[type="number"] {
-      width: 50px;
+      width: 60px;
     }
 
     #editorRichTextToolbar input[type="color"],
@@ -4223,15 +4223,6 @@ prompt("This is a prompt:");
       <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
       <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
     `;
-        if (darkModeFlag) {
-          outputToolbar.style.background = '#333';
-          outputToolbar.style.borderColor = '#555';
-          outputToolbar.style.color = '#fff';
-        } else {
-          outputToolbar.style.background = '#f0f0f0';
-          outputToolbar.style.borderColor = '#ccc';
-          outputToolbar.style.color = '#000';
-        }
         wrapperBoth.appendChild(outputToolbar);
 
         let outputFlag = true;
@@ -4247,17 +4238,29 @@ prompt("This is a prompt:");
           repositionToolbar(outputToolbar, outputTextDiv);
         });
         outputTextDiv.addEventListener('click', () => repositionToolbar(outputToolbar, outputTextDiv));
-        if (darkModeFlag) {
-          outputTextDiv.style.color = '#bababa';
-          outputTextDiv.style.border = '1px solid #333';
-          console.log("dark mode");
-        } else {
-          outputTextDiv.style.color = '#000000';
-          outputTextDiv.style.border = '1px solid #c0c0c0';
-          console.log("light mode");
-        }
-        wrapperBoth.appendChild(outputTextDiv);
 
+
+        if (darkModeFlag) {
+          outputToolbar.style.background = '#333';
+          outputToolbar.style.borderColor = '#555';
+          outputToolbar.style.color = '#fff';
+        } else {
+          outputToolbar.style.background = '#f0f0f0';
+          outputToolbar.style.borderColor = '#ccc';
+          outputToolbar.style.color = '#000';
+        }
+
+        // if (darkModeFlag) {
+        //   outputTextDiv.style.color = '#bababa';
+        //   outputTextDiv.style.border = '1px solid #333';
+        //   console.log("dark mode");
+        // } else {
+        //   outputTextDiv.style.color = '#000000';
+        //   outputTextDiv.style.border = '1px solid #c0c0c0';
+        //   console.log("light mode");
+        // }
+
+        wrapperBoth.appendChild(outputTextDiv);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
