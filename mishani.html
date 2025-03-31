@@ -4336,17 +4336,17 @@ prompt("This is a prompt:");
           toolbar.style.color = '#000';
         }
 
-        toolbar.addEventListener('mouseenter', () => {
-          isToolbarActive = true;
-        });
-        toolbar.addEventListener('mouseleave', () => {
-          isToolbarActive = false;
-          setTimeout(hideToolbar, 100);
-        });
-        toolbar.addEventListener('click', (event) => {
-          event.stopPropagation();
-          isToolbarActive = true;
-        });
+        // toolbar.addEventListener('mouseenter', () => {
+        //   isToolbarActive = true;
+        // });
+        // toolbar.addEventListener('mouseleave', () => {
+        //   isToolbarActive = false;
+        //   setTimeout(hideToolbar, 100);
+        // });
+        // toolbar.addEventListener('click', (event) => {
+        //   event.stopPropagation();
+        //   isToolbarActive = true;
+        // });
 
         wrapBoth.appendChild(toolbar);
         wrapBoth.appendChild(textDiv);
