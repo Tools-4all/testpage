@@ -935,7 +935,6 @@ class CustomError extends NativeError {
     constructor(...args) {
         super(...args);
         if (this.stack && !this.stack.includes("relativeStack")) {
-            // Replace the original stack with a relative one.
             this.stack = relativeStack(this);
         }
     }

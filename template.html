@@ -3924,33 +3924,18 @@ prompt("This is a prompt:");
     // Apply font size by wrapping selection in a span
     function applyFontSize(size) {
       if (!size) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
+      applyStyleToSelection('fontSize', size);
     }
 
     // Apply text color by wrapping selection in a span
     function applyColor(color) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="color: ${color}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
+      applyStyleToSelection('color', color);
     }
 
     // Apply font family by wrapping selection in a span
     function applyFontFamily(family) {
       if (!family) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-family: ${family}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
+      applyStyleToSelection('fontFamily', family);
     }
 
     // Apply text alignment to the entire header div
@@ -3998,7 +3983,7 @@ prompt("This is a prompt:");
       const headerRect = headerDiv.getBoundingClientRect();
       const modalRect = exportModalContent.getBoundingClientRect();
       let left = headerRect.left - modalRect.left;
-      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10; // Increased from 5 to 10
+      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10; // Increased offset to 10px
       const toolbarWidth = toolbar.offsetWidth;
       const modalWidth = modalRect.width;
       if (left < 0) left = 0;
@@ -4230,6 +4215,7 @@ prompt("This is a prompt:");
         textDiv.addEventListener('blur', () => hideToolbar());
       }
 
+      // Add toolbar interaction listeners
       toolbar.addEventListener('mouseenter', () => {
         isToolbarActive = true;
       });
@@ -4278,7 +4264,6 @@ prompt("This is a prompt:");
 
       displayModal();
     }
-
 
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
@@ -4380,6 +4365,7 @@ prompt("This is a prompt:");
         textDiv.addEventListener('blur', () => hideToolbar());
       }
 
+      // Add toolbar interaction listeners
       toolbar.addEventListener('mouseenter', () => {
         isToolbarActive = true;
       });
@@ -4391,7 +4377,6 @@ prompt("This is a prompt:");
         event.stopPropagation();
         isToolbarActive = true;
       });
-
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
