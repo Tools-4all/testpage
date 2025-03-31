@@ -4164,15 +4164,15 @@ prompt("This is a prompt:");
     <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
     <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
   `;
-      if (darkModeFlag) {
-        editorToolbar.style.background = '#333';
-        editorToolbar.style.borderColor = '#555';
-        editorToolbar.style.color = '#fff';
-      } else {
-        editorToolbar.style.background = '#f0f0f0';
-        editorToolbar.style.borderColor = '#ccc';
-        editorToolbar.style.color = '#000';
-      }
+      // if (darkModeFlag) {
+      //   editorToolbar.style.background = '#333';
+      //   editorToolbar.style.borderColor = '#555';
+      //   editorToolbar.style.color = '#fff';
+      // } else {
+      //   editorToolbar.style.background = '#f0f0f0';
+      //   editorToolbar.style.borderColor = '#ccc';
+      //   editorToolbar.style.color = '#000';
+      // }
 
       wrapperBoth.appendChild(editorToolbar);
       function repositionToolbar(toolbar, element) {
@@ -4339,7 +4339,7 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    alert(1);
+    alert(2);
 
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
