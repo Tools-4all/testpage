@@ -1398,17 +1398,24 @@
       position: absolute;
       display: flex;
       align-items: center;
-      padding: 5px;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      padding: 3px;
+      /* Reduced from 5px for tighter integration */
+      border-radius: 3px;
+      /* Slightly smaller for a sleeker look */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      /* Subtle shadow for depth */
       z-index: 10000;
+      border: 1px solid;
+      /* Added border for definition */
     }
 
     #richTextToolbar button,
     #richTextToolbar select,
     #richTextToolbar input {
-      margin-right: 5px;
-      padding: 2px 5px;
+      margin-right: 3px;
+      /* Reduced from 5px for compactness */
+      padding: 2px 4px;
+      /* Adjusted for tighter spacing */
       border: none;
       background: none;
       cursor: pointer;
@@ -1419,12 +1426,15 @@
     }
 
     #richTextToolbar input[type="number"] {
-      width: 50px;
+      width: 40px;
+      /* Reduced from 50px for compactness */
     }
 
     #richTextToolbar input[type="color"] {
-      width: 30px;
-      height: 20px;
+      width: 25px;
+      /* Reduced from 30px */
+      height: 18px;
+      /* Reduced from 20px */
       padding: 0;
     }
   </style>
@@ -3982,12 +3992,19 @@ prompt("This is a prompt:");
       const toolbar = document.getElementById('richTextToolbar');
       const headerRect = headerDiv.getBoundingClientRect();
       const modalRect = exportModalContent.getBoundingClientRect();
+      const toolbarHeight = toolbar.offsetHeight;
       let left = headerRect.left - modalRect.left;
-      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10; // Increased offset to 10px
+      let top = headerRect.top - modalRect.top - toolbarHeight - 20; // Increased to 20px for more space above
       const toolbarWidth = toolbar.offsetWidth;
       const modalWidth = modalRect.width;
+      const modalHeight = modalRect.height;
+
+      // Constrain within modal boundaries
       if (left < 0) left = 0;
       if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
+      if (top < 0) top = 0;
+      if (top + toolbarHeight > modalHeight) top = headerRect.top - modalRect.top + headerRect.height + 5; // Move below if no space above
+
       toolbar.style.left = `${left}px`;
       toolbar.style.top = `${top}px`;
       toolbar.style.display = 'block';
@@ -3998,8 +4015,12 @@ prompt("This is a prompt:");
 
     function hideToolbar() {
       if (!isToolbarActive) {
-        const toolbar = document.getElementById('richTextToolbar');
-        toolbar.style.display = 'none';
+        setTimeout(() => {
+          if (!isToolbarActive) {
+            const toolbar = document.getElementById('richTextToolbar');
+            toolbar.style.display = 'none';
+          }
+        }, 100); // Delay to allow touch events to settle
       }
     }
 
@@ -4123,7 +4144,7 @@ prompt("This is a prompt:");
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header"; // Optional default text
+      editorTextDiv.textContent = "Editor Header";
       wrapperBoth.appendChild(editorTextDiv);
       wrapperBoth.appendChild(await getEditorDiv());
       const exportBtnsWrapper = document.createElement('div');
@@ -4134,7 +4155,7 @@ prompt("This is a prompt:");
         const textDiv = document.createElement('div');
         textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header"; // Optional default text
+        textDiv.textContent = "Output Header";
         wrapperBoth.appendChild(textDiv);
         const outputClone = await getOutputDivClone();
         tempOutputDiv = outputClone.querySelector('.output');
@@ -4191,41 +4212,68 @@ prompt("This is a prompt:");
         <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
     `;
 
-      // Set toolbar theme
+      // Set toolbar theme and integration styling
       if (darkModeFlag) {
         toolbar.style.background = '#333';
-        toolbar.style.borderColor = '#555';
+        toolbar.style.border = '1px solid #555';
         toolbar.style.color = '#fff';
       } else {
         toolbar.style.background = '#f0f0f0';
-        toolbar.style.borderColor = '#ccc';
+        toolbar.style.border = '1px solid #ccc';
         toolbar.style.color = '#000';
       }
+      toolbar.style.borderRadius = '3px';
+      toolbar.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+      toolbar.style.padding = '3px';
 
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Add focus and blur event listeners
-      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
-      editorTextDiv.addEventListener('blur', () => hideToolbar());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapperBoth.querySelectorAll('.headerText')[1];
-        textDiv.addEventListener('focus', () => showToolbar(textDiv));
-        textDiv.addEventListener('blur', () => hideToolbar());
-      }
+      // Event listeners for headerText divs
+      const headerDivs = wrapperBoth.querySelectorAll('.headerText');
+      headerDivs.forEach(div => {
+        div.addEventListener('focus', () => {
+          showToolbar(div);
+          isToolbarActive = true; // Keep toolbar active on focus
+        });
+        div.addEventListener('blur', () => {
+          isToolbarActive = false;
+          hideToolbar();
+        });
+        // Mobile touch support
+        div.addEventListener('touchstart', (event) => {
+          event.stopPropagation();
+          showToolbar(div);
+          isToolbarActive = true;
+        }, { passive: false });
+      });
 
-      // Add toolbar interaction listeners
-      toolbar.addEventListener('mouseenter', () => {
+      // Toolbar interaction listeners
+      toolbar.addEventListener('mousedown', (event) => {
+        event.stopPropagation();
         isToolbarActive = true;
       });
-      toolbar.addEventListener('mouseleave', () => {
-        isToolbarActive = false;
-        setTimeout(hideToolbar, 100);
+      toolbar.addEventListener('touchstart', (event) => {
+        event.stopPropagation();
+        isToolbarActive = true;
+      }, { passive: false });
+      toolbar.addEventListener('mouseup', () => {
+        setTimeout(() => isToolbarActive = false, 100);
+      });
+      toolbar.addEventListener('touchend', () => {
+        setTimeout(() => isToolbarActive = false, 100);
       });
       toolbar.addEventListener('click', (event) => {
         event.stopPropagation();
-        isToolbarActive = true;
+      });
+
+      // Document-level click to hide toolbar when clicking outside
+      document.addEventListener('click', (event) => {
+        if (!toolbar.contains(event.target) && !Array.from(headerDivs).some(div => div.contains(event.target))) {
+          isToolbarActive = false;
+          hideToolbar();
+        }
       });
 
       const exportBtn = document.createElement('button');
@@ -4235,7 +4283,7 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture
+        toolbar.style.display = 'none';
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
@@ -4272,7 +4320,7 @@ prompt("This is a prompt:");
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header"; // Optional default text
+      editorTextDiv.textContent = "Editor Header";
       wrapBoth.appendChild(editorTextDiv);
       wrapBoth.appendChild(editorDiv);
       const exportBtnsWrapper = document.createElement('div');
@@ -4286,7 +4334,7 @@ prompt("This is a prompt:");
         const textDiv = document.createElement('div');
         textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header"; // Optional default text
+        textDiv.textContent = "Output Header";
         wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputClone);
 
@@ -4341,41 +4389,68 @@ prompt("This is a prompt:");
         <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
     `;
 
-      // Set toolbar theme
+      // Set toolbar theme and integration styling
       if (darkModeFlag) {
         toolbar.style.background = '#333';
-        toolbar.style.borderColor = '#555';
+        toolbar.style.border = '1px solid #555';
         toolbar.style.color = '#fff';
       } else {
         toolbar.style.background = '#f0f0f0';
-        toolbar.style.borderColor = '#ccc';
+        toolbar.style.border = '1px solid #ccc';
         toolbar.style.color = '#000';
       }
+      toolbar.style.borderRadius = '3px';
+      toolbar.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+      toolbar.style.padding = '3px';
 
       exportModalContent.appendChild(wrapBoth);
       exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Add focus and blur event listeners
-      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
-      editorTextDiv.addEventListener('blur', () => hideToolbar());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapBoth.querySelectorAll('.headerText')[1];
-        textDiv.addEventListener('focus', () => showToolbar(textDiv));
-        textDiv.addEventListener('blur', () => hideToolbar());
-      }
+      // Event listeners for headerText divs
+      const headerDivs = wrapBoth.querySelectorAll('.headerText');
+      headerDivs.forEach(div => {
+        div.addEventListener('focus', () => {
+          showToolbar(div);
+          isToolbarActive = true;
+        });
+        div.addEventListener('blur', () => {
+          isToolbarActive = false;
+          hideToolbar();
+        });
+        // Mobile touch support
+        div.addEventListener('touchstart', (event) => {
+          event.stopPropagation();
+          showToolbar(div);
+          isToolbarActive = true;
+        }, { passive: false });
+      });
 
-      // Add toolbar interaction listeners
-      toolbar.addEventListener('mouseenter', () => {
+      // Toolbar interaction listeners
+      toolbar.addEventListener('mousedown', (event) => {
+        event.stopPropagation();
         isToolbarActive = true;
       });
-      toolbar.addEventListener('mouseleave', () => {
-        isToolbarActive = false;
-        setTimeout(hideToolbar, 100);
+      toolbar.addEventListener('touchstart', (event) => {
+        event.stopPropagation();
+        isToolbarActive = true;
+      }, { passive: false });
+      toolbar.addEventListener('mouseup', () => {
+        setTimeout(() => isToolbarActive = false, 100);
+      });
+      toolbar.addEventListener('touchend', () => {
+        setTimeout(() => isToolbarActive = false, 100);
       });
       toolbar.addEventListener('click', (event) => {
         event.stopPropagation();
-        isToolbarActive = true;
+      });
+
+      // Document-level click to hide toolbar when clicking outside
+      document.addEventListener('click', (event) => {
+        if (!toolbar.contains(event.target) && !Array.from(headerDivs).some(div => div.contains(event.target))) {
+          isToolbarActive = false;
+          hideToolbar();
+        }
       });
 
       const exportBtn = document.createElement('button');
@@ -4385,7 +4460,7 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture
+        toolbar.style.display = 'none';
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
         let doc = new jsPDF({
