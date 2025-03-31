@@ -4173,10 +4173,8 @@ prompt("This is a prompt:");
         editorToolbar.style.borderColor = '#ccc';
         editorToolbar.style.color = '#000';
       }
-      editorToolbar.style.position = 'absolute';
-      editorToolbar.style.display = 'block';
-      wrapperBoth.appendChild(editorToolbar);
 
+      wrapperBoth.appendChild(editorToolbar);
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
