@@ -4237,8 +4237,8 @@ prompt("This is a prompt:");
           showToolbar(div);
           isToolbarActive = true; // Keep toolbar active on focus
         });
-        div.addEventListener('blur', () => {
-          console.log("blur");
+        div.addEventListener('blur', (e) => {
+          console.log("blur", e);
           isToolbarActive = false;
           hideToolbar();
         });
@@ -4273,7 +4273,7 @@ prompt("This is a prompt:");
       document.addEventListener('click', (event) => {
         if (!toolbar.contains(event.target) && !Array.from(headerDivs).some(div => div.contains(event.target))) {
           isToolbarActive = false;
-          console.log("click");
+          console.log("click", event);
           hideToolbar();
         }
       });
@@ -4416,9 +4416,9 @@ prompt("This is a prompt:");
           showToolbar(div);
           isToolbarActive = true;
         });
-        div.addEventListener('blur', () => {
+        div.addEventListener('blur', (e) => {
           isToolbarActive = false;
-          console.log("blur");
+          console.log("blur", e);
           hideToolbar();
         });
         // Mobile touch support
@@ -4452,7 +4452,7 @@ prompt("This is a prompt:");
       document.addEventListener('click', (event) => {
         if (!toolbar.contains(event.target) && !Array.from(headerDivs).some(div => div.contains(event.target))) {
           isToolbarActive = false;
-          console.log("click");
+          console.log("click", event);
           hideToolbar();
         }
       });
