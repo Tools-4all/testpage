@@ -4199,6 +4199,9 @@ prompt("This is a prompt:");
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
         editorToolbar.style.color = '#fff';
+        editorToolbar.querySelectorAll('button').forEach(button => {
+          button.style.color = '#c5c5c5';
+        });
         editorTextDiv.style.color = '#bababa';
         editorTextDiv.style.border = '1px solid #333';
         console.log("dark mode");
@@ -4407,6 +4410,9 @@ prompt("This is a prompt:");
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
         editorToolbar.style.color = '#fff';
+        editorToolbar.querySelectorAll('button').forEach(button => {
+          button.style.color = '#c5c5c5';
+        });
         editorTextDiv.style.color = '#bababa';
         editorTextDiv.style.border = '1px solid #333';
       } else {
