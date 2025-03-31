@@ -1237,11 +1237,13 @@
     }
 
     .headerText {
+      border: 2px solid #333;
       padding: 5px;
       margin: 20px;
+      color: #bababa;
     }
 
-    #compiler:not(.darkMode) .headerText {
+    /* #compiler:not(.darkMode) .headerText {
       border: 2px solid #c0c0c0;
       color: #000000;
     }
@@ -1249,7 +1251,7 @@
     #compiler:not(.lightMode) .headerText {
       border: 2px solid #333;
       color: #bababa;
-    }
+    } */
 
     .handPointer {
       cursor: pointer;
@@ -4385,6 +4387,7 @@ prompt("This is a prompt:");
           outputToolbar.style.background = '#333';
           outputToolbar.style.borderColor = '#555';
           outputToolbar.style.color = '#fff';
+
         } else {
           outputToolbar.style.background = '#f0f0f0';
           outputToolbar.style.borderColor = '#ccc';
@@ -4409,6 +4412,16 @@ prompt("This is a prompt:");
         });
         textDiv.addEventListener('focus', () => repositionToolbar(outputToolbar, textDiv));
         textDiv.addEventListener('click', () => repositionToolbar(outputToolbar, textDiv));
+
+        if (darkModeFlag) {
+          textDiv.style.color = '#bababa';
+          textDiv.style.borderColor = '#333';
+
+        } else {
+          textDiv.style.color = '#000000';
+          textDiv.style.borderColor = '#c0c0c0';
+        }
+
         wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputClone);
 
