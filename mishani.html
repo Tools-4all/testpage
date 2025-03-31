@@ -1246,8 +1246,6 @@
       cursor: pointer;
     }
 
-
-
     #compiler:not(.darkMode) .vs-navbar,
     #compiler:not(.darkMode) #activityBar,
     #compiler:not(.darkMode) #statusBar,
@@ -4405,10 +4403,13 @@ prompt("This is a prompt:");
         if (darkModeFlag) {
           textDiv.style.color = '#bababa';
           textDiv.style.borderColor = '#333';
+          console.log("dark mode");
+
 
         } else {
           textDiv.style.color = '#000000';
           textDiv.style.borderColor = '#c0c0c0';
+          console.log("light mode");
         }
 
         wrapBoth.appendChild(textDiv);
