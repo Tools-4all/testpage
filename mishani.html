@@ -4149,30 +4149,27 @@ prompt("This is a prompt:");
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
       editorToolbar.innerHTML = `
-    <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-    <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-    <input type="color" onchange="applyColor(this.value)">
-    <select onchange="applyFontFamily(this.value)">
-      <option value="">Font Family</option>
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Courier New">Courier New</option>
-    </select>
-    <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-    <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-    <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-  `;
-      // if (darkModeFlag) {
-      //   editorToolbar.style.background = '#333';
-      //   editorToolbar.style.borderColor = '#555';
-      //   editorToolbar.style.color = '#fff';
-      // } else {
-      //   editorToolbar.style.background = '#f0f0f0';
-      //   editorToolbar.style.borderColor = '#ccc';
-      //   editorToolbar.style.color = '#000';
-      // }
+      <div>
+      <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+      <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+      <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+      </div>
+      <div>
+      <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
+      <input type="color" onchange="applyColor(this.value)">
+      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+        <option value="">Font Family</option>
+        <option value="Arial">Arial</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+      </select>
+      </div>
+      <div>
+      <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+      <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+      <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+      </div>
+       `;
 
       wrapperBoth.appendChild(editorToolbar);
       function repositionToolbar(toolbar, element) {
@@ -4224,21 +4221,27 @@ prompt("This is a prompt:");
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
         outputToolbar.innerHTML = `
-      <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-      <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-      <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-      <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-      <input type="color" onchange="applyColor(this.value)">
-      <select onchange="applyFontFamily(this.value)">
-        <option value="">Font Family</option>
-        <option value="Arial">Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-      <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-      <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-      <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-    `;
+         <div>
+        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+        </div>
+        <div>
+        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
+        <input type="color" onchange="applyColor(this.value)">
+        <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+          <option value="">Font Family</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Courier New">Courier New</option>
+        </select>
+        </div>
+        <div>
+        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+        </div>
+        `;
         wrapperBoth.appendChild(outputToolbar);
 
         let outputFlag = true;
@@ -4354,7 +4357,7 @@ prompt("This is a prompt:");
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
       editorToolbar.innerHTML = `
-  <div>
+    <div>
       <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
       <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
       <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
@@ -4362,7 +4365,7 @@ prompt("This is a prompt:");
       <div>
       <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
       <input type="color" onchange="applyColor(this.value)">
-      <select onchange="applyFontFamily(this.value)">
+      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
         <option value="">Font Family</option>
         <option value="Arial">Arial</option>
         <option value="Times New Roman">Times New Roman</option>
@@ -4424,7 +4427,7 @@ prompt("This is a prompt:");
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
         outputToolbar.innerHTML = `
-      <div>
+        <div>
       <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
       <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
       <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
@@ -4432,7 +4435,7 @@ prompt("This is a prompt:");
       <div>
       <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
       <input type="color" onchange="applyColor(this.value)">
-      <select onchange="applyFontFamily(this.value)">
+      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
         <option value="">Font Family</option>
         <option value="Arial">Arial</option>
         <option value="Times New Roman">Times New Roman</option>
