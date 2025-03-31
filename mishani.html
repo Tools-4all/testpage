@@ -4202,6 +4202,11 @@ prompt("This is a prompt:");
         editorToolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#c5c5c5';
         });
+        editorToolbar.querySelectorAll('input, select').forEach(input => {
+          input.style.backgroundColor = '#555';
+          input.style.color = '#fff';
+          input.style.border = '1px solid #777';
+        });
         editorTextDiv.style.color = '#bababa';
         editorTextDiv.style.border = '1px solid #333';
         console.log("dark mode");
