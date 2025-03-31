@@ -4284,10 +4284,10 @@ prompt("This is a prompt:");
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
-      wrapBoth.style.position = 'relative'; // For absolute positioning relative to wrapBoth
+      wrapBoth.style.position = 'relative';
+      wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Create toolbar that will always be visible
       const toolbar = document.createElement('div');
       toolbar.id = 'richTextToolbar';
       toolbar.innerHTML = `
@@ -4316,7 +4316,7 @@ prompt("This is a prompt:");
         toolbar.style.borderColor = '#ccc';
         toolbar.style.color = '#000';
       }
-      // Insert toolbar at the top of wrapBoth
+
       wrapBoth.appendChild(toolbar);
 
       // Function to reposition the toolbar above the target element
