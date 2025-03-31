@@ -1395,7 +1395,8 @@
     }
 
     #richTextToolbar {
-      position: absolute;
+      /* position: absolute; */
+      margin-bottom: 20px;
       display: flex;
       align-items: center;
       padding: 5px;
@@ -4289,8 +4290,6 @@ prompt("This is a prompt:");
       // Create toolbar that will always be visible
       const toolbar = document.createElement('div');
       toolbar.id = 'richTextToolbar';
-      toolbar.style.position = 'sticky';
-      toolbar.style.display = 'block'; // Always show the toolbar
       toolbar.innerHTML = `
     <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
     <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
