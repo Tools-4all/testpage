@@ -4369,15 +4369,6 @@ prompt("This is a prompt:");
     <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
     <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
   `;
-      if (darkModeFlag) {
-        editorToolbar.style.background = '#333';
-        editorToolbar.style.borderColor = '#555';
-        editorToolbar.style.color = '#fff';
-      } else {
-        editorToolbar.style.background = '#f0f0f0';
-        editorToolbar.style.borderColor = '#ccc';
-        editorToolbar.style.color = '#000';
-      }
       wrapBoth.appendChild(editorToolbar);
 
       function repositionToolbar(toolbar, element) {
@@ -4399,6 +4390,21 @@ prompt("This is a prompt:");
         }
         repositionToolbar(editorToolbar, editorTextDiv);
       });
+
+      if (darkModeFlag) {
+        editorToolbar.style.background = '#333';
+        editorToolbar.style.borderColor = '#555';
+        editorToolbar.style.color = '#fff';
+        editorTextDiv.style.color = '#bababa';
+        editorTextDiv.style.border = '1px solid #333';
+      } else {
+        editorToolbar.style.background = '#f0f0f0';
+        editorToolbar.style.borderColor = '#ccc';
+        editorToolbar.style.color = '#000';
+        editorTextDiv.style.color = '#000000';
+        editorTextDiv.style.border = '1px solid #c0c0c0';
+      }
+
       editorTextDiv.addEventListener('click', () => repositionToolbar(editorToolbar, editorTextDiv));
       wrapBoth.appendChild(editorTextDiv);
 
@@ -4454,18 +4460,16 @@ prompt("This is a prompt:");
           }
           repositionToolbar(outputToolbar, textDiv);
         });
-        textDiv.addEventListener('focus', () => repositionToolbar(outputToolbar, textDiv));
-        textDiv.addEventListener('click', () => repositionToolbar(outputToolbar, textDiv));
 
         if (darkModeFlag) {
           textDiv.style.color = '#bababa';
-          textDiv.style.borderColor = '#333';
-          console.log("dark mode");
+          textDiv.style.border = '1px solid #333';
         } else {
           textDiv.style.color = '#000000';
-          textDiv.style.borderColor = '#c0c0c0';
-          console.log("light mode");
+          textDiv.style.border = '1px solid #c0c0c0';
         }
+
+        textDiv.addEventListener('click', () => repositionToolbar(outputToolbar, textDiv));
 
         wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputClone);
