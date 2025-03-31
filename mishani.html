@@ -4194,6 +4194,22 @@ prompt("This is a prompt:");
         }
         repositionToolbar(editorToolbar, editorTextDiv);
       });
+
+      if (darkModeFlag) {
+        editorToolbar.style.background = '#333';
+        editorToolbar.style.borderColor = '#555';
+        editorToolbar.style.color = '#fff';
+        editorTextDiv.style.color = '#bababa';
+        editorTextDiv.style.border = '1px solid #333';
+        console.log("dark mode");
+      } else {
+        editorToolbar.style.background = '#f0f0f0';
+        editorToolbar.style.borderColor = '#ccc';
+        editorToolbar.style.color = '#000';
+        editorTextDiv.style.color = '#000000';
+        editorTextDiv.style.border = '1px solid #c0c0c0';
+      }
+
       editorTextDiv.addEventListener('click', () => repositionToolbar(editorToolbar, editorTextDiv));
       wrapperBoth.appendChild(editorTextDiv);
 
@@ -4339,7 +4355,7 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    alert(2);
+    alert(1);
 
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
