@@ -4301,7 +4301,42 @@ prompt("This is a prompt:");
         const textDiv = document.createElement('div');
         textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header"; // Optional default text
+        textDiv.textContent = "Output Header";
+
+
+        const toolbar = document.createElement('div');
+        toolbar.id = 'richTextToolbar';
+        toolbar.style.position = 'absolute';
+        toolbar.style.display = 'none';
+        toolbar.innerHTML = `
+        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
+        <input type="color" onchange="applyColor(this.value)">
+        <select onchange="applyFontFamily(this.value)">
+            <option value="">Font Family</option>
+            <option value="Arial">Arial</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+        </select>
+        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+    `;
+
+        // Set toolbar theme
+        if (darkModeFlag) {
+          toolbar.style.background = '#333';
+          toolbar.style.borderColor = '#555';
+          toolbar.style.color = '#fff';
+        } else {
+          toolbar.style.background = '#f0f0f0';
+          toolbar.style.borderColor = '#ccc';
+          toolbar.style.color = '#000';
+        }
+
+        wrapBoth.appendChild(toolbar);
         wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputClone);
 
@@ -4334,41 +4369,7 @@ prompt("This is a prompt:");
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
-      // Create the rich text toolbar
-      const toolbar = document.createElement('div');
-      toolbar.id = 'richTextToolbar';
-      toolbar.style.position = 'absolute';
-      toolbar.style.display = 'none';
-      toolbar.innerHTML = `
-        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-        <input type="color" onchange="applyColor(this.value)">
-        <select onchange="applyFontFamily(this.value)">
-            <option value="">Font Family</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New</option>
-        </select>
-        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-    `;
-
-      // Set toolbar theme
-      if (darkModeFlag) {
-        toolbar.style.background = '#333';
-        toolbar.style.borderColor = '#555';
-        toolbar.style.color = '#fff';
-      } else {
-        toolbar.style.background = '#f0f0f0';
-        toolbar.style.borderColor = '#ccc';
-        toolbar.style.color = '#000';
-      }
-
       exportModalContent.appendChild(wrapBoth);
-      exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
 
       // Add focus and blur event listeners
