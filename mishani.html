@@ -4283,14 +4283,14 @@ prompt("This is a prompt:");
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
-      wrapBoth.style.position = 'relative'; // So absolute positioning is relative to this container
+      wrapBoth.style.position = 'relative'; // For absolute positioning relative to wrapBoth
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // Create toolbar (shared by both header texts)
+      // Create toolbar that will always be visible
       const toolbar = document.createElement('div');
       toolbar.id = 'richTextToolbar';
       toolbar.style.position = 'absolute';
-      toolbar.style.display = 'none';
+      toolbar.style.display = 'block'; // Always show the toolbar
       toolbar.innerHTML = `
     <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
     <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
@@ -4307,6 +4307,7 @@ prompt("This is a prompt:");
     <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
     <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
   `;
+      // Set toolbar theme based on darkModeFlag
       if (darkModeFlag) {
         toolbar.style.background = '#333';
         toolbar.style.borderColor = '#555';
@@ -4316,31 +4317,34 @@ prompt("This is a prompt:");
         toolbar.style.borderColor = '#ccc';
         toolbar.style.color = '#000';
       }
-      toolbar.addEventListener('mouseenter', () => { isToolbarActive = true; });
-      toolbar.addEventListener('mouseleave', () => {
-        isToolbarActive = false;
-        setTimeout(hideToolbar, 100);
-      });
-      toolbar.addEventListener('click', (event) => {
-        event.stopPropagation();
-        isToolbarActive = true;
-      });
-      // Insert the toolbar at the very top of wrapBoth
+      // Insert toolbar at the top of wrapBoth
       wrapBoth.appendChild(toolbar);
 
-      // Create editor header text and append
+      // Function to reposition the toolbar above the target element
+      function showToolbarFor(element) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = wrapBoth.getBoundingClientRect();
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+      }
+
+      // Create editor header text with event listeners to reposition toolbar
       const editorTextDiv = document.createElement('div');
       editorTextDiv.classList.add("headerText");
       editorTextDiv.contentEditable = true;
       editorTextDiv.textContent = "Editor Header";
+      // When clicked or focused, reposition toolbar above this text
+      editorTextDiv.addEventListener('focus', () => showToolbarFor(editorTextDiv));
+      editorTextDiv.addEventListener('click', () => showToolbarFor(editorTextDiv));
       wrapBoth.appendChild(editorTextDiv);
+
       wrapBoth.appendChild(editorDiv);
 
       // Create export buttons wrapper
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
-      // If there is output, create output header and output clone
+      // If output exists, create output header text and output clone
       if (currentTab.outputElement.innerHTML.trim()) {
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
@@ -4349,11 +4353,10 @@ prompt("This is a prompt:");
         textDiv.classList.add("headerText");
         textDiv.contentEditable = true;
         textDiv.textContent = "Output Header";
+        textDiv.addEventListener('focus', () => showToolbarFor(textDiv));
+        textDiv.addEventListener('click', () => showToolbarFor(textDiv));
         wrapBoth.appendChild(textDiv);
         wrapBoth.appendChild(outputClone);
-
-        textDiv.addEventListener('focus', () => showToolbar(textDiv));
-        textDiv.addEventListener('blur', () => hideToolbar());
 
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
@@ -4375,7 +4378,7 @@ prompt("This is a prompt:");
         });
       }
 
-      // Checkbox for editor header text
+      // Checkbox for the editor header text
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4385,15 +4388,13 @@ prompt("This is a prompt:");
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
-      // Append the main container and export buttons to the modal content
       exportModalContent.appendChild(wrapBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Add focus/blur events to show/hide toolbar for the editor header
-      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
-      editorTextDiv.addEventListener('blur', () => hideToolbar());
+      // Set initial toolbar position to the editor text
+      showToolbarFor(editorTextDiv);
 
-      // Create and append Export PDF button
+      // Create Export PDF button
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
@@ -4401,7 +4402,8 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture
+        // Optionally, hide toolbar before capture if you don't want it in the exported PDF:
+        toolbar.style.display = 'none';
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
         let doc = new jsPDF({
