@@ -3975,7 +3975,7 @@ prompt("This is a prompt:");
         }
       });
     }
-    
+
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
@@ -4026,14 +4026,15 @@ prompt("This is a prompt:");
 
     function updateButtonStates() {
       if (!activeToolbar) return;
-      const selection = window.getSelection();
       const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
       const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
       const underlineBtn = activeToolbar.querySelector('button:nth-child(3)');
       const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
-      if (selection.rangeCount > 0 && activeTextDiv.contains(selection.anchorNode)) {
+      const selection = window.getSelection();
+      const storedStyles = activeTextDiv ? textDivStyles.get(activeTextDiv) || {} : {};
+      if (selection.rangeCount > 0 && !selection.isCollapsed && activeTextDiv.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
         let node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE) {
@@ -4054,17 +4055,15 @@ prompt("This is a prompt:");
         const fontFamily = computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1');
         fontFamilySelect.value = fontFamily || '';
       } else {
-        boldBtn.classList.remove('active');
-        boldBtn.style.backgroundColor = '';
-        italicBtn.classList.remove('active');
-        italicBtn.style.backgroundColor = '';
-        underlineBtn.classList.remove('active');
-        underlineBtn.style.backgroundColor = '';
-        fontSizeInput.value = '';
-        colorInput.value = '#000000';
-        fontFamilySelect.value = '';
+        boldBtn.classList.toggle('active', !!storedStyles.bold);
+        boldBtn.style.backgroundColor = storedStyles.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
+        italicBtn.classList.toggle('active', !!storedStyles.italic);
+        italicBtn.style.backgroundColor = storedStyles.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
+        underlineBtn.classList.toggle('active', !!storedStyles.underline);
+        underlineBtn.style.backgroundColor = storedStyles.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
       }
     }
+
 
 
     function applyFontSize(size) {
