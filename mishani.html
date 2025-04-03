@@ -3933,24 +3933,23 @@ prompt("This is a prompt:");
 
     // Apply font size by wrapping selection in a span
     function applyFontSize(size) {
-      document.execCommand('styleWithCSS', false, true);
-      document.execCommand('fontSize', false, 7);
-      let fonts = document.getElementsByTagName("font");
-      for (let i = 0; i < fonts.length; i++) {
-        if (fonts[i].size == "7") {
-          fonts[i].removeAttribute("size");
-          fonts[i].style.fontSize = size;
-        }
+      if (!size) return;
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
+        document.execCommand('insertHTML', false, html);
       }
     }
 
-
     // Apply text color by wrapping selection in a span
     function applyColor(color) {
-      document.execCommand('styleWithCSS', false, true);
-      document.execCommand('foreColor', false, color);
-      // If underline was active, reapply it:
-      // document.execCommand('underline', false, null);
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const html = `<span style="color: ${color}">${range.toString()}</span>`;
+        document.execCommand('insertHTML', false, html);
+      }
     }
 
     // Apply font family by wrapping selection in a span
@@ -4032,18 +4031,23 @@ prompt("This is a prompt:");
     // Apply style to selection without overwriting existing styles
     function applyStyleToSelection(styleProperty, value) {
       const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
-        let span = range.commonAncestorContainer;
-        if (span.nodeType === 3) span = span.parentNode;
-        if (span.nodeName === 'SPAN') {
-          span.style[styleProperty] = value;
-        } else {
-          const html = `<span style="${styleProperty}: ${value}">${range.toString()}</span>`;
-          document.execCommand('insertHTML', false, html);
-        }
+        // Create a new span and set the desired style
+        const newSpan = document.createElement('span');
+        newSpan.style[styleProperty] = value;
+        // Extract the contents of the selection and append them to the new span
+        newSpan.appendChild(range.extractContents());
+        // Insert the new span back into the document at the range's location
+        range.insertNode(newSpan);
+        // (Optional) Restore the selection to cover the new span's content
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newSpan);
+        selection.addRange(newRange);
       }
     }
+
 
     // Updated formatting functions
     function applyFontSize(size) {
@@ -4052,6 +4056,7 @@ prompt("This is a prompt:");
     }
 
     function applyColor(color) {
+      if (!color) return;
       applyStyleToSelection('color', color);
     }
 
@@ -4059,6 +4064,7 @@ prompt("This is a prompt:");
       if (!family) return;
       applyStyleToSelection('fontFamily', family);
     }
+
 
 
     async function takeImage(domElem) {
