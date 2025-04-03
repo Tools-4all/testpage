@@ -3933,23 +3933,24 @@ prompt("This is a prompt:");
 
     // Apply font size by wrapping selection in a span
     function applyFontSize(size) {
-      if (!size) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand('fontSize', false, 7);
+      let fonts = document.getElementsByTagName("font");
+      for (let i = 0; i < fonts.length; i++) {
+        if (fonts[i].size == "7") {
+          fonts[i].removeAttribute("size");
+          fonts[i].style.fontSize = size;
+        }
       }
     }
 
+
     // Apply text color by wrapping selection in a span
     function applyColor(color) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="color: ${color}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
+      document.execCommand('styleWithCSS', false, true);
+      document.execCommand('foreColor', false, color);
+      // If underline was active, reapply it:
+      // document.execCommand('underline', false, null);
     }
 
     // Apply font family by wrapping selection in a span
