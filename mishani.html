@@ -1240,7 +1240,6 @@
       border: 2px solid;
       padding: 5px;
       margin: 20px;
-      caret-color: inherit;
     }
 
     .handPointer {
@@ -3931,7 +3930,6 @@ prompt("This is a prompt:");
     const textDivStyles = new WeakMap();
     let activeTextDiv = null;
     let activeToolbar = null;
-    const fontFamilyOptions = ['Arial', 'Times New Roman', 'Courier New']; // Match select options
 
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
@@ -3939,15 +3937,13 @@ prompt("This is a prompt:");
       if (!textDivStyles.has(textDiv)) {
         textDivStyles.set(textDiv, {
           fontSize: null,
-          color: '#000000',
-          fontFamily: 'Arial',
+          color: null,
+          fontFamily: null,
           bold: false,
           italic: false,
           underline: false
         });
       }
-      // Set caret color based on theme
-      textDiv.style.caretColor = darkModeFlag ? '#fff' : '#000';
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -3964,11 +3960,15 @@ prompt("This is a prompt:");
             if (currentStyles.fontFamily) newSpan.style.fontFamily = currentStyles.fontFamily;
             if (currentStyles.bold) newSpan.style.fontWeight = 'bold';
             if (currentStyles.italic) newSpan.style.fontStyle = 'italic';
-            if (currentStyles.underline) newSpan.style.textDecoration = 'underline';
+            if (currentStyles.underline) {
+              newSpan.style.textDecoration = 'underline';
+              if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+            }
             newSpan.textContent = e.data;
             range.deleteContents();
             range.insertNode(newSpan);
             range.setStartAfter(newSpan);
+            range.setEndAfter(newSpan);
             selection.removeAllRanges();
             selection.addRange(range);
           }
@@ -3986,7 +3986,7 @@ prompt("This is a prompt:");
         const computedStyle = window.getComputedStyle(parent);
         const newSpan = document.createElement('span');
         if (command === 'bold') {
-          const isBold = computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
+          const isBold = computedStyle.fontWeight === 'bold' || computedStyle.fontWeight >= 700;
           currentStyles.bold = !isBold;
           newSpan.style.fontWeight = currentStyles.bold ? 'bold' : 'normal';
         } else if (command === 'italic') {
@@ -3997,6 +3997,9 @@ prompt("This is a prompt:");
           const isUnderlined = computedStyle.textDecorationLine.includes('underline');
           currentStyles.underline = !isUnderlined;
           newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
+          if (currentStyles.underline && currentStyles.color) {
+            newSpan.style.textDecorationColor = currentStyles.color;
+          }
         }
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
@@ -4005,12 +4008,11 @@ prompt("This is a prompt:");
         newRange.selectNodeContents(newSpan);
         selection.addRange(newRange);
       }
-      activeTextDiv.focus();
       updateButtonStates();
     }
 
     function updateButtonStates() {
-      if (!activeToolbar || !activeTextDiv) return;
+      if (!activeToolbar) return;
       const selection = window.getSelection();
       const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
       const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
@@ -4018,26 +4020,35 @@ prompt("This is a prompt:");
       const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
-
       if (selection.rangeCount > 0 && activeTextDiv.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
-        let node = range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer;
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) {
+          node = node.parentElement;
+        }
         const computedStyle = window.getComputedStyle(node);
-        boldBtn.classList.toggle('active', computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700);
-        italicBtn.classList.toggle('active', computedStyle.fontStyle === 'italic');
-        underlineBtn.classList.toggle('active', computedStyle.textDecorationLine.includes('underline'));
-        fontSizeInput.value = computedStyle.fontSize ? parseInt(computedStyle.fontSize) : '';
+        const isBold = computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
+        boldBtn.classList.toggle('active', isBold);
+        boldBtn.style.backgroundColor = isBold ? (darkModeFlag ? '#666' : '#ddd') : '';
+        const isItalic = computedStyle.fontStyle === 'italic';
+        italicBtn.classList.toggle('active', isItalic);
+        italicBtn.style.backgroundColor = isItalic ? (darkModeFlag ? '#666' : '#ddd') : '';
+        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+        underlineBtn.classList.toggle('active', isUnderlined);
+        underlineBtn.style.backgroundColor = isUnderlined ? (darkModeFlag ? '#666' : '#ddd') : '';
+        fontSizeInput.value = parseInt(computedStyle.fontSize) || '';
         colorInput.value = rgbToHex(computedStyle.color) || '#000000';
-        const fontFamily = computedStyle.fontFamily.split(',')[0].trim().replace(/['"]/g, '');
-        fontFamilySelect.value = fontFamilyOptions.includes(fontFamily) ? fontFamily : '';
+        fontFamilySelect.value = computedStyle.fontFamily.split(',')[0].trim() || '';
       } else {
-        const currentStyles = textDivStyles.get(activeTextDiv);
-        boldBtn.classList.toggle('active', currentStyles.bold);
-        italicBtn.classList.toggle('active', currentStyles.italic);
-        underlineBtn.classList.toggle('active', currentStyles.underline);
-        fontSizeInput.value = currentStyles.fontSize ? parseInt(currentStyles.fontSize) : '';
-        colorInput.value = currentStyles.color || '#000000';
-        fontFamilySelect.value = currentStyles.fontFamily || 'Arial';
+        boldBtn.classList.remove('active');
+        boldBtn.style.backgroundColor = '';
+        italicBtn.classList.remove('active');
+        italicBtn.style.backgroundColor = '';
+        underlineBtn.classList.remove('active');
+        underlineBtn.style.backgroundColor = '';
+        fontSizeInput.value = '';
+        colorInput.value = '#000000';
+        fontFamilySelect.value = '';
       }
     }
 
@@ -4070,6 +4081,13 @@ prompt("This is a prompt:");
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
         newSpan.style.color = color;
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const computedStyle = window.getComputedStyle(parent);
+        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+        if (isUnderlined) {
+          newSpan.style.textDecoration = 'underline';
+          newSpan.style.textDecorationColor = color;
+        }
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
         selection.removeAllRanges();
@@ -4105,37 +4123,6 @@ prompt("This is a prompt:");
       if (!activeTextDiv) return;
       activeTextDiv.style.textAlign = align;
     }
-
-    function giveTheHtml() {
-      return `
-  <div>
-    <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-  </div>
-  <div>
-    <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-    <input type="color" onchange="applyColor(this.value)">
-    <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-      <option value="">Font Family</option>
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Courier New">Courier New</option>
-    </select>
-  </div>
-  <div>
-    <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-    <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-    <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-  </div>
-  `;
-    }
-
-    document.addEventListener('selectionchange', () => {
-      if (activeTextDiv && document.activeElement === activeTextDiv) {
-        updateButtonStates();
-      }
-    });
 
     function selectionChangeHandler() {
       const selection = window.getSelection();
@@ -4481,6 +4468,31 @@ prompt("This is a prompt:");
       };
       document.addEventListener('selectionchange', updateButtonStates);
       displayModal();
+    }
+
+    function giveTheHtml() {
+      return `
+  <div>
+    <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+  </div>
+  <div>
+    <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+    <input type="color" onchange="applyColor(this.value)">
+    <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+      <option value="">Font Family</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+  </div>
+  <div>
+    <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+    <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+    <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+  </div>
+  `;
     }
 
     async function exportPDF() {
