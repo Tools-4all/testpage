@@ -3928,36 +3928,96 @@ prompt("This is a prompt:");
 
     // Apply basic formatting using execCommand
     function applyFormat(command) {
-      document.execCommand(command, false, null);
-    }
-
-    // Apply font size by wrapping selection in a span
-    function applyFontSize(size) {
-      if (!size) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
-    }
-
-    // Apply text color by wrapping selection in a span
-    function applyColor(color) {
-      if (!color) return;
       const selection = window.getSelection();
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
-        const newSpan = document.createElement('span');
-        newSpan.style.color = color;
-        // Check if the selection has an underline style
         const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
         const computedStyle = window.getComputedStyle(parent);
-        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
-        if (isUnderlined) {
-          newSpan.style.textDecoration = 'underline';
-          newSpan.style.textDecorationColor = color; // Ensure underline matches text color
+        const newSpan = document.createElement('span');
+
+        // Toggle logic
+        if (command === 'bold') {
+          const isBold = computedStyle.fontWeight === 'bold' || computedStyle.fontWeight >= 700;
+          currentStyles.bold = !isBold;
+          newSpan.style.fontWeight = currentStyles.bold ? 'bold' : 'normal';
+        } else if (command === 'italic') {
+          const isItalic = computedStyle.fontStyle === 'italic';
+          currentStyles.italic = !isItalic;
+          newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
+        } else if (command === 'underline') {
+          const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+          currentStyles.underline = !isUnderlined;
+          newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
+          if (currentStyles.underline && currentStyles.color) {
+            newSpan.style.textDecorationColor = currentStyles.color;
+          }
         }
+
+        newSpan.appendChild(range.extractContents());
+        range.insertNode(newSpan);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newSpan);
+        selection.addRange(newRange);
+      }
+      updateButtonStates(); // Update button UI after applying
+    }
+
+    // Apply font size by wrapping selection in a span
+    function updateButtonStates() {
+      const selection = window.getSelection();
+      const boldBtn = document.querySelector('#editorRichTextToolbar button:nth-child(1)');
+      const italicBtn = document.querySelector('#editorRichTextToolbar button:nth-child(2)');
+      const underlineBtn = document.querySelector('#editorRichTextToolbar button:nth-child(3)');
+
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const computedStyle = window.getComputedStyle(parent);
+
+        // Bold
+        const isBold = computedStyle.fontWeight === 'bold' || computedStyle.fontWeight >= 700;
+        boldBtn.classList.toggle('active', isBold);
+        boldBtn.style.backgroundColor = isBold ? (darkModeFlag ? '#666' : '#ddd') : '';
+
+        // Italic
+        const isItalic = computedStyle.fontStyle === 'italic';
+        italicBtn.classList.toggle('active', isItalic);
+        italicBtn.style.backgroundColor = isItalic ? (darkModeFlag ? '#666' : '#ddd') : '';
+
+        // Underline
+        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+        underlineBtn.classList.toggle('active', isUnderlined);
+        underlineBtn.style.backgroundColor = isUnderlined ? (darkModeFlag ? '#666' : '#ddd') : '';
+      } else {
+        boldBtn.classList.remove('active');
+        boldBtn.style.backgroundColor = '';
+        italicBtn.classList.remove('active');
+        italicBtn.style.backgroundColor = '';
+        underlineBtn.classList.remove('active');
+        underlineBtn.style.backgroundColor = '';
+      }
+    }
+    // Add this at the top of your script, outside any function
+    const currentStyles = {
+      fontSize: null,
+      color: null,
+      fontFamily: null,
+      bold: false,
+      italic: false,
+      underline: false
+    };
+
+
+
+    function applyFontSize(size) {
+      if (!size) return;
+      const selection = window.getSelection();
+      currentStyles.fontSize = size; // Update current style
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const newSpan = document.createElement('span');
+        newSpan.style.fontSize = size;
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
         // Restore selection
@@ -3968,17 +4028,48 @@ prompt("This is a prompt:");
       }
     }
 
+    // Update applyColor and applyFontFamily similarly
+    function applyColor(color) {
+      if (!color) return;
+      const selection = window.getSelection();
+      currentStyles.color = color;
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        const newSpan = document.createElement('span');
+        newSpan.style.color = color;
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const computedStyle = window.getComputedStyle(parent);
+        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+        if (isUnderlined) {
+          newSpan.style.textDecoration = 'underline';
+          newSpan.style.textDecorationColor = color;
+        }
+        newSpan.appendChild(range.extractContents());
+        range.insertNode(newSpan);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newSpan);
+        selection.addRange(newRange);
+      }
+    }
 
-    // Apply font family by wrapping selection in a span
     function applyFontFamily(family) {
       if (!family) return;
       const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
+      currentStyles.fontFamily = family;
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
-        const html = `<span style="font-family: ${family}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
+        const newSpan = document.createElement('span');
+        newSpan.style.fontFamily = family;
+        newSpan.appendChild(range.extractContents());
+        range.insertNode(newSpan);
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(newSpan);
+        selection.addRange(newRange);
       }
     }
+
 
     // Apply text alignment to the entire header div
     function applyAlignment(align) {
@@ -4192,6 +4283,35 @@ prompt("This is a prompt:");
         repositionToolbar(editorToolbar, editorTextDiv);
       });
 
+      editorTextDiv.addEventListener('beforeinput', (e) => {
+        if (e.inputType === 'insertText' && (currentStyles.fontSize || currentStyles.color || currentStyles.fontFamily)) {
+          setTimeout(() => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+              const range = selection.getRangeAt(0);
+              const newSpan = document.createElement('span');
+              if (currentStyles.fontSize) newSpan.style.fontSize = currentStyles.fontSize;
+              if (currentStyles.color) newSpan.style.color = currentStyles.color;
+              if (currentStyles.fontFamily) newSpan.style.fontFamily = currentStyles.fontFamily;
+              if (currentStyles.bold) newSpan.style.fontWeight = 'bold';
+              if (currentStyles.italic) newSpan.style.fontStyle = 'italic';
+              if (currentStyles.underline) {
+                newSpan.style.textDecoration = 'underline';
+                if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+              }
+              newSpan.textContent = e.data;
+              range.deleteContents();
+              range.insertNode(newSpan);
+              range.setStartAfter(newSpan);
+              range.setEndAfter(newSpan);
+              selection.removeAllRanges();
+              selection.addRange(range);
+            }
+          }, 0);
+        }
+      });
+
+
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4227,6 +4347,10 @@ prompt("This is a prompt:");
       }
 
       editorTextDiv.addEventListener('click', () => repositionToolbar(editorToolbar, editorTextDiv));
+      editorTextDiv.addEventListener('selectionchange', () => updateButtonStates());
+      if (currentTab.outputElement.innerHTML.trim()) {
+        outputTextDiv.addEventListener('selectionchange', () => updateButtonStates());
+      }
       wrapperBoth.appendChild(editorTextDiv);
 
       const editorDiv = await getEditorDiv();
@@ -4268,6 +4392,36 @@ prompt("This is a prompt:");
           }
           repositionToolbar(outputToolbar, outputTextDiv);
         });
+
+        if (currentTab.outputElement.innerHTML.trim()) {
+          outputTextDiv.addEventListener('beforeinput', (e) => {
+            if (e.inputType === 'insertText' && (currentStyles.fontSize || currentStyles.color || currentStyles.fontFamily)) {
+              setTimeout(() => {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                  const range = selection.getRangeAt(0);
+                  const newSpan = document.createElement('span');
+                  if (currentStyles.fontSize) newSpan.style.fontSize = currentStyles.fontSize;
+                  if (currentStyles.color) newSpan.style.color = currentStyles.color;
+                  if (currentStyles.fontFamily) newSpan.style.fontFamily = currentStyles.fontFamily;
+                  if (currentStyles.bold) newSpan.style.fontWeight = 'bold';
+                  if (currentStyles.italic) newSpan.style.fontStyle = 'italic';
+                  if (currentStyles.underline) {
+                    newSpan.style.textDecoration = 'underline';
+                    if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+                  }
+                  newSpan.textContent = e.data;
+                  range.deleteContents();
+                  range.insertNode(newSpan);
+                  range.setStartAfter(newSpan);
+                  range.setEndAfter(newSpan);
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }, 0);
+            }
+          });
+        }
 
         if (outputFlag) {
           outputToolbar.style.background = '#333';
@@ -4485,6 +4639,10 @@ prompt("This is a prompt:");
       }
 
       editorTextDiv.addEventListener('click', () => repositionToolbar(editorToolbar, editorTextDiv));
+      editorTextDiv.addEventListener('selectionchange', () => updateButtonStates());
+      if (currentTab.outputElement.innerHTML.trim()) {
+        outputTextDiv.addEventListener('selectionchange', () => updateButtonStates());
+      }
       wrapBoth.appendChild(editorTextDiv);
 
       wrapBoth.appendChild(editorDiv);
