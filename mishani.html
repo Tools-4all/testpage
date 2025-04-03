@@ -3987,7 +3987,11 @@ prompt("This is a prompt:");
       const fontFamilySelect = activeToolbar.querySelector('select');
       const selection = window.getSelection();
       const storedStyles = activeTextDiv ? textDivStyles.get(activeTextDiv) || {} : {};
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+      let useStored = (selection.rangeCount === 0 || selection.isCollapsed);
+      if (storedStyles.bold !== undefined || storedStyles.italic !== undefined || storedStyles.underline !== undefined) {
+        useStored = true;
+      }
+      if (!useStored && activeTextDiv.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
         let node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE) {
@@ -4016,6 +4020,7 @@ prompt("This is a prompt:");
         underlineBtn.style.backgroundColor = storedStyles.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
       }
     }
+
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
