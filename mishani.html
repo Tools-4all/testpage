@@ -3986,7 +3986,7 @@ prompt("This is a prompt:");
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
       const selection = window.getSelection();
-      const useStored = !selection.rangeCount || selection.isCollapsed;
+      const useStored = !selection.rangeCount || selection.isCollapsed || document.activeElement === activeTextDiv;
       const storedStyles = activeTextDiv && textDivStyles.has(activeTextDiv)
         ? textDivStyles.get(activeTextDiv)
         : { bold: false, italic: false, underline: false };
