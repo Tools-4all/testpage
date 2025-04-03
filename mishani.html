@@ -4038,7 +4038,8 @@ prompt("This is a prompt:");
         underlineBtn.style.backgroundColor = isUnderlined ? (darkModeFlag ? '#666' : '#ddd') : '';
         fontSizeInput.value = parseInt(computedStyle.fontSize) || '';
         colorInput.value = rgbToHex(computedStyle.color) || '#000000';
-        fontFamilySelect.value = computedStyle.fontFamily.split(',')[0].trim() || '';
+        const fontFamily = computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1');
+        fontFamilySelect.value = fontFamily || '';
       } else {
         boldBtn.classList.remove('active');
         boldBtn.style.backgroundColor = '';
@@ -4051,6 +4052,7 @@ prompt("This is a prompt:");
         fontFamilySelect.value = '';
       }
     }
+
 
     function applyFontSize(size) {
       if (!size || !activeTextDiv) return;
