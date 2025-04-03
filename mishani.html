@@ -3986,43 +3986,40 @@ prompt("This is a prompt:");
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
       const selection = window.getSelection();
-      const useStored = document.activeElement === activeTextDiv || !selection.rangeCount || selection.isCollapsed;
-      const storedStyles = activeTextDiv && textDivStyles.has(activeTextDiv)
-        ? textDivStyles.get(activeTextDiv)
-        : { bold: false, italic: false, underline: false, fontSize: '', color: '#000000', fontFamily: '' };
-      if (!useStored && activeTextDiv.contains(selection.anchorNode)) {
+      const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed && activeTextDiv.contains(selection.anchorNode);
+      let state;
+      if (hasSelection) {
         const range = selection.getRangeAt(0);
         let node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
         const computedStyle = window.getComputedStyle(node);
-        const isBold = computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
-        boldBtn.classList.toggle('active', isBold);
-        boldBtn.style.backgroundColor = isBold ? (darkModeFlag ? '#666' : '#ddd') : '';
-        const isItalic = computedStyle.fontStyle === 'italic';
-        italicBtn.classList.toggle('active', isItalic);
-        italicBtn.style.backgroundColor = isItalic ? (darkModeFlag ? '#666' : '#ddd') : '';
-        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
-        underlineBtn.classList.toggle('active', isUnderlined);
-        underlineBtn.style.backgroundColor = isUnderlined ? (darkModeFlag ? '#666' : '#ddd') : '';
-        fontSizeInput.value = parseInt(computedStyle.fontSize) || '';
-        colorInput.value = rgbToHex(computedStyle.color) || '#000000';
-        const fontFamily = computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1');
-        fontFamilySelect.value = fontFamily || '';
+        state = {
+          bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
+          italic: computedStyle.fontStyle === 'italic',
+          underline: computedStyle.textDecorationLine.includes('underline'),
+          fontSize: parseInt(computedStyle.fontSize) || '',
+          color: rgbToHex(computedStyle.color) || '#000000',
+          fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
+        };
       } else {
-        boldBtn.classList.toggle('active', storedStyles.bold);
-        boldBtn.style.backgroundColor = storedStyles.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
-        italicBtn.classList.toggle('active', storedStyles.italic);
-        italicBtn.style.backgroundColor = storedStyles.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
-        underlineBtn.classList.toggle('active', storedStyles.underline);
-        underlineBtn.style.backgroundColor = storedStyles.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-        fontSizeInput.value = storedStyles.fontSize || '';
-        colorInput.value = storedStyles.color || '#000000';
-        fontFamilySelect.value = storedStyles.fontFamily || '';
+        state = activeTextDiv && textDivStyles.has(activeTextDiv)
+          ? textDivStyles.get(activeTextDiv)
+          : { bold: false, italic: false, underline: false, fontSize: '', color: '#000000', fontFamily: '' };
       }
+      boldBtn.classList.toggle('active', state.bold);
+      boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
+      italicBtn.classList.toggle('active', state.italic);
+      italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
+      underlineBtn.classList.toggle('active', state.underline);
+      underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
+      fontSizeInput.value = state.fontSize;
+      colorInput.value = state.color;
+      fontFamilySelect.value = state.fontFamily;
     }
 
 
-    alert(1);
+
+    alert(2);
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
