@@ -3944,32 +3944,23 @@ prompt("This is a prompt:");
 
     // Apply text color by wrapping selection in a span
     function applyColor(color) {
+      if (!color) return;
       const selection = window.getSelection();
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
-        // Determine the container element of the selection
-        let container = range.commonAncestorContainer;
-        if (container.nodeType === Node.TEXT_NODE) {
-          container = container.parentElement;
-        }
-        // Check if the computed style of the container includes underline
-        const computedStyle = window.getComputedStyle(container);
-        const hasUnderline = computedStyle.textDecorationLine.includes("underline");
-
-        // Create a new span to wrap the selection
         const newSpan = document.createElement('span');
         newSpan.style.color = color;
-        // If the selection is underlined, also update the underline color
-        if (hasUnderline) {
+        // Check if the selection has an underline style
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const computedStyle = window.getComputedStyle(parent);
+        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+        if (isUnderlined) {
           newSpan.style.textDecoration = 'underline';
-          newSpan.style.textDecorationColor = color;
+          newSpan.style.textDecorationColor = color; // Ensure underline matches text color
         }
-
-        // Wrap the selected content
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
-
-        // (Optional) Restore selection to cover the new content
+        // Restore selection
         selection.removeAllRanges();
         const newRange = document.createRange();
         newRange.selectNodeContents(newSpan);
@@ -4075,24 +4066,6 @@ prompt("This is a prompt:");
     }
 
 
-    // Updated formatting functions
-    function applyFontSize(size) {
-      if (!size) return;
-      applyStyleToSelection('fontSize', size);
-    }
-
-    function applyColor(color) {
-      if (!color) return;
-      applyStyleToSelection('color', color);
-    }
-
-    function applyFontFamily(family) {
-      if (!family) return;
-      applyStyleToSelection('fontFamily', family);
-    }
-
-
-
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
         scale: 2,
@@ -4184,28 +4157,7 @@ prompt("This is a prompt:");
 
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
-      editorToolbar.innerHTML = `
-      <div>
-      <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-      <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-      <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-      </div>
-      <div>
-      <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-      <input type="color" onchange="applyColor(this.value)">
-      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-        <option value="">Font Family</option>
-        <option value="Arial">Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-      </div>
-      <div>
-      <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-      <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-      <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-      </div>
-       `;
+      editorToolbar.innerHTML = giveTheHtml();
 
       editorToolbar.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
@@ -4287,28 +4239,7 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
-        outputToolbar.innerHTML = `
-         <div>
-        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-        </div>
-        <div>
-        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-        <input type="color" onchange="applyColor(this.value)">
-        <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-          <option value="">Font Family</option>
-          <option value="Arial">Arial</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Courier New">Courier New</option>
-        </select>
-        </div>
-        <div>
-        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-        </div>
-        `;
+        outputToolbar.innerHTML = giveTheHtml();
 
         outputToolbar.querySelectorAll('button').forEach(button => {
           button.addEventListener('click', () => {
@@ -4450,6 +4381,32 @@ prompt("This is a prompt:");
       displayModal();
     }
 
+    function giveTheHtml() {
+      return `
+      <div>
+    <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+  </div>
+  <div>
+    <input type="number" min="8" max="72" placeholder="Size" id="fontSizeInput" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+    <input type="color" onchange="applyColor(this.value)">
+    <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+      <option value="">Font Family</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+  </div>
+  <div>
+    <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+    <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+    <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+  </div>
+</div>
+      `;
+    }
+
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
@@ -4459,28 +4416,7 @@ prompt("This is a prompt:");
 
       const editorToolbar = document.createElement('div');
       editorToolbar.id = 'editorRichTextToolbar';
-      editorToolbar.innerHTML = `
-    <div>
-      <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-      <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-      <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-      </div>
-      <div>
-      <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-      <input type="color" onchange="applyColor(this.value)">
-      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-        <option value="">Font Family</option>
-        <option value="Arial">Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-      </div>
-      <div>
-      <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-      <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-      <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-      </div>
-      `;
+      editorToolbar.innerHTML = giveTheHtml();
 
       editorToolbar.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
@@ -4560,28 +4496,7 @@ prompt("This is a prompt:");
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
-        outputToolbar.innerHTML = `
-        <div>
-      <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-      <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-      <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-      </div>
-      <div>
-      <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-      <input type="color" onchange="applyColor(this.value)">
-      <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-        <option value="">Font Family</option>
-        <option value="Arial">Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-      </div>
-      <div>
-      <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-      <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-      <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-      </div>
-       `;
+        outputToolbar.innerHTML = giveTheHtml();
 
         outputToolbar.querySelectorAll('button').forEach(button => {
           button.addEventListener('click', () => {
