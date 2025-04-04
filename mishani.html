@@ -3927,29 +3927,10 @@ prompt("This is a prompt:");
     }
 
     // Apply basic formatting using execCommand
-    // Global state
     const textDivStyles = new WeakMap();
     let activeTextDiv = null;
     let activeToolbar = null;
-    let darkModeFlag = false; // Toggle this based on your application's dark mode state
-    const exportModalContent = document.createElement('div'); // Placeholder for modal content
-    const modal = document.createElement('div'); // Placeholder for modal element
-    modal.id = 'exportModal';
 
-    // Assume currentTab exists in your context
-    const currentTab = {
-      name: 'exampleTab',
-      outputElement: document.createElement('div'),
-    };
-
-    // Utility: Convert RGB to Hex
-    function rgbToHex(rgb) {
-      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-      if (!match) return rgb.startsWith('#') ? rgb : null;
-      return `#${[match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}`;
-    }
-
-    // Set the active text div and initialize its styles
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
@@ -3961,14 +3942,12 @@ prompt("This is a prompt:");
           fontFamily: computed.fontFamily.split(',')[0].trim().replace(/['"]/g, '') || 'Arial',
           bold: computed.fontWeight === 'bold' || parseInt(computed.fontWeight) >= 700,
           italic: computed.fontStyle === 'italic',
-          underline: computed.textDecorationLine.includes('underline'),
+          underline: computed.textDecorationLine.includes('underline')
         });
       }
       updateButtonStates();
-      repositionToolbar(toolbar, textDiv);
     }
 
-    // Handle text input with current styles
     function attachBeforeInputListener(textDiv) {
       textDiv.addEventListener('beforeinput', (e) => {
         if (e.inputType === 'insertText') {
@@ -3977,7 +3956,7 @@ prompt("This is a prompt:");
           const selection = window.getSelection();
           const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : document.createRange();
           if (range.collapsed) {
-            range.setStart(textDiv, textDiv.childNodes.length);
+            range.setStart(textDiv, 0);
             range.collapse(true);
           }
           const newSpan = document.createElement('span');
@@ -3994,6 +3973,7 @@ prompt("This is a prompt:");
           range.deleteContents();
           range.insertNode(newSpan);
           range.setStartAfter(newSpan);
+          range.setEndAfter(newSpan);
           selection.removeAllRanges();
           selection.addRange(range);
           updateButtonStates();
@@ -4002,12 +3982,12 @@ prompt("This is a prompt:");
       });
     }
 
-    // Update toolbar button states
+
     function updateButtonStates() {
       if (!activeToolbar || !activeTextDiv) return;
-      const boldBtn = activeToolbar.querySelector('button[data-command="bold"]');
-      const italicBtn = activeToolbar.querySelector('button[data-command="italic"]');
-      const underlineBtn = activeToolbar.querySelector('button[data-command="underline"]');
+      const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
+      const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
+      const underlineBtn = activeToolbar.querySelector('button:nth-child(3)');
       const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
@@ -4016,7 +3996,8 @@ prompt("This is a prompt:");
 
       if (selection.rangeCount > 0 && activeTextDiv.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
-        const node = range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer;
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
         const computed = window.getComputedStyle(node);
         state = {
           bold: computed.fontWeight === 'bold' || parseInt(computed.fontWeight) >= 700,
@@ -4024,7 +4005,7 @@ prompt("This is a prompt:");
           underline: computed.textDecorationLine.includes('underline'),
           fontSize: parseInt(computed.fontSize) || 16,
           color: rgbToHex(computed.color) || (darkModeFlag ? '#FFFFFF' : '#000000'),
-          fontFamily: computed.fontFamily.split(',')[0].trim().replace(/['"]/g, '') || 'Arial',
+          fontFamily: computed.fontFamily.split(',')[0].trim().replace(/['"]/g, '') || 'Arial'
         };
       } else {
         state = textDivStyles.get(activeTextDiv);
@@ -4041,16 +4022,17 @@ prompt("This is a prompt:");
       fontFamilySelect.value = state.fontFamily || '';
     }
 
-    // Apply formatting (bold, italic, underline)
     function applyFormat(command) {
       if (!activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
       const selection = window.getSelection();
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
-        const node = range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer;
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
         const computed = window.getComputedStyle(node);
         const newSpan = document.createElement('span');
+        // Copy existing styles
         newSpan.style.fontSize = computed.fontSize;
         newSpan.style.color = computed.color;
         newSpan.style.fontFamily = computed.fontFamily;
@@ -4060,6 +4042,7 @@ prompt("This is a prompt:");
           newSpan.style.textDecoration = 'underline';
           newSpan.style.textDecorationColor = computed.color;
         }
+        // Apply new format
         if (command === 'bold') {
           const isBold = computed.fontWeight === 'bold' || parseInt(computed.fontWeight) >= 700;
           currentStyles.bold = !isBold;
@@ -4072,7 +4055,9 @@ prompt("This is a prompt:");
           const isUnderlined = computed.textDecorationLine.includes('underline');
           currentStyles.underline = !isUnderlined;
           newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-          if (currentStyles.underline && currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+          if (currentStyles.underline && currentStyles.color) {
+            newSpan.style.textDecorationColor = currentStyles.color;
+          }
         }
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
@@ -4090,7 +4075,6 @@ prompt("This is a prompt:");
       repositionToolbar(activeToolbar, activeTextDiv);
     }
 
-    // Apply font size
     function applyFontSize(size) {
       if (!size || !activeTextDiv) return;
       const sizePx = parseInt(size);
@@ -4101,6 +4085,7 @@ prompt("This is a prompt:");
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
+        // Copy existing styles
         const computed = window.getComputedStyle(range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer);
         newSpan.style.color = computed.color;
         newSpan.style.fontFamily = computed.fontFamily;
@@ -4123,7 +4108,6 @@ prompt("This is a prompt:");
       repositionToolbar(activeToolbar, activeTextDiv);
     }
 
-    // Apply color
     function applyColor(color) {
       if (!color || !activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
@@ -4132,6 +4116,7 @@ prompt("This is a prompt:");
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
+        // Copy existing styles
         const computed = window.getComputedStyle(range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer);
         newSpan.style.fontSize = computed.fontSize;
         newSpan.style.fontFamily = computed.fontFamily;
@@ -4152,7 +4137,6 @@ prompt("This is a prompt:");
       repositionToolbar(activeToolbar, activeTextDiv);
     }
 
-    // Apply font family
     function applyFontFamily(family) {
       if (!family || !activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
@@ -4161,6 +4145,7 @@ prompt("This is a prompt:");
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
+        // Copy existing styles
         const computed = window.getComputedStyle(range.startContainer.nodeType === Node.TEXT_NODE ? range.startContainer.parentElement : range.startContainer);
         newSpan.style.fontSize = computed.fontSize;
         newSpan.style.color = computed.color;
@@ -4183,7 +4168,6 @@ prompt("This is a prompt:");
       repositionToolbar(activeToolbar, activeTextDiv);
     }
 
-    // Apply text alignment
     function applyAlignment(align) {
       if (!activeTextDiv) return;
       activeTextDiv.style.textAlign = align;
@@ -4191,7 +4175,6 @@ prompt("This is a prompt:");
       repositionToolbar(activeToolbar, activeTextDiv);
     }
 
-    // Reposition toolbar above the text div
     function repositionToolbar(toolbar, element) {
       if (!toolbar || !element) return;
       const elementRect = element.getBoundingClientRect();
@@ -4201,28 +4184,452 @@ prompt("This is a prompt:");
       const toolbarWidth = toolbar.offsetWidth;
       const modalWidth = modalRect.width;
       left = Math.max(0, Math.min(left, modalWidth - toolbarWidth));
-      toolbar.style.position = 'absolute';
+      toolbar.style.left = `${left}px`;
+      toolbar.style.top = `${top}px`;
+      toolbar.style.display = 'block';
+    }
+    function selectionChangeHandler() {
+      const selection = window.getSelection();
+      const toolbar = document.getElementById('richTextToolbar');
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const commonAncestor = range.commonAncestorContainer;
+        const isInHeader = currentHeaderDivs.some(div => div.contains(commonAncestor));
+        if (isInHeader && !selection.isCollapsed) {
+          const rect = range.getBoundingClientRect();
+          const modalRect = exportModalContent.getBoundingClientRect();
+          const left = rect.left - modalRect.left;
+          const top = rect.top - modalRect.top - toolbar.offsetHeight - 5;
+          toolbar.style.left = `${left}px`;
+          toolbar.style.top = `${top}px`;
+          toolbar.style.display = 'block';
+        } else {
+          toolbar.style.display = 'none';
+        }
+      } else {
+        toolbar.style.display = 'none';
+      }
+    }
+
+    function showToolbar(headerDiv) {
+      const toolbar = document.getElementById('richTextToolbar');
+      const headerRect = headerDiv.getBoundingClientRect();
+      const modalRect = exportModalContent.getBoundingClientRect();
+      let left = headerRect.left - modalRect.left;
+      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10;
+      const toolbarWidth = toolbar.offsetWidth;
+      const modalWidth = modalRect.width;
+      if (left < 0) left = 0;
+      if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
       toolbar.style.left = `${left}px`;
       toolbar.style.top = `${top}px`;
       toolbar.style.display = 'block';
     }
 
-    // Create a toolbar element
-    function createToolbar(id) {
-      const toolbar = document.createElement('div');
-      toolbar.id = id;
-      toolbar.style.position = 'absolute';
-      toolbar.style.display = 'none';
-      toolbar.style.padding = '5px';
-      toolbar.style.borderRadius = '4px';
-      toolbar.innerHTML = giveTheHtml();
-      styleToolbar(toolbar);
-      return toolbar;
+    let isToolbarActive = false;
+
+    function hideToolbar() {
+      if (!isToolbarActive) {
+        const toolbar = document.getElementById('richTextToolbar');
+        toolbar.style.display = 'none';
+      }
     }
 
-    // Style the toolbar based on dark mode
+    async function takeImage(domElem) {
+      const canvas = await html2canvas(domElem, {
+        scale: 2,
+        logging: false,
+        backgroundColor: null,
+        willReadFrequently: true,
+        allowTaint: true,
+        useCORS: true
+      });
+      return canvas.toDataURL("image/png");
+    }
+
+    async function getOutputDivClone() {
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px";
+      const outputWrapper = document.createElement('div');
+      outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
+      outputWrapper.style.backgroundColor = backgroundColor;
+      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      outputWrapper.appendChild(tempOutputDiv);
+      tempOutputDiv.classList.add(...currentTab.outputElement.classList);
+      tempOutputDiv.style.width = maxWidth;
+      tempOutputDiv.style.maxWidth = maxWidth;
+      tempOutputDiv.style.height = 'auto';
+      tempOutputDiv.style.overflowY = 'visible';
+      return outputWrapper;
+    }
+
+    async function getEditorDiv() {
+      const model = currentTab.editorInstance.getModel();
+      const code = model.getValue();
+      const language = "javascript";
+      const codeLines = code.split('\n');
+      const highlightedLines = await Promise.all(
+        codeLines.map((line) => monaco.editor.colorize(line, language, {}))
+      );
+      const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
+      const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
+      const wrapperDiv = document.createElement('div');
+      wrapperDiv.style.backgroundColor = backgroundColor;
+      wrapperDiv.style.fontFamily = fontFamily;
+      wrapperDiv.style.fontSize = `${fontSize}px`;
+      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.whiteSpace = "pre-wrap";
+      wrapperDiv.style.width = '100%';
+      wrapperDiv.style.color = textColor;
+      document.addEventListener('DOMContentLoaded', function () {
+        if (window.screen.width < 768) {
+          wrapperDiv.style.transform = "scale(0.7)";
+          showAlert("Please note that the code may not be displayed properly on small screens.");
+        }
+      });
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
+        lineWrapper.style.alignItems = "flex-start";
+        const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.textContent = index + 1;
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.classList.add("codeLineDiv");
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
+      return wrapperDiv;
+    }
+
+    async function exportImage() {
+      const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.position = 'relative';
+      wrapperBoth.style.paddingTop = '1px';
+      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorToolbar = document.createElement('div');
+      editorToolbar.id = 'editorRichTextToolbar';
+      editorToolbar.innerHTML = giveTheHtml();
+      styleToolbar(editorToolbar);
+      wrapperBoth.appendChild(editorToolbar);
+
+      let headerFlag = true;
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText");
+      editorTextDiv.contentEditable = true;
+      editorTextDiv.textContent = "Editor Header";
+      editorTextDiv.style.color = darkModeFlag ? '#FFFFFF' : '#000000';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.addEventListener('focus', () => {
+        if (headerFlag) {
+          editorTextDiv.textContent = "";
+          headerFlag = false;
+        }
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      });
+      editorTextDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      }, { passive: false });
+      editorTextDiv.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      }, { passive: false });
+      attachBeforeInputListener(editorTextDiv);
+      wrapperBoth.appendChild(editorTextDiv);
+
+      const editorDiv = await getEditorDiv();
+      wrapperBoth.appendChild(editorDiv);
+
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      let outputToolbar, outputTextDiv;
+
+      if (currentTab.outputElement.innerHTML.trim()) {
+        outputToolbar = document.createElement('div');
+        outputToolbar.id = 'outputRichTextToolbar';
+        outputToolbar.innerHTML = giveTheHtml();
+        styleToolbar(outputToolbar);
+        wrapperBoth.appendChild(outputToolbar);
+
+        let outputFlag = true;
+        outputTextDiv = document.createElement('div');
+        outputTextDiv.classList.add("headerText");
+        outputTextDiv.contentEditable = true;
+        outputTextDiv.textContent = "Output Header";
+        outputTextDiv.style.color = darkModeFlag ? '#FFFFFF' : '#000000';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.addEventListener('focus', () => {
+          if (outputFlag) {
+            outputTextDiv.textContent = "";
+            outputFlag = false;
+          }
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        });
+        outputTextDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        }, { passive: false });
+        outputTextDiv.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        }, { passive: false });
+        attachBeforeInputListener(outputTextDiv);
+        wrapperBoth.appendChild(outputTextDiv);
+
+        const outputClone = await getOutputDivClone();
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        wrapperBoth.appendChild(outputClone);
+
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
+        });
+        exportBtnsWrapper.appendChild(exportCheckbox);
+      }
+
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+
+      exportModalContent.appendChild(wrapperBoth);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      repositionToolbar(editorToolbar, editorTextDiv);
+      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
+        repositionToolbar(outputToolbar, outputTextDiv);
+      }
+
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export Image";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        editorToolbar.style.display = 'none';
+        if (outputToolbar) outputToolbar.style.display = 'none';
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const imgSrc = await takeImage(wrapperBoth);
+        closeModal("close");
+        const bothImg = new Image();
+        bothImg.src = imgSrc;
+        await new Promise(resolve => bothImg.onload = resolve);
+        canvas.width = bothImg.width;
+        canvas.height = bothImg.height;
+        ctx.drawImage(bothImg, 0, 0);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL("image/png");
+        a.download = `${currentTab.name}.png`;
+        a.click();
+      };
+
+      document.addEventListener('selectionchange', updateButtonStates);
+      document.addEventListener('click', (e) => {
+        if (!editorTextDiv.contains(e.target) && !editorToolbar.contains(e.target) &&
+          (!outputTextDiv || !outputTextDiv.contains(e.target)) && (!outputToolbar || !outputToolbar.contains(e.target))) {
+          editorToolbar.style.display = 'none';
+          if (outputToolbar) outputToolbar.style.display = 'none';
+        }
+      });
+      displayModal();
+    }
+
+    async function exportPDF() {
+      const editorDiv = await getEditorDiv();
+      const wrapBoth = document.createElement('div');
+      wrapBoth.style.position = 'relative';
+      wrapBoth.style.paddingTop = '1px';
+      wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      const editorToolbar = document.createElement('div');
+      editorToolbar.id = 'editorRichTextToolbar';
+      editorToolbar.innerHTML = giveTheHtml();
+      styleToolbar(editorToolbar);
+      wrapBoth.appendChild(editorToolbar);
+
+      let headerFlag = true;
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.classList.add("headerText");
+      editorTextDiv.contentEditable = true;
+      editorTextDiv.textContent = "Enter your title here...";
+      editorTextDiv.style.color = darkModeFlag ? '#FFFFFF' : '#000000';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.addEventListener('focus', () => {
+        if (headerFlag) {
+          editorTextDiv.textContent = "";
+          headerFlag = false;
+        }
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      });
+      editorTextDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      }, { passive: false });
+      editorTextDiv.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        setActiveTextDiv(editorTextDiv, editorToolbar);
+        repositionToolbar(editorToolbar, editorTextDiv);
+      }, { passive: false });
+      attachBeforeInputListener(editorTextDiv);
+      wrapBoth.appendChild(editorTextDiv);
+
+      wrapBoth.appendChild(editorDiv);
+
+      const exportBtnsWrapper = document.createElement('div');
+      exportBtnsWrapper.classList.add("exportBtnsWrapper");
+      let outputToolbar, outputTextDiv;
+
+      if (currentTab.outputElement.innerHTML.trim()) {
+        outputToolbar = document.createElement('div');
+        outputToolbar.id = 'outputRichTextToolbar';
+        outputToolbar.innerHTML = giveTheHtml();
+        styleToolbar(outputToolbar);
+        wrapBoth.appendChild(outputToolbar);
+
+        let outputFlag = true;
+        outputTextDiv = document.createElement('div');
+        outputTextDiv.classList.add("headerText");
+        outputTextDiv.contentEditable = true;
+        outputTextDiv.textContent = "Enter your output title here...";
+        outputTextDiv.style.color = darkModeFlag ? '#FFFFFF' : '#000000';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.addEventListener('focus', () => {
+          if (outputFlag) {
+            outputTextDiv.textContent = "";
+            outputFlag = false;
+          }
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        });
+        outputTextDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        }, { passive: false });
+        outputTextDiv.addEventListener('touchstart', (e) => {
+          e.stopPropagation();
+          setActiveTextDiv(outputTextDiv, outputToolbar);
+          repositionToolbar(outputToolbar, outputTextDiv);
+        }, { passive: false });
+        attachBeforeInputListener(outputTextDiv);
+        wrapBoth.appendChild(outputTextDiv);
+
+        const outputClone = await getOutputDivClone();
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        wrapBoth.appendChild(outputClone);
+
+        const headerTextCheckbox = document.createElement("input");
+        headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.classList.add("exportCheckbox");
+        headerTextCheckbox.checked = true;
+        headerTextCheckbox.addEventListener("change", () => {
+          outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+        });
+        exportBtnsWrapper.appendChild(headerTextCheckbox);
+
+        const exportCheckbox = document.createElement("input");
+        exportCheckbox.type = "checkbox";
+        exportCheckbox.classList.add("exportCheckbox");
+        exportCheckbox.checked = true;
+        exportCheckbox.addEventListener("change", () => {
+          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
+        });
+        exportBtnsWrapper.appendChild(exportCheckbox);
+      }
+
+      const editorHeaderCheckbox = document.createElement("input");
+      editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.classList.add("exportCheckbox");
+      editorHeaderCheckbox.checked = true;
+      editorHeaderCheckbox.addEventListener("change", () => {
+        editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+      });
+      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
+
+      exportModalContent.appendChild(wrapBoth);
+      exportModalContent.appendChild(exportBtnsWrapper);
+      repositionToolbar(editorToolbar, editorTextDiv);
+      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
+        repositionToolbar(outputToolbar, outputTextDiv);
+      }
+
+      const exportBtn = document.createElement('button');
+      exportBtn.textContent = "Export PDF";
+      exportBtn.classList.add("exportBtn");
+      exportBtnsWrapper.appendChild(exportBtn);
+      exportBtn.onclick = async function () {
+        exportBtn.disabled = true;
+        editorToolbar.style.display = 'none';
+        if (outputToolbar) outputToolbar.style.display = 'none';
+        const contentWidth = wrapBoth.offsetWidth;
+        const contentHeight = wrapBoth.offsetHeight;
+        let doc = new jsPDF({
+          orientation: contentWidth > contentHeight ? 'l' : 'p',
+          unit: 'px',
+          format: [contentWidth, contentHeight]
+        });
+        await new Promise(resolve => {
+          doc.html(wrapBoth, {
+            callback: resolve,
+            x: 0,
+            y: 0,
+            margin: [0, 0, 0, 0],
+            html2canvas: { scale: 1, logging: false }
+          });
+        });
+        closeModal("close");
+        if (doc.internal.getNumberOfPages() > 1) {
+          for (let i = doc.internal.getNumberOfPages(); i > 1; i--) {
+            doc.deletePage(i);
+          }
+        }
+        doc.save(`${currentTab.name}.pdf`);
+      };
+
+      document.addEventListener('selectionchange', updateButtonStates);
+      document.addEventListener('click', (e) => {
+        if (!editorTextDiv.contains(e.target) && !editorToolbar.contains(e.target) &&
+          (!outputTextDiv || !outputTextDiv.contains(e.target)) && (!outputToolbar || !outputToolbar.contains(e.target))) {
+          editorToolbar.style.display = 'none';
+          if (outputToolbar) outputToolbar.style.display = 'none';
+        }
+      });
+      displayModal();
+    }
+
     function styleToolbar(toolbar) {
-      toolbar.querySelectorAll('button[data-command]').forEach(button => {
+      toolbar.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
           const command = button.getAttribute('data-command');
           if (command) applyFormat(command);
@@ -4230,49 +4637,40 @@ prompt("This is a prompt:");
       });
       if (darkModeFlag) {
         toolbar.style.background = '#333';
-        toolbar.style.border = '1px solid #555';
+        toolbar.style.borderColor = '#555';
         toolbar.style.color = '#fff';
         toolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#c5c5c5';
-          button.style.background = 'none';
-          button.style.border = 'none';
-          button.style.padding = '5px';
         });
         toolbar.querySelectorAll('input, select').forEach(input => {
           input.style.backgroundColor = '#555';
           input.style.color = '#fff';
           input.style.border = '1px solid #777';
-          input.style.padding = '2px';
         });
       } else {
         toolbar.style.background = '#f0f0f0';
-        toolbar.style.border = '1px solid #ccc';
+        toolbar.style.borderColor = '#ccc';
         toolbar.style.color = '#000';
         toolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#000';
-          button.style.background = 'none';
-          button.style.border = 'none';
-          button.style.padding = '5px';
         });
         toolbar.querySelectorAll('input, select').forEach(input => {
           input.style.backgroundColor = '#fff';
           input.style.color = '#000';
           input.style.border = '1px solid #ccc';
-          input.style.padding = '2px';
         });
       }
     }
 
-    // Toolbar HTML structure
     function giveTheHtml() {
       return `
-    <div style="display: flex; gap: 5px;">
+    <div>
       <button data-command="bold"><i class="fas fa-bold"></i></button>
       <button data-command="italic"><i class="fas fa-italic"></i></button>
       <button data-command="underline"><i class="fas fa-underline"></i></button>
     </div>
-    <div style="display: flex; gap: 5px; margin-top: 5px;">
-      <input type="number" min="8" max="72" placeholder="Size" style="width: 60px;" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value)">
+    <div>
+      <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value)">
       <input type="color" onchange="applyColor(this.value)">
       <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
         <option value="">Font Family</option>
@@ -4281,7 +4679,7 @@ prompt("This is a prompt:");
         <option value="Courier New">Courier New</option>
       </select>
     </div>
-    <div style="display: flex; gap: 5px; margin-top: 5px;">
+    <div>
       <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
       <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
       <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
@@ -4289,343 +4687,112 @@ prompt("This is a prompt:");
   `;
     }
 
-    // Create a contenteditable text div
-    function createTextDiv(placeholder, toolbar) {
-      const textDiv = document.createElement('div');
-      textDiv.classList.add('headerText');
-      textDiv.contentEditable = true;
-      textDiv.textContent = placeholder;
-      textDiv.style.color = darkModeFlag ? '#FFFFFF' : '#000000';
-      textDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
-      textDiv.style.padding = '10px';
-      textDiv.style.margin = '10px 0';
-      let firstFocus = true;
-
-      textDiv.addEventListener('focus', () => {
-        if (firstFocus) {
-          textDiv.textContent = '';
-          firstFocus = false;
-        }
-        setActiveTextDiv(textDiv, toolbar);
-        repositionToolbar(toolbar, textDiv);
-      });
-
-      textDiv.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setActiveTextDiv(textDiv, toolbar);
-        repositionToolbar(toolbar, textDiv);
-      }, { passive: false });
-
-      textDiv.addEventListener('touchstart', (e) => {
-        e.stopPropagation();
-        setActiveTextDiv(textDiv, toolbar);
-        repositionToolbar(toolbar, textDiv);
-      }, { passive: false });
-
-      attachBeforeInputListener(textDiv);
-      return textDiv;
+    function exportCurrent() {
+      if (activeTabId === null) {
+        return;
+      }
+      let t = tabs.find((x) => x.id === activeTabId);
+      let blob = new Blob([t.editorInstance.getValue()], { type: "text/javascript" });
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = t.name.endsWith(".js") ? t.name : (t.name + ".js");
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
-    // Mock getEditorDiv (replace with your actual implementation)
-    async function getEditorDiv() {
-      const div = document.createElement('div');
-      div.textContent = 'Editor Content';
-      div.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      div.style.padding = '20px';
-      return div;
-    }
-
-    // Mock getOutputDivClone (replace with your actual implementation)
-    async function getOutputDivClone() {
-      const div = currentTab.outputElement.cloneNode(true);
-      div.style.padding = '20px';
-      return div;
-    }
-
-    // Mock takeImage (assumes html2canvas is available)
-    async function takeImage(element) {
-      // Replace with actual html2canvas call
-      return new Promise(resolve => {
-        const canvas = document.createElement('canvas');
-        canvas.width = element.offsetWidth;
-        canvas.height = element.offsetHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = darkModeFlag ? '#FFFFFF' : '#000000';
-        ctx.font = '16px Arial';
-        ctx.fillText('Mock Image', 10, 50);
-        resolve(canvas.toDataURL('image/png'));
-      });
-    }
-
-    // Display modal
     function displayModal() {
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.width = '100%';
-      modal.style.height = '100%';
-      modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
-      modal.style.display = 'flex';
-      modal.style.alignItems = 'center';
-      modal.style.justifyContent = 'center';
-      exportModalContent.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      exportModalContent.style.padding = '20px';
-      exportModalContent.style.borderRadius = '8px';
-      exportModalContent.style.maxWidth = '800px';
-      exportModalContent.style.maxHeight = '90%';
-      exportModalContent.style.overflow = 'auto';
-      exportModalContent.style.position = 'relative';
-      modal.appendChild(exportModalContent);
-      document.body.appendChild(modal);
-      modal.classList.add('active');
-      modal.addEventListener('click', closeModal);
+      modal.classList.add("active");
+      modal.dispatchEvent(new Event("modalOpened"));
     }
 
-    // Close modal and clean up
     function closeModal(event) {
-      if (event.target === modal || event === 'close') {
-        modal.classList.remove('active');
-        modal.dispatchEvent(new Event('modalClosed'));
-        document.removeEventListener('selectionchange', updateButtonStates);
-        document.removeEventListener('click', handleOutsideClick);
-        exportModalContent.innerHTML = '';
-        modal.remove();
+      if (event.target === modal || event === "close") {
+        modal.classList.remove("active");
+        modal.dispatchEvent(new Event("modalClosed"));
+        const toolbar = document.getElementById('richTextToolbar');
+        if (toolbar) toolbar.style.display = 'none';
       }
     }
 
-    // Handle clicks outside text divs and toolbars
-    function handleOutsideClick(e) {
-      const editorTextDiv = exportModalContent.querySelector('.headerText');
-      const editorToolbar = exportModalContent.querySelector('#editorRichTextToolbar');
-      const outputTextDiv = exportModalContent.querySelectorAll('.headerText')[1];
-      const outputToolbar = exportModalContent.querySelector('#outputRichTextToolbar');
-      if (
-        !editorTextDiv?.contains(e.target) &&
-        !editorToolbar?.contains(e.target) &&
-        (!outputTextDiv || !outputTextDiv.contains(e.target)) &&
-        (!outputToolbar || !outputToolbar.contains(e.target))
-      ) {
-        if (editorToolbar) editorToolbar.style.display = 'none';
-        if (outputToolbar) outputToolbar.style.display = 'none';
-      }
-    }
-
-    // Export image
-    async function exportImage() {
-      const wrapperBoth = document.createElement('div');
-      wrapperBoth.style.position = 'relative';
-      wrapperBoth.style.paddingTop = '1px';
-      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-
-      const editorToolbar = createToolbar('editorRichTextToolbar');
-      wrapperBoth.appendChild(editorToolbar);
-
-      const editorTextDiv = createTextDiv('Editor Header', editorToolbar);
-      wrapperBoth.appendChild(editorTextDiv);
-
-      const editorDiv = await getEditorDiv();
-      wrapperBoth.appendChild(editorDiv);
-
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add('exportBtnsWrapper');
-      exportBtnsWrapper.style.display = 'flex';
-      exportBtnsWrapper.style.gap = '10px';
-      exportBtnsWrapper.style.marginTop = '20px';
-
-      let outputToolbar, outputTextDiv;
-      if (currentTab.outputElement.innerHTML.trim()) {
-        outputToolbar = createToolbar('outputRichTextToolbar');
-        wrapperBoth.appendChild(outputToolbar);
-
-        outputTextDiv = createTextDiv('Output Header', outputToolbar);
-        wrapperBoth.appendChild(outputTextDiv);
-
-        const outputClone = await getOutputDivClone();
-        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        wrapperBoth.appendChild(outputClone);
-
-        const headerTextCheckbox = document.createElement('input');
-        headerTextCheckbox.type = 'checkbox';
-        headerTextCheckbox.classList.add('exportCheckbox');
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener('change', () => {
-          outputTextDiv.style.display = headerTextCheckbox.checked ? 'block' : 'none';
-        });
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-
-        const exportCheckbox = document.createElement('input');
-        exportCheckbox.type = 'checkbox';
-        exportCheckbox.classList.add('exportCheckbox');
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener('change', () => {
-          outputClone.style.display = exportCheckbox.checked ? 'block' : 'none';
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? 'visible' : 'hidden';
-        });
-        exportBtnsWrapper.appendChild(exportCheckbox);
-      }
-
-      const editorHeaderCheckbox = document.createElement('input');
-      editorHeaderCheckbox.type = 'checkbox';
-      editorHeaderCheckbox.classList.add('exportCheckbox');
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener('change', () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? 'block' : 'none';
+    function showAlert(message) {
+      exportModalContent.innerHTML = "";
+      const wrapBoth = document.createElement('div');
+      wrapBoth.classList.add("alertWrap");
+      let alertDiv = document.createElement("div");
+      alertDiv.classList.add("alertText");
+      alertDiv.textContent = message;
+      const btn = document.createElement("alertButton");
+      btn.textContent = "Close";
+      btn.classList.add("exportBtn");
+      btn.addEventListener("click", () => {
+        closeModal("close");
       });
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-
-      const exportBtn = document.createElement('button');
-      exportBtn.textContent = 'Export Image';
-      exportBtn.classList.add('exportBtn');
-      exportBtn.style.padding = '5px 10px';
-      exportBtn.style.backgroundColor = darkModeFlag ? '#555' : '#007BFF';
-      exportBtn.style.color = '#fff';
-      exportBtn.style.border = 'none';
-      exportBtn.style.borderRadius = '4px';
-      exportBtn.style.cursor = 'pointer';
-      exportBtnsWrapper.appendChild(exportBtn);
-
-      exportBtn.onclick = async function () {
-        exportBtn.disabled = true;
-        editorToolbar.style.display = 'none';
-        if (outputToolbar) outputToolbar.style.display = 'none';
-        const imgSrc = await takeImage(wrapperBoth);
-        closeModal('close');
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.src = imgSrc;
-        await new Promise(resolve => (img.onload = resolve));
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
-        a.download = `${currentTab.name}.png`;
-        a.click();
-      };
-
-      exportModalContent.appendChild(wrapperBoth);
-      exportModalContent.appendChild(exportBtnsWrapper);
-      repositionToolbar(editorToolbar, editorTextDiv);
-      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, outputTextDiv);
-      }
-
-      document.addEventListener('selectionchange', updateButtonStates);
-      document.addEventListener('click', handleOutsideClick);
+      wrapBoth.appendChild(alertDiv);
+      wrapBoth.appendChild(btn);
+      exportModalContent.appendChild(wrapBoth);
       displayModal();
     }
 
-    // Export PDF (similar structure, adapt as needed)
-    async function exportPDF() {
-      const wrapperBoth = document.createElement('div');
-      wrapperBoth.style.position = 'relative';
-      wrapperBoth.style.paddingTop = '1px';
-      wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+    modal.addEventListener("modalOpened", () => {
+      document.addEventListener("click", closeModal);
+    });
+    modal.addEventListener("modalClosed", () => {
+      document.removeEventListener("click", closeModal);
+      exportModalContent.innerHTML = "";
+    });
 
-      const editorToolbar = createToolbar('editorRichTextToolbar');
-      wrapperBoth.appendChild(editorToolbar);
-
-      const editorTextDiv = createTextDiv('Editor Header', editorToolbar);
-      wrapperBoth.appendChild(editorTextDiv);
-
-      const editorDiv = await getEditorDiv();
-      wrapperBoth.appendChild(editorDiv);
-
-      const exportBtnsWrapper = document.createElement('div');
-      exportBtnsWrapper.classList.add('exportBtnsWrapper');
-      exportBtnsWrapper.style.display = 'flex';
-      exportBtnsWrapper.style.gap = '10px';
-      exportBtnsWrapper.style.marginTop = '20px';
-
-      let outputToolbar, outputTextDiv;
-      if (currentTab.outputElement.innerHTML.trim()) {
-        outputToolbar = createToolbar('outputRichTextToolbar');
-        wrapperBoth.appendChild(outputToolbar);
-
-        outputTextDiv = createTextDiv('Output Header', outputToolbar);
-        wrapperBoth.appendChild(outputTextDiv);
-
-        const outputClone = await getOutputDivClone();
-        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        wrapperBoth.appendChild(outputClone);
-
-        const headerTextCheckbox = document.createElement('input');
-        headerTextCheckbox.type = 'checkbox';
-        headerTextCheckbox.classList.add('exportCheckbox');
-        headerTextCheckbox.checked = true;
-        headerTextCheckbox.addEventListener('change', () => {
-          outputTextDiv.style.display = headerTextCheckbox.checked ? 'block' : 'none';
-        });
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-
-        const exportCheckbox = document.createElement('input');
-        exportCheckbox.type = 'checkbox';
-        exportCheckbox.classList.add('exportCheckbox');
-        exportCheckbox.checked = true;
-        exportCheckbox.addEventListener('change', () => {
-          outputClone.style.display = exportCheckbox.checked ? 'block' : 'none';
-          headerTextCheckbox.style.visibility = exportCheckbox.checked ? 'visible' : 'hidden';
-        });
-        exportBtnsWrapper.appendChild(exportCheckbox);
-      }
-
-      const editorHeaderCheckbox = document.createElement('input');
-      editorHeaderCheckbox.type = 'checkbox';
-      editorHeaderCheckbox.classList.add('exportCheckbox');
-      editorHeaderCheckbox.checked = true;
-      editorHeaderCheckbox.addEventListener('change', () => {
-        editorTextDiv.style.display = editorHeaderCheckbox.checked ? 'block' : 'none';
-      });
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-
-      const exportBtn = document.createElement('button');
-      exportBtn.textContent = 'Export PDF';
-      exportBtn.classList.add('exportBtn');
-      exportBtn.style.padding = '5px 10px';
-      exportBtn.style.backgroundColor = darkModeFlag ? '#555' : '#007BFF';
-      exportBtn.style.color = '#fff';
-      exportBtn.style.border = 'none';
-      exportBtn.style.borderRadius = '4px';
-      exportBtn.style.cursor = 'pointer';
-      exportBtnsWrapper.appendChild(exportBtn);
-
-      exportBtn.onclick = async function () {
-        exportBtn.disabled = true;
-        editorToolbar.style.display = 'none';
-        if (outputToolbar) outputToolbar.style.display = 'none';
-        const imgSrc = await takeImage(wrapperBoth);
-        closeModal('close');
-        // Replace with actual PDF generation logic (e.g., jsPDF)
-        console.log('PDF export placeholder with image:', imgSrc);
-      };
-
-      exportModalContent.appendChild(wrapperBoth);
-      exportModalContent.appendChild(exportBtnsWrapper);
-      repositionToolbar(editorToolbar, editorTextDiv);
-      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, outputTextDiv);
-      }
-
-      document.addEventListener('selectionchange', updateButtonStates);
-      document.addEventListener('click', handleOutsideClick);
-      displayModal();
+    function modalIsOpen() {
+      return modal.classList.contains("active");
     }
 
-    // Example usage
-    document.addEventListener('DOMContentLoaded', () => {
-      const exportImageBtn = document.createElement('button');
-      exportImageBtn.textContent = 'Export as Image';
-      exportImageBtn.onclick = exportImage;
-      document.body.appendChild(exportImageBtn);
+    function rgbToHex(rgb) {
+      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if (!match) return rgb;
+      return "#" + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+    }
 
-      const exportPDFBtn = document.createElement('button');
-      exportPDFBtn.textContent = 'Export as PDF';
-      exportPDFBtn.onclick = exportPDF;
-      exportPDFBtn.style.marginLeft = '10px';
-      document.body.appendChild(exportPDFBtn);
+    const getEventNames = (root) => {
+      let events = [];
+      const objectHasSubPrototype = (object, comp) => {
+        let proto = Object.getPrototypeOf(object);
+        while (proto !== null && proto !== EventTarget) {
+          proto = Object.getPrototypeOf(proto);
+        }
+        return (proto !== null);
+      };
+      const addEventNames = (propNames) => {
+        propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
+          propName = propName.substr(2);
+          if (events.indexOf(propName) === -1) {
+            events.push(propName);
+          }
+        });
+      };
+      Object.getOwnPropertyNames(root).forEach((name) => {
+        let value = root[name];
+        if (value) {
+          if (objectHasSubPrototype(value, EventTarget)) {
+            let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
+            addEventNames(propNames);
+            propNames = Object.getOwnPropertyNames(window);
+            addEventNames(propNames);
+          }
+        }
+      });
+      return events;
+    };
+
+    function focusTab(tabElem) {
+      if (!tabElem) { tabElem = currentTab }
+      tabElem.editorInstance.focus()
+    }
+
+    document.getElementById("selectAllBtn").addEventListener("click", () => {
+      const range = currentTab.editorInstance.getModel().getFullModelRange();
+      currentTab.editorInstance.setSelection(range);
+      focusTab()
+      closeDropdowns()
     });
 
 
