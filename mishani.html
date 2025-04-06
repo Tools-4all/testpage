@@ -3934,35 +3934,43 @@ prompt("This is a prompt:");
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
+      // Initialize default styles if not already set
       if (!textDivStyles.has(textDiv)) {
         textDivStyles.set(textDiv, {
-          fontSize: null,
-          color: null,
-          fontFamily: null,
+          fontSize: '14px',
+          color: '#000000',
+          fontFamily: 'Arial',
           bold: false,
           italic: false,
           underline: false
         });
       }
+      updateButtonStates();
+      // Prevent mobile touch events on toolbar from cancelling selection
+      toolbar.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
     }
 
     function attachBeforeInputListener(textDiv) {
       textDiv.addEventListener('beforeinput', (e) => {
         if (e.inputType === 'insertText') {
           e.preventDefault();
-          const currentStyles = textDivStyles.get(textDiv);
+          const currentStyles = textDivStyles.get(textDiv) || {};
           const selection = window.getSelection();
           if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
             const newSpan = document.createElement('span');
-            if (currentStyles.fontSize) newSpan.style.fontSize = currentStyles.fontSize;
-            if (currentStyles.color) newSpan.style.color = currentStyles.color;
-            if (currentStyles.fontFamily) newSpan.style.fontFamily = currentStyles.fontFamily;
-            if (currentStyles.bold) newSpan.style.fontWeight = 'bold';
-            if (currentStyles.italic) newSpan.style.fontStyle = 'italic';
+            newSpan.style.fontSize = currentStyles.fontSize || '14px';
+            newSpan.style.color = currentStyles.color || '#000000';
+            newSpan.style.fontFamily = currentStyles.fontFamily || 'Arial';
+            newSpan.style.fontWeight = currentStyles.bold ? 'bold' : 'normal';
+            newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
             if (currentStyles.underline) {
               newSpan.style.textDecoration = 'underline';
-              if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+              newSpan.style.textDecorationColor = currentStyles.color || '#000000';
+            } else {
+              newSpan.style.textDecoration = 'none';
             }
             newSpan.textContent = e.data;
             range.deleteContents();
@@ -3972,10 +3980,10 @@ prompt("This is a prompt:");
             selection.removeAllRanges();
             selection.addRange(range);
           }
+          updateButtonStates();
         }
       });
     }
-
 
     function updateButtonStates() {
       if (!activeToolbar) return;
@@ -3986,9 +3994,8 @@ prompt("This is a prompt:");
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
       const selection = window.getSelection();
-      const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
       let state;
-      if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
+      if (selection.rangeCount > 0 && !selection.isCollapsed && activeTextDiv.contains(selection.anchorNode)) {
         const range = selection.getRangeAt(0);
         let node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE) {
@@ -3999,14 +4006,14 @@ prompt("This is a prompt:");
           bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
           italic: computedStyle.fontStyle === 'italic',
           underline: computedStyle.textDecorationLine.includes('underline'),
-          fontSize: parseInt(computedStyle.fontSize) || '',
+          fontSize: computedStyle.fontSize,
           color: rgbToHex(computedStyle.color) || '#000000',
           fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
         };
+      } else if (activeTextDiv && textDivStyles.has(activeTextDiv)) {
+        state = textDivStyles.get(activeTextDiv);
       } else {
-        state = activeTextDiv && textDivStyles.has(activeTextDiv)
-          ? textDivStyles.get(activeTextDiv)
-          : { bold: false, italic: false, underline: false, fontSize: '', color: '#000000', fontFamily: '' };
+        state = { bold: false, italic: false, underline: false, fontSize: '14px', color: '#000000', fontFamily: 'Arial' };
       }
       boldBtn.classList.toggle('active', state.bold);
       boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
@@ -4014,12 +4021,10 @@ prompt("This is a prompt:");
       italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
       underlineBtn.classList.toggle('active', state.underline);
       underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-      fontSizeInput.value = state.fontSize;
+      fontSizeInput.value = parseInt(state.fontSize) || 14;
       colorInput.value = state.color;
       fontFamilySelect.value = state.fontFamily;
     }
-
-
 
     alert(1);
 
@@ -4047,7 +4052,7 @@ prompt("This is a prompt:");
           const isUnderlined = computedStyle.textDecorationLine.includes('underline');
           currentStyles.underline = !isUnderlined;
           newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-          if (currentStyles.underline && currentStyles.color) {
+          if (currentStyles.underline) {
             newSpan.style.textDecorationColor = currentStyles.color;
           }
         }
@@ -4058,6 +4063,7 @@ prompt("This is a prompt:");
         newRange.selectNodeContents(newSpan);
         selection.addRange(newRange);
       } else {
+        // If no text is selected, update the default style
         if (command === 'bold') {
           currentStyles.bold = !currentStyles.bold;
         } else if (command === 'italic') {
@@ -4068,7 +4074,6 @@ prompt("This is a prompt:");
       }
       updateButtonStates();
     }
-
 
     function applyFontSize(size) {
       if (!size || !activeTextDiv) return;
@@ -4148,14 +4153,14 @@ prompt("This is a prompt:");
       if (selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         const commonAncestor = range.commonAncestorContainer;
-        const isInHeader = currentHeaderDivs.some(div => div.contains(commonAncestor));
+        const isInHeader = currentHeaderDivs && currentHeaderDivs.some(div => div.contains(commonAncestor));
         if (isInHeader && !selection.isCollapsed) {
           const rect = range.getBoundingClientRect();
           const modalRect = exportModalContent.getBoundingClientRect();
           const left = rect.left - modalRect.left;
           const top = rect.top - modalRect.top - toolbar.offsetHeight - 5;
-          toolbar.style.left = `${left}px`;
-          toolbar.style.top = `${top}px`;
+          toolbar.style.left = left + 'px';
+          toolbar.style.top = top + 'px';
           toolbar.style.display = 'block';
         } else {
           toolbar.style.display = 'none';
@@ -4175,13 +4180,12 @@ prompt("This is a prompt:");
       const modalWidth = modalRect.width;
       if (left < 0) left = 0;
       if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
-      toolbar.style.left = `${left}px`;
-      toolbar.style.top = `${top}px`;
+      toolbar.style.left = left + 'px';
+      toolbar.style.top = top + 'px';
       toolbar.style.display = 'block';
     }
 
     let isToolbarActive = false;
-
     function hideToolbar() {
       if (!isToolbarActive) {
         const toolbar = document.getElementById('richTextToolbar');
@@ -4222,7 +4226,7 @@ prompt("This is a prompt:");
       const outputWrapper = document.createElement('div');
       outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
-      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      let tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
       tempOutputDiv.style.width = maxWidth;
@@ -4248,8 +4252,8 @@ prompt("This is a prompt:");
       const wrapperDiv = document.createElement('div');
       wrapperDiv.style.backgroundColor = backgroundColor;
       wrapperDiv.style.fontFamily = fontFamily;
-      wrapperDiv.style.fontSize = `${fontSize}px`;
-      wrapperDiv.style.lineHeight = `${lineHeight}px`;
+      wrapperDiv.style.fontSize = fontSize + "px";
+      wrapperDiv.style.lineHeight = lineHeight + "px";
       wrapperDiv.style.whiteSpace = "pre-wrap";
       wrapperDiv.style.width = '100%';
       wrapperDiv.style.color = textColor;
@@ -4481,7 +4485,7 @@ prompt("This is a prompt:");
         ctx.drawImage(bothImg, 0, 0);
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
-        a.download = `${currentTab.name}.png`;
+        a.download = currentTab.name + ".png";
         a.click();
       };
       document.addEventListener('selectionchange', updateButtonStates);
@@ -4724,7 +4728,7 @@ prompt("This is a prompt:");
             doc.deletePage(i);
           }
         }
-        doc.save(`${currentTab.name}.pdf`);
+        doc.save(currentTab.name + ".pdf");
       };
       document.addEventListener('selectionchange', updateButtonStates);
       displayModal();
@@ -4827,16 +4831,17 @@ prompt("This is a prompt:");
     };
 
     function focusTab(tabElem) {
-      if (!tabElem) { tabElem = currentTab }
-      tabElem.editorInstance.focus()
+      if (!tabElem) { tabElem = currentTab; }
+      tabElem.editorInstance.focus();
     }
 
     document.getElementById("selectAllBtn").addEventListener("click", () => {
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
-      focusTab()
-      closeDropdowns()
+      focusTab();
+      closeDropdowns();
     });
+
 
 
   </script>
