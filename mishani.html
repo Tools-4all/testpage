@@ -3979,35 +3979,53 @@ prompt("This is a prompt:");
 
     function updateButtonStates() {
       if (!activeToolbar) return;
+
       const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
       const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
       const underlineBtn = activeToolbar.querySelector('button:nth-child(3)');
       const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
       const colorInput = activeToolbar.querySelector('input[type="color"]');
       const fontFamilySelect = activeToolbar.querySelector('select');
-      const selection = window.getSelection();
-      const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
-      // Only use computed style if there is a non-collapsed selection and the active element is the editable div
-      if (hasSelection && activeTextDiv.contains(selection.anchorNode) && document.activeElement === activeTextDiv) {
-        const range = selection.getRangeAt(0);
-        let node = range.startContainer;
-        if (node.nodeType === Node.TEXT_NODE) {
-          node = node.parentElement;
-        }
-        const computedStyle = window.getComputedStyle(node);
-        state = {
-          bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
-          italic: computedStyle.fontStyle === 'italic',
-          underline: computedStyle.textDecorationLine.includes('underline'),
-          fontSize: parseInt(computedStyle.fontSize) || '',
-          color: rgbToHex(computedStyle.color) || '#000000',
-          fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
+
+      let state;
+      // If the focus is NOT on the editable text div, use stored state.
+      if (document.activeElement !== activeTextDiv) {
+        state = textDivStyles.get(activeTextDiv) || {
+          bold: false,
+          italic: false,
+          underline: false,
+          fontSize: '',
+          color: '#000000',
+          fontFamily: ''
         };
       } else {
-        // When selection is collapsed or focus isn't on the active text div, use your stored state.
-        state = activeTextDiv && textDivStyles.has(activeTextDiv)
-          ? textDivStyles.get(activeTextDiv)
-          : { bold: false, italic: false, underline: false, fontSize: '', color: '#000000', fontFamily: '' };
+        const selection = window.getSelection();
+        const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
+        if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
+          const range = selection.getRangeAt(0);
+          let node = range.startContainer;
+          if (node.nodeType === Node.TEXT_NODE) {
+            node = node.parentElement;
+          }
+          const computedStyle = window.getComputedStyle(node);
+          state = {
+            bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
+            italic: computedStyle.fontStyle === 'italic',
+            underline: computedStyle.textDecorationLine.includes('underline'),
+            fontSize: parseInt(computedStyle.fontSize) || '',
+            color: rgbToHex(computedStyle.color) || '#000000',
+            fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
+          };
+        } else {
+          state = textDivStyles.get(activeTextDiv) || {
+            bold: false,
+            italic: false,
+            underline: false,
+            fontSize: '',
+            color: '#000000',
+            fontFamily: ''
+          };
+        }
       }
 
       boldBtn.classList.toggle('active', state.bold);
@@ -4023,7 +4041,8 @@ prompt("This is a prompt:");
 
 
 
-    alert(2);
+
+    alert(22);
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
