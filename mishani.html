@@ -4065,13 +4065,14 @@ prompt("This is a prompt:");
           currentStyles.italic = !isItalic;
           newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
         } else if (command === 'underline') {
-          const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+          const isUnderlined = currentStyles.underline; // Use stored state here
           currentStyles.underline = !isUnderlined;
           newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
           if (currentStyles.underline && currentStyles.color) {
             newSpan.style.textDecorationColor = currentStyles.color;
           }
         }
+
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
         selection.removeAllRanges();
