@@ -4042,7 +4042,7 @@ prompt("This is a prompt:");
 
 
 
-    alert(2);
+    alert(22);
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
@@ -4065,34 +4065,19 @@ prompt("This is a prompt:");
           currentStyles.italic = !isItalic;
           newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
         } else if (command === 'underline') {
-          const selection = window.getSelection();
-          if (selection.rangeCount > 0 && !selection.isCollapsed) {
-            const range = selection.getRangeAt(0);
-            // When there's a selection, toggle underline based on stored state:
-            const isUnderlined = currentStyles.underline || false;
-            currentStyles.underline = !isUnderlined;
-            const newSpan = document.createElement('span');
-            // Apply underline (or remove it) based on the new stored state:
-            newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-            newSpan.style.textDecorationColor = currentStyles.underline
-              ? (currentStyles.color || '#000')
-              : '';
-            newSpan.appendChild(range.extractContents());
-            range.insertNode(newSpan);
-            selection.removeAllRanges();
-            const newRange = document.createRange();
-            newRange.selectNodeContents(newSpan);
-            selection.addRange(newRange);
+          // Use the stored underline state rather than computed style
+          const isUnderlined = currentStyles.underline || false;
+          currentStyles.underline = !isUnderlined;
+          newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
+          console.log(isUnderlined);
+
+          if (currentStyles.underline) {
+            console.log(isUnderlined);
+            newSpan.style.textDecorationColor = currentStyles.color || computedStyle.color;
           } else {
-            // When there's no selection, toggle the stored state and update the entire editor:
-            currentStyles.underline = !currentStyles.underline;
-            activeTextDiv.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-            activeTextDiv.style.textDecorationColor = currentStyles.underline
-              ? (currentStyles.color || '#000')
-              : '';
+            newSpan.style.textDecorationColor = '';
           }
         }
-
 
 
         newSpan.appendChild(range.extractContents());
