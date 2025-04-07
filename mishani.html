@@ -3987,8 +3987,8 @@ prompt("This is a prompt:");
       const fontFamilySelect = activeToolbar.querySelector('select');
       const selection = window.getSelection();
       const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
-      let state;
-      if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
+      // Only use computed style if there is a non-collapsed selection and the active element is the editable div
+      if (hasSelection && activeTextDiv.contains(selection.anchorNode) && document.activeElement === activeTextDiv) {
         const range = selection.getRangeAt(0);
         let node = range.startContainer;
         if (node.nodeType === Node.TEXT_NODE) {
@@ -4004,10 +4004,12 @@ prompt("This is a prompt:");
           fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
         };
       } else {
+        // When selection is collapsed or focus isn't on the active text div, use your stored state.
         state = activeTextDiv && textDivStyles.has(activeTextDiv)
           ? textDivStyles.get(activeTextDiv)
           : { bold: false, italic: false, underline: false, fontSize: '', color: '#000000', fontFamily: '' };
       }
+
       boldBtn.classList.toggle('active', state.bold);
       boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
       italicBtn.classList.toggle('active', state.italic);
@@ -4491,9 +4493,9 @@ prompt("This is a prompt:");
     function giveTheHtml() {
       return `
   <div>
-    <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+    <button onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
   </div>
   <div>
     <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
@@ -4512,6 +4514,7 @@ prompt("This is a prompt:");
   </div>
   `;
     }
+
 
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
