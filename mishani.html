@@ -4042,7 +4042,7 @@ prompt("This is a prompt:");
 
 
 
-    alert(22);
+    alert(2);
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
@@ -4065,19 +4065,39 @@ prompt("This is a prompt:");
           currentStyles.italic = !isItalic;
           newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
         } else if (command === 'underline') {
-          // Use the stored underline state rather than computed style
+          // Toggle underline using stored state
           const isUnderlined = currentStyles.underline || false;
           currentStyles.underline = !isUnderlined;
-          newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-          console.log(isUnderlined);
 
-          if (currentStyles.underline) {
-            console.log(isUnderlined);
-            newSpan.style.textDecorationColor = currentStyles.color || computedStyle.color;
-          } else {
-            newSpan.style.textDecorationColor = '';
+          if (selection.rangeCount > 0 && !selection.isCollapsed) {
+            const range = selection.getRangeAt(0);
+            let newSpan = document.createElement('span');
+
+            if (currentStyles.underline) {
+              newSpan.style.textDecoration = 'underline';
+              // Set underline color from stored color or computed style
+              newSpan.style.textDecorationColor = currentStyles.color || computedStyle.color;
+            } else {
+              // When turning underline off, remove any inline text-decoration style
+              newSpan.style.textDecoration = '';
+              newSpan.style.textDecorationColor = '';
+            }
+
+            newSpan.appendChild(range.extractContents());
+            range.insertNode(newSpan);
+
+            // Re-establish the selection
+            selection.removeAllRanges();
+            const newRange = document.createRange();
+            newRange.selectNodeContents(newSpan);
+            selection.addRange(newRange);
           }
+
+          // Save updated state and update the toolbar buttons
+          textDivStyles.set(activeTextDiv, currentStyles);
+          updateButtonStates();
         }
+
 
 
         newSpan.appendChild(range.extractContents());
