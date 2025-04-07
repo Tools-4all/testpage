@@ -4065,13 +4065,18 @@ prompt("This is a prompt:");
           currentStyles.italic = !isItalic;
           newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
         } else if (command === 'underline') {
-          const isUnderlined = currentStyles.underline; // Use stored state here
+          // Use the stored underline state rather than computed style
+          const isUnderlined = currentStyles.underline || false;
           currentStyles.underline = !isUnderlined;
           newSpan.style.textDecoration = currentStyles.underline ? 'underline' : 'none';
-          if (currentStyles.underline && currentStyles.color) {
-            newSpan.style.textDecorationColor = currentStyles.color;
+          if (currentStyles.underline) {
+            // When adding underline, set the underline color to the stored color (or computed if missing)
+            newSpan.style.textDecorationColor = currentStyles.color || computedStyle.color;
+          } else {
+            newSpan.style.textDecorationColor = '';
           }
         }
+
 
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
