@@ -4402,6 +4402,7 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
+      let kakiDiv
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4421,6 +4422,7 @@ prompt("This is a prompt:");
         let outputFlag = true;
         const outputTextDiv = getTheDiv();
         outputTextDiv.classList.add("outputText");
+        kakiDiv = outputTextDiv
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
             outputTextDiv.textContent = "";
@@ -4497,7 +4499,7 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(exportBtnsWrapper);
       repositionToolbar(editorToolbar, editorTextDiv);
       if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, outputTextDiv);
+        repositionToolbar(outputToolbar, kakiDiv);
       }
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
