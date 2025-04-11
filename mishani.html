@@ -4366,6 +4366,7 @@ prompt("This is a prompt:");
         }
         setActiveTextDiv(editorTextDiv, editorToolbar);
         repositionToolbar(editorToolbar, editorTextDiv);
+        console.log(editorTextSettings);
         editorToolbar.querySelector(".fontSize").value = editorTextSettings.fontSize;
         editorToolbar.querySelector(".color").value = editorTextSettings.color;
         editorToolbar.querySelector(".fontFamily").value = editorTextSettings.fontFamily;
