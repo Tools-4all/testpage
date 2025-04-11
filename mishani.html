@@ -4369,9 +4369,9 @@ prompt("This is a prompt:");
         editorToolbar.querySelector(".fontSize").value = editorTextSettings.fontSize;
         editorToolbar.querySelector(".color").value = editorTextSettings.color;
         editorToolbar.querySelector(".fontFamily").value = editorTextSettings.fontFamily;
-        editorTextSettings.bold? editorToolbar.querySelector(".bold").classList.add("active") : editorToolbar.querySelector(".bold").classList.remove("active");
-        editorTextSettings.italic? editorToolbar.querySelector(".italic").classList.add("active") : editorToolbar.querySelector(".italic").classList.remove("active")
-        editorTextSettings.underline? editorToolbar.querySelector(".underline").classList.add("active") : editorToolbar.querySelector(".underline").classList.remove("active");
+        editorTextSettings.bold? editorToolbar.querySelector(".bold").classList.add("active") : editorToolbar.querySelector(".boldBtn").classList.remove("active");
+        editorTextSettings.italic? editorToolbar.querySelector(".italic").classList.add("active") : editorToolbar.querySelector(".italicBtn").classList.remove("active")
+        editorTextSettings.underline? editorToolbar.querySelector(".underline").classList.add("active") : editorToolbar.querySelector(".underlineBtn").classList.remove("active");
       });
       editorTextDiv.addEventListener('click', () => {
         setActiveTextDiv(editorTextDiv, editorToolbar);
@@ -4547,9 +4547,9 @@ prompt("This is a prompt:");
     function giveTheHtml() {
       return `
   <div>
-    <button onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+    <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
   </div>
   <div>
     <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
