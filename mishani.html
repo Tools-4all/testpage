@@ -4552,9 +4552,9 @@ prompt("This is a prompt:");
     <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
   </div>
   <div>
-    <input type="number" min="8" max="72" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-    <input type="color" onchange="applyColor(this.value)">
-    <select style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+    <input type="number" min="8" max="72" class"fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+    <input class="color" type="color" onchange="applyColor(this.value)">
+    <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
       <option value="">Font Family</option>
       <option value="Arial">Arial</option>
       <option value="Times New Roman">Times New Roman</option>
@@ -4562,9 +4562,9 @@ prompt("This is a prompt:");
     </select>
   </div>
   <div>
-    <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-    <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-    <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+    <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+    <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+    <button  class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
   </div>
   `;
     }
