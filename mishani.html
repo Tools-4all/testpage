@@ -4402,7 +4402,6 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
-      let outputTextDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4420,10 +4419,8 @@ prompt("This is a prompt:");
         });
         wrapperBoth.appendChild(outputToolbar);
         let outputFlag = true;
-        outputTextDiv = document.createElement('div');
-        outputTextDiv.classList.add("headerText");
-        outputTextDiv.contentEditable = true;
-        outputTextDiv.textContent = "Output Header";
+        const outputTextDiv = getTheDiv();
+        outputTextDiv.classList.add("outputText");
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
             outputTextDiv.textContent = "";
