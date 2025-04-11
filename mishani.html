@@ -4352,10 +4352,8 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       let headerFlag = true;
-      const editorTextDiv = document.createElement('div');
+      const editorTextDiv = getTheDiv();
       editorTextDiv.classList.add("headerText");
-      editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header";
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
           editorTextDiv.textContent = "";
