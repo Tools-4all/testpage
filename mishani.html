@@ -3936,12 +3936,9 @@ prompt("This is a prompt:");
       activeToolbar = toolbar;
       if (!textDivStyles.has(textDiv)) {
         textDivStyles.set(textDiv, {
-          fontSize: null,
-          color: null,
-          fontFamily: null,
-          bold: false,
-          italic: false,
-          underline: false
+          fontSize: textDiv.settings.fontSize,
+          color: textDiv.settings.color,
+          fontFamily: textDiv.settings.fontFamily
         });
       }
     }
@@ -4566,6 +4563,16 @@ prompt("This is a prompt:");
       div.style.border = '1px solid #ccc';
       div.style.padding = '5px';
       div.style.boxSizing = 'border-box';
+      let defaultSettings = {
+        fontSize: '16px',
+        color: darkModeFlag ? '#D4D4D4' : '#000000',
+        fontFamily: 'Arial, sans-serif',
+        textAlign: 'left',
+        bold: false,
+        italic: false,
+        underline: false
+      }
+      div.settings = defaultSettings;
       return div;
     }
     
