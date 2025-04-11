@@ -4366,12 +4366,12 @@ prompt("This is a prompt:");
         }
         setActiveTextDiv(editorTextDiv, editorToolbar);
         repositionToolbar(editorToolbar, editorTextDiv);
-        toolbar.querySelector(".fontSize").value = editorTextSettings.fontSize;
-        toolbar.querySelector(".color").value = editorTextSettings.color;
-        toolbar.querySelector(".fontFamily").value = editorTextSettings.fontFamily;
-        editorTextSettings.bold? toolbar.querySelector(".bold").classList.add("active") : toolbar.querySelector(".bold").classList.remove("active");
-        editorTextSettings.italic? toolbar.querySelector(".italic").classList.add("active") : toolbar.querySelector(".italic").classList.remove("active")
-        editorTextSettings.underline? toolbar.querySelector(".underline").classList.add("active") : toolbar.querySelector(".underline").classList.remove("active");
+        editorToolbar.querySelector(".fontSize").value = editorTextSettings.fontSize;
+        editorToolbar.querySelector(".color").value = editorTextSettings.color;
+        editorToolbar.querySelector(".fontFamily").value = editorTextSettings.fontFamily;
+        editorTextSettings.bold? editorToolbar.querySelector(".bold").classList.add("active") : editorToolbar.querySelector(".bold").classList.remove("active");
+        editorTextSettings.italic? editorToolbar.querySelector(".italic").classList.add("active") : editorToolbar.querySelector(".italic").classList.remove("active")
+        editorTextSettings.underline? editorToolbar.querySelector(".underline").classList.add("active") : editorToolbar.querySelector(".underline").classList.remove("active");
       });
       editorTextDiv.addEventListener('click', () => {
         setActiveTextDiv(editorTextDiv, editorToolbar);
