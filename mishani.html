@@ -3934,13 +3934,11 @@ prompt("This is a prompt:");
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
-      if (!textDivStyles.has(textDiv)) {
-        textDivStyles.set(textDiv, {
-          fontSize: textDiv.settings.fontSize,
-          color: textDiv.settings.color,
-          fontFamily: textDiv.settings.fontFamily
-        });
-      }
+      textDivStyles.set(textDiv, {
+        fontSize: textDiv.settings.fontSize,
+        color: textDiv.settings.color,
+        fontFamily: textDiv.settings.fontFamily
+      });
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -4556,7 +4554,7 @@ prompt("This is a prompt:");
 
     function getTheDiv(classList, placeHolder = "Enter your title here...") {
       const div = document.createElement('div');
-      div.classList.add(classList? classList : "headerText");
+      div.classList.add(classList ? classList : "headerText");
       div.contentEditable = true;
       div.textContent = placeHolder;
       div.style.width = '100%';
@@ -4575,7 +4573,7 @@ prompt("This is a prompt:");
       div.settings = defaultSettings;
       return div;
     }
-    
+
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
@@ -4672,7 +4670,7 @@ prompt("This is a prompt:");
         wrapBoth.appendChild(outputToolbar);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const outputTextDiv = getTheDiv("outputText"); 
+        const outputTextDiv = getTheDiv("outputText");
         tempDivForScope = outputTextDiv
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
