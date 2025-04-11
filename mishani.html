@@ -4562,7 +4562,18 @@ prompt("This is a prompt:");
   `;
     }
 
-
+    function getTheDiv(placeHolder = "Enter your title here...") {
+      const div = document.createElement('div');
+      div.classList.add("headerText");
+      div.contentEditable = true;
+      div.textContent = placeHolder;
+      div.style.width = '100%';
+      div.style.border = '1px solid #ccc';
+      div.style.padding = '5px';
+      div.style.boxSizing = 'border-box';
+      return div;
+    }
+    
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
@@ -4591,10 +4602,8 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       let headerFlag = true;
-      const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText");
-      editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Enter your title here...";
+      const editorTextDiv = getTheDiv()
+
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
           editorTextDiv.textContent = "";
@@ -4642,7 +4651,6 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
-      let outputTextDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4661,10 +4669,7 @@ prompt("This is a prompt:");
         wrapBoth.appendChild(outputToolbar);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        outputTextDiv = document.createElement('div');
-        outputTextDiv.classList.add("headerText");
-        outputTextDiv.contentEditable = true;
-        outputTextDiv.textContent = "Enter your output title here...";
+        const outputTextDiv = getTheDiv("Output Header");
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
