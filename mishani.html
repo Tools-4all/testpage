@@ -1240,6 +1240,16 @@
       border: 2px solid;
       padding: 5px;
       margin: 20px;
+      border: '1px solid';
+      padding: '5px';
+    }
+
+    #compiler:not(.darkMode) .headerText {
+      border-color: #c0c0c0;
+    }
+    #compiler:not(.lightMode) .headerText {
+
+      border-color: #333;
     }
 
     .handPointer {
@@ -4557,13 +4567,9 @@ prompt("This is a prompt:");
       div.classList.add(classList ? classList : "headerText");
       div.contentEditable = true;
       div.textContent = placeHolder;
-      div.style.width = '100%';
-      div.style.border = '1px solid #ccc';
-      div.style.padding = '5px';
-      div.style.boxSizing = 'border-box';
       let defaultSettings = {
         fontSize: '16px',
-        color: darkModeFlag ? '#D4D4D4' : '#000000',
+        color: darkModeFlag ? '#ffffff' : '#000000',
         fontFamily: 'Arial, sans-serif',
         textAlign: 'left',
         bold: false,
