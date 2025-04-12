@@ -3967,9 +3967,10 @@ prompt("This is a prompt:");
     ];
 
     // Helper function to patch Quill dropdown labels
-    function patchQuillDropdowns(container) {
+    function patchQuillDropdowns(container, quillInstance) {
       const sizeSelect = container.querySelector('.ql-size');
       if (sizeSelect) {
+        const currentValue = sizeSelect.value; // Store current value
         sizeSelect.innerHTML = '';
         const sizes = ['small', 'normal', 'large', 'huge', '8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
         sizes.forEach(size => {
@@ -3978,10 +3979,15 @@ prompt("This is a prompt:");
           option.textContent = size;
           sizeSelect.appendChild(option);
         });
+        sizeSelect.value = currentValue || 'normal'; // Restore value
+        // Rebind Quill's handler to ensure interactivity
+        quillInstance.toolbar.handlers['size'] && quillInstance.toolbar.handlers['size'](sizeSelect.value);
+        sizeSelect.addEventListener('change', () => quillInstance.toolbar.handlers['size'] && quillInstance.toolbar.handlers['size'](sizeSelect.value));
       }
 
       const fontSelect = container.querySelector('.ql-font');
       if (fontSelect) {
+        const currentValue = fontSelect.value; // Store current value
         fontSelect.innerHTML = '';
         const fonts = ['sans-serif', 'arial', 'times-new-roman', 'courier-new'];
         fonts.forEach(font => {
@@ -3990,6 +3996,10 @@ prompt("This is a prompt:");
           option.textContent = font.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
           fontSelect.appendChild(option);
         });
+        fontSelect.value = currentValue || 'sans-serif'; // Restore value
+        // Rebind Quill's handler to ensure interactivity
+        quillInstance.toolbar.handlers['font'] && quillInstance.toolbar.handlers['font'](fontSelect.value);
+        fontSelect.addEventListener('change', () => quillInstance.toolbar.handlers['font'] && quillInstance.toolbar.handlers['font'](fontSelect.value));
       }
     }
 
@@ -4070,6 +4080,7 @@ prompt("This is a prompt:");
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      wrapperBoth.style.overflow = 'visible'; // Ensure dropdowns are not clipped
 
       // Editor Header using Quill
       const editorTextDiv = document.createElement('div');
@@ -4085,13 +4096,16 @@ prompt("This is a prompt:");
       });
 
       // Patch the dropdown labels
-      patchQuillDropdowns(editorTextDiv.parentElement);
+      patchQuillDropdowns(editorTextDiv.parentElement, editorQuill);
       console.log('Editor size dropdown:', editorTextDiv.parentElement.querySelector('.ql-size').innerHTML);
       console.log('Editor font dropdown:', editorTextDiv.parentElement.querySelector('.ql-font').innerHTML);
 
       // Style the editor toolbar
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
+      editorToolbar.style.overflow = 'visible'; // Prevent dropdown clipping
+      editorToolbar.style.position = 'relative'; // Ensure proper positioning
+      editorToolbar.style.zIndex = '1000'; // Ensure toolbar is above other elements
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4101,6 +4115,7 @@ prompt("This is a prompt:");
           select.style.backgroundColor = '#555';
           select.style.color = '#fff';
           select.style.border = '1px solid #777';
+          select.style.zIndex = '1001'; // Ensure dropdowns are clickable
         });
       } else {
         editorToolbar.style.background = '#f0f0f0';
@@ -4111,13 +4126,14 @@ prompt("This is a prompt:");
           select.style.backgroundColor = '#fff';
           select.style.color = '#000';
           select.style.border = '1px solid #ccc';
+          select.style.zIndex = '1001'; // Ensure dropdowns are clickable
         });
       }
 
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 5) + 'px'; // Add padding to avoid overlap
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
@@ -4153,12 +4169,15 @@ prompt("This is a prompt:");
         });
 
         // Patch the dropdown labels for outputQuill
-        patchQuillDropdowns(outputTextDiv.parentElement);
+        patchQuillDropdowns(outputTextDiv.parentElement, outputQuill);
         console.log('Output size dropdown:', outputTextDiv.parentElement.querySelector('.ql-size').innerHTML);
         console.log('Output font dropdown:', outputTextDiv.parentElement.querySelector('.ql-font').innerHTML);
 
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
+        outputToolbar.style.overflow = 'visible'; // Prevent dropdown clipping
+        outputToolbar.style.position = 'relative';
+        outputToolbar.style.zIndex = '1000';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
           outputToolbar.style.borderColor = '#555';
@@ -4168,6 +4187,7 @@ prompt("This is a prompt:");
             select.style.backgroundColor = '#555';
             select.style.color = '#fff';
             select.style.border = '1px solid #777';
+            select.style.zIndex = '1001';
           });
         } else {
           outputToolbar.style.background = '#f0f0f0';
@@ -4178,6 +4198,7 @@ prompt("This is a prompt:");
             select.style.backgroundColor = '#fff';
             select.style.color = '#000';
             select.style.border = '1px solid #ccc';
+            select.style.zIndex = '1001';
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
@@ -4266,6 +4287,7 @@ prompt("This is a prompt:");
       wrapBoth.style.position = 'relative';
       wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+      wrapBoth.style.overflow = 'visible'; // Ensure dropdowns are not clipped
 
       const editorTextDiv = document.createElement('div');
       editorTextDiv.id = 'editorText';
@@ -4280,12 +4302,15 @@ prompt("This is a prompt:");
       });
 
       // Patch the dropdown labels
-      patchQuillDropdowns(editorTextDiv.parentElement);
+      patchQuillDropdowns(editorTextDiv.parentElement, editorQuill);
       console.log('Editor size dropdown:', editorTextDiv.parentElement.querySelector('.ql-size').innerHTML);
       console.log('Editor font dropdown:', editorTextDiv.parentElement.querySelector('.ql-font').innerHTML);
 
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
+      editorToolbar.style.overflow = 'visible'; // Prevent dropdown clipping
+      editorToolbar.style.position = 'relative';
+      editorToolbar.style.zIndex = '1000';
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4295,6 +4320,7 @@ prompt("This is a prompt:");
           select.style.backgroundColor = '#555';
           select.style.color = '#fff';
           select.style.border = '1px solid #777';
+          select.style.zIndex = '1001';
         });
       } else {
         editorToolbar.style.background = '#f0f0f0';
@@ -4305,13 +4331,14 @@ prompt("This is a prompt:");
           select.style.backgroundColor = '#fff';
           select.style.color = '#000';
           select.style.border = '1px solid #ccc';
+          select.style.zIndex = '1001';
         });
       }
 
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 5) + 'px';
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
@@ -4344,12 +4371,15 @@ prompt("This is a prompt:");
         });
 
         // Patch the dropdown labels for outputQuill
-        patchQuillDropdowns(outputTextDiv.parentElement);
+        patchQuillDropdowns(outputTextDiv.parentElement, outputQuill);
         console.log('Output size dropdown:', outputTextDiv.parentElement.querySelector('.ql-size').innerHTML);
         console.log('Output font dropdown:', outputTextDiv.parentElement.querySelector('.ql-font').innerHTML);
 
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
+        outputToolbar.style.overflow = 'visible';
+        outputToolbar.style.position = 'relative';
+        outputToolbar.style.zIndex = '1000';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
           outputToolbar.style.borderColor = '#555';
@@ -4359,6 +4389,7 @@ prompt("This is a prompt:");
             select.style.backgroundColor = '#555';
             select.style.color = '#fff';
             select.style.border = '1px solid #777';
+            select.style.zIndex = '1001';
           });
         } else {
           outputToolbar.style.background = '#f0f0f0';
@@ -4369,6 +4400,7 @@ prompt("This is a prompt:");
             select.style.backgroundColor = '#fff';
             select.style.color = '#000';
             select.style.border = '1px solid #ccc';
+            select.style.zIndex = '1001';
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
@@ -4476,9 +4508,14 @@ prompt("This is a prompt:");
     }
 
     function closeModal(event) {
+      // Prevent closing the modal when clicking on the toolbar or dropdowns
       if (event.target === modal || event === "close") {
-        modal.classList.remove("active");
-        modal.dispatchEvent(new Event("modalClosed"));
+        const toolbarElements = document.querySelectorAll('.ql-toolbar, .ql-size, .ql-font');
+        const clickedOnToolbar = Array.from(toolbarElements).some(el => el.contains(event.target));
+        if (!clickedOnToolbar) {
+          modal.classList.remove("active");
+          modal.dispatchEvent(new Event("modalClosed"));
+        }
       }
     }
 
