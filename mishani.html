@@ -3970,7 +3970,7 @@ prompt("This is a prompt:");
     function patchQuillDropdowns(container, quillInstance) {
       const sizeSelect = container.querySelector('.ql-size');
       if (sizeSelect) {
-        const currentValue = sizeSelect.value; // Store current value
+        const currentValue = sizeSelect.value || 'normal'; // Default to 'normal' if no value
         sizeSelect.innerHTML = '';
         const sizes = ['small', 'normal', 'large', 'huge', '8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
         sizes.forEach(size => {
@@ -3979,15 +3979,17 @@ prompt("This is a prompt:");
           option.textContent = size;
           sizeSelect.appendChild(option);
         });
-        sizeSelect.value = currentValue || 'normal'; // Restore value
-        // Rebind Quill's handler to ensure interactivity
-        quillInstance.toolbar.handlers['size'] && quillInstance.toolbar.handlers['size'](sizeSelect.value);
-        sizeSelect.addEventListener('change', () => quillInstance.toolbar.handlers['size'] && quillInstance.toolbar.handlers['size'](sizeSelect.value));
+        sizeSelect.value = currentValue;
+        // Use quillInstance.format to apply the size, avoid accessing handlers
+        quillInstance.format('size', sizeSelect.value);
+        sizeSelect.addEventListener('change', () => {
+          quillInstance.format('size', sizeSelect.value);
+        });
       }
 
       const fontSelect = container.querySelector('.ql-font');
       if (fontSelect) {
-        const currentValue = fontSelect.value; // Store current value
+        const currentValue = fontSelect.value || 'sans-serif'; // Default to 'sans-serif' if no value
         fontSelect.innerHTML = '';
         const fonts = ['sans-serif', 'arial', 'times-new-roman', 'courier-new'];
         fonts.forEach(font => {
@@ -3996,10 +3998,12 @@ prompt("This is a prompt:");
           option.textContent = font.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
           fontSelect.appendChild(option);
         });
-        fontSelect.value = currentValue || 'sans-serif'; // Restore value
-        // Rebind Quill's handler to ensure interactivity
-        quillInstance.toolbar.handlers['font'] && quillInstance.toolbar.handlers['font'](fontSelect.value);
-        fontSelect.addEventListener('change', () => quillInstance.toolbar.handlers['font'] && quillInstance.toolbar.handlers['font'](fontSelect.value));
+        fontSelect.value = currentValue;
+        // Use quillInstance.format to apply the font, avoid accessing handlers
+        quillInstance.format('font', fontSelect.value);
+        fontSelect.addEventListener('change', () => {
+          quillInstance.format('font', fontSelect.value);
+        });
       }
     }
 
