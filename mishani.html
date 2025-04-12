@@ -4200,7 +4200,7 @@ prompt("This is a prompt:");
       }
       repositionToolbar(editorToolbar, editorTextDiv);
       let isFirst = false;
-      editorQuill.on("focus", () => {
+      editorQuill.on("selection-change", () => {
         if (isFirst) return;
         isFirst = true;
         initQuil(editorQuill);
@@ -4248,7 +4248,7 @@ prompt("This is a prompt:");
         }
         repositionToolbar(outputToolbar, outputTextDiv);
         let isFirst2 = false;
-        outputQuill.on("focus", () => {
+        outputQuill.on("selection-change", () => {
           if (isFirst2) return;
           isFirst2 = true;
           initQuil(outputQuill);
@@ -4372,7 +4372,7 @@ prompt("This is a prompt:");
       }
       repositionToolbar(editorToolbar, editorTextDiv);
       let isFirst = false;
-      editorQuill.on("focus", () => {
+      editorQuill.on("selection-change", () => {
         if (isFirst) return;
         isFirst = true;
         initQuil(editorQuill);
@@ -4420,7 +4420,7 @@ prompt("This is a prompt:");
         }
         repositionToolbar(outputToolbar, outputTextDiv);
         let isFirst2 = false;
-        outputQuill.on("focus", () => {
+        outputQuill.on("selection-change", () => {
           if (isFirst2) return;
           isFirst2 = true;
           initQuil(outputQuill);
