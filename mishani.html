@@ -4013,11 +4013,11 @@ prompt("This is a prompt:");
     }
 
     if (!window.customQuillFormatsRegistered) {
-      const Size = Quill.import('attributors/style/size'); 
+      const Size = Quill.import('attributors/style/size');
       Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
       Quill.register(Size, true);
 
-      const Font = Quill.import('attributors/style/font'); 
+      const Font = Quill.import('attributors/style/font');
       Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
       Quill.register(Font, true);
 
@@ -4117,23 +4117,26 @@ prompt("This is a prompt:");
     }
 
     async function exportImage() {
-      // Create a wrapper for the entire export content.
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
+      // --- Editor Header using Quill ---
       const editorTextDiv = document.createElement('div');
       editorTextDiv.id = 'editorText';
       editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapperBoth.appendChild(editorTextDiv);
+
+      // Initialize Quill for the editor header
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      editorQuill.isFirst = true;
+
+      // Style the editor toolbar
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4157,6 +4160,8 @@ prompt("This is a prompt:");
           select.style.border = '1px solid #ccc';
         });
       }
+
+      // Function to reposition the toolbar
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
@@ -4164,21 +4169,63 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
+
+      // Clear placeholder text on focus
       let headerFlag = true;
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
           editorQuill.setText('');
           headerFlag = false;
         }
-        if (editorQuill.isFirst) {
-          initQuil(editorQuill);
-          editorQuill.isFirst = false;
+      });
+
+      // Update toolbar to reflect current format on selection change
+      editorQuill.on('selection-change', function (range) {
+        if (range) {
+          const formats = editorQuill.getFormat(range.index, range.length);
+          // Update font
+          const fontSelect = editorToolbar.querySelector('.ql-font');
+          if (fontSelect) {
+            fontSelect.value = formats.font || 'arial'; // Default to 'arial' if no font is set
+          }
+          // Update size
+          const sizeSelect = editorToolbar.querySelector('.ql-size');
+          if (sizeSelect) {
+            sizeSelect.value = formats.size || '16px'; // Default to '16px' if no size is set
+          }
+          // Update color
+          const colorPicker = editorToolbar.querySelector('.ql-color');
+          if (colorPicker && formats.color) {
+            colorPicker.value = formats.color;
+          }
+          // Update alignment
+          const alignSelect = editorToolbar.querySelector('.ql-align');
+          if (alignSelect) {
+            alignSelect.value = formats.align || ''; // Default to no alignment
+          }
+          // Update bold, italic, underline
+          ['bold', 'italic', 'underline'].forEach(format => {
+            const button = editorToolbar.querySelector(`.ql-${format}`);
+            if (button) {
+              button.classList.toggle('ql-active', !!formats[format]);
+            }
+          });
         }
       });
-      initQuil(editorQuill);
+
+      // Trigger initial format update when editor is focused
+      editorQuill.on('text-change', function () {
+        const range = editorQuill.getSelection();
+        if (range) {
+          editorQuill.emit('selection-change', range);
+        }
+      });
+
+      // --- Append the Editor Code View ---
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
+      // --- Output Section (if output exists) ---
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
@@ -4189,12 +4236,14 @@ prompt("This is a prompt:");
         outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapperBoth.appendChild(outputTextDiv);
+
+        // Initialize Quill for the output header
         outputQuill = new Quill(outputTextDiv, {
           theme: 'snow',
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        initQuil(outputQuill);
+
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
@@ -4219,6 +4268,7 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
+
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
@@ -4226,11 +4276,48 @@ prompt("This is a prompt:");
             outputFlag = false;
           }
         });
-        // Append cloned output area.
+
+        // Update output toolbar to reflect current format
+        outputQuill.on('selection-change', function (range) {
+          if (range) {
+            const formats = outputQuill.getFormat(range.index, range.length);
+            const fontSelect = outputToolbar.querySelector('.ql-font');
+            if (fontSelect) {
+              fontSelect.value = formats.font || 'arial';
+            }
+            const sizeSelect = outputToolbar.querySelector('.ql-size');
+            if (sizeSelect) {
+              sizeSelect.value = formats.size || '16px';
+            }
+            const colorPicker = outputToolbar.querySelector('.ql-color');
+            if (colorPicker && formats.color) {
+              colorPicker.value = formats.color;
+            }
+            const alignSelect = outputToolbar.querySelector('.ql-align');
+            if (alignSelect) {
+              alignSelect.value = formats.align || '';
+            }
+            ['bold', 'italic', 'underline'].forEach(format => {
+              const button = outputToolbar.querySelector(`.ql-${format}`);
+              if (button) {
+                button.classList.toggle('ql-active', !!formats[format]);
+              }
+            });
+          }
+        });
+
+        // Trigger initial format update for output editor
+        outputQuill.on('text-change', function () {
+          const range = outputQuill.getSelection();
+          if (range) {
+            outputQuill.emit('selection-change', range);
+          }
+        });
+
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
-        // Create checkboxes for output header and output clone.
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4239,6 +4326,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -4250,7 +4338,6 @@ prompt("This is a prompt:");
         });
       }
 
-      // Checkbox for editor header.
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4263,7 +4350,6 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Create and add the Export button.
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
