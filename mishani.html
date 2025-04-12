@@ -4075,6 +4075,7 @@ prompt("This is a prompt:");
       quilInstance.format('align', 'left');
       quilInstance.setText('');
       quilInstance.format('size', "16px", Quill.sources.USER);
+      console.log(quilInstance.getModule('toolbar'))
     }
 
     async function takeImage(domElem) {
