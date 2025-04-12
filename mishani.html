@@ -4073,10 +4073,9 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      quilInstance.setText('');
-      quilInstance.format('size', "16px", Quill.sources.U);
-      console.log(quilInstance.getModule('toolbar'))
-      quilInstance.getModule('toolbar').controls[3][1].value = '16px';
+      quilInstance.format('size', "16px", Quill.sources.USER);
+      quilInstance.setText('', Quill.sources.USER);
+      quilInstance.setText('Write your code here...', Quill.sources.USER);
     }
 
     async function takeImage(domElem) {
