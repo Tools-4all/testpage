@@ -3982,12 +3982,12 @@ prompt("This is a prompt:");
     function updateButtonStates() {
       if (!activeToolbar || !activeTextDiv) return;
 
-      const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
-      const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
-      const underlineBtn = activeToolbar.querySelector('button:nth-child(3)');
-      const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
-      const colorInput = activeToolbar.querySelector('input[type="color"]');
-      const fontFamilySelect = activeToolbar.querySelector('select');
+      const boldBtn = activeToolbar.querySelector('.boldBtn');
+      const italicBtn = activeToolbar.querySelector('.italicBtn');
+      const underlineBtn = activeToolbar.querySelector('.underlineBtn');
+      const fontSizeInput = activeToolbar.querySelector('.fontSize');
+      const colorInput = activeToolbar.querySelector('.color');
+      const fontFamilySelect = activeToolbar.querySelector('.fontFamily');
 
       let state;
       const selection = window.getSelection();
@@ -4019,15 +4019,21 @@ prompt("This is a prompt:");
         };
       }
 
-      boldBtn.classList.toggle('active', state.bold);
-      boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
-      italicBtn.classList.toggle('active', state.italic);
-      italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
-      underlineBtn.classList.toggle('active', state.underline);
-      underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-      fontSizeInput.value = parseInt(state.fontSize) || 16;
-      colorInput.value = state.color;
-      fontFamilySelect.value = state.fontFamily;
+      if (boldBtn) {
+        boldBtn.classList.toggle('active', state.bold);
+        boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
+      }
+      if (italicBtn) {
+        italicBtn.classList.toggle('active', state.italic);
+        italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
+      }
+      if (underlineBtn) {
+        underlineBtn.classList.toggle('active', state.underline);
+        underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
+      }
+      if (fontSizeInput) fontSizeInput.value = parseInt(state.fontSize) || 16;
+      if (colorInput) colorInput.value = state.color;
+      if (fontFamilySelect) fontFamilySelect.value = state.fontFamily;
     }
 
     function applyFormat(command) {
@@ -4499,26 +4505,26 @@ prompt("This is a prompt:");
 
     function giveTheHtml() {
       return `
-    <div>
-      <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-      <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-      <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-    </div>
-    <div>
-      <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-      <input class="color" type="color" onchange="applyColor(this.value)">
-      <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-        <option value="">Font Family</option>
-        <option value="Arial">Arial</option>
-        <option value="Times New Roman">Times New Roman</option>
-        <option value="Courier New">Courier New</option>
-      </select>
-    </div>
-    <div>
-      <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-      <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-      <button class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-    </div>
+  <div>
+    <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+  </div>
+  <div>
+    <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+    <input class="color" type="color" onchange="applyColor(this.value)">
+    <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+      <option value="">Font Family</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+  </div>
+  <div>
+    <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+    <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+    <button class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+  </div>
   `;
     }
 
@@ -4573,11 +4579,11 @@ prompt("This is a prompt:");
         underlineBtn.classList.remove('active');
         underlineBtn.style.backgroundColor = '';
       }
-      const fontSizeInput = toolbarDiv.querySelector('input[type="number"]');
+      const fontSizeInput = toolbarDiv.querySelector('.fontSize');
       fontSizeInput.value = parseInt(settings.fontSize) || 16;
-      const colorInput = toolbarDiv.querySelector('input[type="color"]');
+      const colorInput = toolbarDiv.querySelector('.color');
       colorInput.value = settings.color;
-      const fontFamilySelect = toolbarDiv.querySelector('select');
+      const fontFamilySelect = toolbarDiv.querySelector('.fontFamily');
       fontFamilySelect.value = settings.fontFamily;
     }
 
