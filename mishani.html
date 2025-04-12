@@ -4197,13 +4197,7 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      let headerFlag = true;
-      editorTextDiv.addEventListener('focus', () => {
-        if (headerFlag) {
-          headerFlag = false;
-          initQuil(editorQuill);
-        }
-      });
+      initQuil(editorQuill);
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
@@ -4246,13 +4240,7 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        let outputFlag = true;
-        outputTextDiv.addEventListener('focus', () => {
-          if (outputFlag) {
-            outputFlag = false;
-            initQuil(outputQuill);
-          }
-        });
+        initQuil(outputQuill);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
@@ -4371,13 +4359,7 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      let headerFlag = true;
-      editorTextDiv.addEventListener('focus', () => {
-        if (headerFlag) {
-          headerFlag = false;
-          initQuil(editorQuill);
-        }
-      });
+      initQuil(editorQuill);
 
       wrapBoth.appendChild(editorDiv);
 
@@ -4420,13 +4402,8 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        let outputFlag = true;
-        outputTextDiv.addEventListener('focus', () => {
-          if (outputFlag) {
-            outputFlag = false;
-            initQuil(outputQuill);
-          }
-        });
+        initQuil(outputQuill);
+
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputClone);
