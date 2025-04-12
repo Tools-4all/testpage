@@ -3939,21 +3939,24 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    // Refactored snippet
 
     // A shared toolbar options configuration for Quill.
     const quillToolbarOptions = [
       ['bold', 'italic', 'underline'],
-      [{ 'size': ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px'] }],
+      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
       [{ 'color': [] }],
-      [{ 'font': ['arial', 'times-new-roman', 'courier-new', 'georgia', 'verdana', 'tahoma'] }],
+      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
       [{ 'align': [] }]
     ];
 
-    // OPTIONAL: Register the additional fonts with Quill so they’re recognized.
-    // This is necessary if you include fonts that Quill doesn't have by default.
-    var Font = Quill.import('formats/font');
-    Font.whitelist = ['arial', 'times-new-roman', 'courier-new', 'georgia', 'verdana', 'tahoma'];
+    // Register custom sizes for Quill.
+    const Size = Quill.import('formats/size');
+    Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
+    Quill.register(Size, true);
+
+    // Register custom fonts for Quill.
+    const Font = Quill.import('formats/font');
+    Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
     Quill.register(Font, true);
 
     async function takeImage(domElem) {
@@ -4044,7 +4047,7 @@ prompt("This is a prompt:");
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       // Append once to the wrapper
       wrapperBoth.appendChild(editorTextDiv);
-      // Initialize Quill only once for this export; you can store the instance if needed.
+      // Initialize Quill only once for this export.
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your title here...',
@@ -4503,7 +4506,7 @@ prompt("This is a prompt:");
     };
 
     function focusTab(tabElem) {
-      if (!tabElem) { tabElem = currentTab }
+      if (!tabElem) { tabElem = currentTab; }
       tabElem.editorInstance.focus();
     }
 
@@ -4513,6 +4516,7 @@ prompt("This is a prompt:");
       focusTab();
       closeDropdowns();
     });
+
 
 
   </script>
