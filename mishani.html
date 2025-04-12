@@ -4070,12 +4070,12 @@ prompt("This is a prompt:");
       quilInstance.format('bold', false);
       quilInstance.format('italic', false);
       quilInstance.format('underline', false);
-      quilInstance.format('size', "16px");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
       quilInstance.setText('');
-      console.log("Quill initialized");
+      quilInstance.format('size', "16px");
+      console.log("Quill initialized", quilInstance);
     }
 
     async function takeImage(domElem) {
