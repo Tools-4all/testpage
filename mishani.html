@@ -1542,12 +1542,13 @@
     .ql-size .ql-picker-label svg *,
     .ql-color .ql-picker-label svg *,
     .ql-align .ql-picker-label svg * {
-      stroke: #06c ;
+      stroke: #06c;
     }
 
     #exportModal:not(.darkMode) .ql-color-label.ql-stroke.ql-transparent {
       stroke: #000000;
     }
+
     #exportModal:not(.lightMode) .ql-color-label.ql-stroke.ql-transparent {
       stroke: #ffffff;
     }
@@ -4073,7 +4074,7 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      console.log(quilInstance, "initialized");
+      quilInstance.setText('');
     }
 
     async function takeImage(domElem) {
@@ -4197,7 +4198,12 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      initQuil(editorQuill);
+      let isFirst = false;
+      editorQuill.on("focus", () => {
+        if (isFirst) return;
+        isFirst = true;
+        initQuil(editorQuill);
+      });
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
@@ -4240,7 +4246,12 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        initQuil(outputQuill);
+        let isFirst2 = false;
+        outputQuill.on("focus", () => {
+          if (isFirst2) return;
+          isFirst2 = true;
+          initQuil(outputQuill);
+        });
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
@@ -4359,7 +4370,12 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      initQuil(editorQuill);
+      let isFirst = false;
+      editorQuill.on("focus", () => {
+        if (isFirst) return;
+        isFirst = true;
+        initQuil(editorQuill);
+      });
 
       wrapBoth.appendChild(editorDiv);
 
@@ -4402,7 +4418,12 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        initQuil(outputQuill);
+        let isFirst2 = false;
+        outputQuill.on("focus", () => {
+          if (isFirst2) return;
+          isFirst2 = true;
+          initQuil(outputQuill);
+        });
 
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
