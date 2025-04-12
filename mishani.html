@@ -1531,11 +1531,29 @@
       color: #000000;
     }
 
-    .ql-size .ql-picker-label,
     .ql-font .ql-picker-label,
+    .ql-size .ql-picker-label,
     .ql-color .ql-picker-label,
     .ql-align .ql-picker-label {
       color: #06c !important;
+    }
+
+    /* Target the svg elements inside the labels */
+    .ql-font .ql-picker-label svg,
+    .ql-size .ql-picker-label svg,
+    .ql-color .ql-picker-label svg,
+    .ql-align .ql-picker-label svg {
+      fill: #06c !important;
+      stroke: #06c !important;
+    }
+
+    /* Also in case there are nested elements inside the svg */
+    .ql-font .ql-picker-label svg *,
+    .ql-size .ql-picker-label svg *,
+    .ql-color .ql-picker-label svg *,
+    .ql-align .ql-picker-label svg * {
+      fill: #06c !important;
+      stroke: #06c !important;
     }
   </style>
 </head>
