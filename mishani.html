@@ -1523,11 +1523,11 @@
       content: '72px';
     }
 
-    body:not(.lightMode) .ql-editor.ql-blank:before {
+    #modal:not(.lightMode) .ql-editor.ql-blank:before {
       color: #ffffff;
     }
 
-    body:not(.darkMode) .ql-editor.ql-blank:before {
+    #modal:not(.darkMode) .ql-editor.ql-blank:before {
       color: #000000;
     }
   </style>
@@ -1620,7 +1620,7 @@
     </div>
   </div>
 
-  <div id="exportModal" class="previewModal">
+  <div id="exportModal" class="previewModal darkMode">
     <div class="previewModal-content" id="exportModalContent">
     </div>
   </div>
@@ -1738,8 +1738,8 @@
 
         document.getElementById('compiler').classList.add("lightMode");
         document.getElementById('compiler').classList.remove("darkMode");
-        body.classList.remove("darkMode");
-        body.classList.add("lightMode");
+        modal.classList.add("lightMode");
+        modal.classList.remove("darkMode");
 
         darkModeFlag = false;
 
@@ -1750,8 +1750,8 @@
 
         document.getElementById('compiler').classList.remove("lightMode");
         document.getElementById('compiler').classList.add("darkMode");
-        body.classList.remove("lightMode");
-        body.classList.add("darkMode");
+        modal.classList.remove("lightMode");
+        modal.classList.add("darkMode");
 
         lightModeDiv.innerHTML = '<i id="sun" class="fa-solid fa-sun"></i>';
         darkModeFlag = true;
