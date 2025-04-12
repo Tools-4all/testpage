@@ -4033,7 +4033,7 @@ prompt("This is a prompt:");
       italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
       underlineBtn.classList.toggle('active', state.underline);
       underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-      fontSizeInput.value = state.fontSize.replace('px', '');
+      fontSizeInput.value = (state.fontSize || '').replace('px', '');
       colorInput.value = state.color;
       fontFamilySelect.value = state.fontFamily;
     }
