@@ -4012,26 +4012,18 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-
-    // A shared toolbar options configuration for Quill.
-    // Ensure custom Quill formats are registered only once.
-    // A shared toolbar options configuration for Quill.
-    // Ensure custom Quill formats are registered only once.
     if (!window.customQuillFormatsRegistered) {
-      // Import and register custom Size.
-      const Size = Quill.import('attributors/style/size'); // Use 'style/size' instead of 'formats/size'
+      const Size = Quill.import('attributors/style/size');
       Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
       Quill.register(Size, true);
 
-      // Import and register custom Font.
-      const Font = Quill.import('attributors/style/font'); // Use 'style/font' instead of 'formats/font'
+      const Font = Quill.import('attributors/style/font');
       Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
       Quill.register(Font, true);
 
       window.customQuillFormatsRegistered = true;
     }
 
-    // Define toolbar options that reuse the custom formats.
     const quillToolbarOptions = [
       ['bold', 'italic', 'underline'],
       [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }], // Explicitly list sizes
@@ -4134,6 +4126,8 @@ prompt("This is a prompt:");
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
+      editorQuill.format('font', 'arial');
+      editorQuill.format('size', '12px');
       // Style the editor toolbar.
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
@@ -4196,6 +4190,8 @@ prompt("This is a prompt:");
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
+        editorQuill.format('font', 'arial');
+        editorQuill.format('size', '12px');
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
@@ -4317,6 +4313,8 @@ prompt("This is a prompt:");
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
+      editorQuill.format('font', 'arial');
+      editorQuill.format('size', '12px');
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4372,6 +4370,8 @@ prompt("This is a prompt:");
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
+        editorQuill.format('font', 'arial');
+        editorQuill.format('size', '12px');
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
