@@ -4135,6 +4135,7 @@ prompt("This is a prompt:");
     }
 
     function applyFontFamily(family) {
+      console.log('applyFontFamily called with:', family);
       if (!family || !activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
       currentStyles.fontFamily = family;
@@ -4142,9 +4143,16 @@ prompt("This is a prompt:");
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
-        newSpan.style.fontFamily = family;
+        newSpan.style.fontFamily = family; // Add '!important' temporarily if needed
+        // Check and clear parent overrides
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        const parentStyle = window.getComputedStyle(parent).fontFamily;
+        if (parentStyle && parentStyle !== family) {
+          parent.style.fontFamily = '';
+        }
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
+        console.log('Inserted span with font family:', newSpan.outerHTML);
         selection.removeAllRanges();
         const newRange = document.createRange();
         newRange.selectNodeContents(newSpan);
