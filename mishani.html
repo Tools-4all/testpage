@@ -4200,12 +4200,9 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      let isFirst = false;
-      editorQuill.on("selection-change", () => {
-        if (isFirst) return;
-        isFirst = true;
+      setTimeout(() => {
         initQuil(editorQuill);
-      });
+      }, 200);
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
@@ -4248,12 +4245,9 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        let isFirst2 = false;
-        outputQuill.on("selection-change", () => {
-          if (isFirst2) return;
-          isFirst2 = true;
+        setTimeout(() => {
           initQuil(outputQuill);
-        });
+        }, 200);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
@@ -4372,12 +4366,9 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      let isFirst = false;
-      editorQuill.on("selection-change", () => {
-        if (isFirst) return;
-        isFirst = true;
+      setTimeout(() => {
         initQuil(editorQuill);
-      });
+      }, 200);
 
       wrapBoth.appendChild(editorDiv);
 
@@ -4420,12 +4411,9 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
-        let isFirst2 = false;
-        outputQuill.on("selection-change", () => {
-          if (isFirst2) return;
-          isFirst2 = true;
+        setTimeout(() => {
           initQuil(outputQuill);
-        });
+        }, 200);
 
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
