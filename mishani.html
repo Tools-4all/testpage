@@ -3944,11 +3944,17 @@ prompt("This is a prompt:");
     // A shared toolbar options configuration for Quill.
     const quillToolbarOptions = [
       ['bold', 'italic', 'underline'],
-      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+      [{ 'size': ['8px', '10px', '12px', '14px', '16px', '18px', '20px', '24px', '30px', '36px', '48px', '72px'] }],
       [{ 'color': [] }],
-      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+      [{ 'font': ['arial', 'times-new-roman', 'courier-new', 'georgia', 'verdana', 'tahoma'] }],
       [{ 'align': [] }]
     ];
+
+    // OPTIONAL: Register the additional fonts with Quill so they’re recognized.
+    // This is necessary if you include fonts that Quill doesn't have by default.
+    var Font = Quill.import('formats/font');
+    Font.whitelist = ['arial', 'times-new-roman', 'courier-new', 'georgia', 'verdana', 'tahoma'];
+    Quill.register(Font, true);
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
