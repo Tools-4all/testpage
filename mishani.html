@@ -3945,6 +3945,7 @@ prompt("This is a prompt:");
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
       applySettings(textDiv, toolbar);
+      updateButtonStates(); // Ensure toolbar reflects current styles immediately
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -3972,13 +3973,14 @@ prompt("This is a prompt:");
             range.setEndAfter(newSpan);
             selection.removeAllRanges();
             selection.addRange(range);
+            updateButtonStates(); // Update toolbar after text insertion
           }
         }
       });
     }
 
     function updateButtonStates() {
-      if (!activeToolbar) return;
+      if (!activeToolbar || !activeTextDiv) return;
 
       const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
       const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
@@ -3988,43 +3990,33 @@ prompt("This is a prompt:");
       const fontFamilySelect = activeToolbar.querySelector('select');
 
       let state;
-      if (document.activeElement !== activeTextDiv) {
+      const selection = window.getSelection();
+      const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
+
+      if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
+        const range = selection.getRangeAt(0);
+        let node = range.startContainer;
+        if (node.nodeType === Node.TEXT_NODE) {
+          node = node.parentElement;
+        }
+        const computedStyle = window.getComputedStyle(node);
+        state = {
+          bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
+          italic: computedStyle.fontStyle === 'italic',
+          underline: computedStyle.textDecorationLine.includes('underline'),
+          fontSize: computedStyle.fontSize || '16px',
+          color: rgbToHex(computedStyle.color) || '#000000',
+          fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || 'Arial'
+        };
+      } else {
         state = textDivStyles.get(activeTextDiv) || {
           bold: false,
           italic: false,
           underline: false,
-          fontSize: '',
-          color: '#000000',
-          fontFamily: ''
+          fontSize: '16px',
+          color: darkModeFlag ? '#ffffff' : '#000000',
+          fontFamily: 'Arial'
         };
-      } else {
-        const selection = window.getSelection();
-        const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
-        if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
-          const range = selection.getRangeAt(0);
-          let node = range.startContainer;
-          if (node.nodeType === Node.TEXT_NODE) {
-            node = node.parentElement;
-          }
-          const computedStyle = window.getComputedStyle(node);
-          state = {
-            bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
-            italic: computedStyle.fontStyle === 'italic',
-            underline: computedStyle.textDecorationLine.includes('underline'),
-            fontSize: parseInt(computedStyle.fontSize) || '',
-            color: rgbToHex(computedStyle.color) || '#000000',
-            fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
-          };
-        } else {
-          state = textDivStyles.get(activeTextDiv) || {
-            bold: false,
-            italic: false,
-            underline: false,
-            fontSize: '',
-            color: '#000000',
-            fontFamily: ''
-          };
-        }
       }
 
       boldBtn.classList.toggle('active', state.bold);
@@ -4033,7 +4025,7 @@ prompt("This is a prompt:");
       italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
       underlineBtn.classList.toggle('active', state.underline);
       underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-      fontSizeInput.value = (state.fontSize.toString() || '').replace('px', '');
+      fontSizeInput.value = parseInt(state.fontSize) || 16;
       colorInput.value = state.color;
       fontFamilySelect.value = state.fontFamily;
     }
@@ -4159,6 +4151,7 @@ prompt("This is a prompt:");
     function applyAlignment(align) {
       if (!activeTextDiv) return;
       activeTextDiv.style.textAlign = align;
+      updateButtonStates();
     }
 
     function selectionChangeHandler() {
@@ -4176,6 +4169,7 @@ prompt("This is a prompt:");
           toolbar.style.left = `${left}px`;
           toolbar.style.top = `${top}px`;
           toolbar.style.display = 'block';
+          updateButtonStates();
         } else {
           toolbar.style.display = 'none';
         }
@@ -4197,6 +4191,7 @@ prompt("This is a prompt:");
       toolbar.style.left = `${left}px`;
       toolbar.style.top = `${top}px`;
       toolbar.style.display = 'block';
+      setActiveTextDiv(headerDiv, toolbar);
     }
 
     let isToolbarActive = false;
@@ -4220,6 +4215,7 @@ prompt("This is a prompt:");
         const newRange = document.createRange();
         newRange.selectNodeContents(newSpan);
         selection.addRange(newRange);
+        updateButtonStates();
       }
     }
 
@@ -4330,7 +4326,6 @@ prompt("This is a prompt:");
         }
         setActiveTextDiv(editorTextDiv, editorToolbar);
         repositionToolbar(editorToolbar, editorTextDiv);
-        applySettings(editorTextDiv, editorToolbar);
       });
       editorTextDiv.addEventListener('click', () => {
         setActiveTextDiv(editorTextDiv, editorToolbar);
@@ -4504,26 +4499,26 @@ prompt("This is a prompt:");
 
     function giveTheHtml() {
       return `
-  <div>
-    <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-  </div>
-  <div>
-    <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-    <input class="color" type="color" onchange="applyColor(this.value)">
-    <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-      <option value="">Font Family</option>
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Courier New">Courier New</option>
-    </select>
-  </div>
-  <div>
-    <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-    <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-    <button  class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-  </div>
+    <div>
+      <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+      <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+      <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+    </div>
+    <div>
+      <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+      <input class="color" type="color" onchange="applyColor(this.value)">
+      <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+        <option value="">Font Family</option>
+        <option value="Arial">Arial</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+      </select>
+    </div>
+    <div>
+      <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+      <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+      <button class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+    </div>
   `;
     }
 
@@ -4535,13 +4530,16 @@ prompt("This is a prompt:");
       let defaultSettings = {
         fontSize: '16px',
         color: darkModeFlag ? '#ffffff' : '#000000',
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'Arial',
         textAlign: 'left',
         bold: false,
         italic: false,
         underline: false
       };
       textDivStyles.set(div, { ...defaultSettings });
+      div.addEventListener('focus', () => {
+        setActiveTextDiv(div, activeToolbar || document.getElementById('editorRichTextToolbar') || document.getElementById('outputRichTextToolbar'));
+      });
       return div;
     }
 
@@ -4575,6 +4573,12 @@ prompt("This is a prompt:");
         underlineBtn.classList.remove('active');
         underlineBtn.style.backgroundColor = '';
       }
+      const fontSizeInput = toolbarDiv.querySelector('input[type="number"]');
+      fontSizeInput.value = parseInt(settings.fontSize) || 16;
+      const colorInput = toolbarDiv.querySelector('input[type="color"]');
+      colorInput.value = settings.color;
+      const fontFamilySelect = toolbarDiv.querySelector('select');
+      fontFamilySelect.value = settings.fontFamily;
     }
 
     async function exportPDF() {
@@ -4606,7 +4610,6 @@ prompt("This is a prompt:");
       }
       let headerFlag = true;
       const editorTextDiv = getTheDiv("headerText");
-
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
           editorTextDiv.textContent = "";
@@ -4887,14 +4890,14 @@ prompt("This is a prompt:");
 
     function focusTab(tabElem) {
       if (!tabElem) { tabElem = currentTab }
-      tabElem.editorInstance.focus()
+      tabElem.editorInstance.focus();
     }
 
     document.getElementById("selectAllBtn").addEventListener("click", () => {
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
-      focusTab()
-      closeDropdowns()
+      focusTab();
+      closeDropdowns();
     });
 
   </script>
