@@ -1522,6 +1522,13 @@
     .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="72px"]::before {
       content: '72px';
     }
+
+    #compiler:not(.darkMode) .ql-editor.ql-blank:before {
+      color: #000;
+    }
+    #compiler:not(.lightMode) .ql-editor.ql-blank:before {
+      color: #d4d4d4;
+    }
   </style>
 </head>
 
@@ -4131,7 +4138,8 @@ prompt("This is a prompt:");
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your text here...',
-        modules: { toolbar: quillToolbarOptions }
+        modules: { toolbar: quillToolbarOptions },
+        
       });
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
