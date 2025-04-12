@@ -1247,6 +1247,7 @@
     #compiler:not(.darkMode) .headerText {
       border-color: #c0c0c0;
     }
+
     #compiler:not(.lightMode) .headerText {
 
       border-color: #333;
@@ -3943,7 +3944,7 @@ prompt("This is a prompt:");
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
-      applySettings(textDiv, toolbar, textDiv.settings);
+      applySettings(textDiv, toolbar);
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -3975,7 +3976,6 @@ prompt("This is a prompt:");
         }
       });
     }
-
 
     function updateButtonStates() {
       if (!activeToolbar) return;
@@ -4038,7 +4038,6 @@ prompt("This is a prompt:");
       fontFamilySelect.value = state.fontFamily;
     }
 
-
     function applyFormat(command) {
       if (!activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
@@ -4053,48 +4052,25 @@ prompt("This is a prompt:");
         const newSpan = document.createElement('span');
         if (command === 'bold') {
           const isBold = computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
-          currentStyles.bold = !isBold;
-          newSpan.style.fontWeight = currentStyles.bold ? 'bold' : 'normal';
+          const newBold = !isBold;
+          newSpan.style.fontWeight = newBold ? 'bold' : 'normal';
+          currentStyles.bold = newBold;
         } else if (command === 'italic') {
           const isItalic = computedStyle.fontStyle === 'italic';
-          currentStyles.italic = !isItalic;
-          newSpan.style.fontStyle = currentStyles.italic ? 'italic' : 'normal';
+          const newItalic = !isItalic;
+          newSpan.style.fontStyle = newItalic ? 'italic' : 'normal';
+          currentStyles.italic = newItalic;
         } else if (command === 'underline') {
-          // Toggle underline using stored state
-          const isUnderlined = currentStyles.underline || false;
-          currentStyles.underline = !isUnderlined;
-
-          if (selection.rangeCount > 0 && !selection.isCollapsed) {
-            const range = selection.getRangeAt(0);
-            let newSpan = document.createElement('span');
-
-            if (currentStyles.underline) {
-              newSpan.style.textDecoration = 'underline';
-              // Set underline color from stored color or computed style
-              newSpan.style.textDecorationColor = currentStyles.color || computedStyle.color;
-            } else {
-              // When turning underline off, remove any inline text-decoration style
-              newSpan.style.textDecoration = '';
-              newSpan.style.textDecorationColor = '';
-            }
-
-            newSpan.appendChild(range.extractContents());
-            range.insertNode(newSpan);
-
-            // Re-establish the selection
-            selection.removeAllRanges();
-            const newRange = document.createRange();
-            newRange.selectNodeContents(newSpan);
-            selection.addRange(newRange);
+          const isUnderlined = computedStyle.textDecorationLine.includes('underline');
+          const newUnderline = !isUnderlined;
+          if (newUnderline) {
+            newSpan.style.textDecoration = 'underline';
+            if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
+          } else {
+            newSpan.style.textDecoration = 'none';
           }
-
-          // Save updated state and update the toolbar buttons
-          textDivStyles.set(activeTextDiv, currentStyles);
-          updateButtonStates();
+          currentStyles.underline = newUnderline;
         }
-
-
-
         newSpan.appendChild(range.extractContents());
         range.insertNode(newSpan);
         selection.removeAllRanges();
@@ -4112,7 +4088,6 @@ prompt("This is a prompt:");
       }
       updateButtonStates();
     }
-
 
     function applyFontSize(size) {
       if (!size || !activeTextDiv) return;
@@ -4355,7 +4330,7 @@ prompt("This is a prompt:");
         }
         setActiveTextDiv(editorTextDiv, editorToolbar);
         repositionToolbar(editorToolbar, editorTextDiv);
-        applySettings(editorTextDiv, editorToolbar, editorTextDiv.settings);
+        applySettings(editorTextDiv, editorToolbar);
       });
       editorTextDiv.addEventListener('click', () => {
         setActiveTextDiv(editorTextDiv, editorToolbar);
@@ -4397,7 +4372,7 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
-      let outputTextDiv
+      let outputTextDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4565,27 +4540,40 @@ prompt("This is a prompt:");
         bold: false,
         italic: false,
         underline: false
-      }
-      div.settings = defaultSettings;
+      };
+      textDivStyles.set(div, { ...defaultSettings });
       return div;
     }
 
-    function applySettings(textDiv, toolbarDiv, settings) {
+    function applySettings(textDiv, toolbarDiv) {
+      const settings = textDivStyles.get(textDiv);
       textDiv.style.fontSize = settings.fontSize;
       textDiv.style.color = settings.color;
       textDiv.style.fontFamily = settings.fontFamily;
       textDiv.style.textAlign = settings.textAlign;
+      const boldBtn = toolbarDiv.querySelector('.boldBtn');
       if (settings.bold) {
-        toolbarDiv.querySelector('.boldBtn').classList.add('active');
-        toolbarDiv.querySelector('.boldBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+        boldBtn.classList.add('active');
+        boldBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+      } else {
+        boldBtn.classList.remove('active');
+        boldBtn.style.backgroundColor = '';
       }
+      const italicBtn = toolbarDiv.querySelector('.italicBtn');
       if (settings.italic) {
-        toolbarDiv.querySelector('.italicBtn').classList.add('active');
-        toolbarDiv.querySelector('.italicBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+        italicBtn.classList.add('active');
+        italicBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+      } else {
+        italicBtn.classList.remove('active');
+        italicBtn.style.backgroundColor = '';
       }
+      const underlineBtn = toolbarDiv.querySelector('.underlineBtn');
       if (settings.underline) {
-        toolbarDiv.querySelector('.underlineBtn').classList.add('active');
-        toolbarDiv.querySelector('.underlineBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+        underlineBtn.classList.add('active');
+        underlineBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
+      } else {
+        underlineBtn.classList.remove('active');
+        underlineBtn.style.backgroundColor = '';
       }
     }
 
@@ -4908,7 +4896,6 @@ prompt("This is a prompt:");
       focusTab()
       closeDropdowns()
     });
-
 
   </script>
 
