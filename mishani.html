@@ -1552,6 +1552,10 @@
     #exportModal:not(.lightMode) .ql-color-label.ql-stroke.ql-transparent {
       stroke: #ffffff;
     }
+
+    .ql-editor {
+      font-size: 16px;
+    }
   </style>
 </head>
 
@@ -4095,10 +4099,8 @@ prompt("This is a prompt:");
       const outputWrapper = document.createElement('div');
       outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
-      // Clone the existing output element.
       const tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
-      // Inherit classes and adjust dimensions.
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
       tempOutputDiv.style.width = maxWidth;
       tempOutputDiv.style.maxWidth = maxWidth;
