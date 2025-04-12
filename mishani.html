@@ -4415,7 +4415,7 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
-      let tempDivForScope
+      let outputTextDiv
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4433,8 +4433,7 @@ prompt("This is a prompt:");
         });
         wrapperBoth.appendChild(outputToolbar);
         let outputFlag = true;
-        const outputTextDiv = getTheDiv("outputText");
-        tempDivForScope = outputTextDiv
+        outputTextDiv = getTheDiv("outputText");
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
             outputTextDiv.textContent = "";
@@ -4511,7 +4510,7 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(exportBtnsWrapper);
       repositionToolbar(editorToolbar, editorTextDiv);
       if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, tempDivForScope);
+        repositionToolbar(outputToolbar, outputTextDiv);
       }
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
@@ -4666,7 +4665,7 @@ prompt("This is a prompt:");
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
       let outputToolbar;
-      let tempDivForScope;
+      let outputTextDiv;
       if (currentTab.outputElement.innerHTML.trim()) {
         outputToolbar = document.createElement('div');
         outputToolbar.id = 'outputRichTextToolbar';
@@ -4685,8 +4684,7 @@ prompt("This is a prompt:");
         wrapBoth.appendChild(outputToolbar);
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const outputTextDiv = getTheDiv("outputText");
-        tempDivForScope = outputTextDiv
+        outputTextDiv = getTheDiv("outputText");
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
@@ -4762,7 +4760,7 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(exportBtnsWrapper);
       repositionToolbar(editorToolbar, editorTextDiv);
       if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, tempDivForScope);
+        repositionToolbar(outputToolbar, outputTextDiv);
       }
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
