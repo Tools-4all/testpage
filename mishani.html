@@ -3990,21 +3990,23 @@ prompt("This is a prompt:");
       wrapperDiv.style.color = textColor;
       document.addEventListener('DOMContentLoaded', function () {
         if (window.screen.width < 768) {
-          wrapperDiv.style.transform = "scale(0.7)"; showAlert("Please note that the code may
-    not be displayed properly on small screens."); } }); codeLines.forEach((line, index)=> {
-    const lineWrapper = document.createElement('div');
-          lineWrapper.style.display = "flex";
-          lineWrapper.style.alignItems = "flex-start";
-          const lineNumberDiv = document.createElement('div');
-          lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-          lineNumberDiv.textContent = index + 1;
-          const codeLineDiv = document.createElement('div');
-          codeLineDiv.classList.add("codeLineDiv");
-          codeLineDiv.innerHTML = highlightedLines[index] || '';
-          lineWrapper.appendChild(lineNumberDiv);
-          lineWrapper.appendChild(codeLineDiv);
-          wrapperDiv.appendChild(lineWrapper);
-        });
+          wrapperDiv.style.transform = "scale(0.7)"; showAlert("Please note that the code may not be displayed properly on small screens.");
+        }
+      });
+      codeLines.forEach((line, index) => {
+        const lineWrapper = document.createElement('div');
+        lineWrapper.style.display = "flex";
+        lineWrapper.style.alignItems = "flex-start";
+        const lineNumberDiv = document.createElement('div');
+        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+        lineNumberDiv.textContent = index + 1;
+        const codeLineDiv = document.createElement('div');
+        codeLineDiv.classList.add("codeLineDiv");
+        codeLineDiv.innerHTML = highlightedLines[index] || '';
+        lineWrapper.appendChild(lineNumberDiv);
+        lineWrapper.appendChild(codeLineDiv);
+        wrapperDiv.appendChild(lineWrapper);
+      });
       return wrapperDiv;
     }
 
