@@ -4013,11 +4013,11 @@ prompt("This is a prompt:");
     }
 
     if (!window.customQuillFormatsRegistered) {
-      const Size = Quill.import('attributors/style/size');
+      const Size = Quill.import('attributors/style/size'); 
       Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
       Quill.register(Size, true);
 
-      const Font = Quill.import('attributors/style/font');
+      const Font = Quill.import('attributors/style/font'); 
       Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
       Quill.register(Font, true);
 
@@ -4031,6 +4031,17 @@ prompt("This is a prompt:");
       [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }], // Explicitly list fonts
       [{ 'align': [] }]
     ];
+
+    function initQuil(quilInstance) {
+      quilInstance.setText("");
+      quilInstance.format('bold', false);
+      quilInstance.format('italic', false);
+      quilInstance.format('underline', false);
+      quilInstance.format('size', "12px");
+      quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
+      quilInstance.format('font', 'arial');
+      quilInstance.format('align', 'left');
+    }
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
@@ -4113,22 +4124,16 @@ prompt("This is a prompt:");
       wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // --- Editor Header using Quill ---
       const editorTextDiv = document.createElement('div');
       editorTextDiv.id = 'editorText';
       editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
-      // Append to wrapper.
       wrapperBoth.appendChild(editorTextDiv);
-      // Initialize Quill for the editor header.
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      editorQuill.format('font', 'arial');
-      editorQuill.format('size', '12px');
-      // Style the editor toolbar.
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4152,7 +4157,6 @@ prompt("This is a prompt:");
           select.style.border = '1px solid #ccc';
         });
       }
-      // Function to reposition the toolbar relative to its container.
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
@@ -4160,7 +4164,6 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      // Clear placeholder text on focus.
       let headerFlag = true;
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
@@ -4168,12 +4171,10 @@ prompt("This is a prompt:");
           headerFlag = false;
         }
       });
-
-      // --- Append the Editor Code View ---
+      initQuil(editorQuill);
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
-      // --- Output Section (if output exists) ---
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
@@ -4184,14 +4185,12 @@ prompt("This is a prompt:");
         outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapperBoth.appendChild(outputTextDiv);
-        // Initialize Quill for the output header.
         outputQuill = new Quill(outputTextDiv, {
           theme: 'snow',
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        editorQuill.format('font', 'arial');
-        editorQuill.format('size', '12px');
+        initQuil(outputQuill);
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
@@ -4313,8 +4312,7 @@ prompt("This is a prompt:");
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      editorQuill.format('font', 'arial');
-      editorQuill.format('size', '12px');
+      initQuil(editorQuill);
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4370,8 +4368,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        editorQuill.format('font', 'arial');
-        editorQuill.format('size', '12px');
+        initQuil(outputQuill);
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
