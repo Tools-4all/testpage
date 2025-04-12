@@ -3980,8 +3980,9 @@ prompt("This is a prompt:");
           sizeSelect.appendChild(option);
         });
         sizeSelect.value = currentValue;
-        // Use quillInstance.format to apply the size, avoid accessing handlers
+        // Let Quill handle the default behavior, just ensure the value is applied
         quillInstance.format('size', sizeSelect.value);
+        // Add a simple change listener to apply the format
         sizeSelect.addEventListener('change', () => {
           quillInstance.format('size', sizeSelect.value);
         });
@@ -3999,8 +4000,9 @@ prompt("This is a prompt:");
           fontSelect.appendChild(option);
         });
         fontSelect.value = currentValue;
-        // Use quillInstance.format to apply the font, avoid accessing handlers
+        // Let Quill handle the default behavior, just ensure the value is applied
         quillInstance.format('font', fontSelect.value);
+        // Add a simple change listener to apply the format
         fontSelect.addEventListener('change', () => {
           quillInstance.format('font', fontSelect.value);
         });
@@ -4080,6 +4082,33 @@ prompt("This is a prompt:");
     }
 
     async function exportImage() {
+      // Inject CSS to ensure dropdowns are not clipped and are clickable
+      const style = document.createElement('style');
+      style.textContent = `
+    .modal, .exportModalContent, .ql-container, .ql-editor {
+      overflow: visible !important;
+      position: relative;
+    }
+    .ql-toolbar {
+      overflow: visible !important;
+      position: relative;
+      z-index: 1000;
+      min-width: 300px; /* Ensure enough width for dropdowns */
+    }
+    .ql-size, .ql-font {
+      z-index: 1001;
+      pointer-events: auto !important;
+      max-width: 100px; /* Prevent text overflow in the select element */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ql-size:focus, .ql-font:focus {
+      overflow: visible;
+    }
+  `;
+      document.head.appendChild(style);
+
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
@@ -4137,7 +4166,8 @@ prompt("This is a prompt:");
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 5) + 'px'; // Add padding to avoid overlap
+        // Add more padding to ensure dropdowns have space to expand upwards
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 10) + 'px';
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
@@ -4286,6 +4316,33 @@ prompt("This is a prompt:");
     }
 
     async function exportPDF() {
+      // Inject CSS to ensure dropdowns are not clipped and are clickable
+      const style = document.createElement('style');
+      style.textContent = `
+    .modal, .exportModalContent, .ql-container, .ql-editor {
+      overflow: visible !important;
+      position: relative;
+    }
+    .ql-toolbar {
+      overflow: visible !important;
+      position: relative;
+      z-index: 1000;
+      min-width: 300px; /* Ensure enough width for dropdowns */
+    }
+    .ql-size, .ql-font {
+      z-index: 1001;
+      pointer-events: auto !important;
+      max-width: 100px; /* Prevent text overflow in the select element */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .ql-size:focus, .ql-font:focus {
+      overflow: visible;
+    }
+  `;
+      document.head.appendChild(style);
+
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
       wrapBoth.style.position = 'relative';
@@ -4342,7 +4399,7 @@ prompt("This is a prompt:");
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 5) + 'px';
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight - 10) + 'px';
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
@@ -4513,13 +4570,9 @@ prompt("This is a prompt:");
 
     function closeModal(event) {
       // Prevent closing the modal when clicking on the toolbar or dropdowns
-      if (event.target === modal || event === "close") {
-        const toolbarElements = document.querySelectorAll('.ql-toolbar, .ql-size, .ql-font');
-        const clickedOnToolbar = Array.from(toolbarElements).some(el => el.contains(event.target));
-        if (!clickedOnToolbar) {
-          modal.classList.remove("active");
-          modal.dispatchEvent(new Event("modalClosed"));
-        }
+      if (event === "close" || (event.target === modal && !event.target.closest('.ql-toolbar, .ql-size, .ql-font'))) {
+        modal.classList.remove("active");
+        modal.dispatchEvent(new Event("modalClosed"));
       }
     }
 
