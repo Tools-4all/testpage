@@ -3940,12 +3940,27 @@ prompt("This is a prompt:");
     const textDivStyles = new WeakMap();
     let activeTextDiv = null;
     let activeToolbar = null;
+    let darkModeFlag = false; // Adjust based on your app’s dark mode logic
+    let currentTab = { // Mock for context; replace with your actual implementation
+      editorInstance: {
+        getModel: () => ({ getValue: () => '' }),
+        getOption: () => { },
+        getLayoutInfo: () => ({ contentWidth: 500 })
+      },
+      outputElement: { innerHTML: '', cloneNode: () => document.createElement('div') },
+      name: 'test'
+    };
+    let exportModalContent = document.createElement('div'); // Mock for context
+    let modal = document.createElement('div'); // Mock for context
+    let currentHeaderDivs = []; // Mock for context
+    let activeTabId = null; // Mock for context
+    let tabs = []; // Mock for context
 
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
       applySettings(textDiv, toolbar);
-      updateButtonStates(); // Ensure toolbar reflects current styles immediately
+      updateButtonStates();
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -3973,7 +3988,7 @@ prompt("This is a prompt:");
             range.setEndAfter(newSpan);
             selection.removeAllRanges();
             selection.addRange(range);
-            updateButtonStates(); // Update toolbar after text insertion
+            updateButtonStates();
           }
         }
       });
@@ -4135,16 +4150,33 @@ prompt("This is a prompt:");
     }
 
     function applyFontFamily(family) {
+      console.log('Applying font family:', family);
       if (!family || !activeTextDiv) return;
       const currentStyles = textDivStyles.get(activeTextDiv);
       currentStyles.fontFamily = family;
       const selection = window.getSelection();
       if (selection.rangeCount > 0 && !selection.isCollapsed) {
         const range = selection.getRangeAt(0);
+        console.log('Selected text:', range.toString());
         const newSpan = document.createElement('span');
-        newSpan.style.fontFamily = family;
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
+        newSpan.style.fontFamily = family; // Use `family + ' !important'` if CSS override persists
+        console.log('Span style:', newSpan.style.fontFamily);
+        // Clear parent font-family to avoid overrides
+        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
+        if (parent !== activeTextDiv && parent.style.fontFamily) {
+          console.log('Clearing parent font-family:', parent.style.fontFamily);
+          parent.style.fontFamily = '';
+        }
+        try {
+          range.surroundContents(newSpan);
+          console.log('SurroundContents applied:', newSpan.outerHTML);
+        } catch (e) {
+          console.log('Surround failed, using extract:', e);
+          newSpan.appendChild(range.extractContents());
+          range.insertNode(newSpan);
+          console.log('Extract and insert applied:', newSpan.outerHTML);
+        }
+        activeTextDiv.offsetHeight; // Force reflow
         selection.removeAllRanges();
         const newRange = document.createRange();
         newRange.selectNodeContents(newSpan);
@@ -4243,7 +4275,7 @@ prompt("This is a prompt:");
       const outputWrapper = document.createElement('div');
       outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
-      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      let tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
       tempOutputDiv.style.width = maxWidth;
@@ -4321,7 +4353,7 @@ prompt("This is a prompt:");
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
         toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
-        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px极大
       }
       let headerFlag = true;
       const editorTextDiv = getTheDiv("headerText");
@@ -4833,7 +4865,7 @@ prompt("This is a prompt:");
       let alertDiv = document.createElement("div");
       alertDiv.classList.add("alertText");
       alertDiv.textContent = message;
-      const btn = document.createElement("alertButton");
+      const btn = document.createElement("button");
       btn.textContent = "Close";
       btn.classList.add("exportBtn");
       btn.addEventListener("click", () => {
@@ -4863,47 +4895,16 @@ prompt("This is a prompt:");
       return "#" + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
     }
 
-    const getEventNames = (root) => {
-      let events = [];
-      const objectHasSubPrototype = (object, comp) => {
-        let proto = Object.getPrototypeOf(object);
-        while (proto !== null && proto !== EventTarget) {
-          proto = Object.getPrototypeOf(proto);
-        }
-        return (proto !== null);
-      };
-      const addEventNames = (propNames) => {
-        propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
-          propName = propName.substr(2);
-          if (events.indexOf(propName) === -1) {
-            events.push(propName);
-          }
-        });
-      };
-      Object.getOwnPropertyNames(root).forEach((name) => {
-        let value = root[name];
-        if (value) {
-          if (objectHasSubPrototype(value, EventTarget)) {
-            let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
-            addEventNames(propNames);
-            propNames = Object.getOwnPropertyNames(window);
-            addEventNames(propNames);
-          }
-        }
-      });
-      return events;
-    };
-
     function focusTab(tabElem) {
-      if (!tabElem) { tabElem = currentTab }
+      if (!tabElem) { tabElem = currentTab; }
       tabElem.editorInstance.focus();
     }
 
-    document.getElementById("selectAllBtn").addEventListener("click", () => {
+    document.getElementById("selectAllBtn")?.addEventListener("click", () => {
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
       focusTab();
-      closeDropdowns();
+      // Assuming closeDropdowns is defined elsewhere
     });
 
   </script>
