@@ -4033,7 +4033,6 @@ prompt("This is a prompt:");
     ];
 
     function initQuil(quilInstance) {
-      quilInstance.setText("erferfer");
       quilInstance.format('bold', false);
       quilInstance.format('italic', false);
       quilInstance.format('underline', false);
@@ -4134,6 +4133,7 @@ prompt("This is a prompt:");
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
+      editorQuill.isFirst = true;
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4169,6 +4169,10 @@ prompt("This is a prompt:");
         if (headerFlag) {
           editorQuill.setText('');
           headerFlag = false;
+        }
+        if (editorQuill.isFirst) {
+          initQuil(editorQuill);
+          editorQuill.isFirst = false;
         }
       });
       initQuil(editorQuill);
