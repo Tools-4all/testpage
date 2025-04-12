@@ -4085,7 +4085,6 @@ prompt("This is a prompt:");
         } else if (command === 'underline') {
           currentStyles.underline = !currentStyles.underline;
         }
-        activeTextDiv.focus(); // immediately update focus so button state reflects change
       }
       updateButtonStates();
     }
@@ -4146,14 +4145,8 @@ prompt("This is a prompt:");
         const range = selection.getRangeAt(0);
         const newSpan = document.createElement('span');
         newSpan.style.fontFamily = family;
-        try {
-          // Try to wrap the selected content with the new span
-          range.surroundContents(newSpan);
-        } catch (e) {
-          // Fallback if surroundContents cannot be used
-          newSpan.appendChild(range.extractContents());
-          range.insertNode(newSpan);
-        }
+        newSpan.appendChild(range.extractContents());
+        range.insertNode(newSpan);
         selection.removeAllRanges();
         const newRange = document.createRange();
         newRange.selectNodeContents(newSpan);
@@ -4511,26 +4504,26 @@ prompt("This is a prompt:");
 
     function giveTheHtml() {
       return `
-<div>
-  <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-  <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-  <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-</div>
-<div>
-  <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-  <input class="color" type="color" onchange="applyColor(this.value)">
-  <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-    <option value="">Font Family</option>
-    <option value="Arial">Arial</option>
-    <option value="Times New Roman">Times New Roman</option>
-    <option value="Courier New">Courier New</option>
-  </select>
-</div>
-<div>
-  <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-  <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-  <button  class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-</div>
+  <div>
+    <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+    <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+    <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
+  </div>
+  <div>
+    <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
+    <input class="color" type="color" onchange="applyColor(this.value)">
+    <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
+      <option value="">Font Family</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Courier New">Courier New</option>
+    </select>
+  </div>
+  <div>
+    <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
+    <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
+    <button  class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
+  </div>
   `;
     }
 
@@ -4903,7 +4896,6 @@ prompt("This is a prompt:");
       focusTab()
       closeDropdowns()
     });
-
 
   </script>
 
