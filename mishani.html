@@ -4073,8 +4073,7 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      const domToolbar = quilInstance.container.querySelector('.ql-toolbar');
-      domToolbar.querySelector(".ql-size").value = "16px";
+      quill.formatText(0, quill.getLength(), 'size', '16px');
     }
 
     async function takeImage(domElem) {
