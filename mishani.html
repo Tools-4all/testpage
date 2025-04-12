@@ -6,6 +6,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Multi-Tab Sandboxed JS Compiler</title>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -3937,292 +3939,6 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    const textDivStyles = new WeakMap();
-    let activeTextDiv = null;
-    let activeToolbar = null;
-
-    function setActiveTextDiv(textDiv, toolbar) {
-      activeTextDiv = textDiv;
-      activeToolbar = toolbar;
-      applySettings(textDiv, toolbar);
-    }
-
-    function attachBeforeInputListener(textDiv) {
-      textDiv.addEventListener('beforeinput', (e) => {
-        if (e.inputType === 'insertText') {
-          e.preventDefault();
-          const currentStyles = textDivStyles.get(textDiv);
-          const selection = window.getSelection();
-          if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            const newSpan = document.createElement('span');
-            if (currentStyles.fontSize) newSpan.style.fontSize = currentStyles.fontSize;
-            if (currentStyles.color) newSpan.style.color = currentStyles.color;
-            if (currentStyles.fontFamily) newSpan.style.fontFamily = currentStyles.fontFamily;
-            if (currentStyles.bold) newSpan.style.fontWeight = 'bold';
-            if (currentStyles.italic) newSpan.style.fontStyle = 'italic';
-            if (currentStyles.underline) {
-              newSpan.style.textDecoration = 'underline';
-              if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
-            }
-            newSpan.textContent = e.data;
-            range.deleteContents();
-            range.insertNode(newSpan);
-            range.setStartAfter(newSpan);
-            range.setEndAfter(newSpan);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-        }
-      });
-    }
-
-    function updateButtonStates() {
-      if (!activeToolbar) return;
-
-      const boldBtn = activeToolbar.querySelector('button:nth-child(1)');
-      const italicBtn = activeToolbar.querySelector('button:nth-child(2)');
-      const underlineBtn = activeToolbar.querySelector('button:nth-child(3)');
-      const fontSizeInput = activeToolbar.querySelector('input[type="number"]');
-      const colorInput = activeToolbar.querySelector('input[type="color"]');
-      const fontFamilySelect = activeToolbar.querySelector('select');
-
-      let state;
-      if (document.activeElement !== activeTextDiv) {
-        state = textDivStyles.get(activeTextDiv) || {
-          bold: false,
-          italic: false,
-          underline: false,
-          fontSize: '',
-          color: '#000000',
-          fontFamily: ''
-        };
-      } else {
-        const selection = window.getSelection();
-        const hasSelection = selection.rangeCount > 0 && !selection.isCollapsed;
-        if (hasSelection && activeTextDiv.contains(selection.anchorNode)) {
-          const range = selection.getRangeAt(0);
-          let node = range.startContainer;
-          if (node.nodeType === Node.TEXT_NODE) {
-            node = node.parentElement;
-          }
-          const computedStyle = window.getComputedStyle(node);
-          state = {
-            bold: computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700,
-            italic: computedStyle.fontStyle === 'italic',
-            underline: computedStyle.textDecorationLine.includes('underline'),
-            fontSize: parseInt(computedStyle.fontSize) || '',
-            color: rgbToHex(computedStyle.color) || '#000000',
-            fontFamily: computedStyle.fontFamily.split(',')[0].trim().replace(/^["'](.+(?=["']$))["']$/, '$1') || ''
-          };
-        } else {
-          state = textDivStyles.get(activeTextDiv) || {
-            bold: false,
-            italic: false,
-            underline: false,
-            fontSize: '',
-            color: '#000000',
-            fontFamily: ''
-          };
-        }
-      }
-
-      boldBtn.classList.toggle('active', state.bold);
-      boldBtn.style.backgroundColor = state.bold ? (darkModeFlag ? '#666' : '#ddd') : '';
-      italicBtn.classList.toggle('active', state.italic);
-      italicBtn.style.backgroundColor = state.italic ? (darkModeFlag ? '#666' : '#ddd') : '';
-      underlineBtn.classList.toggle('active', state.underline);
-      underlineBtn.style.backgroundColor = state.underline ? (darkModeFlag ? '#666' : '#ddd') : '';
-      fontSizeInput.value = (state.fontSize.toString() || '').replace('px', '');
-      colorInput.value = state.color;
-      fontFamilySelect.value = state.fontFamily;
-    }
-
-    function applyFormat(command) {
-      if (!activeTextDiv) return;
-      const currentStyles = textDivStyles.get(activeTextDiv);
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        let node = range.startContainer;
-        if (node.nodeType === Node.TEXT_NODE) {
-          node = node.parentElement;
-        }
-        const computedStyle = window.getComputedStyle(node);
-        const newSpan = document.createElement('span');
-        if (command === 'bold') {
-          const isBold = computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 700;
-          const newBold = !isBold;
-          newSpan.style.fontWeight = newBold ? 'bold' : 'normal';
-          currentStyles.bold = newBold;
-        } else if (command === 'italic') {
-          const isItalic = computedStyle.fontStyle === 'italic';
-          const newItalic = !isItalic;
-          newSpan.style.fontStyle = newItalic ? 'italic' : 'normal';
-          currentStyles.italic = newItalic;
-        } else if (command === 'underline') {
-          const isUnderlined = computedStyle.textDecorationLine.includes('underline');
-          const newUnderline = !isUnderlined;
-          if (newUnderline) {
-            newSpan.style.textDecoration = 'underline';
-            if (currentStyles.color) newSpan.style.textDecorationColor = currentStyles.color;
-          } else {
-            newSpan.style.textDecoration = 'none';
-          }
-          currentStyles.underline = newUnderline;
-        }
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newSpan);
-        selection.addRange(newRange);
-      } else {
-        if (command === 'bold') {
-          currentStyles.bold = !currentStyles.bold;
-        } else if (command === 'italic') {
-          currentStyles.italic = !currentStyles.italic;
-        } else if (command === 'underline') {
-          currentStyles.underline = !currentStyles.underline;
-        }
-      }
-      updateButtonStates();
-    }
-
-    function applyFontSize(size) {
-      if (!size || !activeTextDiv) return;
-      const currentStyles = textDivStyles.get(activeTextDiv);
-      currentStyles.fontSize = size;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const newSpan = document.createElement('span');
-        newSpan.style.fontSize = size;
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newSpan);
-        selection.addRange(newRange);
-      }
-      activeTextDiv.focus();
-      updateButtonStates();
-    }
-
-    function applyColor(color) {
-      if (!color || !activeTextDiv) return;
-      const currentStyles = textDivStyles.get(activeTextDiv);
-      currentStyles.color = color;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const newSpan = document.createElement('span');
-        newSpan.style.color = color;
-        const parent = range.commonAncestorContainer.nodeType === Node.TEXT_NODE ? range.commonAncestorContainer.parentElement : range.commonAncestorContainer;
-        const computedStyle = window.getComputedStyle(parent);
-        const isUnderlined = computedStyle.textDecorationLine.includes('underline');
-        if (isUnderlined) {
-          newSpan.style.textDecoration = 'underline';
-          newSpan.style.textDecorationColor = color;
-        }
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newSpan);
-        selection.addRange(newRange);
-      }
-      activeTextDiv.focus();
-      updateButtonStates();
-    }
-
-    function applyFontFamily(family) {
-      if (!family || !activeTextDiv) return;
-      const currentStyles = textDivStyles.get(activeTextDiv);
-      currentStyles.fontFamily = family;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const newSpan = document.createElement('span');
-        newSpan.style.fontFamily = family;
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newSpan);
-        selection.addRange(newRange);
-      }
-      activeTextDiv.focus();
-      updateButtonStates();
-    }
-
-    function applyAlignment(align) {
-      if (!activeTextDiv) return;
-      activeTextDiv.style.textAlign = align;
-    }
-
-    function selectionChangeHandler() {
-      const selection = window.getSelection();
-      const toolbar = document.getElementById('richTextToolbar');
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const commonAncestor = range.commonAncestorContainer;
-        const isInHeader = currentHeaderDivs.some(div => div.contains(commonAncestor));
-        if (isInHeader && !selection.isCollapsed) {
-          const rect = range.getBoundingClientRect();
-          const modalRect = exportModalContent.getBoundingClientRect();
-          const left = rect.left - modalRect.left;
-          const top = rect.top - modalRect.top - toolbar.offsetHeight - 5;
-          toolbar.style.left = `${left}px`;
-          toolbar.style.top = `${top}px`;
-          toolbar.style.display = 'block';
-        } else {
-          toolbar.style.display = 'none';
-        }
-      } else {
-        toolbar.style.display = 'none';
-      }
-    }
-
-    function showToolbar(headerDiv) {
-      const toolbar = document.getElementById('richTextToolbar');
-      const headerRect = headerDiv.getBoundingClientRect();
-      const modalRect = exportModalContent.getBoundingClientRect();
-      let left = headerRect.left - modalRect.left;
-      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10;
-      const toolbarWidth = toolbar.offsetWidth;
-      const modalWidth = modalRect.width;
-      if (left < 0) left = 0;
-      if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
-      toolbar.style.left = `${left}px`;
-      toolbar.style.top = `${top}px`;
-      toolbar.style.display = 'block';
-    }
-
-    let isToolbarActive = false;
-
-    function hideToolbar() {
-      if (!isToolbarActive) {
-        const toolbar = document.getElementById('richTextToolbar');
-        toolbar.style.display = 'none';
-      }
-    }
-
-    function applyStyleToSelection(styleProperty, value) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        const newSpan = document.createElement('span');
-        newSpan.style[styleProperty] = value;
-        newSpan.appendChild(range.extractContents());
-        range.insertNode(newSpan);
-        selection.removeAllRanges();
-        const newRange = document.createRange();
-        newRange.selectNodeContents(newSpan);
-        selection.addRange(newRange);
-      }
-    }
-
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
         scale: 2,
@@ -4261,7 +3977,8 @@ prompt("This is a prompt:");
       );
       const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
-      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
+      const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code,
+  monospace';
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
       const textColor = darkModeFlag ? '#D4D4D4' : '#000000';
       const wrapperDiv = document.createElement('div');
@@ -4274,24 +3991,21 @@ prompt("This is a prompt:");
       wrapperDiv.style.color = textColor;
       document.addEventListener('DOMContentLoaded', function () {
         if (window.screen.width < 768) {
-          wrapperDiv.style.transform = "scale(0.7)";
-          showAlert("Please note that the code may not be displayed properly on small screens.");
-        }
-      });
-      codeLines.forEach((line, index) => {
-        const lineWrapper = document.createElement('div');
-        lineWrapper.style.display = "flex";
-        lineWrapper.style.alignItems = "flex-start";
-        const lineNumberDiv = document.createElement('div');
-        lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
-        lineNumberDiv.textContent = index + 1;
-        const codeLineDiv = document.createElement('div');
-        codeLineDiv.classList.add("codeLineDiv");
-        codeLineDiv.innerHTML = highlightedLines[index] || '';
-        lineWrapper.appendChild(lineNumberDiv);
-        lineWrapper.appendChild(codeLineDiv);
-        wrapperDiv.appendChild(lineWrapper);
-      });
+          wrapperDiv.style.transform = "scale(0.7)"; showAlert("Please note that the code may
+    not be displayed properly on small screens."); } }); codeLines.forEach((line, index)=> {
+    const lineWrapper = document.createElement('div');
+          lineWrapper.style.display = "flex";
+          lineWrapper.style.alignItems = "flex-start";
+          const lineNumberDiv = document.createElement('div');
+          lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
+          lineNumberDiv.textContent = index + 1;
+          const codeLineDiv = document.createElement('div');
+          codeLineDiv.classList.add("codeLineDiv");
+          codeLineDiv.innerHTML = highlightedLines[index] || '';
+          lineWrapper.appendChild(lineNumberDiv);
+          lineWrapper.appendChild(codeLineDiv);
+          wrapperDiv.appendChild(lineWrapper);
+        });
       return wrapperDiv;
     }
 
@@ -4300,43 +4014,32 @@ prompt("This is a prompt:");
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorToolbar = document.createElement('div');
-      editorToolbar.id = 'editorRichTextToolbar';
-      editorToolbar.innerHTML = giveTheHtml();
-      editorToolbar.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-          if (button.classList.contains('active')) {
-            button.classList.remove('active');
-            button.style.backgroundColor = '';
-          } else {
-            button.classList.add('active');
-            button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-          }
-        });
-      });
-      wrapperBoth.appendChild(editorToolbar);
-      function repositionToolbar(toolbar, element) {
-        const elementRect = element.getBoundingClientRect();
-        const containerRect = wrapperBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
-        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
-      }
-      let headerFlag = true;
-      const editorTextDiv = getTheDiv("headerText");
-      editorTextDiv.addEventListener('focus', () => {
-        if (headerFlag) {
-          editorTextDiv.textContent = "";
-          headerFlag = false;
+
+      // Editor Header (Quill.js)
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.id = 'editorText';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+      wrapperBoth.appendChild(editorTextDiv);
+
+      // Initialize Quill for editor header
+      const editorQuill = new Quill(editorTextDiv, {
+        theme: 'snow',
+        placeholder: 'Enter your title here...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+            [{ 'color': [] }],
+            [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+            [{ 'align': [] }]
+          ]
         }
-        setActiveTextDiv(editorTextDiv, editorToolbar);
-        repositionToolbar(editorToolbar, editorTextDiv);
-        applySettings(editorTextDiv, editorToolbar);
       });
-      editorTextDiv.addEventListener('click', () => {
-        setActiveTextDiv(editorTextDiv, editorToolbar);
-        repositionToolbar(editorToolbar, editorTextDiv);
-      });
-      attachBeforeInputListener(editorTextDiv);
+
+      // Style Quill toolbar
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4344,13 +4047,11 @@ prompt("This is a prompt:");
         editorToolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#c5c5c5';
         });
-        editorToolbar.querySelectorAll('input, select').forEach(input => {
-          input.style.backgroundColor = '#555';
-          input.style.color = '#fff';
-          input.style.border = '1px solid #777';
+        editorToolbar.querySelectorAll('select').forEach(select => {
+          select.style.backgroundColor = '#555';
+          select.style.color = '#fff';
+          select.style.border = '1px solid #777';
         });
-        editorTextDiv.style.color = '#fff';
-        editorTextDiv.style.border = '1px solid #333';
       } else {
         editorToolbar.style.background = '#f0f0f0';
         editorToolbar.style.borderColor = '#ccc';
@@ -4358,52 +4059,65 @@ prompt("This is a prompt:");
         editorToolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#000';
         });
-        editorToolbar.querySelectorAll('input, select').forEach(input => {
-          input.style.backgroundColor = '#fff';
-          input.style.color = '#000';
-          input.style.border = '1px solid #ccc';
+        editorToolbar.querySelectorAll('select').forEach(select => {
+          select.style.backgroundColor = '#fff';
+          select.style.color = '#000';
+          select.style.border = '1px solid #ccc';
         });
-        editorTextDiv.style.color = '#000000';
-        editorTextDiv.style.border = '1px solid #c0c0c0';
       }
-      wrapperBoth.appendChild(editorTextDiv);
+
+      // Reposition toolbar
+      function repositionToolbar(toolbar, element) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = wrapperBoth.getBoundingClientRect();
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+      }
+      repositionToolbar(editorToolbar, editorTextDiv);
+
+      // Clear placeholder on focus
+      let headerFlag = true;
+      editorTextDiv.addEventListener('focus', () => {
+        if (headerFlag) {
+          editorQuill.setText('');
+          headerFlag = false;
+        }
+      });
+
+      // Append editor content
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
+
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      let outputToolbar;
-      let outputTextDiv;
+
+      let outputToolbar, outputQuill;
       if (currentTab.outputElement.innerHTML.trim()) {
-        outputToolbar = document.createElement('div');
-        outputToolbar.id = 'outputRichTextToolbar';
-        outputToolbar.innerHTML = giveTheHtml();
-        outputToolbar.querySelectorAll('button').forEach(button => {
-          button.addEventListener('click', () => {
-            if (button.classList.contains('active')) {
-              button.classList.remove('active');
-              button.style.backgroundColor = '';
-            } else {
-              button.classList.add('active');
-              button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-            }
-          });
-        });
-        wrapperBoth.appendChild(outputToolbar);
-        let outputFlag = true;
-        outputTextDiv = getTheDiv("outputText");
-        outputTextDiv.addEventListener('focus', () => {
-          if (outputFlag) {
-            outputTextDiv.textContent = "";
-            outputFlag = false;
+        // Output Header (Quill.js)
+        const outputTextDiv = document.createElement('div');
+        outputTextDiv.id = 'outputText';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+        wrapperBoth.appendChild(outputTextDiv);
+
+        // Initialize Quill for output header
+        outputQuill = new Quill(outputTextDiv, {
+          theme: 'snow',
+          placeholder: 'Enter your title here...',
+          modules: {
+            toolbar: [
+              ['bold', 'italic', 'underline'],
+              [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+              [{ 'color': [] }],
+              [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+              [{ 'align': [] }]
+            ]
           }
-          setActiveTextDiv(outputTextDiv, outputToolbar);
-          repositionToolbar(outputToolbar, outputTextDiv);
         });
-        outputTextDiv.addEventListener('click', () => {
-          setActiveTextDiv(outputTextDiv, outputToolbar);
-          repositionToolbar(outputToolbar, outputTextDiv);
-        });
-        attachBeforeInputListener(outputTextDiv);
+
+        // Style Quill toolbar
+        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
           outputToolbar.style.borderColor = '#555';
@@ -4411,13 +4125,11 @@ prompt("This is a prompt:");
           outputToolbar.querySelectorAll('button').forEach(button => {
             button.style.color = '#c5c5c5';
           });
-          outputToolbar.querySelectorAll('input, select').forEach(input => {
-            input.style.backgroundColor = '#555';
-            input.style.color = '#fff';
-            input.style.border = '1px solid #777';
+          outputToolbar.querySelectorAll('select').forEach(select => {
+            select.style.backgroundColor = '#555';
+            select.style.color = '#fff';
+            select.style.border = '1px solid #777';
           });
-          outputTextDiv.style.color = '#fff';
-          outputTextDiv.style.border = '1px solid #333';
         } else {
           outputToolbar.style.background = '#f0f0f0';
           outputToolbar.style.borderColor = '#ccc';
@@ -4425,18 +4137,29 @@ prompt("This is a prompt:");
           outputToolbar.querySelectorAll('button').forEach(button => {
             button.style.color = '#000';
           });
-          outputToolbar.querySelectorAll('input, select').forEach(input => {
-            input.style.backgroundColor = '#fff';
-            input.style.color = '#000';
-            input.style.border = '1px solid #ccc';
+          outputToolbar.querySelectorAll('select').forEach(select => {
+            select.style.backgroundColor = '#fff';
+            select.style.color = '#000';
+            select.style.border = '1px solid #ccc';
           });
-          outputTextDiv.style.color = '#000000';
-          outputTextDiv.style.border = '1px solid #c0c0c0';
         }
-        wrapperBoth.appendChild(outputTextDiv);
+        repositionToolbar(outputToolbar, outputTextDiv);
+
+        // Clear placeholder on focus
+        let outputFlag = true;
+        outputTextDiv.addEventListener('focus', () => {
+          if (outputFlag) {
+            outputQuill.setText('');
+            outputFlag = false;
+          }
+        });
+
+        // Append output content
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
+
+        // Checkboxes for output
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4445,6 +4168,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -4455,6 +4179,8 @@ prompt("This is a prompt:");
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
+
+      // Checkbox for editor header
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4463,16 +4189,15 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
-      repositionToolbar(editorToolbar, editorTextDiv);
-      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, outputTextDiv);
-      }
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         editorToolbar.style.display = 'none';
@@ -4498,83 +4223,8 @@ prompt("This is a prompt:");
         a.download = `${currentTab.name}.png`;
         a.click();
       };
-      document.addEventListener('selectionchange', updateButtonStates);
+
       displayModal();
-    }
-
-    function giveTheHtml() {
-      return `
-  <div>
-    <button class="boldBtn" onmousedown="event.preventDefault();" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-    <button class="italicBtn" onmousedown="event.preventDefault();" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-    <button class="underlineBtn" onmousedown="event.preventDefault();" onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-  </div>
-  <div>
-    <input type="number" min="8" max="72" class="fontSize" placeholder="Size" onmousedown="event.preventDefault();" onchange="applyFontSize(this.value + 'px')">
-    <input class="color" type="color" onchange="applyColor(this.value)">
-    <select class="fontFamily" style="border: 1px solid;" onchange="applyFontFamily(this.value)">
-      <option value="">Font Family</option>
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
-      <option value="Courier New">Courier New</option>
-    </select>
-  </div>
-  <div>
-    <button class="alignLeft" onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-    <button class="alignCenter" onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-    <button  class="alignRight" onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-  </div>
-  `;
-    }
-
-    function getTheDiv(classList, placeHolder = "Enter your title here...") {
-      const div = document.createElement('div');
-      div.classList.add(classList ? classList : "headerText");
-      div.contentEditable = true;
-      div.textContent = placeHolder;
-      let defaultSettings = {
-        fontSize: '16px',
-        color: darkModeFlag ? '#ffffff' : '#000000',
-        fontFamily: 'Arial, sans-serif',
-        textAlign: 'left',
-        bold: false,
-        italic: false,
-        underline: false
-      };
-      textDivStyles.set(div, { ...defaultSettings });
-      return div;
-    }
-
-    function applySettings(textDiv, toolbarDiv) {
-      const settings = textDivStyles.get(textDiv);
-      textDiv.style.fontSize = settings.fontSize;
-      textDiv.style.color = settings.color;
-      textDiv.style.fontFamily = settings.fontFamily;
-      textDiv.style.textAlign = settings.textAlign;
-      const boldBtn = toolbarDiv.querySelector('.boldBtn');
-      if (settings.bold) {
-        boldBtn.classList.add('active');
-        boldBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-      } else {
-        boldBtn.classList.remove('active');
-        boldBtn.style.backgroundColor = '';
-      }
-      const italicBtn = toolbarDiv.querySelector('.italicBtn');
-      if (settings.italic) {
-        italicBtn.classList.add('active');
-        italicBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-      } else {
-        italicBtn.classList.remove('active');
-        italicBtn.style.backgroundColor = '';
-      }
-      const underlineBtn = toolbarDiv.querySelector('.underlineBtn');
-      if (settings.underline) {
-        underlineBtn.classList.add('active');
-        underlineBtn.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-      } else {
-        underlineBtn.classList.remove('active');
-        underlineBtn.style.backgroundColor = '';
-      }
     }
 
     async function exportPDF() {
@@ -4583,43 +4233,32 @@ prompt("This is a prompt:");
       wrapBoth.style.position = 'relative';
       wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const editorToolbar = document.createElement('div');
-      editorToolbar.id = 'editorRichTextToolbar';
-      editorToolbar.innerHTML = giveTheHtml();
-      editorToolbar.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', () => {
-          if (button.classList.contains('active')) {
-            button.classList.remove('active');
-            button.style.backgroundColor = '';
-          } else {
-            button.classList.add('active');
-            button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-          }
-        });
-      });
-      wrapBoth.appendChild(editorToolbar);
-      function repositionToolbar(toolbar, element) {
-        const elementRect = element.getBoundingClientRect();
-        const containerRect = wrapBoth.getBoundingClientRect();
-        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
-        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
-      }
-      let headerFlag = true;
-      const editorTextDiv = getTheDiv("headerText");
 
-      editorTextDiv.addEventListener('focus', () => {
-        if (headerFlag) {
-          editorTextDiv.textContent = "";
-          headerFlag = false;
+      // Editor Header (Quill.js)
+      const editorTextDiv = document.createElement('div');
+      editorTextDiv.id = 'editorText';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+      wrapBoth.appendChild(editorTextDiv);
+
+      // Initialize Quill for editor header
+      const editorQuill = new Quill(editorTextDiv, {
+        theme: 'snow',
+        placeholder: 'Enter your title here...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+            [{ 'color': [] }],
+            [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+            [{ 'align': [] }]
+          ]
         }
-        setActiveTextDiv(editorTextDiv, editorToolbar);
-        repositionToolbar(editorToolbar, editorTextDiv);
       });
-      editorTextDiv.addEventListener('click', () => {
-        setActiveTextDiv(editorTextDiv, editorToolbar);
-        repositionToolbar(editorToolbar, editorTextDiv);
-      });
-      attachBeforeInputListener(editorTextDiv);
+
+      // Style Quill toolbar
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4627,13 +4266,11 @@ prompt("This is a prompt:");
         editorToolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#c5c5c5';
         });
-        editorToolbar.querySelectorAll('input, select').forEach(input => {
-          input.style.backgroundColor = '#555';
-          input.style.color = '#fff';
-          input.style.border = '1px solid #777';
+        editorToolbar.querySelectorAll('select').forEach(select => {
+          select.style.backgroundColor = '#555';
+          select.style.color = '#fff';
+          select.style.border = '1px solid #777';
         });
-        editorTextDiv.style.color = '#fff';
-        editorTextDiv.style.border = '1px solid #333';
       } else {
         editorToolbar.style.background = '#f0f0f0';
         editorToolbar.style.borderColor = '#ccc';
@@ -4641,53 +4278,63 @@ prompt("This is a prompt:");
         editorToolbar.querySelectorAll('button').forEach(button => {
           button.style.color = '#000';
         });
-        editorToolbar.querySelectorAll('input, select').forEach(input => {
-          input.style.backgroundColor = '#fff';
-          input.style.color = '#000';
-          input.style.border = '1px solid #ccc';
+        editorToolbar.querySelectorAll('select').forEach(select => {
+          select.style.backgroundColor = '#fff';
+          select.style.color = '#000';
+          select.style.border = '1px solid #ccc';
         });
-        editorTextDiv.style.color = '#000000';
-        editorTextDiv.style.border = '1px solid #c0c0c0';
       }
-      wrapBoth.appendChild(editorTextDiv);
+
+      // Reposition toolbar
+      function repositionToolbar(toolbar, element) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = wrapBoth.getBoundingClientRect();
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+      }
+      repositionToolbar(editorToolbar, editorTextDiv);
+
+      // Clear placeholder on focus
+      let headerFlag = true;
+      editorTextDiv.addEventListener('focus', () => {
+        if (headerFlag) {
+          editorQuill.setText('');
+          headerFlag = false;
+        }
+      });
+
       wrapBoth.appendChild(editorDiv);
+
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
-      let outputToolbar;
-      let outputTextDiv;
+
+      let outputToolbar, outputQuill;
       if (currentTab.outputElement.innerHTML.trim()) {
-        outputToolbar = document.createElement('div');
-        outputToolbar.id = 'outputRichTextToolbar';
-        outputToolbar.innerHTML = giveTheHtml();
-        outputToolbar.querySelectorAll('button').forEach(button => {
-          button.addEventListener('click', () => {
-            if (button.classList.contains('active')) {
-              button.classList.remove('active');
-              button.style.backgroundColor = '';
-            } else {
-              button.classList.add('active');
-              button.style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
-            }
-          });
-        });
-        wrapBoth.appendChild(outputToolbar);
-        const outputClone = await getOutputDivClone();
-        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        outputTextDiv = getTheDiv("outputText");
-        let outputFlag = true;
-        outputTextDiv.addEventListener('focus', () => {
-          if (outputFlag) {
-            outputTextDiv.textContent = "";
-            outputFlag = false;
+        // Output Header (Quill.js)
+        const outputTextDiv = document.createElement('div');
+        outputTextDiv.id = 'outputText';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+        wrapBoth.appendChild(outputTextDiv);
+
+        // Initialize Quill for output header
+        outputQuill = new Quill(outputTextDiv, {
+          theme: 'snow',
+          placeholder: 'Enter your title here...',
+          modules: {
+            toolbar: [
+              ['bold', 'italic', 'underline'],
+              [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+              [{ 'color': [] }],
+              [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+              [{ 'align': [] }]
+            ]
           }
-          setActiveTextDiv(outputTextDiv, outputToolbar);
-          repositionToolbar(outputToolbar, outputTextDiv);
         });
-        outputTextDiv.addEventListener('click', () => {
-          setActiveTextDiv(outputTextDiv, outputToolbar);
-          repositionToolbar(outputToolbar, outputTextDiv);
-        });
-        attachBeforeInputListener(outputTextDiv);
+
+        // Style Quill toolbar
+        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
           outputToolbar.style.borderColor = '#555';
@@ -4695,13 +4342,11 @@ prompt("This is a prompt:");
           outputToolbar.querySelectorAll('button').forEach(button => {
             button.style.color = '#c5c5c5';
           });
-          outputToolbar.querySelectorAll('input, select').forEach(input => {
-            input.style.backgroundColor = '#555';
-            input.style.color = '#fff';
-            input.style.border = '1px solid #777';
+          outputToolbar.querySelectorAll('select').forEach(select => {
+            select.style.backgroundColor = '#555';
+            select.style.color = '#fff';
+            select.style.border = '1px solid #777';
           });
-          outputTextDiv.style.color = '#fff';
-          outputTextDiv.style.border = '1px solid #333';
         } else {
           outputToolbar.style.background = '#f0f0f0';
           outputToolbar.style.borderColor = '#ccc';
@@ -4709,16 +4354,27 @@ prompt("This is a prompt:");
           outputToolbar.querySelectorAll('button').forEach(button => {
             button.style.color = '#000';
           });
-          outputToolbar.querySelectorAll('input, select').forEach(input => {
-            input.style.backgroundColor = '#fff';
-            input.style.color = '#000';
-            input.style.border = '1px solid #ccc';
+          outputToolbar.querySelectorAll('select').forEach(select => {
+            select.style.backgroundColor = '#fff';
+            select.style.color = '#000';
+            select.style.border = '1px solid #ccc';
           });
-          outputTextDiv.style.color = '#000000';
-          outputTextDiv.style.border = '1px solid #c0c0c0';
         }
-        wrapBoth.appendChild(outputTextDiv);
+        repositionToolbar(outputToolbar, outputTextDiv);
+
+        // Clear placeholder on focus
+        let outputFlag = true;
+        outputTextDiv.addEventListener('focus', () => {
+          if (outputFlag) {
+            outputQuill.setText('');
+            outputFlag = false;
+          }
+        });
+
+        const outputClone = await getOutputDivClone();
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputClone);
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4727,6 +4383,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -4737,6 +4394,7 @@ prompt("This is a prompt:");
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
+
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4745,16 +4403,15 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
       exportModalContent.appendChild(wrapBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
-      repositionToolbar(editorToolbar, editorTextDiv);
-      if (outputToolbar && currentTab.outputElement.innerHTML.trim()) {
-        repositionToolbar(outputToolbar, outputTextDiv);
-      }
+
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
       exportBtn.classList.add("exportBtn");
       exportBtnsWrapper.appendChild(exportBtn);
+
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
         editorToolbar.style.display = 'none';
@@ -4785,7 +4442,7 @@ prompt("This is a prompt:");
         }
         doc.save(`${currentTab.name}.pdf`);
       };
-      document.addEventListener('selectionchange', updateButtonStates);
+
       displayModal();
     }
 
@@ -4812,8 +4469,6 @@ prompt("This is a prompt:");
       if (event.target === modal || event === "close") {
         modal.classList.remove("active");
         modal.dispatchEvent(new Event("modalClosed"));
-        const toolbar = document.getElementById('richTextToolbar');
-        if (toolbar) toolbar.style.display = 'none';
       }
     }
 
@@ -4824,7 +4479,7 @@ prompt("This is a prompt:");
       let alertDiv = document.createElement("div");
       alertDiv.classList.add("alertText");
       alertDiv.textContent = message;
-      const btn = document.createElement("alertButton");
+      const btn = document.createElement("button");
       btn.textContent = "Close";
       btn.classList.add("exportBtn");
       btn.addEventListener("click", () => {
