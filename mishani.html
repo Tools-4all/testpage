@@ -1523,10 +1523,11 @@
       content: '72px';
     }
 
-    #compiler:not(.darkMode) .ql-editor.ql-blank:before {
+    #compiler.lightMode .ql-editor.ql-blank:before {
       color: #000000;
     }
-    #compiler:not(.lightMode) .ql-editor.ql-blank:before {
+
+    #compiler.darkMode .ql-editor.ql-blank:before {
       color: #ffffff;
     }
   </style>
@@ -4020,11 +4021,11 @@ prompt("This is a prompt:");
     }
 
     if (!window.customQuillFormatsRegistered) {
-      const Size = Quill.import('attributors/style/size'); 
+      const Size = Quill.import('attributors/style/size');
       Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
       Quill.register(Size, true);
 
-      const Font = Quill.import('attributors/style/font'); 
+      const Font = Quill.import('attributors/style/font');
       Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
       Quill.register(Font, true);
 
@@ -4033,9 +4034,9 @@ prompt("This is a prompt:");
 
     const quillToolbarOptions = [
       ['bold', 'italic', 'underline'],
-      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }], 
+      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
       [{ 'color': [] }],
-      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }], 
+      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
       [{ 'align': [] }]
     ];
 
@@ -4139,7 +4140,7 @@ prompt("This is a prompt:");
         theme: 'snow',
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions },
-        
+
       });
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
