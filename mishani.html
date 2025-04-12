@@ -3936,7 +3936,6 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    // Apply basic formatting using execCommand
     const textDivStyles = new WeakMap();
     let activeTextDiv = null;
     let activeToolbar = null;
@@ -3944,11 +3943,7 @@ prompt("This is a prompt:");
     function setActiveTextDiv(textDiv, toolbar) {
       activeTextDiv = textDiv;
       activeToolbar = toolbar;
-      textDivStyles.set(textDiv, {
-        fontSize: textDiv.settings.fontSize,
-        color: textDiv.settings.color,
-        fontFamily: textDiv.settings.fontFamily
-      });
+      applySettings(textDiv, toolbar, textDiv.settings);
     }
 
     function attachBeforeInputListener(textDiv) {
@@ -3993,7 +3988,6 @@ prompt("This is a prompt:");
       const fontFamilySelect = activeToolbar.querySelector('select');
 
       let state;
-      // If the focus is NOT on the editable text div, use stored state.
       if (document.activeElement !== activeTextDiv) {
         state = textDivStyles.get(activeTextDiv) || {
           bold: false,
@@ -4044,10 +4038,6 @@ prompt("This is a prompt:");
       fontFamilySelect.value = state.fontFamily;
     }
 
-
-
-
-    alert(2);
 
     function applyFormat(command) {
       if (!activeTextDiv) return;
@@ -4358,7 +4348,6 @@ prompt("This is a prompt:");
       }
       let headerFlag = true;
       const editorTextDiv = getTheDiv("headerText");
-      const editorTextSettings = editorTextDiv.settings;
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
           editorTextDiv.textContent = "";
@@ -4366,14 +4355,7 @@ prompt("This is a prompt:");
         }
         setActiveTextDiv(editorTextDiv, editorToolbar);
         repositionToolbar(editorToolbar, editorTextDiv);
-        console.log(editorTextSettings);
-        console.log(editorToolbar.querySelector(".fontSize"), "is the fontsize")
-        editorToolbar.querySelector(".fontSize").value = editorTextSettings.fontSize;
-        editorToolbar.querySelector(".color").value = editorTextSettings.color;
-        editorToolbar.querySelector(".fontFamily").value = editorTextSettings.fontFamily;
-        editorTextSettings.bold? editorToolbar.querySelector(".bold").classList.add("active") : editorToolbar.querySelector(".boldBtn").classList.remove("active");
-        editorTextSettings.italic? editorToolbar.querySelector(".italic").classList.add("active") : editorToolbar.querySelector(".italicBtn").classList.remove("active")
-        editorTextSettings.underline? editorToolbar.querySelector(".underline").classList.add("active") : editorToolbar.querySelector(".underlineBtn").classList.remove("active");
+        applySettings(editorTextDiv, editorToolbar, editorTextDiv.settings);
       });
       editorTextDiv.addEventListener('click', () => {
         setActiveTextDiv(editorTextDiv, editorToolbar);
@@ -4588,20 +4570,22 @@ prompt("This is a prompt:");
       return div;
     }
 
-    function applySettings(textDiv, settings) {
+    function applySettings(textDiv, toolbarDiv, settings) {
       textDiv.style.fontSize = settings.fontSize;
       textDiv.style.color = settings.color;
       textDiv.style.fontFamily = settings.fontFamily;
       textDiv.style.textAlign = settings.textAlign;
       if (settings.bold) {
-        textDiv.style.fontWeight = 'bold';
+        toolbarDiv.querySelector('.boldBtn').classList.add('active');
+        toolbarDiv.querySelector('.boldBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
       }
       if (settings.italic) {
-        textDiv.style.fontStyle = 'italic';
+        toolbarDiv.querySelector('.italicBtn').classList.add('active');
+        toolbarDiv.querySelector('.italicBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
       }
       if (settings.underline) {
-        textDiv.style.textDecoration = 'underline';
-        textDiv.style.textDecorationColor = settings.color;
+        toolbarDiv.querySelector('.underlineBtn').classList.add('active');
+        toolbarDiv.querySelector('.underlineBtn').style.backgroundColor = darkModeFlag ? '#666' : '#ddd';
       }
     }
 
