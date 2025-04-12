@@ -4067,14 +4067,14 @@ prompt("This is a prompt:");
     ];
 
     function initQuil(quilInstance) {
-      // quilInstance.format('bold', false);
-      // quilInstance.format('italic', false);
-      // quilInstance.format('underline', false);
-      // quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
-      // quilInstance.format('font', 'arial');
-      // quilInstance.format('align', 'left');
-      // quilInstance.setText('');
-      // quilInstance.format('size', "16px");
+      quilInstance.format('bold', false);
+      quilInstance.format('italic', false);
+      quilInstance.format('underline', false);
+      quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
+      quilInstance.format('font', 'arial');
+      quilInstance.format('align', 'left');
+      quilInstance.setText('');
+      quilInstance.format('size', "16px", Quill.sources.USER);
     }
 
     async function takeImage(domElem) {
