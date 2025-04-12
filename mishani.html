@@ -4077,7 +4077,7 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      Quill.find('size').format('size', '16px');
+      console.log(quilInstance)
     }
 
     async function takeImage(domElem) {
@@ -4153,7 +4153,6 @@ prompt("This is a prompt:");
     }
 
     async function exportImage() {
-      // Create a wrapper for the entire export content.
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
