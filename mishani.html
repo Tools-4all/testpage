@@ -3941,19 +3941,18 @@ prompt("This is a prompt:");
 
 
     // A shared toolbar options configuration for Quill.
-    // Ensure custom Quill formats are registered only once.
-    // A shared toolbar options configuration for Quill.
-    // Ensure custom Quill formats are registered only once.
     if (!window.customQuillFormatsRegistered) {
       // Import and register custom Size.
-      const Size = Quill.import('attributors/style/size'); // Use 'style/size' instead of 'formats/size'
-      Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
+      const Size = Quill.import('attributors/style/size');
+      Size.whitelist = ['small', 'normal', 'large', 'huge', '8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
       Quill.register(Size, true);
+      console.log('Size whitelist:', Size.whitelist); // Debug log
 
       // Import and register custom Font.
-      const Font = Quill.import('attributors/style/font'); // Use 'style/font' instead of 'formats/font'
-      Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
+      const Font = Quill.import('attributors/style/font');
+      Font.whitelist = ['sans-serif', 'arial', 'times-new-roman', 'courier-new'];
       Quill.register(Font, true);
+      console.log('Font whitelist:', Font.whitelist); // Debug log
 
       window.customQuillFormatsRegistered = true;
     }
@@ -3961,11 +3960,38 @@ prompt("This is a prompt:");
     // Define toolbar options that reuse the custom formats.
     const quillToolbarOptions = [
       ['bold', 'italic', 'underline'],
-      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }], // Explicitly list sizes
+      [{ 'size': ['small', 'normal', 'large', 'huge', '8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
       [{ 'color': [] }],
-      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }], // Explicitly list fonts
+      [{ 'font': ['sans-serif', 'arial', 'times-new-roman', 'courier-new'] }],
       [{ 'align': [] }]
     ];
+
+    // Helper function to patch Quill dropdown labels
+    function patchQuillDropdowns(container) {
+      const sizeSelect = container.querySelector('.ql-size');
+      if (sizeSelect) {
+        sizeSelect.innerHTML = '';
+        const sizes = ['small', 'normal', 'large', 'huge', '8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
+        sizes.forEach(size => {
+          const option = document.createElement('option');
+          option.value = size;
+          option.textContent = size;
+          sizeSelect.appendChild(option);
+        });
+      }
+
+      const fontSelect = container.querySelector('.ql-font');
+      if (fontSelect) {
+        fontSelect.innerHTML = '';
+        const fonts = ['sans-serif', 'arial', 'times-new-roman', 'courier-new'];
+        fonts.forEach(font => {
+          const option = document.createElement('option');
+          option.value = font;
+          option.textContent = font.replace(/-/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+          fontSelect.appendChild(option);
+        });
+      }
+    }
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
@@ -3985,10 +4011,8 @@ prompt("This is a prompt:");
       const outputWrapper = document.createElement('div');
       outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
-      // Clone the existing output element.
       const tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
-      // Inherit classes and adjust dimensions.
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
       tempOutputDiv.style.width = maxWidth;
       tempOutputDiv.style.maxWidth = maxWidth;
@@ -4042,26 +4066,30 @@ prompt("This is a prompt:");
     }
 
     async function exportImage() {
-      // Create a wrapper for the entire export content.
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
       wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // --- Editor Header using Quill ---
+      // Editor Header using Quill
       const editorTextDiv = document.createElement('div');
       editorTextDiv.id = 'editorText';
       editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
-      // Append to wrapper.
       wrapperBoth.appendChild(editorTextDiv);
-      // Initialize Quill for the editor header.
+
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      // Style the editor toolbar.
+
+      // Patch the dropdown labels
+      patchQuillDropdowns(editorTextDiv.parentElement);
+      console.log('Editor size dropdown:', editorTextDiv.parentElement.querySelector('.ql-size').innerHTML);
+      console.log('Editor font dropdown:', editorTextDiv.parentElement.querySelector('.ql-font').innerHTML);
+
+      // Style the editor toolbar
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4085,7 +4113,7 @@ prompt("This is a prompt:");
           select.style.border = '1px solid #ccc';
         });
       }
-      // Function to reposition the toolbar relative to its container.
+
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
@@ -4093,7 +4121,7 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
-      // Clear placeholder text on focus.
+
       let headerFlag = true;
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
@@ -4102,11 +4130,11 @@ prompt("This is a prompt:");
         }
       });
 
-      // --- Append the Editor Code View ---
+      // Append the Editor Code View
       const editorDiv = await getEditorDiv();
       wrapperBoth.appendChild(editorDiv);
 
-      // --- Output Section (if output exists) ---
+      // Output Section (if output exists)
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
@@ -4117,12 +4145,18 @@ prompt("This is a prompt:");
         outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapperBoth.appendChild(outputTextDiv);
-        // Initialize Quill for the output header.
+
         outputQuill = new Quill(outputTextDiv, {
           theme: 'snow',
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
+
+        // Patch the dropdown labels for outputQuill
+        patchQuillDropdowns(outputTextDiv.parentElement);
+        console.log('Output size dropdown:', outputTextDiv.parentElement.querySelector('.ql-size').innerHTML);
+        console.log('Output font dropdown:', outputTextDiv.parentElement.querySelector('.ql-font').innerHTML);
+
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
@@ -4147,6 +4181,7 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
+
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
@@ -4154,11 +4189,11 @@ prompt("This is a prompt:");
             outputFlag = false;
           }
         });
-        // Append cloned output area.
+
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
-        // Create checkboxes for output header and output clone.
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4167,6 +4202,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -4178,7 +4214,6 @@ prompt("This is a prompt:");
         });
       }
 
-      // Checkbox for editor header.
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4191,7 +4226,6 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Create and add the Export button.
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
@@ -4233,17 +4267,23 @@ prompt("This is a prompt:");
       wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
 
-      // --- Editor Header using Quill ---
       const editorTextDiv = document.createElement('div');
       editorTextDiv.id = 'editorText';
       editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapBoth.appendChild(editorTextDiv);
+
       const editorQuill = new Quill(editorTextDiv, {
         theme: 'snow',
         placeholder: 'Enter your title here...',
         modules: { toolbar: quillToolbarOptions }
       });
+
+      // Patch the dropdown labels
+      patchQuillDropdowns(editorTextDiv.parentElement);
+      console.log('Editor size dropdown:', editorTextDiv.parentElement.querySelector('.ql-size').innerHTML);
+      console.log('Editor font dropdown:', editorTextDiv.parentElement.querySelector('.ql-font').innerHTML);
+
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
@@ -4267,6 +4307,7 @@ prompt("This is a prompt:");
           select.style.border = '1px solid #ccc';
         });
       }
+
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapBoth.getBoundingClientRect();
@@ -4274,6 +4315,7 @@ prompt("This is a prompt:");
         toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
       }
       repositionToolbar(editorToolbar, editorTextDiv);
+
       let headerFlag = true;
       editorTextDiv.addEventListener('focus', () => {
         if (headerFlag) {
@@ -4294,11 +4336,18 @@ prompt("This is a prompt:");
         outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapBoth.appendChild(outputTextDiv);
+
         outputQuill = new Quill(outputTextDiv, {
           theme: 'snow',
           placeholder: 'Enter your title here...',
           modules: { toolbar: quillToolbarOptions }
         });
+
+        // Patch the dropdown labels for outputQuill
+        patchQuillDropdowns(outputTextDiv.parentElement);
+        console.log('Output size dropdown:', outputTextDiv.parentElement.querySelector('.ql-size').innerHTML);
+        console.log('Output font dropdown:', outputTextDiv.parentElement.querySelector('.ql-font').innerHTML);
+
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
@@ -4323,6 +4372,7 @@ prompt("This is a prompt:");
           });
         }
         repositionToolbar(outputToolbar, outputTextDiv);
+
         let outputFlag = true;
         outputTextDiv.addEventListener('focus', () => {
           if (outputFlag) {
@@ -4330,9 +4380,11 @@ prompt("This is a prompt:");
             outputFlag = false;
           }
         });
+
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputClone);
+
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.classList.add("exportCheckbox");
@@ -4341,6 +4393,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
+
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.classList.add("exportCheckbox");
@@ -4451,6 +4504,7 @@ prompt("This is a prompt:");
     modal.addEventListener("modalOpened", () => {
       document.addEventListener("click", closeModal);
     });
+
     modal.addEventListener("modalClosed", () => {
       document.removeEventListener("click", closeModal);
       exportModalContent.innerHTML = "";
@@ -4508,8 +4562,6 @@ prompt("This is a prompt:");
       focusTab();
       closeDropdowns();
     });
-
-
 
   </script>
 
