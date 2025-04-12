@@ -4588,6 +4588,23 @@ prompt("This is a prompt:");
       return div;
     }
 
+    function applySettings(textDiv, settings) {
+      textDiv.style.fontSize = settings.fontSize;
+      textDiv.style.color = settings.color;
+      textDiv.style.fontFamily = settings.fontFamily;
+      textDiv.style.textAlign = settings.textAlign;
+      if (settings.bold) {
+        textDiv.style.fontWeight = 'bold';
+      }
+      if (settings.italic) {
+        textDiv.style.fontStyle = 'italic';
+      }
+      if (settings.underline) {
+        textDiv.style.textDecoration = 'underline';
+        textDiv.style.textDecorationColor = settings.color;
+      }
+    }
+
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
