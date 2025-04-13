@@ -4268,6 +4268,7 @@ prompt("This is a prompt:");
         headerTextCheckbox.checked = true;
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
@@ -4288,6 +4289,7 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.checked = true;
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+        editorToolbar.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
       exportModalContent.appendChild(wrapperBoth);
@@ -4444,6 +4446,9 @@ prompt("This is a prompt:");
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
+          if (outputToolbar) {
+            outputToolbar.style.display = exportCheckbox.checked ? "block" : "none";
+          }
         });
       }
 
@@ -4454,6 +4459,7 @@ prompt("This is a prompt:");
       editorHeaderCheckbox.checked = true;
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+        editorToolbar.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
       exportModalContent.appendChild(wrapBoth);
