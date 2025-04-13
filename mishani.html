@@ -4082,8 +4082,8 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      quilInstance.getModule('toolbar').container.querySelector('select.ql-size option:nth-child(3)').click()
-      console.log(document.querySelectorAll('select.ql-size option:nth-child(3)'))
+      quilInstance.getModule('toolbar').container.querySelector('select.ql-size ql-picker-options:nth-child(3)').click()
+      console.log(document.querySelectorAll('select.ql-size ql-picker-options:nth-child(3)'))
     }
 
     async function takeImage(domElem) {
