@@ -4157,10 +4157,6 @@ prompt("This is a prompt:");
       return wrapperDiv;
     }
 
-    function getThemeFor() {
-      return darkModeFlag ? "bubble" : "snow";
-    }
-
     async function exportImage() {
       const wrapperBoth = document.createElement('div');
       wrapperBoth.style.position = 'relative';
@@ -4173,7 +4169,7 @@ prompt("This is a prompt:");
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapperBoth.appendChild(editorTextDiv);
       const editorQuill = new Quill(editorTextDiv, {
-        theme: getThemeFor(),
+        theme: 'snow',
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions },
       });
@@ -4224,7 +4220,7 @@ prompt("This is a prompt:");
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapperBoth.appendChild(outputTextDiv);
         outputQuill = new Quill(outputTextDiv, {
-          theme: getThemeFor(),
+          theme: 'snow',
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
@@ -4339,7 +4335,7 @@ prompt("This is a prompt:");
       editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapBoth.appendChild(editorTextDiv);
       const editorQuill = new Quill(editorTextDiv, {
-        theme: getThemeFor(),
+        theme: 'snow',
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions }
       });
@@ -4390,7 +4386,7 @@ prompt("This is a prompt:");
         outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
         wrapBoth.appendChild(outputTextDiv);
         outputQuill = new Quill(outputTextDiv, {
-          theme: getThemeFor(),
+          theme: 'snow',
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
