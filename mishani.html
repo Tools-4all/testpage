@@ -4082,7 +4082,23 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      quilInstance.getModule('toolbar').container.querySelector("#ql-picker-options-0 > span:nth-child(3)").click()
+      let wasFound = false;
+      let attempts = 0; 
+      const selector = "#ql-picker-options-0 > span:nth-child(3)"
+      const toolbarInstance = quilInstance.getModule('toolbar').container
+      function checkForElement() {
+        const element = toolbarInstance.querySelector(selector);
+        if (element) {
+          wasFound = true;
+          element.click();
+        } else {
+          attempts++;
+          if (attempts < 10) {
+            setTimeout(checkForElement, 100);
+          }
+        }
+      }
+      checkForElement();
     }
 
     async function takeImage(domElem) {
