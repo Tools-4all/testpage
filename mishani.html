@@ -4082,7 +4082,7 @@ prompt("This is a prompt:");
       quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
       quilInstance.format('font', 'arial');
       quilInstance.format('align', 'left');
-      quilInstance.getModule('toolbar').container.querySelectorAll(".ql-picker-options").forEach((el) => {
+      quilInstance.getModule('toolbar').container.querySelectorAll(".ql-picker-options > ql-size").forEach((el) => {
         el.querySelector("span:nth-child(3)").click();
       });
     }
