@@ -4433,7 +4433,6 @@ prompt("This is a prompt:");
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
           outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
-          console.log("outputToolbar", outputToolbar);
         });
 
 
@@ -4455,6 +4454,7 @@ prompt("This is a prompt:");
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
           outputToolbar.style.display = exportCheckbox.checked ? "block" : "none";
+          outputTextDiv.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
 
