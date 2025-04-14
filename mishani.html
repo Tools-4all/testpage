@@ -1646,7 +1646,12 @@
     }
 
     .ql-snow .ql-picker.ql-font {
-      width: 150px;
+      width: auto;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item::before {
+      margin-right: 20px;
     }
 
     .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before,
@@ -1725,7 +1730,7 @@
       color: #000000;
     }
 
-    .ql-font .ql-picker-label,
+    /* .ql-font .ql-picker-label,
     .ql-size .ql-picker-label,
     .ql-color .ql-picker-label,
     .ql-align .ql-picker-label {
@@ -1741,7 +1746,7 @@
 
     .ql-direction svg * {
       stroke: #06c !important;
-    }
+    } */
 
     #exportModal:not(.darkMode) .ql-color-label.ql-stroke.ql-transparent {
       stroke: #000000;
