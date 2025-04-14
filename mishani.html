@@ -3496,6 +3496,7 @@ prompt("This is a prompt:");
       let actualMsg = "";
       let subMsgDiv
       for (let key in msg) {
+        console.log("key", key, "msg[key]", msg[key]);
         subMsgDiv = document.createElement("div");
         if (msg[key][1]) {
           subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
