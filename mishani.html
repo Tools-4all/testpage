@@ -4614,8 +4614,8 @@ prompt("This is a prompt:");
         exportContainer.appendChild(exportLabel);
         exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
-          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
-          outputToolbar.style.display = exportCheckbox.checked ? "block" : "none";
+          outputClone.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
