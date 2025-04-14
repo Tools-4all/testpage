@@ -1211,6 +1211,17 @@
       border-radius: 4px;
     }
 
+    /* Dark Mode: corner matches dark background */
+    #compiler:not(.lightMode) .previewModal-content::-webkit-scrollbar-corner {
+      background-color: #252526;
+      /* or #333, whichever matches your dark mode */
+    }
+
+    /* Light Mode: corner matches light background */
+    #compiler:not(.darkMode) .previewModal-content::-webkit-scrollbar-corner {
+      background-color: #f0f0f0;
+      /* or #c0c0c0, whichever you prefer in light mode */
+    }
 
     .modalClose {
       color: #aaa;
