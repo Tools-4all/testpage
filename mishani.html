@@ -1637,7 +1637,7 @@
       stroke: #ffffff
     }
 
-    @media (max-width: 850px) {
+    @media (max-width: 900px) {
 
       /* Smaller toolbar container */
       .ql-toolbar.ql-snow {
@@ -1679,6 +1679,35 @@
         padding: 5px !important;
         font-size: 14px !important;
       }
+    }
+
+    @media (max-width: 700px) {
+
+      /* Adjust toolbar for smaller screens */
+      .ql-toolbar.ql-snow {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      /* Adjust button sizes */
+      .ql-toolbar.ql-snow button,
+      .ql-toolbar.ql-snow select,
+      .ql-toolbar.ql-snow input {
+        padding: 2px 2px;
+        font-size: 10px;
+      }
+
+      /* Adjust number inputs */
+      .ql-toolbar.ql-snow input[type="number"] {
+        width: 40px;
+      }
+
+      /* Adjust color inputs */
+      .ql-toolbar.ql-snow input[type="color"] {
+        width: 20px;
+        height: 12px;
+      }
+
     }
   </style>
 
