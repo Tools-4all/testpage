@@ -4252,27 +4252,6 @@ prompt("This is a prompt:");
       });
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
-      // if (darkModeFlag) {
-      //   editorToolbar.style.background = '#333';
-      //   editorToolbar.style.borderColor = '#555';
-      //   editorToolbar.style.color = '#fff';
-      //   editorToolbar.querySelectorAll('button').forEach(button => button.style.color = '#c5c5c5');
-      //   editorToolbar.querySelectorAll('select').forEach(select => {
-      //     select.style.backgroundColor = '#555';
-      //     select.style.color = '#fff';
-      //     select.style.border = '1px solid #777';
-      //   });
-      // } else {
-      //   editorToolbar.style.background = '#f0f0f0';
-      //   editorToolbar.style.borderColor = '#ccc';
-      //   editorToolbar.style.color = '#000';
-      //   editorToolbar.querySelectorAll('button').forEach(button => button.style.color = '#000');
-      //   editorToolbar.querySelectorAll('select').forEach(select => {
-      //     select.style.backgroundColor = '#fff';
-      //     select.style.color = '#000';
-      //     select.style.border = '1px solid #ccc';
-      //   });
-      // }
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapperBoth.getBoundingClientRect();
@@ -4302,27 +4281,6 @@ prompt("This is a prompt:");
           modules: { toolbar: quillToolbarOptions }
         });
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
-        // if (darkModeFlag) {
-        //   outputToolbar.style.background = '#333';
-        //   outputToolbar.style.borderColor = '#555';
-        //   outputToolbar.style.color = '#fff';
-        //   outputToolbar.querySelectorAll('button').forEach(button => button.style.color = '#c5c5c5');
-        //   outputToolbar.querySelectorAll('select').forEach(select => {
-        //     select.style.backgroundColor = '#555';
-        //     select.style.color = '#fff';
-        //     select.style.border = '1px solid #777';
-        //   });
-        // } else {
-        //   outputToolbar.style.background = '#f0f0f0';
-        //   outputToolbar.style.borderColor = '#ccc';
-        //   outputToolbar.style.color = '#000';
-        //   outputToolbar.querySelectorAll('button').forEach(button => button.style.color = '#000');
-        //   outputToolbar.querySelectorAll('select').forEach(select => {
-        //     select.style.backgroundColor = '#fff';
-        //     select.style.color = '#000';
-        //     select.style.border = '1px solid #ccc';
-        //   });
-        // }
         repositionToolbar(outputToolbar, outputTextDiv);
         setTimeout(() => {
           initQuil(outputQuill);
@@ -4349,7 +4307,6 @@ prompt("This is a prompt:");
         });
       }
 
-      // Checkbox for editor header.
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
@@ -4362,7 +4319,6 @@ prompt("This is a prompt:");
       exportModalContent.appendChild(wrapperBoth);
       exportModalContent.appendChild(exportBtnsWrapper);
 
-      // Create and add the Export button.
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
       exportBtn.classList.add("exportBtn");
@@ -4416,28 +4372,6 @@ prompt("This is a prompt:");
         modules: { toolbar: quillToolbarOptions }
       });
       const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
-      editorToolbar.id = 'editorRichTextToolbar';
-      if (darkModeFlag) {
-        editorToolbar.style.background = '#333';
-        editorToolbar.style.borderColor = '#555';
-        editorToolbar.style.color = '#fff';
-        editorToolbar.querySelectorAll('button').forEach(button => button.style.color = '#c5c5c5');
-        editorToolbar.querySelectorAll('select').forEach(select => {
-          select.style.backgroundColor = '#555';
-          select.style.color = '#fff';
-          select.style.border = '1px solid #777';
-        });
-      } else {
-        editorToolbar.style.background = '#f0f0f0';
-        editorToolbar.style.borderColor = '#ccc';
-        editorToolbar.style.color = '#000';
-        editorToolbar.querySelectorAll('button').forEach(button => button.style.color = '#000');
-        editorToolbar.querySelectorAll('select').forEach(select => {
-          select.style.backgroundColor = '#fff';
-          select.style.color = '#000';
-          select.style.border = '1px solid #ccc';
-        });
-      }
       function repositionToolbar(toolbar, element) {
         const elementRect = element.getBoundingClientRect();
         const containerRect = wrapBoth.getBoundingClientRect();
@@ -4467,27 +4401,6 @@ prompt("This is a prompt:");
           modules: { toolbar: quillToolbarOptions }
         });
         outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
-        if (darkModeFlag) {
-          outputToolbar.style.background = '#333';
-          outputToolbar.style.borderColor = '#555';
-          outputToolbar.style.color = '#fff';
-          outputToolbar.querySelectorAll('button').forEach(button => button.style.color = '#c5c5c5');
-          outputToolbar.querySelectorAll('select').forEach(select => {
-            select.style.backgroundColor = '#555';
-            select.style.color = '#fff';
-            select.style.border = '1px solid #777';
-          });
-        } else {
-          outputToolbar.style.background = '#f0f0f0';
-          outputToolbar.style.borderColor = '#ccc';
-          outputToolbar.style.color = '#000';
-          outputToolbar.querySelectorAll('button').forEach(button => button.style.color = '#000');
-          outputToolbar.querySelectorAll('select').forEach(select => {
-            select.style.backgroundColor = '#fff';
-            select.style.color = '#000';
-            select.style.border = '1px solid #ccc';
-          });
-        }
         repositionToolbar(outputToolbar, outputTextDiv);
         setTimeout(() => {
           initQuil(outputQuill);
