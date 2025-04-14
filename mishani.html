@@ -1636,6 +1636,50 @@
     #exportModal:not(.lightMode) .ql-italic svg * {
       stroke: #ffffff
     }
+
+    @media (max-width: 768px) {
+
+      /* Smaller toolbar container */
+      .ql-toolbar.ql-snow {
+        margin: 10px 10px 5px;
+        gap: 10px;
+        padding: 3px;
+        padding-left: 5px;
+        border-radius: 3px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Reduce button, select, and input sizes */
+      .ql-toolbar.ql-snow button,
+      .ql-toolbar.ql-snow select,
+      .ql-toolbar.ql-snow input {
+        margin-right: 3px;
+        padding: 2px 3px;
+        font-size: 12px;
+      }
+
+      /* Adjust number inputs */
+      .ql-toolbar.ql-snow input[type="number"] {
+        width: 50px;
+      }
+
+      /* Adjust color inputs */
+      .ql-toolbar.ql-snow input[type="color"] {
+        width: 25px;
+        height: 15px;
+      }
+
+      /* Optional: reduce margins on the editor container */
+      .ql-container {
+        margin: 10px !important;
+      }
+
+      /* Optional: adjust the editor text size and padding */
+      .ql-editor {
+        padding: 5px !important;
+        font-size: 14px !important;
+      }
+    }
   </style>
 </head>
 
