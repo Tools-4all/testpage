@@ -4407,7 +4407,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar = outputQuill.getModule('toolbar').container;
         repositionToolbar(outputToolbar, outputTextDiv);
         setTimeout(() => {
           initQuil(outputQuill);
@@ -4454,6 +4454,7 @@ prompt("This is a prompt:");
         exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
 
@@ -4593,6 +4594,7 @@ prompt("This is a prompt:");
         exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
 
 
@@ -4613,6 +4615,7 @@ prompt("This is a prompt:");
         exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
@@ -4634,6 +4637,7 @@ prompt("This is a prompt:");
       exportBtnsWrapper.appendChild(editorHeaderContainer);
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+        editorToolbar.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
 
