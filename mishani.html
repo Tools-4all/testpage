@@ -4254,7 +4254,7 @@ prompt("This is a prompt:");
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions },
       });
-      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      const editorToolbar = editorTextDiv.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
@@ -4305,7 +4305,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar = outputTextDiv.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
@@ -4400,7 +4400,7 @@ prompt("This is a prompt:");
       };
 
       displayModal();
-      console.log(editorRichTextToolbar, outputRichTextToolbar);s
+      console.log(editorRichTextToolbar, outputRichTextToolbar);
 
     }
 
@@ -4422,8 +4422,9 @@ prompt("This is a prompt:");
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      const editorToolbar = editorTextDiv.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
+
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4473,7 +4474,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar = outputTextDiv.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
