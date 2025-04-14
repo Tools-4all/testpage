@@ -4415,6 +4415,9 @@ prompt("This is a prompt:");
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
+        const headerTextContainer = document.createElement("span");
+        headerTextContainer.style.display = "inline-flex";
+        headerTextContainer.style.alignItems = "center";
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.id = "headerTextCheckbox";
@@ -4423,12 +4426,18 @@ prompt("This is a prompt:");
         const headerTextLabel = document.createElement("label");
         headerTextLabel.setAttribute("for", "headerTextCheckbox");
         headerTextLabel.textContent = "Show Output Text";
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        exportBtnsWrapper.appendChild(headerTextLabel);
+        headerTextLabel.style.marginLeft = "4px";
+        headerTextContainer.appendChild(headerTextCheckbox);
+        headerTextContainer.appendChild(headerTextLabel);
+        exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
 
+
+        const exportContainer = document.createElement("span");
+        exportContainer.style.display = "inline-flex";
+        exportContainer.style.alignItems = "center";
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.id = "exportCheckbox";
@@ -4437,16 +4446,22 @@ prompt("This is a prompt:");
         const exportLabel = document.createElement("label");
         exportLabel.setAttribute("for", "exportCheckbox");
         exportLabel.textContent = "Show Output Clone";
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportBtnsWrapper.appendChild(exportLabel);
+        exportLabel.style.marginLeft = "4px";
+        exportContainer.appendChild(exportCheckbox);
+        exportContainer.appendChild(exportLabel);
+        exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
 
 
+
       }
 
+      const editorHeaderContainer = document.createElement("span");
+      editorHeaderContainer.style.display = "inline-flex";
+      editorHeaderContainer.style.alignItems = "center";
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.id = "editorHeaderCheckbox";
@@ -4455,11 +4470,14 @@ prompt("This is a prompt:");
       const editorHeaderLabel = document.createElement("label");
       editorHeaderLabel.setAttribute("for", "editorHeaderCheckbox");
       editorHeaderLabel.textContent = "Show Editor Header";
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      exportBtnsWrapper.appendChild(editorHeaderLabel);
+      editorHeaderLabel.style.marginLeft = "4px";
+      editorHeaderContainer.appendChild(editorHeaderCheckbox);
+      editorHeaderContainer.appendChild(editorHeaderLabel);
+      exportBtnsWrapper.appendChild(editorHeaderContainer);
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
 
 
       exportModalContent.appendChild(wrapperBoth);
@@ -4555,6 +4573,9 @@ prompt("This is a prompt:");
         const outputClone = await getOutputDivClone();
         outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapBoth.appendChild(outputClone);
+        const headerTextContainer = document.createElement("span");
+        headerTextContainer.style.display = "inline-flex";
+        headerTextContainer.style.alignItems = "center";
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
         headerTextCheckbox.id = "headerTextCheckbox";
@@ -4563,12 +4584,18 @@ prompt("This is a prompt:");
         const headerTextLabel = document.createElement("label");
         headerTextLabel.setAttribute("for", "headerTextCheckbox");
         headerTextLabel.textContent = "Show Output Text";
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
-        exportBtnsWrapper.appendChild(headerTextLabel);
+        headerTextLabel.style.marginLeft = "4px";
+        headerTextContainer.appendChild(headerTextCheckbox);
+        headerTextContainer.appendChild(headerTextLabel);
+        exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
 
+
+        const exportContainer = document.createElement("span");
+        exportContainer.style.display = "inline-flex";
+        exportContainer.style.alignItems = "center";
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
         exportCheckbox.id = "exportCheckbox";
@@ -4577,15 +4604,19 @@ prompt("This is a prompt:");
         const exportLabel = document.createElement("label");
         exportLabel.setAttribute("for", "exportCheckbox");
         exportLabel.textContent = "Show Output Clone";
-        exportBtnsWrapper.appendChild(exportCheckbox);
-        exportBtnsWrapper.appendChild(exportLabel);
+        exportLabel.style.marginLeft = "4px";
+        exportContainer.appendChild(exportCheckbox);
+        exportContainer.appendChild(exportLabel);
+        exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
-
       }
 
+      const editorHeaderContainer = document.createElement("span");
+      editorHeaderContainer.style.display = "inline-flex";
+      editorHeaderContainer.style.alignItems = "center";
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
       editorHeaderCheckbox.id = "editorHeaderCheckbox";
@@ -4594,11 +4625,14 @@ prompt("This is a prompt:");
       const editorHeaderLabel = document.createElement("label");
       editorHeaderLabel.setAttribute("for", "editorHeaderCheckbox");
       editorHeaderLabel.textContent = "Show Editor Header";
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
-      exportBtnsWrapper.appendChild(editorHeaderLabel);
+      editorHeaderLabel.style.marginLeft = "4px";
+      editorHeaderContainer.appendChild(editorHeaderCheckbox);
+      editorHeaderContainer.appendChild(editorHeaderLabel);
+      exportBtnsWrapper.appendChild(editorHeaderContainer);
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
+
 
 
       exportModalContent.appendChild(wrapBoth);
