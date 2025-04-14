@@ -4568,7 +4568,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
+        outputToolbar = outputQuill.getModule('toolbar').container;
         repositionToolbar(outputToolbar, outputTextDiv);
         setTimeout(() => {
           initQuil(outputQuill);
