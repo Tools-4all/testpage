@@ -1169,16 +1169,25 @@
 
 
     .previewModal-content {
-      background-color: #fefefe;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      padding: 20px;
-      border: 1px solid #888;
+      padding: 10px;
+      border: 1px solid;
       width: 80%;
       overflow: scroll;
       max-height: 80vh;
+    }
+
+    #compiler:not(.darkMode) .previewModal-content {
+      background-color: #f0f0f0;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .previewModal-content {
+      background-color: #252526;
+      border-color: #333;
     }
 
     .modalClose {
@@ -1638,6 +1647,16 @@
     }
 
     @media (max-width: 900px) {
+
+      .previewModal-content {
+        width: 90%;
+        max-height: 90vh;
+      }
+
+      .previewModal-content img {
+        max-width: 100%;
+        height: auto;
+      }
 
       /* Smaller toolbar container */
       .ql-toolbar.ql-snow {
