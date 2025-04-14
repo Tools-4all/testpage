@@ -4432,6 +4432,8 @@ prompt("This is a prompt:");
         exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
           outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
+          console.log("outputToolbar", outputToolbar);
         });
 
 
