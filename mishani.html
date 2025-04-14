@@ -1544,7 +1544,7 @@
       stroke: #06c;
     }
 
-    .ql-direction  svg * {
+    .ql-direction svg * {
       stroke: #06c !important;
     }
 
@@ -1560,17 +1560,21 @@
       font-size: 16px;
     }
 
-    #exportModal:not(.darkMode) .ql-underline svg *, #exportModal:not(.lightMode) .ql-bold svg *, #exportModal:not(.lightMode) .ql-italic svg * {
+    #exportModal:not(.darkMode) .ql-underline svg *,
+    #exportModal:not(.lightMode) .ql-bold svg *,
+    #exportModal:not(.lightMode) .ql-italic svg * {
       stroke: #444
     }
 
-    #exportModal:not(.lightMode) .ql-underline svg *, #exportModal:not(.lightMode) .ql-bold svg *, #exportModal:not(.lightMode) .ql-italic svg * {
+    #exportModal:not(.lightMode) .ql-underline svg *,
+    #exportModal:not(.lightMode) .ql-bold svg *,
+    #exportModal:not(.lightMode) .ql-italic svg * {
       stroke: #dee6eb
     }
   </style>
 </head>
 
-<body>
+<body class="darkMode">
   <div id="compiler" class="darkMode">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
