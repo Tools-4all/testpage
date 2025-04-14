@@ -3173,6 +3173,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
+            console.log("Table data:", e.data, "msg", msg);
             appendTable(tab.outputElement, e.data, msg);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
