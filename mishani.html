@@ -1419,6 +1419,197 @@
       z-index: 10000;
     }
 
+    /* #editorRichTextToolbar button,
+    #editorRichTextToolbar select,
+    #editorRichTextToolbar input,
+    #outputRichTextToolbar button,
+    #outputRichTextToolbar select,
+    #outputRichTextToolbar input {
+      margin-right: 5px;
+      padding: 2px 5px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    #editorRichTextToolbar button:hover,
+    #outputRichTextToolbar button:hover {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    #editorRichTextToolbar input[type="number"],
+    #outputRichTextToolbar input[type="number"] {
+      width: 60px;
+      border: 1px solid;
+    }
+
+    #editorRichTextToolbar input[type="color"],
+    #outputRichTextToolbar input[type="color"] {
+      width: 30px;
+      height: 20px;
+      padding: 0;
+    }
+
+    .ql-snow .ql-toolbar .ql-formats .ql-picker.ql-font {
+      min-width: 140px;
+    }
+
+    .ql-snow .ql-picker.ql-font {
+      width: 150px;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="arial"]::before {
+      content: 'Arial';
+      font-family: Arial, sans-serif;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="times-new-roman"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="times-new-roman"]::before {
+      content: 'Times New Roman';
+      font-family: "Times New Roman", serif;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="courier-new"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="courier-new"]::before {
+      content: 'Courier New';
+      font-family: "Courier New", monospace;
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8px"]::before {
+      content: '8px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before {
+      content: '12px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before {
+      content: '16px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before {
+      content: '20px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before {
+      content: '24px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="32px"]::before {
+      content: '32px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36px"]::before {
+      content: '36px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="48px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="48px"]::before {
+      content: '48px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="64px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="64px"]::before {
+      content: '64px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="72px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="72px"]::before {
+      content: '72px';
+    }
+
+    #exportModal:not(.lightMode) .ql-editor.ql-blank:before {
+      color: #ffffff;
+    }
+
+    #exportModal:not(.darkMode) .ql-editor.ql-blank:before {
+      color: #000000;
+    }
+
+    .ql-font .ql-picker-label,
+    .ql-size .ql-picker-label,
+    .ql-color .ql-picker-label,
+    .ql-align .ql-picker-label {
+      color: #06c !important;
+    }
+
+    .ql-font .ql-picker-label svg *,
+    .ql-size .ql-picker-label svg *,
+    .ql-color .ql-picker-label svg *,
+    .ql-align .ql-picker-label svg * {
+      stroke: #06c;
+    }
+
+    .ql-direction svg * {
+      stroke: #06c !important;
+    }
+
+    #exportModal:not(.darkMode) .ql-color-label.ql-stroke.ql-transparent {
+      stroke: #000000;
+    }
+
+    #exportModal:not(.lightMode) .ql-color-label.ql-stroke.ql-transparent {
+      stroke: #ffffff;
+    }
+
+    .ql-editor {
+      font-size: 16px;
+    }
+
+    #exportModal:not(.darkMode) .ql-underline svg *,
+    #exportModal:not(.lightMode) .ql-bold svg *,
+    #exportModal:not(.lightMode) .ql-italic svg * {
+      stroke: #444
+    }
+
+    #exportModal:not(.lightMode) .ql-underline svg *,
+    #exportModal:not(.lightMode) .ql-bold svg *,
+    #exportModal:not(.lightMode) .ql-italic svg * {
+      stroke: #dee6eb
+    } */
+
+
+    /* -- FIX: Remove default focus outlines on toolbar buttons -- */
+    #editorRichTextToolbar button:focus,
+    #editorRichTextToolbar select:focus,
+    #editorRichTextToolbar input:focus,
+    #outputRichTextToolbar button:focus,
+    #outputRichTextToolbar select:focus,
+    #outputRichTextToolbar input:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    /* -- FIX: Apply highlight only to active (toggled) buttons -- */
+    #editorRichTextToolbar button.ql-active,
+    #outputRichTextToolbar button.ql-active {
+      background-color: #007acc !important;
+      /* Use your desired highlight color */
+      color: white !important;
+    }
+
+    /* ========= Your Existing CSS ========= */
+    #editorRichTextToolbar,
+    #outputRichTextToolbar {
+      margin: 20px 20px 10px;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      padding: 5px;
+      padding-left: 5%;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+    }
+
     #editorRichTextToolbar button,
     #editorRichTextToolbar select,
     #editorRichTextToolbar input,
@@ -1452,6 +1643,10 @@
 
     .ql-snow .ql-toolbar .ql-formats .ql-picker.ql-font {
       min-width: 140px;
+    }
+
+    .ql-snow .ql-picker.ql-font {
+      width: 150px;
     }
 
     .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before,
