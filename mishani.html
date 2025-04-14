@@ -4254,7 +4254,7 @@ prompt("This is a prompt:");
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions },
       });
-      const editorToolbar = editorTextDiv.querySelector('.ql-toolbar');
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
@@ -4305,7 +4305,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.querySelector('.ql-toolbar');
+        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
@@ -4400,8 +4400,6 @@ prompt("This is a prompt:");
       };
 
       displayModal();
-      console.log(editorRichTextToolbar, outputRichTextToolbar);
-
     }
 
     async function exportPDF() {
@@ -4422,9 +4420,8 @@ prompt("This is a prompt:");
         placeholder: 'Enter your text here...',
         modules: { toolbar: quillToolbarOptions }
       });
-      const editorToolbar = editorTextDiv.querySelector('.ql-toolbar');
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
       editorToolbar.id = 'editorRichTextToolbar';
-
       if (darkModeFlag) {
         editorToolbar.style.background = '#333';
         editorToolbar.style.borderColor = '#555';
@@ -4474,7 +4471,7 @@ prompt("This is a prompt:");
           placeholder: 'Enter your text here...',
           modules: { toolbar: quillToolbarOptions }
         });
-        outputToolbar = outputTextDiv.querySelector('.ql-toolbar');
+        outputToolbar = outputTextDiv.parentElement.querySelector('.ql-toolbar');
         outputToolbar.id = 'outputRichTextToolbar';
         if (darkModeFlag) {
           outputToolbar.style.background = '#333';
