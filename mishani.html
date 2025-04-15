@@ -1931,18 +1931,17 @@
 
     function fullScreen() {
       if (compiler.style.height === "500px") {
-        if (!isMobile) {
-          lockScrollInCompiler();
-        }
+        // if (!isMobile) {
+        //   lockScrollInCompiler();
+        // }
         compiler.style.width = "100%";
         compiler.style.height = window.innerHeight + 'px';
         compiler.style.margin = "0";
-        lockScrollInCompiler();
       } else {
-        if (!isMobile) {
-          compiler.style.width = "60%";
-          unlockScrollInCompiler();
-        }
+        // if (!isMobile) {
+        //   compiler.style.width = "60%";
+        //   unlockScrollInCompiler();
+        // }
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
       }
