@@ -1897,13 +1897,13 @@
       const section = document.querySelector(".counter-section");
       let triggered = false;
 
-      window.addEventListener("scroll", () => {
-        const sectionTop = section.getBoundingClientRect().top;
-        if (sectionTop < window.innerHeight && !triggered) {
-          animateCounters();
-          triggered = true;
-        }
-      });
+      // window.addEventListener("scroll", () => {
+      //   const sectionTop = section.getBoundingClientRect().top;
+      //   if (sectionTop < window.innerHeight && !triggered) {
+      //     animateCounters();
+      //     triggered = true;
+      //   }
+      // });
 
       document.querySelectorAll(".faq-question").forEach((question) => {
         question.addEventListener("click", function () {
