@@ -1043,7 +1043,7 @@
 
       #compiler {
         width: 100%;
-        min-width: none;
+        min-width: auto;
       }
 
       #activityBar {
@@ -2061,7 +2061,6 @@
   <script src="{% static 'js/page_info.js' %}"></script>
 
   <script>
-    alert(2);
     console.warn = () => { };
     const workerPath = "{% url 'betzi_test_js' %}";
     const { jsPDF } = window.jspdf;
