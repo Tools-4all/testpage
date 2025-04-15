@@ -1888,6 +1888,7 @@
     const flexSwitchCheckDefault = document.getElementById("flexSwitchCheckDefault");
     const modal = document.getElementById("exportModal");
     const exportModalContent = document.getElementById("exportModalContent");
+    let fullscreenFlag = false;
 
     let isMobile;
     function isMobileDevice() {
@@ -1916,7 +1917,7 @@
     }
 
     function fullScreen() {
-      if (compiler.style.height === "500px") {
+      if (!fullscreenFlag) {
         console.log("fullscreen");
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
@@ -1924,6 +1925,7 @@
         if (isMobile) {
           compiler.style.height = window.innerHeight + 'px';
         }
+        fullscreenFlag = true;
       } else {
         console.log("exit fullscreen");
         if (!isMobile) {
@@ -1931,6 +1933,7 @@
         }
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
+        fullscreenFlag = false;
       }
     }
     document.addEventListener('keydown', function (event) {
