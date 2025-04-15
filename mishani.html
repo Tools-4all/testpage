@@ -561,9 +561,10 @@
 
 
     #addTabButton_media {
-      font-size: 25px;
+      font-size: 21px;
       margin-left: 0px;
       display: none;
+      margin-top: -9px;
     }
 
     #tabsContainer {
@@ -1899,13 +1900,9 @@
     if (isMobile) {
       compiler.style.height = window.innerHeight + 'px';
       compiler.style.margin = '0'
-      console.log("Mobile device detected");
-      ;
     } else {
       window.onload = function () {
         fullScreen();
-        console.log("Desktop device detected");
-
       }
     }
 
@@ -1918,7 +1915,6 @@
 
     function fullScreen() {
       if (!fullscreenFlag) {
-        console.log("fullscreen");
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
@@ -1927,7 +1923,6 @@
         }
         fullscreenFlag = true;
       } else {
-        console.log("exit fullscreen");
         if (!isMobile) {
           compiler.style.width = "60%";
         }
