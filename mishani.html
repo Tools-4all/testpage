@@ -1914,11 +1914,27 @@
       event.stopPropagation();
     }
 
+    function preventScroll(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function lockScrollInCompiler() {
+      compiler.addEventListener('wheel', preventScroll, { passive: false });
+      compiler.addEventListener('touchmove', preventScroll, { passive: false });
+    }
+
+    function unlockScrollInCompiler() {
+      compiler.removeEventListener('wheel', preventScroll, { passive: false });
+      compiler.removeEventListener('touchmove', preventScroll, { passive: false });
+    }
+
     function fullScreen() {
       if (compiler.style.height === "500px") {
         compiler.style.width = "100%";
-        compiler.style.height = "100vh";
+        compiler.style.height = window.innerHeight + 'px';
         compiler.style.margin = "0";
+        lockScrollInCompiler();
       } else {
         if (!isMobile) {
           compiler.style.width = "60%";
