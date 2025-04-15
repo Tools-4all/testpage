@@ -1895,15 +1895,14 @@
       return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
     }
     isMobile = isMobileDevice();
-    if (isMobile) {
-      compiler.style.height = window.innerHeight + 'px';
-      compiler.style.margin = '0';
-    } else {
-      window.onload = function () {
-        compiler.style.width = '60%';
-        fullScreen();
-      };
-    }
+    // if (isMobile) {
+    //   compiler.style.height = window.innerHeight + 'px';
+    //   compiler.style.margin = '0';
+    // } else {
+    //   window.onload = function () {
+    //     fullScreen();
+    //   }
+    // }
 
 
     function stopAll(event) {
