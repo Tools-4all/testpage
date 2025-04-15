@@ -1913,6 +1913,7 @@
 
     function fullScreen() {
       if (compiler.style.height === "500px") {
+        console.log("fullscreen");
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
@@ -1920,6 +1921,7 @@
           compiler.style.height = window.innerHeight + 'px';
         }
       } else {
+        console.log("exit fullscreen");
         if (!isMobile) {
           compiler.style.width = "60%";
         }
