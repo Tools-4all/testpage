@@ -9,7 +9,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Multi-Tab Sandboxed JS Compiler</title>
   <link rel="stylesheet" href="{% static 'css/page_info.css' %}?v=1" />
-  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
@@ -1928,7 +1927,7 @@
     </div>
   </div>
 
-  <div id="page-info" class="info-section" data-aos="fade" data-aos-duration="700" style="margin-top: 100px;">
+  <div id="page-info" class="info-section" style="margin-top: 100px;">
     <h2 class="info-title">Online JS Compiler</h2>
     <p class="info-text">
       Welcome to the Online JS Compiler – a secure, in-browser environment for writing, testing, and running your
@@ -1952,7 +1951,7 @@
     </p>
   </div>
 
-  <div id="page-blog" class="blog-content" data-aos="fade" data-aos-duration="700">
+  <div id="page-blog" class="blog-content">
     <h2>Compiler User Guide – Code with Confidence</h2>
     <p>
       Whether you’re a beginner or an experienced developer, our Online JS Compiler gives you a complete, self-contained
@@ -2004,7 +2003,7 @@
     </p>
   </div>
 
-  <section class="faq-section" data-aos="fade" data-aos-duration="700">
+  <section class="faq-section">
     <h2 class="faq-title">Frequently Asked Questions (FAQ)</h2>
     <div class="faq">
       <h3 class="faq-question" onclick="toggleAnswer(this)">How do I run my JavaScript code?</h3>
@@ -2058,9 +2057,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
   <script src="{% static 'js/page_info.js' %}"></script>
-
-  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-  <script>AOS.init();</script>
 
   <script>
     alert(3);
