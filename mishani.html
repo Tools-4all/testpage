@@ -317,10 +317,6 @@
       color: #ffffff;
     }
 
-    #loadGitButton {
-      width: 100%;
-    }
-
     #tabSizeInput {
       width: 100%;
     }
@@ -394,10 +390,10 @@
       color: #000 !important;
     }
 
-    #exportButton {
+    #exportButton,
+    #saveSettingsBtn,
+    #loadGitButton {
       width: 100%;
-      max-width: 275px;
-      margin-left: 0px;
       margin-top: 15px;
     }
 
@@ -775,7 +771,7 @@
       color: #ffffff;
       border: none;
       padding: 6px 12px;
-      margin-left: 10px;
+      /* margin-left: 10px; */
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
@@ -1886,8 +1882,7 @@
         <div class="form-check-custom" style="margin-top: 15px;">
           <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
-          <button class="vs-button" style="margin-left: 0px;margin-top: 15px;width: 100%;" onclick="saveSettings()"
-            id="saveSettingsBtn">Save
+          <button id="saveSettingsBtn" class="vs-button" onclick="saveSettings()">Save
             settings</button>
         </div>
       </div>
