@@ -75,6 +75,7 @@
       left: 0;
       height: 40px;
       width: 40px;
+      z-index: 1010;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -102,6 +103,7 @@
       top: 0;
       left: 0;
       width: 100%;
+      z-index: 1000;
       padding-left: 40px;
       height: 30px;
     }
@@ -2139,14 +2141,7 @@
           fullScreen();
         }
       }
-      else {
-        if (event.key == 'f11') {
-          fullScreen();
-        }
-      }
     });
-
-    alert(1);
 
 
     function saveSettings() {
