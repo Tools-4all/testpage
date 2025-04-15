@@ -2117,7 +2117,7 @@
         document.getElementById('webMenu').style.display = "block";
         document.getElementById('navbarMedia').style.display = "block";
         document.getElementById('smallFooter').style.display = "block";
-        document.getElementById('title').style.display = "block";
+        document.getElementById('title').style.display = "flex";
         document.getElementById('page-info').style.display = "block";
         document.getElementById('page-blog').style.display = "block";
         document.getElementById('faq').style.display = "block";
@@ -2135,8 +2135,8 @@
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape' && modalIsOpen()) {
           closeModal("close");
-      }
-      fullScreen();
+        }
+        fullScreen();
       }
     });
 
