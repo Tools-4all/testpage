@@ -2139,7 +2139,12 @@
           fullScreen();
         }
       }
+      else if (event.key == 'f11') {
+        event.preventDefault();
+        fullScreen();
+      }
     });
+
 
     function saveSettings() {
       localStorage.setItem("tabSize", spaces);
