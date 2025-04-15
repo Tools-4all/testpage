@@ -1920,7 +1920,9 @@
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
       } else {
-        compiler.style.width = "60%";
+        if (!isMobile) {
+          compiler.style.width = "60%";
+        }
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
       }
