@@ -8,6 +8,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Multi-Tab Sandboxed JS Compiler</title>
+  <link rel="stylesheet" href="{% static 'css/page_info.css' %}?v=1" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
@@ -1772,6 +1774,44 @@
 </head>
 
 <body>
+
+  <div class="titleDiv">
+    <h1 class="functionTitle">Online JS Compiler</h1>
+    <div class="btn-info" id="infoBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle"
+        viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="info-div" id="infoDiv">
+    <h2>User guide</h2>
+    <p>Our text comparison tool allows you to quickly and accurately compare two pieces of text, whether typed
+      or uploaded as text files. This tool is perfect for identifying differences in content, verifying
+      document revisions, or comparing similar texts side by side.</p>
+
+    <h3>How to Use:</h3>
+    <ol>
+      <li><strong>Enter or Upload Text</strong> – Use the two input fields to either type or upload text files
+        you wish to compare. The left input is for the first text, and the right input is for the second
+        text.</li>
+      <li><strong>Click "Compare"</strong> – Once both texts are entered or uploaded, click the "Compare"
+        button to initiate the comparison.</li>
+    </ol>
+
+    <h3>Comparison Results:</h3>
+    <p>The tool will analyze the texts word by word on both sides. If a word in one text matches the
+      corresponding word in the other text, it will be highlighted in green. If there is a mismatch in
+      position, the differing word will be highlighted in red, making it easy to identify any discrepancies.
+    </p>
+
+    <p>This tool provides a clear, visual representation of similarities and differences in both texts, making
+      the comparison process intuitive and efficient.</p>
+  </div>
+
   <div id="compiler" class="darkMode">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
@@ -1869,7 +1909,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script src="{% static 'js/page_info.js' %}"></script>
+
   <script>
+
+    AOS.init();
+
     console.warn = () => { };
     const workerPath = "{% url 'betzi_test_js' %}";
     const { jsPDF } = window.jspdf;
