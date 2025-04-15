@@ -1688,8 +1688,8 @@
     @media (max-width: 900px) {
 
       .previewModal-content {
-        width: 90%;
-        max-height: 90vh;
+        width: 85%;
+        height: 70vh;
       }
 
       .previewModal-content img {
@@ -1914,34 +1914,12 @@
       event.stopPropagation();
     }
 
-    function preventScroll(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    function lockScrollInCompiler() {
-      compiler.addEventListener('wheel', preventScroll, { passive: false });
-      compiler.addEventListener('touchmove', preventScroll, { passive: false });
-    }
-
-    function unlockScrollInCompiler() {
-      compiler.removeEventListener('wheel', preventScroll, { passive: false });
-      compiler.removeEventListener('touchmove', preventScroll, { passive: false });
-    }
-
     function fullScreen() {
       if (compiler.style.height === "500px") {
-        // if (!isMobile) {
-        //   lockScrollInCompiler();
-        // }
         compiler.style.width = "100%";
         compiler.style.height = window.innerHeight + 'px';
         compiler.style.margin = "0";
       } else {
-        // if (!isMobile) {
-        //   compiler.style.width = "60%";
-        //   unlockScrollInCompiler();
-        // }
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
       }
