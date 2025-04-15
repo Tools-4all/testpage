@@ -1897,10 +1897,14 @@
     isMobile = isMobileDevice();
     if (isMobile) {
       compiler.style.height = window.innerHeight + 'px';
-      compiler.style.margin = '0';
+      compiler.style.margin = '0'
+      console.log("Mobile device detected");
+      ;
     } else {
       window.onload = function () {
         fullScreen();
+        console.log("Desktop device detected");
+
       }
     }
 
