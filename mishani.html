@@ -317,7 +317,7 @@
       color: #ffffff;
     }
 
-    #loadGitButton {
+    /* #loadGitButton {
       width: 100%;
       padding: 8px 10px;
       background-color: #007acc;
@@ -332,7 +332,7 @@
 
     #loadGitButton:hover {
       background-color: #005f99;
-    }
+    } */
 
     #tabSizeInput {
       width: 100%;
@@ -792,6 +792,7 @@
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
+      max-width: 275px;
     }
 
     .vs-button:hover {
@@ -1888,14 +1889,14 @@
 
     <div id="gitPanel" class="sidebar-panel">
       <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
-      <button id="loadGitButton" disabled="true">Load</button>
+      <button id="loadGitButton" class="vs-button" disabled=" true">Load</button>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
       <div>
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
         <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
-        <div class="form-check-custom">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
+        <div class="form-check-custom" style="margin-top: 15px;">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
           <button class="vs-button" style="margin-left: 0px;margin-top: 15px;width: 100%;" onclick="saveSettings()"
             id="saveSettingsBtn">Save
