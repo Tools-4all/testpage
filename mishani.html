@@ -14,19 +14,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-
     body {
       user-select: none;
       -webkit-user-drag: none;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
+    }
+
+    #bigFooter {
+      display: none;
+    }
+
+    #smallFooter {
+      display: block;
     }
 
     .allowSelect {
@@ -1775,7 +1776,7 @@
 <body>
   <div id="compiler" class="darkMode">
     <div class="vs-logo">
-      <img src="{% static 'site_images/logo.webp' %}" alt="Logo" />
+      <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
     </div>
     <div class="vs-navbar">
       <div class="vs-navbar-item" data-dropdown="fileDropdown">
@@ -1920,6 +1921,7 @@
         fullscreenFlag = true;
         document.getElementById('webMenu').style.display = "none";
         document.getElementById('navbarMedia').style.display = "none";
+        document.getElementById('bigFooter').style.display = "none";
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
@@ -1928,8 +1930,9 @@
         }
       } else {
         fullscreenFlag = false;
-        document.getElementById('webMenu').style.display = "none";
-        document.getElementById('navbarMedia').style.display = "none";
+        document.getElementById('webMenu').style.display = "block";
+        document.getElementById('navbarMedia').style.display = "block";
+        document.getElementById('bigFooter').style.display = "block";
         compiler.style.height = "500px";
         compiler.style.margin = '100px auto';
         if (!isMobile) {
