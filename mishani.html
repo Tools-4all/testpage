@@ -1909,7 +1909,6 @@
     //   }
     // }
 
-    fullScreen();
 
 
     function stopAll(event) {
@@ -1942,6 +1941,10 @@
         }
       }
     }
+
+    fullScreen();
+
+
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape' && modalIsOpen()) {
