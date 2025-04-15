@@ -1865,7 +1865,8 @@
         <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
-        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        <i id="fullScreen" class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        <i id="smallScreen" style="display: none;" class="fa-solid fa-down-left-and-up-right-to-center"></i>
       </div>
     </div>
     <div id="activityBar">
@@ -2098,6 +2099,8 @@
     function fullScreen() {
       if (!fullscreenFlag) {
         fullscreenFlag = true;
+        document.getElementById('fullScreen').style.display = "none";
+        document.getElementById('smallScreen').style.display = "block";
         document.getElementById('webMenu').style.display = "none";
         document.getElementById('navbarMedia').style.display = "none";
         document.getElementById('smallFooter').style.display = "none";
@@ -2114,6 +2117,8 @@
         }
       } else {
         fullscreenFlag = false;
+        document.getElementById('fullScreen').style.display = "block";
+        document.getElementById('smallScreen').style.display = "none";
         document.getElementById('webMenu').style.display = "block";
         document.getElementById('navbarMedia').style.display = "block";
         document.getElementById('smallFooter').style.display = "block";
