@@ -66,6 +66,7 @@
       height: 500px;
       margin: 50px auto;
       overflow: hidden;
+      border-radius: 15px;
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
@@ -2109,6 +2110,8 @@
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
         compiler.style.zIndex = "9999";
+        compiler.style.borderRadius = "25px";
+
         if (isMobile) {
           compiler.style.height = window.innerHeight + 'px';
         }
@@ -2128,6 +2131,8 @@
         compiler.style.width = "95%";
         compiler.style.margin = '50px auto';
         compiler.style.zIndex = "0";
+        compiler.style.borderRadius = "0px";
+        compiler.style.borderRadius = "0px";
         if (!isMobile) {
           compiler.style.width = "60%";
           compiler.style.minWidth = "600px";
