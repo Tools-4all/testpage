@@ -1775,7 +1775,7 @@
 
 <body>
 
-  <div class="titleDiv">
+  <div class="titleDiv" id="title">
     <h1 class="functionTitle">Online JS Compiler</h1>
     <div class="btn-info" id="infoBtn">
       <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle"
@@ -2101,6 +2101,8 @@
         document.getElementById('webMenu').style.display = "none";
         document.getElementById('navbarMedia').style.display = "none";
         document.getElementById('smallFooter').style.display = "none";
+        document.getElementById('title').style.display = "none";
+        document.getElementById('page-info').style.display = "none";
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
@@ -2112,6 +2114,9 @@
         document.getElementById('webMenu').style.display = "block";
         document.getElementById('navbarMedia').style.display = "block";
         document.getElementById('smallFooter').style.display = "block";
+        document.getElementById('title').style.display = "block";
+        document.getElementById('page-info').style.display = "block";
+
         compiler.style.height = "500px";
         compiler.style.margin = '50px auto';
         if (!isMobile) {
