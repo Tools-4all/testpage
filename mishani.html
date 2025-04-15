@@ -3094,12 +3094,11 @@
         editorInstance.setValue(content);
       } else {
         editorInstance.setValue(`// ${name}
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-`);
+        console.log("This is a log");
+        console.info("This is an info");
+        console.warn("This is a warning");
+        console.error("This is an error");
+        prompt("This is a prompt:");`);
       }
       switchTab(id);
       if (tabs.length > 1) {
