@@ -13,7 +13,6 @@
 </head>
 
 <body>
-
   <div id="spinner">
     <div class="spinner" style="display: flex;">
       <img src="{% static 'site_images/spinner.svg' %}" alt="spinner" draggable="false">
@@ -30,7 +29,7 @@
       <div class="dragBox" id="dragBox">
         <button id="uploadBtn" onclick="document.getElementById('uploadFile').click()">
           Upload your image
-          <img src="{% static 'site_images/upload.webp' %}" alt="Upload your EXE file for icon extraction">
+          <img src="{% static 'site_images/upload.webp' %}" alt="Upload your image">
         </button>
         <span class="header" id="browseBtn">or drop it here</span>
         <span class="support"><span style="font-weight: bold;">Supports:</span> jpeg, png, gif, webp, bmp, ico, svg,
@@ -44,20 +43,16 @@
           <button type="button" onclick="removeImage()" id="removedImgBtn">
             <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25"
               height="25" viewBox="0 0 256 256" xml:space="preserve">
-              <defs></defs>
               <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
                 transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
                 <circle cx="45" cy="45" r="45"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(230,62,50); fill-rule: nonzero; opacity: 1;"
-                  transform="  matrix(1 0 0 1 0 0) " />
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(230,62,50); fill-rule: nonzero; opacity: 1;" />
                 <path
                   d="M 27.169 64.83 c -0.512 0 -1.024 -0.195 -1.414 -0.586 c -0.781 -0.781 -0.781 -2.047 0 -2.828 l 35.661 -35.661 c 0.781 -0.781 2.047 -0.781 2.828 0 c 0.781 0.781 0.781 2.047 0 2.828 L 28.583 64.244 C 28.193 64.635 27.681 64.83 27.169 64.83 z"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"
-                  transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round" />
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
                 <path
                   d="M 62.83 64.83 c -0.512 0 -1.023 -0.195 -1.414 -0.586 L 25.755 28.583 c -0.781 -0.781 -0.781 -2.047 0 -2.828 c 0.78 -0.781 2.048 -0.781 2.828 0 l 35.661 35.661 c 0.781 0.781 0.781 2.047 0 2.828 C 63.854 64.635 63.342 64.83 62.83 64.83 z"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;"
-                  transform=" matrix(1 0 0 1 0 0) " stroke-linecap="round" />
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
               </g>
             </svg>
           </button>
@@ -96,7 +91,7 @@
             <button class="colorBtn" style="background-color: gray;"></button>
             <button class="colorBtn" style="background-color: red;"></button>
             <button class="colorBtn" style="background-color: orange;"></button>
-            <button class="colorBtn" style="background-color: yellow"></button>
+            <button class="colorBtn" style="background-color: yellow;"></button>
             <button class="colorBtn" style="background-color: purple;"></button>
             <button class="colorBtn" style="background-color: blue;"></button>
             <button class="colorBtn" style="background-color: green;"></button>
@@ -109,7 +104,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -122,34 +116,81 @@
     const removedImgBtn = document.getElementById("removedImgBtn");
     const hiddenDiv = document.getElementById("hiddenDiv");
     const dragBox = document.getElementById("dragBox");
-    const defaultContent = dragBox.innerHTML;
     const uploadFileInput = document.getElementById("uploadFile");
-    const dragBoxStyle = dragBox.style;
     const modelLoadingEl = document.getElementById("modelLoading");
     const downloadBtn = document.getElementById("downloadBtn");
     const previewImg = document.getElementById("previewImage");
     const colorsDiv = document.getElementById("colorsDiv");
 
-
-    let session = null;
     let finalDataUrl = null;
     let file;
+    let worker;
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
+    const cacheName = "bg-remover-model-cache";
+    const modelCacheKey = "bg-remover-model";
 
+    // Initialize Web Worker
+    function initWorker() {
+      worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
+      worker.onmessage = (e) => {
+        const { type, data, error } = e.data;
+        if (type === "result") {
+          handleWorkerResult(data);
+        } else if (type === "error") {
+          handleWorkerError(error);
+        } else if (type === "modelLoaded") {
+          modelLoadingEl.classList.remove("show");
+        }
+      };
+    }
+
+    // Preload and cache the model
+    async function preloadModel() {
+      try {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(modelCacheKey);
+        if (cachedResponse) {
+          console.log("Model found in cache");
+          const blob = await cachedResponse.blob();
+          worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+          return;
+        }
+
+        console.log("Fetching model...");
+        const response = await fetch(modelPath);
+        if (!response.ok) throw new Error("Failed to fetch model");
+
+        // Clone the response: one for caching, one for immediate use
+        const responseToCache = response.clone();
+        await cache.put(modelCacheKey, responseToCache);
+
+        const blob = await response.blob();
+        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+      } catch (err) {
+        console.error("Model preload failed:", err);
+        showError("Failed to preload the model");
+      }
+    }
+
+    // Stop spinner and show main content
     function stopSpinner() {
       const spinnerDiv = document.getElementById("spinner");
       const spinner = document.querySelector(".spinner img");
 
       spinner.classList.remove("spin-active");
-
       spinnerDiv.style.display = "none";
       document.getElementById("mainDiv").style.display = "flex";
     }
 
-    setTimeout(stopSpinner, 2000);
+    // Initialize on page load
+    window.addEventListener("load", () => {
+      initWorker();
+      preloadModel();
+      setTimeout(stopSpinner, 2000);
+    });
 
-
+    // Drag and drop overlay
     const overlay = document.createElement("div");
     overlay.id = "dropOverlay";
     const overlayText = document.createElement("h2");
@@ -181,32 +222,9 @@
       if (previewImg.style.display === "block") {
         removeImage();
       }
-
     });
 
-    async function handleDrop(e) {
-      e.preventDefault();
-      const droppedFile = e.dataTransfer.files[0];
-      await handleFileSelect(droppedFile, true);
-    }
-
-    async function ensureModelLoaded() {
-      if (session) return;
-      try {
-        modelLoadingEl.classList.add("show");
-        session = await ort.InferenceSession.create(modelPath, { executionProviders: ["wasm"] });
-      } catch (err) {
-        console.error(err);
-        showError("Failed to load the model");
-      } finally {
-        modelLoadingEl.classList.remove("show");
-      }
-    }
-
-    function showError(msg) {
-      alert(msg);
-    }
-
+    // Read file as Data URL
     function readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -216,196 +234,7 @@
       });
     }
 
-    async function preprocessImage(file) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        img.onload = () => {
-          const targetW = 1024;
-          const targetH = 1024;
-
-          const originalSize = { width: img.width, height: img.height };
-
-          const canvas = document.createElement("canvas");
-          canvas.width = targetW;
-          canvas.height = targetH;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0, targetW, targetH);
-          const imageData = ctx.getImageData(0, 0, targetW, targetH);
-          const data = imageData.data;
-
-          const floatData = new Float32Array(3 * targetW * targetH);
-
-          const means = [0.485, 0.456, 0.406];
-          const stds = [0.229, 0.224, 0.225];
-
-          for (let i = 0; i < targetW * targetH; i++) {
-            let r = data[i * 4 + 0] / 255.0;
-            let g = data[i * 4 + 1] / 255.0;
-            let b = data[i * 4 + 2] / 255.0;
-
-            r = (r - means[0]) / stds[0];
-            g = (g - means[1]) / stds[1];
-            b = (b - means[2]) / stds[2];
-
-            floatData[i] = r;
-            floatData[i + targetW * targetH] = g;
-            floatData[i + 2 * targetW * targetH] = b;
-          }
-
-          const inputTensor = new ort.Tensor("float32", floatData, [1, 3, targetH, targetW]);
-
-          resolve({
-            tensor: inputTensor,
-            originalImage: img,
-            originalSize: originalSize
-          });
-        };
-        img.onerror = (err) => reject(err);
-      });
-    }
-
-
-    function createBinaryMask(maskTensor, originalSize) {
-      const maskData = maskTensor.data;
-      const [n, c, h, w] = maskTensor.dims;
-
-      const maskCanvas = document.createElement("canvas");
-      maskCanvas.width = w;
-      maskCanvas.height = h;
-      const ctx = maskCanvas.getContext("2d");
-      const maskImageData = ctx.createImageData(w, h);
-
-      for (let i = 0; i < w * h; i++) {
-        const val = maskData[i] > 0.5 ? 1 : 0;
-        const idx = i * 4;
-        maskImageData.data[idx + 0] = val * 255;
-        maskImageData.data[idx + 1] = val * 255;
-        maskImageData.data[idx + 2] = val * 255;
-        maskImageData.data[idx + 3] = 255;
-      }
-      ctx.putImageData(maskImageData, 0, 0);
-
-      const resizedMaskCanvas = document.createElement("canvas");
-      resizedMaskCanvas.width = originalSize.width;
-      resizedMaskCanvas.height = originalSize.height;
-      const ctxResized = resizedMaskCanvas.getContext("2d");
-      ctxResized.drawImage(maskCanvas, 0, 0, originalSize.width, originalSize.height);
-
-      return ctxResized.getImageData(0, 0, originalSize.width, originalSize.height).data;
-    }
-
-    function deductMask(originalImage, binaryMaskData) {
-      const canvas = document.createElement("canvas");
-      canvas.width = originalImage.width;
-      canvas.height = originalImage.height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(originalImage, 0, 0);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const maskValue = binaryMaskData[i] / 255.0;
-        data[i + 0] = data[i + 0] * maskValue;
-        data[i + 1] = data[i + 1] * maskValue;
-        data[i + 2] = data[i + 2] * maskValue;
-        data[i + 3] = 255;
-      }
-      ctx.putImageData(imageData, 0, 0);
-      return canvas.toDataURL("image/png");
-    }
-
-    function startStarsAnimation(run) {
-      const starsContainer = document.querySelector(".stars-container");
-      if (!starsContainer) return;
-      if (run) {
-        starsContainer.style.display = "block";
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
-          star.style.animationPlayState = "running";
-        });
-      } else {
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
-          star.style.animationPlayState = "paused";
-        });
-        starsContainer.style.display = "none";
-      }
-    }
-
-    function createStars(parentEl) {
-
-      const totalStars = 15; // מספר כוכבים
-      const gridSize = Math.sqrt(totalStars); // גודל גריד (שורה/עמודה)
-      const starPositions = []; // שמירת מיקומי הכוכבים
-
-      parentEl.style.display = "block";
-
-      for (let i = 0; i < totalStars; i++) {
-        const star = document.createElement("div");
-        star.classList.add("star");
-
-        // חלוקה לגריד
-        const row = Math.floor(i / gridSize); // שורה
-        const col = i % gridSize; // עמודה
-
-        // חישוב גבולות השדה הרנדומלי בתוך התא
-        const cellWidth = 100 / gridSize;
-        const cellHeight = 100 / gridSize;
-
-        const minTop = row * cellHeight;
-        const maxTop = minTop + cellHeight;
-        const minLeft = col * cellWidth;
-        const maxLeft = minLeft + cellWidth;
-
-        // מיקום רנדומלי בתוך התא
-        const topPos = Math.random() * (maxTop - minTop) + minTop;
-        const leftPos = Math.random() * (maxLeft - minLeft) + minLeft;
-
-        // שמירת המיקום
-        starPositions.push([topPos, leftPos]);
-
-        // הגדרת מיקום וסגנון
-        star.style.top = `${topPos}%`;
-        star.style.left = `${leftPos}%`;
-        star.style.animationDuration = `${Math.random() * 2 + 1}s`;
-
-        parentEl.appendChild(star);
-
-        setTimeout(() => {
-          star.remove();
-        }, 3000); // הסרת כוכבים אחרי האנימציה
-      }
-    }
-
-
-
-
-
-    async function removeBg(file) {
-      await ensureModelLoaded();
-
-      startStarsAnimation(true);
-      modelLoadingEl.style.display = "block";
-
-      const { tensor, originalImage, originalSize } = await preprocessImage(file);
-      const feeds = {};
-      feeds[session.inputNames[0]] = tensor;
-      const results = await session.run(feeds);
-      const output = results[session.outputNames[0]];
-
-      const binaryMaskData = createBinaryMask(output, originalSize);
-
-      const dataURL = deductMask(originalImage, binaryMaskData);
-
-      startStarsAnimation(false);
-      modelLoadingEl.style.display = "none";
-
-      return dataURL;
-    }
-
-
+    // Display images
     function displayImages(originalSrc) {
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
@@ -422,7 +251,6 @@
       overlay.id = "imageOverlay";
       overlay.classList.add("image-overlay");
 
-      // Recreate the stars container
       const starsContainer = document.createElement("div");
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
@@ -441,14 +269,11 @@
       return removedImgEl;
     }
 
-
-
-
+    // Handle file selection
     async function handleFileSelect(e, isFile = false) {
       file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
       if (!file) return;
 
-      // Check file type
       const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
       if (!allowedTypes.includes(file.type)) {
         showError("Unsupported file type. Please upload a valid image.");
@@ -456,26 +281,17 @@
       }
 
       try {
-        // Display the original image
         const originalDataURL = await readFileAsDataURL(file);
         const removedImgEl = displayImages(originalDataURL);
 
-        // Remove background by deducting mask
-        const dataURL = await removeBg(file);
-        finalDataUrl = dataURL;
+        startStarsAnimation(true);
+        modelLoadingEl.classList.add("show");
 
-        // Show the final image
-        removedImgEl.src = dataURL;
-        removedImgEl.onload = () => {
-          removedImgEl.classList.add("reveal");
-        };
-        removedImgBtn.style.display = "block";
-        hiddenDiv.style.display = "flex";
+        worker.postMessage({ type: "removeBg", file: file }, [file]);
         removedImgEl.onerror = () => {
           showError("Failed to load the background-removed image.");
           removeImage();
         };
-
       } catch (err) {
         console.error(err);
         showError("Failed to remove background");
@@ -483,7 +299,30 @@
       }
     }
 
+    // Handle Web Worker result
+    function handleWorkerResult(dataURL) {
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
 
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      finalDataUrl = dataURL;
+      removedImgEl.src = dataURL;
+      removedImgEl.onload = () => {
+        removedImgEl.classList.add("reveal");
+      };
+      removedImgBtn.style.display = "block";
+      hiddenDiv.style.display = "flex";
+    }
+
+    // Handle Web Worker error
+    function handleWorkerError(error) {
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
+      showError(error);
+      removeImage();
+    }
+
+    // Remove image
     function removeImage() {
       document.getElementById('title').style.display = "block";
       dragBox.style.display = "flex";
@@ -503,11 +342,7 @@
       }
     }
 
-
-
-
-
-
+    // Download button
     downloadBtn.addEventListener("click", () => {
       if (!finalDataUrl) return;
       const a = document.createElement("a");
@@ -518,8 +353,65 @@
       a.remove();
     });
 
-    // change background color
+    // Stars animation
+    function startStarsAnimation(run) {
+      const starsContainer = document.querySelector(".stars-container");
+      if (!starsContainer) return;
+      if (run) {
+        starsContainer.style.display = "block";
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "running";
+        });
+      } else {
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "paused";
+        });
+        starsContainer.style.display = "none";
+      }
+    }
 
+    function createStars(parentEl) {
+      const totalStars = 15;
+      const gridSize = Math.sqrt(totalStars);
+      const starPositions = [];
+
+      parentEl.style.display = "block";
+
+      for (let i = 0; i < totalStars; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+
+        const cellWidth = 100 / gridSize;
+        const cellHeight = 100 / gridSize;
+
+        const minTop = row * cellHeight;
+        const maxTop = minTop + cellHeight;
+        const minLeft = col * cellWidth;
+        const maxLeft = minLeft + cellWidth;
+
+        const topPos = Math.random() * (maxTop - minTop) + minTop;
+        const leftPos = Math.random() * (maxLeft - minLeft) + minLeft;
+
+        starPositions.push([topPos, leftPos]);
+
+        star.style.top = `${topPos}%`;
+        star.style.left = `${leftPos}%`;
+        star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+
+        parentEl.appendChild(star);
+
+        setTimeout(() => {
+          star.remove();
+        }, 3000);
+      }
+    }
+
+    // Change background color
     function displayColors() {
       if (colorsDiv.style.display === "block") {
         hiddenDiv.style.display = "flex";
@@ -531,9 +423,7 @@
     }
 
     const closeColorsDiv = document.getElementById("closeColorsDiv");
-
     closeColorsDiv.addEventListener("click", () => {
-      const colorsDiv = document.getElementById("colorsDiv");
       hiddenDiv.style.display = "block";
       colorsDiv.style.display = "none";
     });
@@ -563,16 +453,15 @@
       colorPreview.textContent = "";
     });
 
-
-    // upload background image
-
+    // Upload background image
     document.getElementById("uploadSection").addEventListener("click", () => {
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
 
-
-
+    function showError(msg) {
+      alert(msg);
+    }
   </script>
 </body>
 {% endblock %}
