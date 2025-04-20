@@ -148,8 +148,14 @@
         }
       };
       worker.onerror = (error) => {
-        console.error("Main: Worker error:", error);
-        handleWorkerError("Worker failed: " + error.message);
+        console.error("Main: Worker error event:", {
+          message: error.message,
+          filename: error.filename,
+          lineno: error.lineno,
+          colno: error.colno,
+          error: error
+        });
+        handleWorkerError("Worker failed: " + (error.message || "Unknown error"));
       };
     }
 
@@ -303,7 +309,7 @@
         modelLoadingEl.classList.add("show");
 
         const arrayBuffer = await file.arrayBuffer();
-        console.log("Main: Sending file to worker");
+        console.log("Main: Sending file to worker, arrayBuffer size:", arrayBuffer.byteLength);
         worker.postMessage(
           { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
           [arrayBuffer]
