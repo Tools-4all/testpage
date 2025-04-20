@@ -134,14 +134,22 @@
     function initWorker() {
       worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
       worker.onmessage = (e) => {
+        console.log("Main: Received message from worker:", e.data);
         const { type, data, error } = e.data;
         if (type === "result") {
+          console.log("Main: Processing result with dataURL:", data);
           handleWorkerResult(data);
         } else if (type === "error") {
+          console.log("Main: Worker error:", error);
           handleWorkerError(error);
         } else if (type === "modelLoaded") {
+          console.log("Main: Model loaded in worker");
           modelLoadingEl.classList.remove("show");
         }
+      };
+      worker.onerror = (error) => {
+        console.error("Main: Worker error:", error);
+        handleWorkerError("Worker failed: " + error.message);
       };
     }
 
@@ -161,7 +169,6 @@
         const response = await fetch(modelPath);
         if (!response.ok) throw new Error("Failed to fetch model");
 
-        // Clone the response: one for caching, one for immediate use
         const responseToCache = response.clone();
         await cache.put(modelCacheKey, responseToCache);
 
@@ -185,6 +192,7 @@
 
     // Initialize on page load
     window.addEventListener("load", () => {
+      console.log("Main: Initializing worker and preloading model");
       initWorker();
       preloadModel();
       setTimeout(stopSpinner, 2000);
@@ -216,6 +224,7 @@
       const files = event.dataTransfer.files;
       if (files.length) {
         const file = files[0];
+        console.log("Main: Dropped file:", file.name);
         await handleFileSelect(file, true);
       }
 
@@ -236,6 +245,7 @@
 
     // Display images
     function displayImages(originalSrc) {
+      console.log("Main: Displaying original image");
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
@@ -272,34 +282,40 @@
     // Handle file selection
     async function handleFileSelect(e, isFile = false) {
       file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
-      if (!file) return;
+      if (!file) {
+        console.log("Main: No file selected");
+        return;
+      }
 
       const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
       if (!allowedTypes.includes(file.type)) {
         showError("Unsupported file type. Please upload a valid image.");
+        console.log("Main: Unsupported file type:", file.type);
         return;
       }
 
       try {
+        console.log("Main: Handling file:", file.name);
         const originalDataURL = await readFileAsDataURL(file);
         const removedImgEl = displayImages(originalDataURL);
 
         startStarsAnimation(true);
         modelLoadingEl.classList.add("show");
 
-        // Convert File to ArrayBuffer
         const arrayBuffer = await file.arrayBuffer();
+        console.log("Main: Sending file to worker");
         worker.postMessage(
           { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
           [arrayBuffer]
         );
 
         removedImgEl.onerror = () => {
+          console.error("Main: Failed to load background-removed image");
           showError("Failed to load the background-removed image.");
           removeImage();
         };
       } catch (err) {
-        console.error(err);
+        console.error("Main: Error in handleFileSelect:", err);
         showError("Failed to remove background");
         removeImage();
       }
@@ -307,21 +323,43 @@
 
     // Handle Web Worker result
     function handleWorkerResult(dataURL) {
+      console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
       startStarsAnimation(false);
       modelLoadingEl.classList.remove("show");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
+      if (!removedImgEl) {
+        console.error("Main: removedImgEl not found");
+        showError("Failed to find image element");
+        removeImage();
+        return;
+      }
+
+      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
+        console.error("Main: Invalid dataURL received:", dataURL);
+        showError("Invalid background-removed image data");
+        removeImage();
+        return;
+      }
+
       finalDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
+        console.log("Main: Background-removed image loaded successfully");
         removedImgEl.classList.add("reveal");
+        removedImgBtn.style.display = "block";
+        hiddenDiv.style.display = "flex";
       };
-      removedImgBtn.style.display = "block";
-      hiddenDiv.style.display = "flex";
+      removedImgEl.onerror = () => {
+        console.error("Main: Failed to load background-removed image");
+        showError("Failed to load the background-removed image");
+        removeImage();
+      };
     }
 
     // Handle Web Worker error
     function handleWorkerError(error) {
+      console.error("Main: Handling worker error:", error);
       startStarsAnimation(false);
       modelLoadingEl.classList.remove("show");
       showError(error);
@@ -330,6 +368,7 @@
 
     // Remove image
     function removeImage() {
+      console.log("Main: Removing image");
       document.getElementById('title').style.display = "block";
       dragBox.style.display = "flex";
       previewImg.style.display = "none";
@@ -350,7 +389,11 @@
 
     // Download button
     downloadBtn.addEventListener("click", () => {
-      if (!finalDataUrl) return;
+      if (!finalDataUrl) {
+        console.log("Main: No image to download");
+        return;
+      }
+      console.log("Main: Downloading image");
       const a = document.createElement("a");
       a.href = finalDataUrl;
       a.download = "bg_removed.png";
@@ -362,14 +405,19 @@
     // Stars animation
     function startStarsAnimation(run) {
       const starsContainer = document.querySelector(".stars-container");
-      if (!starsContainer) return;
+      if (!starsContainer) {
+        console.log("Main: Stars container not found");
+        return;
+      }
       if (run) {
+        console.log("Main: Starting stars animation");
         starsContainer.style.display = "block";
         const stars = starsContainer.querySelectorAll(".star");
         stars.forEach(star => {
           star.style.animationPlayState = "running";
         });
       } else {
+        console.log("Main: Stopping stars animation");
         const stars = starsContainer.querySelectorAll(".star");
         stars.forEach(star => {
           star.style.animationPlayState = "paused";
@@ -379,6 +427,7 @@
     }
 
     function createStars(parentEl) {
+      console.log("Main: Creating stars");
       const totalStars = 15;
       const gridSize = Math.sqrt(totalStars);
       const starPositions = [];
@@ -419,6 +468,7 @@
 
     // Change background color
     function displayColors() {
+      console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
         hiddenDiv.style.display = "flex";
         colorsDiv.style.display = "none";
@@ -430,6 +480,7 @@
 
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
+      console.log("Main: Closing colors div");
       hiddenDiv.style.display = "block";
       colorsDiv.style.display = "none";
     });
@@ -442,6 +493,7 @@
 
     document.querySelectorAll(".colorBtn").forEach(button => {
       button.addEventListener("click", () => {
+        console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
         document.body.style.backgroundColor = button.style.backgroundColor;
@@ -452,6 +504,7 @@
     const colorPreview = document.getElementById("colorPreview");
 
     customColorInput.addEventListener("input", () => {
+      console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
@@ -461,11 +514,13 @@
 
     // Upload background image
     document.getElementById("uploadSection").addEventListener("click", () => {
+      console.log("Main: Opening background image uploader");
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
 
     function showError(msg) {
+      console.log("Main: Showing error:", msg);
       alert(msg);
     }
   </script>
