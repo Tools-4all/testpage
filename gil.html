@@ -287,7 +287,13 @@
         startStarsAnimation(true);
         modelLoadingEl.classList.add("show");
 
-        worker.postMessage({ type: "removeBg", file: file }, [file]);
+        // Convert File to ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        worker.postMessage(
+          { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
+          [arrayBuffer]
+        );
+
         removedImgEl.onerror = () => {
           showError("Failed to load the background-removed image.");
           removeImage();
