@@ -111,7 +111,6 @@
   </div>
 
   <script src="{% static 'js/errorComponent.js' %}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/ort.min.js"></script>
   <script>
     const removedImgBtn = document.getElementById("removedImgBtn");
     const hiddenDiv = document.getElementById("hiddenDiv");
@@ -167,7 +166,7 @@
         if (cachedResponse) {
           console.log("Model found in cache");
           const blob = await cachedResponse.blob();
-          worker.postMessage({ type: "loadModel", modelUrl: modelPath });
+          worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
           return;
         }
 
@@ -179,7 +178,7 @@
         await cache.put(modelCacheKey, responseToCache);
 
         const blob = await response.blob();
-        worker.postMessage({ type: "loadModel", modelUrl: modelPath });
+        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
       } catch (err) {
         console.error("Model preload failed:", err);
         showError("Failed to preload the model");
