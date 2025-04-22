@@ -167,7 +167,7 @@
         if (cachedResponse) {
           console.log("Model found in cache");
           const blob = await cachedResponse.blob();
-          worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+          worker.postMessage({ type: "loadModel", modelUrl: modelPath });
           return;
         }
 
@@ -179,7 +179,7 @@
         await cache.put(modelCacheKey, responseToCache);
 
         const blob = await response.blob();
-        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+        worker.postMessage({ type: "loadModel", modelUrl: modelPath });
       } catch (err) {
         console.error("Model preload failed:", err);
         showError("Failed to preload the model");
