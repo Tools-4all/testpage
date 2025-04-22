@@ -1233,9 +1233,11 @@
         if (menuIsOpen) {
           menu.style.display = "block";
           menuTogglerDiv.classList.add("change");
+          document.body.style.overflow = "hidden";
         } else {
           menu.style.display = "none";
           menuTogglerDiv.classList.remove("change");
+          document.body.style.overflow = "auto";
         }
       }
 
