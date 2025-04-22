@@ -329,8 +329,8 @@
       foregroundImg.src = finalDataUrl;
       await new Promise(resolve => {
         foregroundImg.onload = resolve;
-        foregroundImg.onerror = () => {
-          console.error("Main: Failed to load foreground image");
+        foregroundImg.onerror = (e) => {
+          console.error("Main: Failed to load foreground image", e);
           showError("Failed to load foreground image");
           removeImage();
         };
