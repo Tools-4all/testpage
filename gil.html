@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <div id="modelLoading">Loading background removal model...</div>
+    <div id="modelLoading">Processing image, please wait...</div>
   </div>
 
   <script src="{% static 'js/errorComponent.js' %}"></script>
@@ -124,6 +124,7 @@
     let finalDataUrl = null;
     let file;
     let worker;
+    let isProcessing = false;
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
@@ -143,7 +144,7 @@
           handleWorkerError(error);
         } else if (type === "modelLoaded") {
           console.log("Main: Model loaded in worker");
-          modelLoadingEl.classList.remove("show");
+          stopSpinner();
         }
       };
       worker.onerror = (error) => {
@@ -182,6 +183,7 @@
       } catch (err) {
         console.error("Model preload failed:", err);
         showError("Failed to preload the model");
+        stopSpinner();
       }
     }
 
@@ -200,7 +202,6 @@
       console.log("Main: Initializing worker and preloading model");
       initWorker();
       preloadModel();
-      setTimeout(stopSpinner, 2000);
     });
 
     // Drag and drop overlay
@@ -251,31 +252,30 @@
     // Display images
     function displayImages(originalSrc) {
       console.log("Main: Displaying original image");
-      const imageHolder = document.createElement("div");
-      imageHolder.classList.add("imageHolder");
+      const originalHolder = document.createElement("div");
+      originalHolder.classList.add("originalHolder");
 
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
+      originalHolder.appendChild(originalImgEl);
+
+      const removedHolder = document.createElement("div");
+      removedHolder.classList.add("removedHolder");
+      removedHolder.style.display = "none"; // Initially hidden
 
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
-
-      const overlay = document.createElement("div");
-      overlay.id = "imageOverlay";
-      overlay.classList.add("image-overlay");
+      removedHolder.appendChild(removedImgEl);
 
       const starsContainer = document.createElement("div");
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
 
-      imageHolder.appendChild(originalImgEl);
-      imageHolder.appendChild(removedImgEl);
-      imageHolder.appendChild(overlay);
-      imageHolder.appendChild(starsContainer);
-
-      previewImg.appendChild(imageHolder);
+      previewImg.appendChild(originalHolder);
+      previewImg.appendChild(removedHolder);
+      previewImg.appendChild(starsContainer);
 
       dragBox.style.display = "none";
       previewImg.style.display = "block";
@@ -286,9 +286,15 @@
 
     // Handle file selection
     async function handleFileSelect(e, isFile = false) {
+      if (isProcessing) {
+        showError("Please wait, processing is already in progress.");
+        return;
+      }
+      isProcessing = true;
       file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
       if (!file) {
         console.log("Main: No file selected");
+        isProcessing = false;
         return;
       }
 
@@ -296,6 +302,7 @@
       if (!allowedTypes.includes(file.type)) {
         showError("Unsupported file type. Please upload a valid image.");
         console.log("Main: Unsupported file type:", file.type);
+        isProcessing = false;
         return;
       }
 
@@ -318,11 +325,13 @@
           console.error("Main: Failed to load background-removed image");
           showError("Failed to load the background-removed image.");
           removeImage();
+          isProcessing = false;
         };
       } catch (err) {
         console.error("Main: Error in handleFileSelect:", err);
         showError("Failed to remove background");
         removeImage();
+        isProcessing = false;
       }
     }
 
@@ -337,6 +346,7 @@
         console.error("Main: removedImgEl not found");
         showError("Failed to find image element");
         removeImage();
+        isProcessing = false;
         return;
       }
 
@@ -344,6 +354,7 @@
         console.error("Main: Invalid dataURL received:", dataURL);
         showError("Invalid background-removed image data");
         removeImage();
+        isProcessing = false;
         return;
       }
 
@@ -351,14 +362,21 @@
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
-        removedImgEl.classList.add("reveal");
+        const originalHolder = previewImg.querySelector(".originalHolder");
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (originalHolder && removedHolder) {
+          originalHolder.style.display = "none";
+          removedHolder.style.display = "block";
+        }
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
+        isProcessing = false;
       };
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
         showError("Failed to load the background-removed image");
         removeImage();
+        isProcessing = false;
       };
     }
 
@@ -369,6 +387,7 @@
       modelLoadingEl.classList.remove("show");
       showError(error);
       removeImage();
+      isProcessing = false;
     }
 
     // Remove image
@@ -382,9 +401,8 @@
       uploadFileInput.value = "";
       finalDataUrl = null;
 
-      while (previewImg.querySelector('.imageHolder')) {
-        const child = previewImg.querySelector('.imageHolder');
-        previewImg.removeChild(child);
+      while (previewImg.firstChild) {
+        previewImg.removeChild(previewImg.firstChild);
       }
 
       if (colorsDiv.style.display === "block") {
@@ -393,14 +411,58 @@
     }
 
     // Download button
-    downloadBtn.addEventListener("click", () => {
+    downloadBtn.addEventListener("click", async () => {
       if (!finalDataUrl) {
         console.log("Main: No image to download");
         return;
       }
       console.log("Main: Downloading image");
+      const removedHolder = previewImg.querySelector(".removedHolder");
+      const removedImgEl = previewImg.querySelector(".removedImg");
+
+      if (!removedHolder || !removedImgEl) {
+        console.error("Main: Elements not found for download");
+        return;
+      }
+
+      // Create a canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = removedImgEl.naturalWidth;
+      canvas.height = removedImgEl.naturalHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Draw background
+      const bgColor = removedHolder.style.backgroundColor;
+      const bgImage = removedHolder.style.backgroundImage;
+
+      if (bgImage && bgImage !== "none") {
+        // Draw background image
+        const bgImg = new Image();
+        bgImg.src = bgImage.slice(4, -1).replace(/"/g, ""); // Extract URL from url("...")
+        await new Promise((resolve) => {
+          bgImg.onload = resolve;
+        });
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+      } else if (bgColor) {
+        // Draw background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Draw the removed image
+      const img = new Image();
+      img.src = finalDataUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+      ctx.drawImage(img, 0, 0);
+
+      // Get data URL
+      const compositedDataUrl = canvas.toDataURL("image/png");
+
+      // Download
       const a = document.createElement("a");
-      a.href = finalDataUrl;
+      a.href = compositedDataUrl;
       a.download = "bg_removed.png";
       document.body.appendChild(a);
       a.click();
@@ -486,7 +548,7 @@
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
       console.log("Main: Closing colors div");
-      hiddenDiv.style.display = "block";
+      hiddenDiv.style.display = "flex";
       colorsDiv.style.display = "none";
     });
 
@@ -501,7 +563,11 @@
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-        document.body.style.backgroundColor = button.style.backgroundColor;
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (removedHolder) {
+          removedHolder.style.backgroundColor = button.style.backgroundColor;
+          removedHolder.style.backgroundImage = ""; // Reset background image
+        }
       });
     });
 
@@ -513,7 +579,11 @@
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
-      document.body.style.backgroundColor = customColorInput.value;
+      const removedHolder = previewImg.querySelector(".removedHolder");
+      if (removedHolder) {
+        removedHolder.style.backgroundColor = customColorInput.value;
+        removedHolder.style.backgroundImage = ""; // Reset background image
+      }
       colorPreview.textContent = "";
     });
 
@@ -524,10 +594,261 @@
       imageUploader.click();
     });
 
+    const imageUploader = document.getElementById("imageUploader");
+    imageUploader.addEventListener("change", async (e) => {
+      const bgFile = e.target.files[0];
+      if (!bgFile) return;
+
+      try {
+        const bgDataURL = await readFileAsDataURL(bgFile);
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (removedHolder) {
+          removedHolder.style.backgroundImage = `url(${bgDataURL})`;
+          removedHolder.style.backgroundSize = "cover";
+          removedHolder.style.backgroundPosition = "center";
+          removedHolder.style.backgroundColor = ""; // Reset background color
+        }
+      } catch (err) {
+        console.error("Main: Error uploading background image:", err);
+        showError("Failed to upload background image");
+      }
+    });
+
     function showError(msg) {
       console.log("Main: Showing error:", msg);
       alert(msg);
     }
+  </script>
+
+  <script>
+    // Web Worker Script embedded as a data URL
+    const workerScript = `
+      try {
+          importScripts("https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/ort.min.js");
+          console.log("Worker: Successfully imported onnxruntime-web");
+      } catch (err) {
+          console.error("Worker: Failed to import onnxruntime-web:", err);
+          self.postMessage({ type: "error", error: "Failed to load ONNX runtime: " + err.message });
+      }
+
+      let session = null;
+
+      self.onmessage = async (e) => {
+          console.log("Worker: Received message:", e.data);
+          const { type, modelUrl, arrayBuffer, fileName, fileType } = e.data;
+          ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/";
+          if (type === "loadModel") {
+              try {
+                  console.log("Worker: Loading model from:", modelUrl);
+                  if (!modelUrl) throw new Error("Model URL is undefined");
+                  session = await ort.InferenceSession.create(modelUrl, { executionProviders: ["wasm"] });
+                  console.log("Worker: Model loaded successfully");
+                  self.postMessage({ type: "modelLoaded" });
+              } catch (err) {
+                  console.error("Worker: Failed to load model:", err);
+                  self.postMessage({ type: "error", error: "Failed to load the model: " + err.message });
+              }
+          } else if (type === "removeBg") {
+              try {
+                  if (!session) {
+                      console.error("Worker: Model not loaded");
+                      self.postMessage({ type: "error", error: "Model not loaded" });
+                      return;
+                  }
+                  console.log("Worker: Validating input data");
+                  if (!arrayBuffer || !(arrayBuffer instanceof ArrayBuffer)) {
+                      throw new Error("Invalid or missing arrayBuffer");
+                  }
+                  if (!fileName || typeof fileName !== "string") {
+                      throw new Error("Invalid or missing fileName");
+                  }
+                  if (!fileType || typeof fileType !== "string" || !fileType.startsWith("image/")) {
+                      throw new Error("Invalid or missing fileType");
+                  }
+                  console.log("Worker: Processing file:", fileName, "type:", fileType, "size:", arrayBuffer.byteLength);
+                  const file = new File([arrayBuffer], fileName, { type: fileType });
+                  const dataURL = await removeBg(file);
+                  console.log("Worker: Background removal complete, dataURL length:", dataURL.length);
+                  self.postMessage({ type: "result", data: dataURL });
+              } catch (err) {
+                  console.error("Worker: Error during background removal:", err);
+                  self.postMessage({ type: "error", error: err.message || "Failed to remove background" });
+              }
+          } else {
+              console.error("Worker: Unknown message type:", type);
+              self.postMessage({ type: "error", error: "Unknown message type: " + type });
+          }
+      };
+
+      async function preprocessImage(file) {
+          console.log("Worker: Preprocessing image");
+          try {
+              if (!(file instanceof File)) {
+                  throw new Error("Invalid file object");
+              }
+
+              const bitmap = await createImageBitmap(file);
+              const targetW = 1024;
+              const targetH = 1024;
+              const originalSize = {
+                  width: bitmap.width,
+                  height: bitmap.height
+              };
+              console.log("Worker: Image loaded, original size:", originalSize);
+
+              if (typeof OffscreenCanvas === "undefined") {
+                  throw new Error("OffscreenCanvas is not supported in this browser");
+              }
+
+              const canvas = new OffscreenCanvas(targetW, targetH);
+              const ctx = canvas.getContext("2d");
+              if (!ctx) {
+                  throw new Error("Failed to get 2D context from OffscreenCanvas");
+              }
+              ctx.drawImage(bitmap, 0, 0, targetW, targetH);
+              const imageData = ctx.getImageData(0, 0, targetW, targetH);
+              const data = imageData.data;
+
+              const floatData = new Float32Array(3 * targetW * targetH);
+              const means = [0.485, 0.456, 0.406];
+              const stds = [0.229, 0.224, 0.225];
+              for (let i = 0; i < targetW * targetH; i++) {
+                  let r = data[i * 4 + 0] / 255.0;
+                  let g = data[i * 4 + 1] / 255.0;
+                  let b = data[i * 4 + 2] / 255.0;
+                  r = (r - means[0]) / stds[0];
+                  g = (g - means[1]) / stds[1];
+                  b = (b - means[2]) / stds[2];
+                  floatData[i] = r;
+                  floatData[i + targetW * targetH] = g;
+                  floatData[i + 2 * targetW * targetH] = b;
+              }
+              const inputTensor = new ort.Tensor("float32", floatData, [1, 3, targetH, targetW]);
+              console.log("Worker: Image preprocessed, tensor created");
+
+              return {
+                  tensor: inputTensor,
+                  originalImage: bitmap,
+                  originalSize: originalSize
+              };
+          } catch (err) {
+              console.error("Worker: Error in preprocessImage:", err);
+              throw err;
+          }
+      }
+
+      function createBinaryMask(maskTensor, originalSize) {
+          console.log("Worker: Creating binary mask");
+          try {
+              if (!maskTensor || !maskTensor.data) {
+                  throw new Error("Invalid mask tensor");
+              }
+              const maskData = maskTensor.data;
+              const [n, c, h, w] = maskTensor.dims;
+
+              const maskCanvas = new OffscreenCanvas(w, h);
+              const ctx = maskCanvas.getContext("2d");
+              if (!ctx) {
+                  throw new Error("Failed to get 2D context from OffscreenCanvas");
+              }
+              const maskImageData = ctx.createImageData(w, h);
+
+              for (let i = 0; i < w * h; i++) {
+                  const val = maskData[i] > 0.5 ? 1 : 0;
+                  const idx = i * 4;
+                  maskImageData.data[idx + 0] = val * 255;
+                  maskImageData.data[idx + 1] = val * 255;
+                  maskImageData.data[idx + 2] = val * 255;
+                  maskImageData.data[idx + 3] = 255;
+              }
+              ctx.putImageData(maskImageData, 0, 0);
+
+              const resizedMaskCanvas = new OffscreenCanvas(originalSize.width, originalSize.height);
+              const ctxResized = resizedMaskCanvas.getContext("2d");
+              if (!ctxResized) {
+                  throw new Error("Failed to get 2D context from OffscreenCanvas");
+              }
+              ctxResized.drawImage(maskCanvas, 0, 0, originalSize.width, originalSize.height);
+
+              const binaryMaskData = ctxResized.getImageData(0, 0, originalSize.width, originalSize.height).data;
+              console.log("Worker: Binary mask created, size:", originalSize);
+              return binaryMaskData;
+          } catch (err) {
+              console.error("Worker: Error in createBinaryMask:", err);
+              throw err;
+          }
+      }
+
+      function deductMask(originalImage, binaryMaskData) {
+          console.log("Worker: Deducting mask");
+          try {
+              if (!originalImage || !binaryMaskData) {
+                  throw new Error("Invalid originalImage or binaryMaskData");
+              }
+              const canvas = new OffscreenCanvas(originalImage.width, originalImage.height);
+              const ctx = canvas.getContext("2d");
+              if (!ctx) {
+                  throw new Error("Failed to get 2D context from OffscreenCanvas");
+              }
+              ctx.drawImage(originalImage, 0, 0);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const data = imageData.data;
+              for (let i = 0; i < data.length; i += 4) {
+                  const maskValue = binaryMaskData[i] / 255.0;
+                  data[i + 0] = data[i + 0] * maskValue;
+                  data[i + 1] = data[i + 1] * maskValue;
+                  data[i + 2] = data[i + 2] * maskValue;
+                  data[i + 3] = 255;
+              }
+              ctx.putImageData(imageData, 0, 0);
+              return canvas.convertToBlob({ type: "image/png" }).then(blob => {
+                  return new Promise((resolve, reject) => {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                          const dataURL = reader.result;
+                          console.log("Worker: Mask deducted, dataURL created, length:", dataURL.length);
+                          resolve(dataURL);
+                      };
+                      reader.onerror = err => {
+                          console.error("Worker: Failed to read blob as data URL:", err);
+                          reject(err);
+                      };
+                      reader.readAsDataURL(blob);
+                  });
+              }).catch(err => {
+                  console.error("Worker: Failed to convert canvas to blob:", err);
+                  throw err;
+              });
+          } catch (err) {
+              console.error("Worker: Error in deductMask:", err);
+              throw err;
+          }
+      }
+
+      async function removeBg(file) {
+          console.log("Worker: Starting background removal");
+          try {
+              const { tensor, originalImage, originalSize } = await preprocessImage(file);
+              const feeds = {};
+              feeds[session.inputNames[0]] = tensor;
+              console.log("Worker: Running model inference");
+              const results = await session.run(feeds);
+              const output = results[session.outputNames[0]];
+              console.log("Worker: Model inference complete");
+              const binaryMaskData = createBinaryMask(output, originalSize);
+              const dataURL = await deductMask(originalImage, binaryMaskData);
+              console.log("Worker: Background removal complete");
+              return dataURL;
+          } catch (err) {
+              console.error("Worker: Error in removeBg:", err);
+              throw err;
+          }
+      }
+    `;
+    const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(workerBlob);
+    worker = new Worker(workerUrl);
+    initWorker();
   </script>
 </body>
 {% endblock %}
