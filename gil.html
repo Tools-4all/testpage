@@ -8,6 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
   <!-- <link rel="stylesheet" href="base.css" /> -->
   <style>
     body,
@@ -540,7 +542,7 @@
     .service h3 {
       font-size: 2rem;
       margin-bottom: 20px;
-      color: #007bff;
+      color: #0056b3;
       font-weight: 800;
     }
 
@@ -684,6 +686,46 @@
     }
 
     /* FAQ Item */
+    /* FAQ Section */
+    .faq-section {
+      position: relative;
+      padding: 100px 20px;
+      text-align: center;
+      overflow: hidden;
+      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
+    }
+
+    .faq-header {
+      margin-bottom: 40px;
+      z-index: 2;
+      position: relative;
+    }
+
+    .faq-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #222;
+      font-family: "Montserrat", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+    }
+
+    .faq-subtitle {
+      font-size: 1.2rem;
+      color: #64748b;
+    }
+
+    /* FAQ Container */
+    .faq-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: left;
+      z-index: 2;
+      position: relative;
+    }
+
+    /* FAQ Item */
     .faq-item {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -703,7 +745,7 @@
     .faq-question {
       font-size: 1.2rem;
       font-weight: 600;
-      color: #1e40af;
+      color: #0056b3;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -738,11 +780,14 @@
       max-height: 0;
       overflow: hidden;
       opacity: 0;
-      transition: max-height 0.4s ease, opacity 0.4s ease;
       margin-top: 0;
       color: #334155;
       font-size: 1rem;
       line-height: 1.7;
+      transition:
+        max-height 0.4s ease,
+        opacity 0.4s ease,
+        margin-top 0.4s ease;
     }
 
     .faq-item.active .faq-answer {
@@ -750,7 +795,6 @@
       opacity: 1;
       margin-top: 15px;
     }
-
 
     /* Contact Section */
     .contact-section {
@@ -807,6 +851,7 @@
 
     .form-group input,
     .form-group textarea {
+      resize: none;
       width: 95%;
       padding: 12px;
       font-size: 1rem;
@@ -938,7 +983,6 @@
         font-size: 1rem;
       }
 
-
     }
   </style>
 
@@ -1018,7 +1062,8 @@
     </header>
 
     <div background="background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);">
-      <section id="about" class="about-section section">
+      <section id="about" class="about-section section" data-aos="fade-up" data-aos-duration="1000"
+        data-aos-delay="100">
         <h2>About Us</h2>
         <div class="about-content">
           <p>
@@ -1048,7 +1093,8 @@
         </div>
       </section>
 
-      <section id="services" class="services-section section">
+      <section id="services" class="services-section section" data-aos="fade-up" data-aos-duration="1000"
+        data-aos-delay="100">
         <h2>Our Services</h2>
         <div class="services-container">
           <div class="service">
@@ -1076,7 +1122,7 @@
       </section>
     </div>
 
-    <section class="faq-section" id="faq">
+    <section class="faq-section" id="faq" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
       <div class="faq-header">
         <h2 class="faq-title">Frequently Asked Questions</h2>
         <p class="faq-subtitle">
@@ -1120,19 +1166,19 @@
     <section class="counter-section" id="stats">
       <h2>Our Impact</h2>
       <div class="counter-container">
-        <div class="counter-box">
+        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="100">
           <div class="counter" data-target="107">0</div>
           <p>Happy Clients</p>
         </div>
-        <div class="counter-box">
+        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="200">
           <div class="counter" data-target="107">0</div>
           <p>Projects Delivered</p>
         </div>
-        <div class="counter-box">
+        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="300">
           <div class="counter" data-target="5">0</div>
           <p>Years of Experience</p>
         </div>
-        <div class="counter-box">
+        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="400">
           <div class="counter" data-target="4">0</div>
           <p>Team Members</p>
         </div>
@@ -1173,7 +1219,9 @@
     </footer>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script src=" https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>AOS.init();</script>
     <script>
 
       const menuTogglerDiv = document.getElementById("menuTogglerDiv");
@@ -1241,7 +1289,6 @@
         }
       });
 
-      // scroll progress bar
       window.addEventListener("scroll", () => {
         const scrollBar = document.getElementById("scroll-indicator-bar");
         const scrollTop = window.scrollY;
@@ -1250,40 +1297,63 @@
         scrollBar.style.width = `${scrollPercent}%`;
       });
 
-      // counters
-      const counters = document.querySelectorAll(".counter");
-      const speed = 200;
+      const counters = document.querySelectorAll('.counter');
+
       function animateCounters() {
-        counters.forEach((counter) => {
-          function updateCount() {
-            const target = +counter.dataset.target;
-            const count = +counter.innerText;
-            const inc = Math.ceil(target / speed);
-            if (count < target) {
-              counter.innerText = count + inc;
-              setTimeout(updateCount, 10);
-            } else {
-              counter.innerText = target;
+        counters.forEach(counter => {
+          const target = +counter.dataset.target;
+          counter.innerText = '0';
+
+          const totalDuration = target <= 10 ? 1000 : 500;
+          const interval = totalDuration / target;
+
+          let current = 0;
+          function update() {
+            current++;
+            counter.innerText = current;
+            if (current < target) {
+              setTimeout(update, interval);
             }
           }
-          updateCount();
+          update();
         });
       }
-      let triggered = false;
-      window.addEventListener("scroll", () => {
-        const section = document.querySelector(".counter-section");
-        if (!triggered && section.getBoundingClientRect().top < window.innerHeight) {
-          animateCounters();
-          triggered = true;
-        }
-      });
 
-      // FAQ
-      document.querySelectorAll(".faq-question").forEach((q) => {
-        q.addEventListener("click", () => {
-          q.parentElement.classList.toggle("active");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+          } else {
+            counters.forEach(c => c.innerText = '0');
+          }
+        });
+      }, { threshold: 0.5 });
+
+      observer.observe(document.querySelector('.counter-section'));
+
+
+
+
+      document.querySelectorAll(".faq-item").forEach(item => {
+        const question = item.querySelector(".faq-question");
+        const answer = item.querySelector(".faq-answer");
+        answer.style.maxHeight = "0";
+
+        question.addEventListener("click", () => {
+          const isOpen = item.classList.contains("active");
+
+          if (isOpen) {
+            answer.style.maxHeight = answer.scrollHeight + "px";
+            +            answer.offsetHeight;
+            answer.style.maxHeight = "0";
+            item.classList.remove("active");
+          } else {
+            answer.style.maxHeight = answer.scrollHeight + "px";
+            item.classList.add("active");
+          }
         });
       });
+
 
     </script>
 
