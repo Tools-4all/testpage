@@ -1,523 +1,1145 @@
-<script src="{% static 'js/errorComponent.js' %}"></script>
-<script>
-  const removedImgBtn = document.getElementById("removedImgBtn");
-  const hiddenDiv = document.getElementById("hiddenDiv");
-  const dragBox = document.getElementById("dragBox");
-  const uploadFileInput = document.getElementById("uploadFile");
-  const modelLoadingEl = document.getElementById("modelLoading");
-  const downloadBtn = document.getElementById("downloadBtn");
-  const previewImg = document.getElementById("previewImage");
-  const colorsDiv = document.getElementById("colorsDiv");
+{% extends 'base_template.html' %}
+{% block content %}
+{% load static %}
 
-  let finalDataUrl = null;
-  let file;
-  let worker;
-  let isProcessing = false;
+<head>
+  <title>Remove Background</title>
+  <meta name="description" content="Remove background from images easily." />
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/removeBG.css' %}" />
+</head>
 
-  const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
-  const cacheName = "bg-remover-model-cache";
-  const modelCacheKey = "bg-remover-model";
+<body>
+  <div id="spinner">
+    <div class="spinner" style="display: flex;">
+      <img src="{% static 'site_images/spinner.svg' %}" alt="spinner" draggable="false">
+    </div>
+    <p>Loading model, please wait...</p>
+  </div>
 
-  // Initialize Web Worker
-  function initWorker() {
-    worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
-    worker.onmessage = (e) => {
-      console.log("Main: Received message from worker:", e.data);
-      const { type, data, error } = e.data;
-      if (type === "result") {
-        console.log("Main: Processing result with dataURL:", data);
-        handleWorkerResult(data);
-      } else if (type === "error") {
-        console.log("Main: Worker error:", error);
-        handleWorkerError(error);
-      } else if (type === "modelLoaded") {
-        console.log("Main: Model loaded in worker");
+  <div id="mainDiv" style="display: none;">
+    <div class="titleDiv">
+      <h1 class="functionTitle" id="title">Remove background from image</h1>
+    </div>
+
+    <div class="uplodePhoto">
+      <div class="dragBox" id="dragBox">
+        <button id="uploadBtn" onclick="document.getElementById('uploadFile').click()">
+          Upload your image
+          <img src="{% static 'site_images/upload.webp' %}" alt="Upload your image">
+        </button>
+        <span class="header" id="browseBtn">or drop it here</span>
+        <span class="support"><span style="font-weight: bold;">Supports:</span> jpeg, png, gif, webp, bmp, ico, svg,
+          ff, hdr, qoi, tga, pnm</span>
+        <input type="file" accept=".jpeg, .jpg, .png, .gif, .svg, .webp, .bmp, .ico, .svg, .ff, .hdr, .qoi, .tga, .pnm"
+          onChange="handleFileSelect(event)" id="uploadFile" />
+      </div>
+
+      <div id="previewDiv">
+        <div id="previewImage" style="display: none;">
+          <button type="button" onclick="removeImage()" id="removedImgBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25"
+              height="25" viewBox="0 0 256 256" xml:space="preserve">
+              <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
+                transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
+                <circle cx="45" cy="45" r="45"
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(230,62,50); fill-rule: nonzero; opacity: 1;" />
+                <path
+                  d="M 27.169 64.83 c -0.512 0 -1.024 -0.195 -1.414 -0.586 c -0.781 -0.781 -0.781 -2.047 0 -2.828 l 35.661 -35.661 c 0.781 -0.781 2.047 -0.781 2.828 0 c 0.781 0.781 0.781 2.047 0 2.828 L 28.583 64.244 C 28.193 64.635 27.681 64.83 27.169 64.83 z"
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
+                <path
+                  d="M 62.83 64.83 c -0.512 0 -1.023 -0.195 -1.414 -0.586 L 25.755 28.583 c -0.781 -0.781 -0.781 -2.047 0 -2.828 c 0.78 -0.781 2.048 -0.781 2.828 0 l 35.661 35.661 c 0.781 0.781 0.781 2.047 0 2.828 C 63.854 64.635 63.342 64.83 62.83 64.83 z"
+                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
+              </g>
+            </svg>
+          </button>
+        </div>
+
+        <div id="hiddenDiv">
+          <div id="circleBtnDiv">
+            <div class="circleBtn" onclick="displayColors()">
+              <img src="{% static 'site_images/rgb.webp' %}" alt="change background color" loading="lazy">
+            </div>
+            <p class="circleBtnP">Change Background Color</p>
+          </div>
+
+          <div id="circleBtnDiv" style="align-items: center;">
+            <div class="circleBtn" id="uploadSection" style="padding-top: 2px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+                <rect x="14" y="14" width="20" height="20" rx="3" ry="3" fill="none" stroke="#000000"
+                  stroke-width="2" />
+                <path d="M24 18 L20 22 H22 V26 H26 V22 H28 Z" fill="#000000" />
+                <rect x="18" y="28" width="12" height="2" fill="#000000" />
+              </svg>
+            </div>
+            <p class="circleBtnP">Add background image</p>
+            <input type="file" id="imageUploader" accept="image/*" style="display: none;">
+          </div>
+
+          <button id="downloadBtn">download</button>
+        </div>
+
+        <div id="colorsDiv">
+          <button type="button" id="closeColorsDiv" class="btn-close" aria-label="Close"></button>
+          <h2>Change background color</h2>
+          <div style="display: flex;flex-wrap: wrap;justify-content: center;">
+            <button class="colorBtn" style="background-color: white;"></button>
+            <button class="colorBtn" style="background-color: black;"></button>
+            <button class="colorBtn" style="background-color: gray;"></button>
+            <button class="colorBtn" style="background-color: red;"></button>
+            <button class="colorBtn" style="background-color: orange;"></button>
+            <button class="colorBtn" style="background-color: yellow;"></button>
+            <button class="colorBtn" style="background-color: purple;"></button>
+            <button class="colorBtn" style="background-color: blue;"></button>
+            <button class="colorBtn" style="background-color: green;"></button>
+          </div>
+
+          <div id="customColorDiv">
+            <input type="color" id="customColor">
+            <div id="colorPreview">
+              Pick a color
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modelLoading">Processing image, please wait...</div>
+  </div>
+
+  <script src="{% static 'js/errorComponent.js' %}"></script>
+  <script>
+    const removedImgBtn = document.getElementById("removedImgBtn");
+    const hiddenDiv = document.getElementById("hiddenDiv");
+    const dragBox = document.getElementById("dragBox");
+    const uploadFileInput = document.getElementById("uploadFile");
+    const modelLoadingEl = document.getElementById("modelLoading");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const previewImg = document.getElementById("previewImage");
+    const colorsDiv = document.getElementById("colorsDiv");
+
+    let finalDataUrl = null;
+    let file;
+    let worker;
+    let isProcessing = false;
+
+    const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
+    const cacheName = "bg-remover-model-cache";
+    const modelCacheKey = "bg-remover-model";
+
+    // Initialize Web Worker
+    function initWorker() {
+      worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
+      worker.onmessage = (e) => {
+        console.log("Main: Received message from worker:", e.data);
+        const { type, data, error } = e.data;
+        if (type === "result") {
+          console.log("Main: Processing result with dataURL:", data);
+          handleWorkerResult(data);
+        } else if (type === "error") {
+          console.log("Main: Worker error:", error);
+          handleWorkerError(error);
+        } else if (type === "modelLoaded") {
+          console.log("Main: Model loaded in worker");
+          stopSpinner();
+        }
+      };
+      worker.onerror = (error) => {
+        console.error("Main: Worker error event:", {
+          message: error.message,
+          filename: error.filename,
+          lineno: error.lineno,
+          colno: error.colno,
+          error: error
+        });
+        handleWorkerError("Worker failed: " + (error.message || "Unknown error"));
+      };
+    }
+
+    // Preload and cache the model
+    async function preloadModel() {
+      try {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(modelCacheKey);
+        if (cachedResponse) {
+          console.log("Model found in cache");
+          const blob = await cachedResponse.blob();
+          worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+          return;
+        }
+
+        console.log("Fetching model...");
+        const response = await fetch(modelPath);
+        if (!response.ok) throw new Error("Failed to fetch model");
+
+        const responseToCache = response.clone();
+        await cache.put(modelCacheKey, responseToCache);
+
+        const blob = await response.blob();
+        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+      } catch (err) {
+        console.error("Model preload failed:", err);
+        showError("Failed to preload the model");
         stopSpinner();
       }
-    };
-    worker.onerror = (error) => {
-      console.error("Main: Worker error event:", {
-        message: error.message,
-        filename: error.filename,
-        lineno: error.lineno,
-        colno: error.colno,
-        error: error
-      });
-      handleWorkerError("Worker failed: " + (error.message || "Unknown error"));
-    };
-  }
+    }
 
-  // Preload and cache the model
-  async function preloadModel() {
-    try {
-      const cache = await caches.open(cacheName);
-      const cachedResponse = await cache.match(modelCacheKey);
-      if (cachedResponse) {
-        console.log("Model found in cache");
-        const blob = await cachedResponse.blob();
-        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+    // Stop spinner and show main content
+    function stopSpinner() {
+      const spinnerDiv = document.getElementById("spinner");
+      const spinner = document.querySelector(".spinner img");
+
+      spinner.classList.remove("spin-active");
+      spinnerDiv.style.display = "none";
+      document.getElementById("mainDiv").style.display = "flex";
+    }
+
+    // Initialize on page load
+    window.addEventListener("load", () => {
+      console.log("Main: Initializing worker and preloading model");
+      initWorker();
+      preloadModel();
+    });
+
+    // Drag and drop overlay
+    const overlay = document.createElement("div");
+    overlay.id = "dropOverlay";
+    const overlayText = document.createElement("h2");
+    overlayText.textContent = "Drop anywhere you want";
+    overlay.appendChild(overlayText);
+    document.body.appendChild(overlay);
+
+    document.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      overlay.style.display = "flex";
+    });
+
+    document.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget === null || event.relatedTarget.nodeName === "HTML") {
+        overlay.style.display = "none";
+      }
+    });
+
+    document.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      overlay.style.display = "none";
+
+      const files = event.dataTransfer.files;
+      if (files.length) {
+        const file = files[0];
+        console.log("Main: Dropped file:", file.name);
+        await handleFileSelect(file, true);
+      }
+
+      if (previewImg.style.display === "block") {
+        removeImage();
+      }
+    });
+
+    // Read file as Data URL
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Display images
+    function displayImages(originalSrc) {
+      console.log("Main: Displaying original image");
+      const originalHolder = document.createElement("div");
+      originalHolder.classList.add("originalHolder");
+
+      const originalImgEl = document.createElement("img");
+      originalImgEl.src = originalSrc;
+      originalImgEl.classList.add("img-original");
+      originalHolder.appendChild(originalImgEl);
+
+      const removedHolder = document.createElement("div");
+      removedHolder.classList.add("removedHolder");
+      removedHolder.style.display = "none"; // Initially hidden
+
+      const removedImgEl = document.createElement("img");
+      removedImgEl.classList.add("removedImg");
+      removedImgEl.src = "";
+      removedHolder.appendChild(removedImgEl);
+
+      const starsContainer = document.createElement("div");
+      starsContainer.classList.add("stars-container");
+      createStars(starsContainer);
+
+      previewImg.appendChild(originalHolder);
+      previewImg.appendChild(removedHolder);
+      previewImg.appendChild(starsContainer);
+
+      dragBox.style.display = "none";
+      previewImg.style.display = "block";
+      document.getElementById('title').style.display = "none";
+
+      return removedImgEl;
+    }
+
+    // Handle file selection
+    async function handleFileSelect(e, isFile = false) {
+      if (isProcessing) {
+        showError("Please wait, processing is already in progress.");
+        return;
+      }
+      isProcessing = true;
+      file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
+      if (!file) {
+        console.log("Main: No file selected");
+        isProcessing = false;
         return;
       }
 
-      console.log("Fetching model...");
-      const response = await fetch(modelPath);
-      if (!response.ok) throw new Error("Failed to fetch model");
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
+      if (!allowedTypes.includes(file.type)) {
+        showError("Unsupported file type. Please upload a valid image.");
+        console.log("Main: Unsupported file type:", file.type);
+        isProcessing = false;
+        return;
+      }
 
-      const responseToCache = response.clone();
-      await cache.put(modelCacheKey, responseToCache);
+      try {
+        console.log("Main: Handling file:", file.name);
+        const originalDataURL = await readFileAsDataURL(file);
+        const removedImgEl = displayImages(originalDataURL);
 
-      const blob = await response.blob();
-      worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
-    } catch (err) {
-      console.error("Model preload failed:", err);
-      showError("Failed to preload the model");
-      stopSpinner();
-    }
-  }
+        startStarsAnimation(true);
+        modelLoadingEl.classList.add("show");
 
-  // Stop spinner and show main content
-  function stopSpinner() {
-    const spinnerDiv = document.getElementById("spinner");
-    const spinner = document.querySelector(".spinner img");
+        const arrayBuffer = await file.arrayBuffer();
+        console.log("Main: Sending file to worker, arrayBuffer size:", arrayBuffer.byteLength);
+        worker.postMessage(
+          { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
+          [arrayBuffer]
+        );
 
-    spinner.classList.remove("spin-active");
-    spinnerDiv.style.display = "none";
-    document.getElementById("mainDiv").style.display = "flex";
-  }
-
-  // Initialize on page load
-  window.addEventListener("load", () => {
-    console.log("Main: Initializing worker and preloading model");
-    initWorker();
-    preloadModel();
-  });
-
-  // Drag and drop overlay
-  const overlay = document.createElement("div");
-  overlay.id = "dropOverlay";
-  const overlayText = document.createElement("h2");
-  overlayText.textContent = "Drop anywhere you want";
-  overlay.appendChild(overlayText);
-  document.body.appendChild(overlay);
-
-  document.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    overlay.style.display = "flex";
-  });
-
-  document.addEventListener("dragleave", (event) => {
-    if (event.relatedTarget === null || event.relatedTarget.nodeName === "HTML") {
-      overlay.style.display = "none";
-    }
-  });
-
-  document.addEventListener("drop", async (event) => {
-    event.preventDefault();
-    overlay.style.display = "none";
-
-    const files = event.dataTransfer.files;
-    if (files.length) {
-      const file = files[0];
-      console.log("Main: Dropped file:", file.name);
-      await handleFileSelect(file, true);
-    }
-  });
-
-  // Read file as Data URL
-  function readFileAsDataURL(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // Display images
-  function displayImages(originalSrc) {
-    console.log("Main: Displaying original image");
-    // Clear previous content
-    while (previewImg.firstChild) {
-      previewImg.removeChild(previewImg.firstChild);
+        removedImgEl.onerror = () => {
+          console.error("Main: Failed to load background-removed image");
+          showError("Failed to load the background-removed image.");
+          removeImage();
+          isProcessing = false;
+        };
+      } catch (err) {
+        console.error("Main: Error in handleFileSelect:", err);
+        showError("Failed to remove background");
+        removeImage();
+        isProcessing = false;
+      }
     }
 
-    const imageContainer = document.createElement("div");
-    imageContainer.classList.add("imageContainer");
-    imageContainer.style.position = "relative";
-    imageContainer.style.width = "100%";
-    imageContainer.style.height = "auto";
+    // Handle Web Worker result
+    function handleWorkerResult(dataURL) {
+      console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
 
-    const originalImgEl = document.createElement("img");
-    originalImgEl.src = originalSrc;
-    originalImgEl.classList.add("img-original");
-    originalImgEl.style.maxWidth = "100%";
-    originalImgEl.style.display = "block";
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      if (!removedImgEl) {
+        console.error("Main: removedImgEl not found");
+        showError("Failed to find image element");
+        removeImage();
+        isProcessing = false;
+        return;
+      }
 
-    const removedImgEl = document.createElement("img");
-    removedImgEl.classList.add("removedImg");
-    removedImgEl.style.maxWidth = "100%";
-    removedImgEl.style.display = "none"; // Initially hidden
-    removedImgEl.style.position = "absolute";
-    removedImgEl.style.top = "0";
-    removedImgEl.style.left = "0";
+      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
+        console.error("Main: Invalid dataURL received:", dataURL);
+        showError("Invalid background-removed image data");
+        removeImage();
+        isProcessing = false;
+        return;
+      }
 
-    const starsContainer = document.createElement("div");
-    starsContainer.classList.add("stars-container");
-    starsContainer.style.position = "absolute";
-    starsContainer.style.top = "0";
-    starsContainer.style.left = "0";
-    starsContainer.style.width = "100%";
-    starsContainer.style.height = "100%";
-    createStars(starsContainer);
-
-    imageContainer.appendChild(originalImgEl);
-    imageContainer.appendChild(removedImgEl);
-    imageContainer.appendChild(starsContainer);
-    previewImg.appendChild(imageContainer);
-
-    dragBox.style.display = "none";
-    previewImg.style.display = "block";
-    document.getElementById('title').style.display = "none";
-
-    return removedImgEl;
-  }
-
-  // Handle file selection
-  async function handleFileSelect(e, isFile = false) {
-    if (isProcessing) {
-      showError("Please wait, processing is already in progress.");
-      return;
-    }
-    isProcessing = true;
-    file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
-    if (!file) {
-      console.log("Main: No file selected");
-      isProcessing = false;
-      return;
-    }
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
-    if (!allowedTypes.includes(file.type)) {
-      showError("Unsupported file type. Please upload a valid image.");
-      console.log("Main: Unsupported file type:", file.type);
-      isProcessing = false;
-      return;
-    }
-
-    try {
-      console.log("Main: Handling file:", file.name);
-      const originalDataURL = await readFileAsDataURL(file);
-      const removedImgEl = displayImages(originalDataURL);
-
-      startStarsAnimation(true);
-      modelLoadingEl.classList.add("show");
-
-      const arrayBuffer = await file.arrayBuffer();
-      console.log("Main: Sending file to worker, arrayBuffer size:", arrayBuffer.byteLength);
-      worker.postMessage(
-        { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
-        [arrayBuffer]
-      );
-
+      finalDataUrl = dataURL;
+      removedImgEl.src = dataURL;
+      removedImgEl.onload = () => {
+        console.log("Main: Background-removed image loaded successfully");
+        const originalHolder = previewImg.querySelector(".originalHolder");
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (originalHolder && removedHolder) {
+          originalHolder.style.display = "none";
+          removedHolder.style.display = "block";
+        }
+        removedImgBtn.style.display = "block";
+        hiddenDiv.style.display = "flex";
+        isProcessing = false;
+      };
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
-        showError("Failed to load the background-removed image.");
+        showError("Failed to load the background-removed image");
         removeImage();
         isProcessing = false;
       };
-    } catch (err) {
-      console.error("Main: Error in handleFileSelect:", err);
-      showError("Failed to remove background");
+    }
+
+    // Handle Web Worker error
+    function handleWorkerError(error) {
+      console.error("Main: Handling worker error:", error);
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
+      showError(error);
       removeImage();
       isProcessing = false;
     }
-  }
 
-  // Handle Web Worker result
-  function handleWorkerResult(dataURL) {
-    console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
-    startStarsAnimation(false);
-    modelLoadingEl.classList.remove("show");
-
-    const removedImgEl = previewImg.querySelector(".removedImg");
-    const originalImgEl = previewImg.querySelector(".img-original");
-    if (!removedImgEl || !originalImgEl) {
-      console.error("Main: Image elements not found");
-      showError("Failed to find image elements");
-      removeImage();
-      isProcessing = false;
-      return;
-    }
-
-    if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
-      console.error("Main: Invalid dataURL received:", dataURL);
-      showError("Invalid background-removed image data");
-      removeImage();
-      isProcessing = false;
-      return;
-    }
-
-    finalDataUrl = dataURL;
-    removedImgEl.src = dataURL;
-    removedImgEl.onload = () => {
-      console.log("Main: Background-removed image loaded successfully");
-      originalImgEl.style.display = "none";
-      removedImgEl.style.display = "block";
-      removedImgBtn.style.display = "block";
-      hiddenDiv.style.display = "flex";
-      isProcessing = false;
-    };
-    removedImgEl.onerror = () => {
-      console.error("Main: Failed to load background-removed image");
-      showError("Failed to load the background-removed image");
-      removeImage();
-      isProcessing = false;
-    };
-  }
-
-  // Handle Web Worker error
-  function handleWorkerError(error) {
-    console.error("Main: Handling worker error:", error);
-    startStarsAnimation(false);
-    modelLoadingEl.classList.remove("show");
-    showError(error);
-    removeImage();
-    isProcessing = false;
-  }
-
-  // Remove image
-  function removeImage() {
-    console.log("Main: Removing image");
-    document.getElementById('title').style.display = "block";
-    dragBox.style.display = "flex";
-    previewImg.style.display = "none";
-    removedImgBtn.style.display = "none";
-    hiddenDiv.style.display = "none";
-    uploadFileInput.value = "";
-    finalDataUrl = null;
-
-    while (previewImg.firstChild) {
-      previewImg.removeChild(previewImg.firstChild);
-    }
-
-    if (colorsDiv.style.display === "block") {
-      colorsDiv.style.display = "none";
-    }
-  }
-
-  // Download button
-  downloadBtn.addEventListener("click", async () => {
-    if (!finalDataUrl) {
-      console.log("Main: No image to download");
-      return;
-    }
-    console.log("Main: Downloading image");
-    const removedImgEl = previewImg.querySelector(".removedImg");
-    const imageContainer = previewImg.querySelector(".imageContainer");
-
-    if (!removedImgEl || !imageContainer) {
-      console.error("Main: Elements not found for download");
-      return;
-    }
-
-    // Create a canvas
-    const canvas = document.createElement("canvas");
-    canvas.width = removedImgEl.naturalWidth;
-    canvas.height = removedImgEl.naturalHeight;
-    const ctx = canvas.getContext("2d");
-
-    // Draw background
-    const bgColor = imageContainer.style.backgroundColor;
-    const bgImage = imageContainer.style.backgroundImage;
-
-    if (bgImage && bgImage !== "none") {
-      // Draw background image
-      const bgImg = new Image();
-      bgImg.src = bgImage.slice(4, -1).replace(/"/g, ""); // Extract URL from url("...")
-      await new Promise((resolve) => {
-        bgImg.onload = resolve;
-      });
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-    } else if (bgColor) {
-      // Draw background color
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-
-    // Draw the removed image
-    const img = new Image();
-    img.src = finalDataUrl;
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
-    ctx.drawImage(img, 0, 0);
-
-    // Get data URL
-    const compositedDataUrl = canvas.toDataURL("image/png");
-
-    // Download
-    const a = document.createElement("a");
-    a.href = compositedDataUrl;
-    a.download = "bg_removed.png";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  });
-
-  // Stars animation
-  function startStarsAnimation(run) {
-    const starsContainer = document.querySelector(".stars-container");
-    if (!starsContainer) {
-      console.log("Main: Stars container not found");
-      return;
-    }
-    if (run) {
-      console.log("Main: Starting stars animation");
-      starsContainer.style.display = "block";
-      const stars = starsContainer.querySelectorAll(".star");
-      stars.forEach(star => {
-        star.style.animationPlayState = "running";
-      });
-    } else {
-      console.log("Main: Stopping stars animation");
-      const stars = starsContainer.querySelectorAll(".star");
-      stars.forEach(star => {
-        star.style.animationPlayState = "paused";
-      });
-      starsContainer.style.display = "none";
-    }
-  }
-
-  function createStars(parentEl) {
-    console.log("Main: Creating stars");
-    const totalStars = 15;
-    const gridSize = Math.sqrt(totalStars);
-    const starPositions = [];
-
-    parentEl.style.display = "block";
-
-    for (let i = 0; i < totalStars; i++) {
-      const star = document.createElement("div");
-      star.classList.add("star");
-
-      const row = Math.floor(i / gridSize);
-      const col = i % gridSize;
-
-      const cellWidth = 100 / gridSize;
-      const cellHeight = 100 / gridSize;
-
-      const minTop = row * cellHeight;
-      const maxTop = minTop + cellHeight;
-      const minLeft = col * cellWidth;
-      const maxLeft = minLeft + cellWidth;
-
-      const topPos = Math.random() * (maxTop - minTop) + minTop;
-      const leftPos = Math.random() * (maxLeft - minLeft) + minLeft;
-
-      starPositions.push([topPos, leftPos]);
-
-      star.style.top = `${topPos}%`;
-      star.style.left = `${leftPos}%`;
-      star.style.animationDuration = `${Math.random() * 2 + 1}s`;
-
-      parentEl.appendChild(star);
-
-      setTimeout(() => {
-        star.remove();
-      }, 3000);
-    }
-  }
-
-  // Change background color
-  function displayColors() {
-    console.log("Main: Toggling colors div");
-    if (colorsDiv.style.display === "block") {
-      hiddenDiv.style.display = "flex";
-      colorsDiv.style.display = "none";
-    } else {
+    // Remove image
+    function removeImage() {
+      console.log("Main: Removing image");
+      document.getElementById('title').style.display = "block";
+      dragBox.style.display = "flex";
+      previewImg.style.display = "none";
+      removedImgBtn.style.display = "none";
       hiddenDiv.style.display = "none";
-      colorsDiv.style.display = "block";
+      uploadFileInput.value = "";
+      finalDataUrl = null;
+
+      while (previewImg.firstChild) {
+        previewImg.removeChild(previewImg.firstChild);
+      }
+
+      if (colorsDiv.style.display === "block") {
+        colorsDiv.style.display = "none";
+      }
     }
-  }
 
-  const closeColorsDiv = document.getElementById("closeColorsDiv");
-  closeColorsDiv.addEventListener("click", () => {
-    console.log("Main: Closing colors div");
-    hiddenDiv.style.display = "flex";
-    colorsDiv.style.display = "none";
-  });
+    // Download button
+    downloadBtn.addEventListener("click", async () => {
+      if (!finalDataUrl) {
+        console.log("Main: No image to download");
+        return;
+      }
+      console.log("Main: Downloading image");
+      const removedHolder = previewImg.querySelector(".removedHolder");
+      const removedImgEl = previewImg.querySelector(".removedImg");
 
-  function removeHighlight() {
-    document.querySelectorAll(".colorBtn, #colorPreview").forEach(button => {
-      button.style.boxShadow = "none";
+      if (!removedHolder || !removedImgEl) {
+        console.error("Main: Elements not found for download");
+        return;
+      }
+
+      // Create a canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = removedImgEl.naturalWidth;
+      canvas.height = removedImgEl.naturalHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Draw background
+      const bgColor = removedHolder.style.backgroundColor;
+      const bgImage = removedHolder.style.backgroundImage;
+
+      if (bgImage && bgImage !== "none") {
+        // Draw background image
+        const bgImg = new Image();
+        bgImg.src = bgImage.slice(4, -1).replace(/"/g, ""); // Extract URL from url("...")
+        await new Promise((resolve) => {
+          bgImg.onload = resolve;
+        });
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+      } else if (bgColor) {
+        // Draw background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Draw the removed image
+      const img = new Image();
+      img.src = finalDataUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+      ctx.drawImage(img, 0, 0);
+
+      // Get data URL
+      const compositedDataUrl = canvas.toDataURL("image/png");
+
+      // Download
+      const a = document.createElement("a");
+      a.href = compositedDataUrl;
+      a.download = "bg_removed.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     });
-  }
 
-  document.querySelectorAll(".colorBtn").forEach(button => {
-    button.addEventListener("click", () => {
-      console.log("Main: Color button clicked:", button.style.backgroundColor);
+    // Stars animation
+    function startStarsAnimation(run) {
+      const starsContainer = document.querySelector(".stars-container");
+      if (!starsContainer) {
+        console.log("Main: Stars container not found");
+        return;
+      }
+      if (run) {
+        console.log("Main: Starting stars animation");
+        starsContainer.style.display = "block";
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "running";
+        });
+      } else {
+        console.log("Main: Stopping stars animation");
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "paused";
+        });
+        starsContainer.style.display = "none";
+      }
+    }
+
+    function createStars(parentEl) {
+      console.log("Main: Creating stars");
+      const totalStars = 15;
+      const gridSize = Math.sqrt(totalStars);
+      const starPositions = [];
+
+      parentEl.style.display = "block";
+
+      for (let i = 0; i < totalStars; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+
+        const cellWidth = 100 / gridSize;
+        const cellHeight = 100 / gridSize;
+
+        const minTop = row * cellHeight;
+        const maxTop = minTop + cellHeight;
+        const minLeft = col * cellWidth;
+        const maxLeft = minLeft + cellWidth;
+
+        const topPos = Math.random() * (maxTop - minTop) + minTop;
+        const leftPos = Math.random() * (maxLeft - minLeft) + minLeft;
+
+        starPositions.push([topPos, leftPos]);
+
+        star.style.top = `${topPos}%`;
+        star.style.left = `${leftPos}%`;
+        star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+
+        parentEl.appendChild(star);
+
+        setTimeout(() => {
+          star.remove();
+        }, 3000);
+      }
+    }
+
+    // Change background color
+    function displayColors() {
+      console.log("Main: Toggling colors div");
+      if (colorsDiv.style.display === "block") {
+        hiddenDiv.style.display = "flex";
+        colorsDiv.style.display = "none";
+      } else {
+        hiddenDiv.style.display = "none";
+        colorsDiv.style.display = "block";
+      }
+    }
+
+    const closeColorsDiv = document.getElementById("closeColorsDiv");
+    closeColorsDiv.addEventListener("click", () => {
+      console.log("Main: Closing colors div");
+      hiddenDiv.style.display = "flex";
+      colorsDiv.style.display = "none";
+    });
+
+    function removeHighlight() {
+      document.querySelectorAll(".colorBtn, #colorPreview").forEach(button => {
+        button.style.boxShadow = "none";
+      });
+    }
+
+    document.querySelectorAll(".colorBtn").forEach(button => {
+      button.addEventListener("click", () => {
+        console.log("Main: Color button clicked:", button.style.backgroundColor);
+        removeHighlight();
+        button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (removedHolder) {
+          removedHolder.style.backgroundColor = button.style.backgroundColor;
+          removedHolder.style.backgroundImage = ""; // Reset background image
+        }
+      });
+    });
+
+    const customColorInput = document.getElementById("customColor");
+    const colorPreview = document.getElementById("colorPreview");
+
+    customColorInput.addEventListener("input", () => {
+      console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
-      button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+      colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+      colorPreview.style.backgroundColor = customColorInput.value;
+      const removedHolder = previewImg.querySelector(".removedHolder");
+      if (removedHolder) {
+        removedHolder.style.backgroundColor = customColorInput.value;
+        removedHolder.style.backgroundImage = ""; // Reset background image
+      }
+      colorPreview.textContent = "";
+    });
+
+    // Upload background image
+    document.getElementById("uploadSection").addEventListener("click", () => {
+      console.log("Main: Opening background image uploader");
+      const imageUploader = document.getElementById("imageUploader");
+      imageUploader.click();
+    });
+
+    const imageUploader = document.getElementById("imageUploader");
+    imageUploader.addEventListener("change", async (e) => {
+      const bgFile = e.target.files[0];
+      if (!bgFile) return;
+
+      try {
+        const bgDataURL = await readFileAsDataURL(bgFile);
+        const removedHolder = previewImg.querySelector(".removedHolder");
+        if (removedHolder) {
+          removedHolder.style.backgroundImage = `url(${bgDataURL})`;
+          removedHolder.style.backgroundSize = "cover";
+          removedHolder.style.backgroundPosition = "center";
+          removedHolder.style.backgroundColor = ""; // Reset background color
+        }
+      } catch (err) {
+        console.error("Main: Error uploading background image:", err);
+        showError("Failed to upload background image");
+      }
+    });
+
+    function showError(msg) {
+      console.log("Main: Showing error:", msg);
+      alert(msg);
+    }
+  </script>
+
+  <script src="{% static 'js/errorComponent.js' %}"></script>
+  <script>
+    const removedImgBtn = document.getElementById("removedImgBtn");
+    const hiddenDiv = document.getElementById("hiddenDiv");
+    const dragBox = document.getElementById("dragBox");
+    const uploadFileInput = document.getElementById("uploadFile");
+    const modelLoadingEl = document.getElementById("modelLoading");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const previewImg = document.getElementById("previewImage");
+    const colorsDiv = document.getElementById("colorsDiv");
+
+    let finalDataUrl = null;
+    let file;
+    let worker;
+    let isProcessing = false;
+
+    const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
+    const cacheName = "bg-remover-model-cache";
+    const modelCacheKey = "bg-remover-model";
+
+    // Initialize Web Worker
+    function initWorker() {
+      worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
+      worker.onmessage = (e) => {
+        console.log("Main: Received message from worker:", e.data);
+        const { type, data, error } = e.data;
+        if (type === "result") {
+          console.log("Main: Processing result with dataURL:", data);
+          handleWorkerResult(data);
+        } else if (type === "error") {
+          console.log("Main: Worker error:", error);
+          handleWorkerError(error);
+        } else if (type === "modelLoaded") {
+          console.log("Main: Model loaded in worker");
+          stopSpinner();
+        }
+      };
+      worker.onerror = (error) => {
+        console.error("Main: Worker error event:", {
+          message: error.message,
+          filename: error.filename,
+          lineno: error.lineno,
+          colno: error.colno,
+          error: error
+        });
+        handleWorkerError("Worker failed: " + (error.message || "Unknown error"));
+      };
+    }
+
+    // Preload and cache the model
+    async function preloadModel() {
+      try {
+        const cache = await caches.open(cacheName);
+        const cachedResponse = await cache.match(modelCacheKey);
+        if (cachedResponse) {
+          console.log("Model found in cache");
+          const blob = await cachedResponse.blob();
+          worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+          return;
+        }
+
+        console.log("Fetching model...");
+        const response = await fetch(modelPath);
+        if (!response.ok) throw new Error("Failed to fetch model");
+
+        const responseToCache = response.clone();
+        await cache.put(modelCacheKey, responseToCache);
+
+        const blob = await response.blob();
+        worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
+      } catch (err) {
+        console.error("Model preload failed:", err);
+        showError("Failed to preload the model");
+        stopSpinner();
+      }
+    }
+
+    // Stop spinner and show main content
+    function stopSpinner() {
+      const spinnerDiv = document.getElementById("spinner");
+      const spinner = document.querySelector(".spinner img");
+
+      spinner.classList.remove("spin-active");
+      spinnerDiv.style.display = "none";
+      document.getElementById("mainDiv").style.display = "flex";
+    }
+
+    // Initialize on page load
+    window.addEventListener("load", () => {
+      console.log("Main: Initializing worker and preloading model");
+      initWorker();
+      preloadModel();
+    });
+
+    // Drag and drop overlay
+    const overlay = document.createElement("div");
+    overlay.id = "dropOverlay";
+    const overlayText = document.createElement("h2");
+    overlayText.textContent = "Drop anywhere you want";
+    overlay.appendChild(overlayText);
+    document.body.appendChild(overlay);
+
+    document.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      overlay.style.display = "flex";
+    });
+
+    document.addEventListener("dragleave", (event) => {
+      if (event.relatedTarget === null || event.relatedTarget.nodeName === "HTML") {
+        overlay.style.display = "none";
+      }
+    });
+
+    document.addEventListener("drop", async (event) => {
+      event.preventDefault();
+      overlay.style.display = "none";
+
+      const files = event.dataTransfer.files;
+      if (files.length) {
+        const file = files[0];
+        console.log("Main: Dropped file:", file.name);
+        await handleFileSelect(file, true);
+      }
+    });
+
+    // Read file as Data URL
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Display images
+    function displayImages(originalSrc) {
+      console.log("Main: Displaying original image");
+      // Clear previous content
+      while (previewImg.firstChild) {
+        previewImg.removeChild(previewImg.firstChild);
+      }
+
+      const imageContainer = document.createElement("div");
+      imageContainer.classList.add("imageContainer");
+      imageContainer.style.position = "relative";
+      imageContainer.style.width = "100%";
+      imageContainer.style.height = "auto";
+
+      const originalImgEl = document.createElement("img");
+      originalImgEl.src = originalSrc;
+      originalImgEl.classList.add("img-original");
+      originalImgEl.style.maxWidth = "100%";
+      originalImgEl.style.display = "block";
+
+      const removedImgEl = document.createElement("img");
+      removedImgEl.classList.add("removedImg");
+      removedImgEl.style.maxWidth = "100%";
+      removedImgEl.style.display = "none"; // Initially hidden
+      removedImgEl.style.position = "absolute";
+      removedImgEl.style.top = "0";
+      removedImgEl.style.left = "0";
+
+      const starsContainer = document.createElement("div");
+      starsContainer.classList.add("stars-container");
+      starsContainer.style.position = "absolute";
+      starsContainer.style.top = "0";
+      starsContainer.style.left = "0";
+      starsContainer.style.width = "100%";
+      starsContainer.style.height = "100%";
+      createStars(starsContainer);
+
+      imageContainer.appendChild(originalImgEl);
+      imageContainer.appendChild(removedImgEl);
+      imageContainer.appendChild(starsContainer);
+      previewImg.appendChild(imageContainer);
+
+      dragBox.style.display = "none";
+      previewImg.style.display = "block";
+      document.getElementById('title').style.display = "none";
+
+      return removedImgEl;
+    }
+
+    // Handle file selection
+    async function handleFileSelect(e, isFile = false) {
+      if (isProcessing) {
+        showError("Please wait, processing is already in progress.");
+        return;
+      }
+      isProcessing = true;
+      file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
+      if (!file) {
+        console.log("Main: No file selected");
+        isProcessing = false;
+        return;
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
+      if (!allowedTypes.includes(file.type)) {
+        showError("Unsupported file type. Please upload a valid image.");
+        console.log("Main: Unsupported file type:", file.type);
+        isProcessing = false;
+        return;
+      }
+
+      try {
+        console.log("Main: Handling file:", file.name);
+        const originalDataURL = await readFileAsDataURL(file);
+        const removedImgEl = displayImages(originalDataURL);
+
+        startStarsAnimation(true);
+        modelLoadingEl.classList.add("show");
+
+        const arrayBuffer = await file.arrayBuffer();
+        console.log("Main: Sending file to worker, arrayBuffer size:", arrayBuffer.byteLength);
+        worker.postMessage(
+          { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
+          [arrayBuffer]
+        );
+
+        removedImgEl.onerror = () => {
+          console.error("Main: Failed to load background-removed image");
+          showError("Failed to load the background-removed image.");
+          removeImage();
+          isProcessing = false;
+        };
+      } catch (err) {
+        console.error("Main: Error in handleFileSelect:", err);
+        showError("Failed to remove background");
+        removeImage();
+        isProcessing = false;
+      }
+    }
+
+    // Handle Web Worker result
+    function handleWorkerResult(dataURL) {
+      console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
+
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      const originalImgEl = previewImg.querySelector(".img-original");
+      if (!removedImgEl || !originalImgEl) {
+        console.error("Main: Image elements not found");
+        showError("Failed to find image elements");
+        removeImage();
+        isProcessing = false;
+        return;
+      }
+
+      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
+        console.error("Main: Invalid dataURL received:", dataURL);
+        showError("Invalid background-removed image data");
+        removeImage();
+        isProcessing = false;
+        return;
+      }
+
+      finalDataUrl = dataURL;
+      removedImgEl.src = dataURL;
+      removedImgEl.onload = () => {
+        console.log("Main: Background-removed image loaded successfully");
+        originalImgEl.style.display = "none";
+        removedImgEl.style.display = "block";
+        removedImgBtn.style.display = "block";
+        hiddenDiv.style.display = "flex";
+        isProcessing = false;
+      };
+      removedImgEl.onerror = () => {
+        console.error("Main: Failed to load background-removed image");
+        showError("Failed to load the background-removed image");
+        removeImage();
+        isProcessing = false;
+      };
+    }
+
+    // Handle Web Worker error
+    function handleWorkerError(error) {
+      console.error("Main: Handling worker error:", error);
+      startStarsAnimation(false);
+      modelLoadingEl.classList.remove("show");
+      showError(error);
+      removeImage();
+      isProcessing = false;
+    }
+
+    // Remove image
+    function removeImage() {
+      console.log("Main: Removing image");
+      document.getElementById('title').style.display = "block";
+      dragBox.style.display = "flex";
+      previewImg.style.display = "none";
+      removedImgBtn.style.display = "none";
+      hiddenDiv.style.display = "none";
+      uploadFileInput.value = "";
+      finalDataUrl = null;
+
+      while (previewImg.firstChild) {
+        previewImg.removeChild(previewImg.firstChild);
+      }
+
+      if (colorsDiv.style.display === "block") {
+        colorsDiv.style.display = "none";
+      }
+    }
+
+    // Download button
+    downloadBtn.addEventListener("click", async () => {
+      if (!finalDataUrl) {
+        console.log("Main: No image to download");
+        return;
+      }
+      console.log("Main: Downloading image");
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      const imageContainer = previewImg.querySelector(".imageContainer");
+
+      if (!removedImgEl || !imageContainer) {
+        console.error("Main: Elements not found for download");
+        return;
+      }
+
+      // Create a canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = removedImgEl.naturalWidth;
+      canvas.height = removedImgEl.naturalHeight;
+      const ctx = canvas.getContext("2d");
+
+      // Draw background
+      const bgColor = imageContainer.style.backgroundColor;
+      const bgImage = imageContainer.style.backgroundImage;
+
+      if (bgImage && bgImage !== "none") {
+        // Draw background image
+        const bgImg = new Image();
+        bgImg.src = bgImage.slice(4, -1).replace(/"/g, ""); // Extract URL from url("...")
+        await new Promise((resolve) => {
+          bgImg.onload = resolve;
+        });
+        ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+      } else if (bgColor) {
+        // Draw background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Draw the removed image
+      const img = new Image();
+      img.src = finalDataUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+      ctx.drawImage(img, 0, 0);
+
+      // Get data URL
+      const compositedDataUrl = canvas.toDataURL("image/png");
+
+      // Download
+      const a = document.createElement("a");
+      a.href = compositedDataUrl;
+      a.download = "bg_removed.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    // Stars animation
+    function startStarsAnimation(run) {
+      const starsContainer = document.querySelector(".stars-container");
+      if (!starsContainer) {
+        console.log("Main: Stars container not found");
+        return;
+      }
+      if (run) {
+        console.log("Main: Starting stars animation");
+        starsContainer.style.display = "block";
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "running";
+        });
+      } else {
+        console.log("Main: Stopping stars animation");
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "paused";
+        });
+        starsContainer.style.display = "none";
+      }
+    }
+
+    function createStars(parentEl) {
+      console.log("Main: Creating stars");
+      const totalStars = 15;
+      const gridSize = Math.sqrt(totalStars);
+      const starPositions = [];
+
+      parentEl.style.display = "block";
+
+      for (let i = 0; i < totalStars; i++) {
+        const star = document.createElement("div");
+        star.classList.add("star");
+
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+
+        const cellWidth = 100 / gridSize;
+        const cellHeight = 100 / gridSize;
+
+        const minTop = row * cellHeight;
+        const maxTop = minTop + cellHeight;
+        const minLeft = col * cellWidth;
+        const maxLeft = minLeft + cellWidth;
+
+        const topPos = Math.random() * (maxTop - minTop) + minTop;
+        const leftPos = Math.random() * (maxLeft - minLeft) + minLeft;
+
+        starPositions.push([topPos, leftPos]);
+
+        star.style.top = `${topPos}%`;
+        star.style.left = `${leftPos}%`;
+        star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+
+        parentEl.appendChild(star);
+
+        setTimeout(() => {
+          star.remove();
+        }, 3000);
+      }
+    }
+
+    // Change background color
+    function displayColors() {
+      console.log("Main: Toggling colors div");
+      if (colorsDiv.style.display === "block") {
+        hiddenDiv.style.display = "flex";
+        colorsDiv.style.display = "none";
+      } else {
+        hiddenDiv.style.display = "none";
+        colorsDiv.style.display = "block";
+      }
+    }
+
+    const closeColorsDiv = document.getElementById("closeColorsDiv");
+    closeColorsDiv.addEventListener("click", () => {
+      console.log("Main: Closing colors div");
+      hiddenDiv.style.display = "flex";
+      colorsDiv.style.display = "none";
+    });
+
+    function removeHighlight() {
+      document.querySelectorAll(".colorBtn, #colorPreview").forEach(button => {
+        button.style.boxShadow = "none";
+      });
+    }
+
+    document.querySelectorAll(".colorBtn").forEach(button => {
+      button.addEventListener("click", () => {
+        console.log("Main: Color button clicked:", button.style.backgroundColor);
+        removeHighlight();
+        button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+        const imageContainer = previewImg.querySelector(".imageContainer");
+        if (imageContainer) {
+          imageContainer.style.backgroundColor = button.style.backgroundColor;
+          imageContainer.style.backgroundImage = ""; // Reset background image
+        }
+      });
+    });
+
+    const customColorInput = document.getElementById("customColor");
+    const colorPreview = document.getElementById("colorPreview");
+
+    customColorInput.addEventListener("input", () => {
+      console.log("Main: Custom color selected:", customColorInput.value);
+      removeHighlight();
+      colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+      colorPreview.style.backgroundColor = customColorInput.value;
       const imageContainer = previewImg.querySelector(".imageContainer");
       if (imageContainer) {
-        imageContainer.style.backgroundColor = button.style.backgroundColor;
+        imageContainer.style.backgroundColor = customColorInput.value;
         imageContainer.style.backgroundImage = ""; // Reset background image
       }
+      colorPreview.textContent = "";
     });
-  });
 
-  const customColorInput = document.getElementById("customColor");
-  const colorPreview = document.getElementById("colorPreview");
+    // Upload background image
+    document.getElementById("uploadSection").addEventListener("click", () => {
+      console.log("Main: Opening background image uploader");
+      const imageUploader = document.getElementById("imageUploader");
+      imageUploader.click();
+    });
 
-  customColorInput.addEventListener("input", () => {
-    console.log("Main: Custom color selected:", customColorInput.value);
-    removeHighlight();
-    colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-    colorPreview.style.backgroundColor = customColorInput.value;
-    const imageContainer = previewImg.querySelector(".imageContainer");
-    if (imageContainer) {
-      imageContainer.style.backgroundColor = customColorInput.value;
-      imageContainer.style.backgroundImage = ""; // Reset background image
-    }
-    colorPreview.textContent = "";
-  });
-
-  // Upload background image
-  document.getElementById("uploadSection").addEventListener("click", () => {
-    console.log("Main: Opening background image uploader");
     const imageUploader = document.getElementById("imageUploader");
-    imageUploader.click();
-  });
+    imageUploader.addEventListener("change", async (e) => {
+      const bgFile = e.target.files[0];
+      if (!bgFile) return;
 
-  const imageUploader = document.getElementById("imageUploader");
-  imageUploader.addEventListener("change", async (e) => {
-    const bgFile = e.target.files[0];
-    if (!bgFile) return;
-
-    try {
-      const bgDataURL = await readFileAsDataURL(bgFile);
-      const imageContainer = previewImg.querySelector(".imageContainer");
-      if (imageContainer) {
-        imageContainer.style.backgroundImage = `url(${bgDataURL})`;
-        imageContainer.style.backgroundSize = "cover";
-        imageContainer.style.backgroundPosition = "center";
-        imageContainer.style.backgroundColor = ""; // Reset background color
+      try {
+        const bgDataURL = await readFileAsDataURL(bgFile);
+        const imageContainer = previewImg.querySelector(".imageContainer");
+        if (imageContainer) {
+          imageContainer.style.backgroundImage = `url(${bgDataURL})`;
+          imageContainer.style.backgroundSize = "cover";
+          imageContainer.style.backgroundPosition = "center";
+          imageContainer.style.backgroundColor = ""; // Reset background color
+        }
+      } catch (err) {
+        console.error("Main: Error uploading background image:", err);
+        showError("Failed to upload background image");
       }
-    } catch (err) {
-      console.error("Main: Error uploading background image:", err);
-      showError("Failed to upload background image");
+    });
+
+    function showError(msg) {
+      console.log("Main: Showing error:", msg);
+      alert(msg);
     }
-  });
+  </script>
 
-  function showError(msg) {
-    console.log("Main: Showing error:", msg);
-    alert(msg);
-  }
-</script>
-
-<script>
-  // Web Worker Script embedded as a data URL
-  const workerScript = `
+  <script>
+    // Web Worker Script embedded as a data URL
+    const workerScript = `
     try {
         importScripts("https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/ort.min.js");
         console.log("Worker: Successfully imported onnxruntime-web");
@@ -740,8 +1362,9 @@
         }
     }
   `;
-  const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
-  const workerUrl = URL.createObjectURL(workerBlob);
-  worker = new Worker(workerUrl);
-  initWorker();
-</script>
+    const workerBlob = new Blob([workerScript], { type: 'application/javascript' });
+    const workerUrl = URL.createObjectURL(workerBlob);
+    worker = new Worker(workerUrl);
+    initWorker();
+  </script>
+  {% endblock %}
