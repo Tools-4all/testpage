@@ -374,8 +374,8 @@
         hiddenDiv.style.display = "flex";
         await updateCanvas();
       };
-      removedImgEl.onerror = () => {
-        console.error("Main: Failed to load background-removed image");
+      removedImgEl.onerror = (e) => {
+        console.error("Main: Failed to load background-removed image", e);
         showError("Failed to load the background-removed image");
         removeImage();
       };
