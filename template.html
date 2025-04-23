@@ -1,3 +1,5 @@
+{% extends 'base_template.html' %}
+{% block content %}
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -6,24 +8,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Multi-Tab Sandboxed JS Compiler</title>
+  <link rel="stylesheet" href="{% static 'css/page_info.css' %}?v=1" />
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-
     body {
       user-select: none;
       -webkit-user-drag: none;
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
+    }
+
+    #bigFooter {
+      display: none;
+    }
+
+    #smallFooter {
+      display: block;
     }
 
     .allowSelect {
@@ -57,9 +62,11 @@
       font-family: 'Fira Code', monospace;
       display: flex;
       width: 60%;
+      min-width: 600px;
       height: 500px;
-      margin: 100px auto;
+      margin: 50px auto;
       overflow: hidden;
+      border-radius: 15px;
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
@@ -69,7 +76,7 @@
       left: 0;
       height: 40px;
       width: 40px;
-      z-index: 1010;
+      z-index: 991;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -97,7 +104,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      z-index: 1000;
+      z-index: 990;
       padding-left: 40px;
       height: 30px;
     }
@@ -271,6 +278,11 @@
       display: block;
     }
 
+    label {
+      font-family: sans-serif;
+    }
+
+
     #compiler:not(.darkMode) .sidebar-panel {
       background-color: #eeeeee;
       color: #545151 !important;
@@ -286,7 +298,6 @@
     #gitUrl {
       width: 100%;
       padding: 8px 10px;
-      margin-bottom: 10px;
       background-color: #2d2d2d;
       border: 1px solid #3c3c3c;
       border-radius: 4px;
@@ -311,23 +322,6 @@
       background-color: #3c3c3c;
       border-color: #4c4c4c;
       color: #ffffff;
-    }
-
-    #loadGitButton {
-      width: 100%;
-      padding: 8px 10px;
-      background-color: #007acc;
-      border: none;
-      border-radius: 4px;
-      color: white;
-      font-family: 'Fira Code', monospace;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    #loadGitButton:hover {
-      background-color: #005f99;
     }
 
     #tabSizeInput {
@@ -396,6 +390,8 @@
     }
 
     #exportSelect {
+      font-size: 13px;
+      font-family: sans-serif;
       padding: 5px 5px;
       border-radius: 5px;
       width: 100%;
@@ -403,10 +399,10 @@
       color: #000 !important;
     }
 
-    #exportButton {
+    #exportButton,
+    #saveSettingsBtn,
+    #loadGitButton {
       width: 100%;
-      max-width: 275px;
-      margin-left: 0px;
       margin-top: 15px;
     }
 
@@ -560,9 +556,10 @@
 
 
     #addTabButton_media {
-      font-size: 25px;
+      font-size: 23px;
       margin-left: 0px;
       display: none;
+      margin-top: -9px;
     }
 
     #tabsContainer {
@@ -783,14 +780,16 @@
       color: #ffffff;
       border: none;
       padding: 6px 12px;
-      margin-left: 10px;
+      /* margin-left: 10px; */
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
+      max-width: 275px;
+      transition: background-color 0.3s;
     }
 
     .vs-button:hover {
-      background-color: #1177bb;
+      background-color: #0d5787;
     }
 
     .console-table {
@@ -1036,10 +1035,11 @@
 
     @media (max-width: 768px) {
 
-      /* #sun {
-        margin-left: 10px;
-        margin-right: 10px;
-      } */
+      #compiler {
+        width: 95%;
+        min-width: auto;
+      }
+
       #activityBar {
         width: 40px;
       }
@@ -1080,6 +1080,12 @@
     }
 
     @media (max-width: 675px) {
+
+      #exportSelect,
+      #exportButton {
+        height: 35px;
+      }
+
       .sidebar-panel {
         width: 100%;
         padding-right: 50px;
@@ -1168,16 +1174,56 @@
 
 
     .previewModal-content {
-      background-color: #fefefe;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      padding: 20px;
-      border: 1px solid #888;
+      padding: 10px;
+      border: 1px solid;
+      border-radius: 15px;
       width: 80%;
       overflow: scroll;
-      max-height: 80vh;
+      height: 80vh;
+      clip-path: inset(0 round 15px);
+    }
+
+    #compiler:not(.darkMode) .previewModal-content {
+      background-color: #f0f0f0;
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .previewModal-content {
+      background-color: #252526;
+      border-color: #333;
+    }
+
+
+    #compiler:not(.darkMode) .previewModal-content::-webkit-scrollbar {
+      width: 8px;
+      background-color: #f0f0f0;
+    }
+
+    #compiler:not(.darkMode) .previewModal-content::-webkit-scrollbar-thumb {
+      background-color: #c0c0c0;
+      border-radius: 15px;
+    }
+
+    #compiler:not(.lightMode) .previewModal-content::-webkit-scrollbar {
+      width: 8px;
+      background-color: #252526;
+    }
+
+    #compiler:not(.lightMode) .previewModal-content::-webkit-scrollbar-thumb {
+      background-color: #333;
+      border-radius: 15px;
+    }
+
+    #compiler:not(.lightMode) .previewModal-content::-webkit-scrollbar-corner {
+      background-color: #252526;
+    }
+
+    #compiler:not(.darkMode) .previewModal-content::-webkit-scrollbar-corner {
+      background-color: #f0f0f0;
     }
 
     .modalClose {
@@ -1228,6 +1274,7 @@
       margin-top: 10px;
       border-radius: 4px;
       font-size: 14px;
+      font-family: sans-serif;
       cursor: pointer;
       transition: background-color 0.3s;
     }
@@ -1237,14 +1284,25 @@
     }
 
     .headerText {
-      background-color: white;
+      border: 2px solid;
+      padding: 5px;
+      margin: 20px;
+      border: '1px solid';
+      padding: '5px';
+    }
+
+    #compiler:not(.darkMode) .headerText {
+      border-color: #c0c0c0;
+    }
+
+    #compiler:not(.lightMode) .headerText {
+
+      border-color: #333;
     }
 
     .handPointer {
       cursor: pointer;
     }
-
-
 
     #compiler:not(.darkMode) .vs-navbar,
     #compiler:not(.darkMode) #activityBar,
@@ -1394,19 +1452,66 @@
       fill: #000;
     }
 
-    #richTextToolbar {
-      position: absolute;
+    .ql-toolbar.ql-snow {
+      margin: 20px 20px 10px;
       display: flex;
+      gap: 30px;
       align-items: center;
       padding: 5px;
+      padding-left: 5%;
       border-radius: 5px;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       z-index: 10000;
     }
 
-    #richTextToolbar button,
-    #richTextToolbar select,
-    #richTextToolbar input {
+    #exportModal:not(.lightMode) .ql-toolbar.ql-snow {
+      background-color: #333 !important;
+      border-color: #555 !important;
+    }
+
+    #exportModal:not(.darkMode) .ql-toolbar.ql-snow {
+      background-color: #f0f0f0 !important;
+      border-color: #ccc !important;
+    }
+
+    .ql-toolbar.ql-snow button:focus,
+    .ql-toolbar.ql-snow select:focus,
+    .ql-toolbar.ql-snow input:focus {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .ql-container {
+      margin: 20px !important;
+    }
+
+    .ql-editor {
+      padding: 10px !important;
+    }
+
+    #exportModal:not(.lightMode) .ql-toolbar.ql-snow button.ql-active {
+      background-color: #5a5a5a !important;
+    }
+
+    #exportModal:not(.darkMode) .ql-toolbar.ql-snow button.ql-active {
+      background-color: #c2c2c2 !important;
+    }
+
+    .ql-toolbar.ql-snow {
+      margin: 20px 20px 10px;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      padding: 5px;
+      padding-left: 5%;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+    }
+
+    .ql-toolbar.ql-snow button,
+    .ql-toolbar.ql-snow select,
+    .ql-toolbar.ql-snow input {
       margin-right: 5px;
       padding: 2px 5px;
       border: none;
@@ -1414,23 +1519,320 @@
       cursor: pointer;
     }
 
-    #richTextToolbar button:hover {
+    .ql-toolbar.ql-snow button:hover {
       background: rgba(0, 0, 0, 0.1);
     }
 
-    #richTextToolbar input[type="number"] {
-      width: 50px;
+    .ql-toolbar.ql-snow input[type="number"] {
+      width: 60px;
+      border: 1px solid;
     }
 
-    #richTextToolbar input[type="color"] {
+    .ql-toolbar.ql-snow input[type="color"] {
       width: 30px;
       height: 20px;
       padding: 0;
     }
+
+    .ql-snow .ql-picker.ql-font {
+      width: auto;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-label::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item::before {
+      margin-right: 20px;
+    }
+
+    .ql-snow .ql-picker.ql-size {
+      width: 60px;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="arial"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="arial"]::before {
+      content: 'Arial';
+      font-family: Arial, sans-serif;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="times-new-roman"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="times-new-roman"]::before {
+      content: 'Times New Roman';
+      font-family: "Times New Roman", serif;
+    }
+
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="courier-new"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="courier-new"]::before {
+      content: 'Courier New';
+      font-family: "Courier New", monospace;
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="8px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="8px"]::before {
+      content: '8px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="12px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="12px"]::before {
+      content: '12px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="16px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="16px"]::before {
+      content: '16px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="20px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="20px"]::before {
+      content: '20px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="24px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="24px"]::before {
+      content: '24px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="32px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="32px"]::before {
+      content: '32px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="36px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="36px"]::before {
+      content: '36px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="48px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="48px"]::before {
+      content: '48px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="64px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="64px"]::before {
+      content: '64px';
+    }
+
+    .ql-snow .ql-picker.ql-size .ql-picker-item[data-value="72px"]::before,
+    .ql-snow .ql-picker.ql-size .ql-picker-label[data-value="72px"]::before {
+      content: '72px';
+    }
+
+    #exportModal:not(.lightMode) .ql-editor.ql-blank:before {
+      color: #ffffff;
+    }
+
+    #exportModal:not(.darkMode) .ql-editor.ql-blank:before {
+      color: #000000;
+    }
+
+    #exportModal:not(.darkMode) .ql-font .ql-picker-label,
+    #exportModal:not(.darkMode) .ql-size .ql-picker-label,
+    #exportModal:not(.darkMode) .ql-color .ql-picker-label,
+    #exportModal:not(.darkMode) .ql-align .ql-picker-label {
+      color: #000000 !important;
+    }
+
+    #exportModal:not(.lightMode) .ql-font .ql-picker-label,
+    #exportModal:not(.lightMode) .ql-size .ql-picker-label,
+    #exportModal:not(.lightMode) .ql-color .ql-picker-label,
+    #exportModal:not(.lightMode) .ql-align .ql-picker-label {
+      color: #ffffff !important;
+    }
+
+    #exportModal:not(.lightMode) .ql-font .ql-picker-label svg *,
+    #exportModal:not(.lightMode) .ql-size .ql-picker-label svg *,
+    #exportModal:not(.lightMode) .ql-color .ql-picker-label svg *,
+    #exportModal:not(.lightMode) .ql-align .ql-picker-label svg * {
+      stroke: #ffffff;
+    }
+
+    #exportModal:not(.lightMode) .ql-direction svg * {
+      stroke: #ffffff !important;
+    }
+
+    #exportModal:not(.darkMode) .ql-font .ql-picker-label svg *,
+    #exportModal:not(.darkMode) .ql-size .ql-picker-label svg *,
+    #exportModal:not(.darkMode) .ql-color .ql-picker-label svg *,
+    #exportModal:not(.darkMode) .ql-align .ql-picker-label svg * {
+      stroke: #000000;
+    }
+
+    #exportModal:not(.darkMode) .ql-direction svg * {
+      stroke: #000000 !important;
+    }
+
+    #exportModal:not(.darkMode) .ql-color-label.ql-stroke.ql-transparent {
+      stroke: #000000;
+    }
+
+    #exportModal:not(.lightMode) .ql-color-label.ql-stroke.ql-transparent {
+      stroke: #ffffff;
+    }
+
+    .ql-editor {
+      font-size: 16px;
+    }
+
+    #exportModal:not(.darkMode) .ql-underline svg *,
+    #exportModal:not(.darkMode) .ql-bold svg *,
+    #exportModal:not(.darkMode) .ql-italic svg * {
+      stroke: #000000
+    }
+
+    #exportModal:not(.lightMode) .ql-underline svg *,
+    #exportModal:not(.lightMode) .ql-bold svg *,
+    #exportModal:not(.lightMode) .ql-italic svg * {
+      stroke: #ffffff
+    }
+
+    @media (max-width: 900px) {
+
+      .previewModal-content {
+        width: 85%;
+        height: 70vh;
+      }
+
+      .previewModal-content img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* Smaller toolbar container */
+      .ql-toolbar.ql-snow {
+        margin: 10px 10px 5px;
+        gap: 10px;
+        padding: 3px;
+        padding-left: 5px;
+        border-radius: 3px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Reduce button, select, and input sizes */
+      .ql-toolbar.ql-snow button,
+      .ql-toolbar.ql-snow select,
+      .ql-toolbar.ql-snow input {
+        margin-right: 3px;
+        padding: 2px 3px;
+        font-size: 12px;
+      }
+
+      /* Adjust number inputs */
+      .ql-toolbar.ql-snow input[type="number"] {
+        width: 50px;
+      }
+
+      /* Adjust color inputs */
+      .ql-toolbar.ql-snow input[type="color"] {
+        width: 25px;
+        height: 15px;
+      }
+
+      /* Optional: reduce margins on the editor container */
+      .ql-container {
+        margin: 10px !important;
+      }
+
+      /* Optional: adjust the editor text size and padding */
+      .ql-editor {
+        padding: 5px !important;
+        font-size: 14px !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+
+      /* Adjust toolbar for smaller screens */
+      .ql-toolbar.ql-snow {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+
+      /* Adjust button sizes */
+      .ql-toolbar.ql-snow button,
+      .ql-toolbar.ql-snow select,
+      .ql-toolbar.ql-snow input {
+        padding: 2px 2px;
+        font-size: 10px;
+      }
+
+      /* Adjust number inputs */
+      .ql-toolbar.ql-snow input[type="number"] {
+        width: 40px;
+      }
+
+      /* Adjust color inputs */
+      .ql-toolbar.ql-snow input[type="color"] {
+        width: 20px;
+        height: 12px;
+      }
+
+    }
   </style>
+
 </head>
 
 <body>
+
+  <div class="titleDiv" id="title">
+    <h1 class="functionTitle">Online JS Compiler</h1>
+    <div class="btn-info" id="infoBtn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle"
+        viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="info-div" id="infoDiv">
+    <h2>Compiler User Guide</h2>
+    <p>
+      Welcome to the Online JS Compiler – your sandboxed environment for writing, editing, and running JavaScript code
+      directly in your browser. Our multi-tabbed editor lets you work on multiple scripts simultaneously while keeping
+      everything isolated and secure.
+    </p>
+
+    <h3>Key Features:</h3>
+    <ul>
+      <li><strong>Multi-Tab Editing:</strong> Create and manage several scripts at once without leaving the page.</li>
+      <li><strong>Sandboxed Execution:</strong> Run your code safely in an isolated environment without affecting your
+        system.</li>
+      <li><strong>Full-Screen Mode:</strong> Expand the compiler to full screen for an immersive coding experience.</li>
+      <li><strong>Easy File Management:</strong> Upload external JavaScript files or save your current script quickly.
+      </li>
+    </ul>
+
+    <h3>How to Use:</h3>
+    <ol>
+      <li>
+        <strong>Create or Switch Tabs:</strong> Click the plus icon (<i class="fas fa-plus"></i>) to open a new tab or
+        click an existing tab to switch focus.
+      </li>
+      <li>
+        <strong>Write Your Code:</strong> Use the code editor to type or paste your JavaScript code. Benefit from syntax
+        highlighting, code formatting, and real-time feedback.
+      </li>
+      <li>
+        <strong>Run Your Code:</strong> Click the "Run" button (<i class="fas fa-play"></i>) to execute your code. The
+        output, logs, and any errors will appear in the console area below.
+      </li>
+      <li>
+        <strong>Toggle Full Screen:</strong> Use the full-screen icon to switch between full-screen and windowed modes,
+        allowing for a distraction-free workspace.
+      </li>
+      <li>
+        <strong>File Operations:</strong> Use the File menu to upload a file into a new tab or to save your current code
+        as a .js file.
+      </li>
+    </ol>
+
+    <h3>Additional Tips:</h3>
+    <p>
+      The compiler executes your code in a secure sandbox so you can experiment freely with JavaScript. Enjoy testing,
+      debugging, and prototyping your ideas all in one place!
+    </p>
+  </div>
+
+
   <div id="compiler" class="darkMode">
     <div class="vs-logo">
       <img src="{% static 'site_images/jseditor.png' %}" alt="Logo" />
@@ -1459,7 +1861,8 @@
         <i id="sun" class="fa-solid fa-sun"></i>
       </div>
       <div id="fullScreenBtn" onclick="fullScreen()">
-        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        <i id="fullScreen" class="fa-solid fa-up-right-and-down-left-from-center"></i>
+        <i id="smallScreen" style="display: none;" class="fa-solid fa-down-left-and-up-right-to-center"></i>
       </div>
     </div>
     <div id="activityBar">
@@ -1479,17 +1882,19 @@
     </div>
 
     <div id="gitPanel" class="sidebar-panel">
-      <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
-      <button id="loadGitButton" disabled="true">Load</button>
+      <div style="margin: 0 auto;max-width: 275px">
+        <input type="url" id="gitUrl" placeholder="Enter GitHub file URL" />
+        <button id="loadGitButton" class="vs-button" disabled=" true">Load</button>
+      </div>
     </div>
     <div id="settingsPanel" class="sidebar-panel">
-      <div>
+      <div style="margin: 0 auto;max-width: 275px;">
         <label for="tabSizeInput">Tab Size: <span id="tabSizeDisplay">3</span></label>
         <input id="tabSizeInput" type="range" min="1" max="8" value="3" class="vs-range" />
-        <div class="form-check-custom">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" style="margin-top: 10px;">
+        <div class="form-check-custom" style="margin-top: 15px;">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
           <label class="form-check-label" for="flexSwitchCheckDefault">Terminate Worker</label>
-          <button class="vs-button" style="margin-top: 10px;" onclick="saveSettings()" id="saveSettingsBtn">Save
+          <button id="saveSettingsBtn" class="vs-button" onclick="saveSettings()">Save
             settings</button>
         </div>
       </div>
@@ -1515,17 +1920,143 @@
         <div class="status-item">JavaScript</div>
       </div>
     </div>
-  </div>
-
-  <div id="exportModal" class="previewModal">
-    <div class="previewModal-content" id="exportModalContent">
+    <div id="exportModal" class="previewModal darkMode">
+      <div class="previewModal-content" id="exportModalContent">
+      </div>
     </div>
   </div>
 
+  <div id="page-info" class="info-section" style="margin-top: 100px;">
+    <h2 class="info-title">Online JS Compiler</h2>
+    <p class="info-text">
+      Welcome to the Online JS Compiler – a secure, in-browser environment for writing, testing, and running your
+      JavaScript code. Our multi-tabbed editor provides you with full flexibility to manage several scripts
+      simultaneously, ensuring a seamless and interactive coding experience.
+    </p>
+    <h3 class="info-subtitle">Key Features</h3>
+    <ul class="info-list">
+      <li class="info-list-item"><strong>Multi-Tab Editing:</strong> Create, organize, and switch between multiple code
+        scripts effortlessly.</li>
+      <li class="info-list-item"><strong>Sandboxed Execution:</strong> Run your code safely in an isolated environment
+        without worrying about system interference.</li>
+      <li class="info-list-item"><strong>Full-Screen Mode:</strong> Expand the editor for an immersive, distraction-free
+        workspace at any time.</li>
+      <li class="info-list-item"><strong>File Management:</strong> Easily upload external JavaScript files or save your
+        code with a single click.</li>
+    </ul>
+    <p class="info-text">
+      Get started instantly – experiment, debug, and prototype all within your browser. Enjoy the speed and simplicity
+      of our compiler with no hidden fees.
+    </p>
+  </div>
+
+  <div id="page-blog" class="blog-content">
+    <h2>Compiler User Guide – Code with Confidence</h2>
+    <p>
+      Whether you’re a beginner or an experienced developer, our Online JS Compiler gives you a complete, self-contained
+      coding platform. Write your code, test it out, and see the results in real time—all without ever leaving the page.
+    </p>
+
+    <h3>What Is the Online JS Compiler?</h3>
+    <p>
+      The Online JS Compiler is a fully sandboxed environment that lets you write and run JavaScript code directly in
+      your browser. It features a modern interface with multi-tab support, real-time syntax highlighting, and easy file
+      management.
+    </p>
+
+    <h3>How to Use the Compiler</h3>
+    <ol>
+      <li>
+        <strong>Create or Switch Tabs:</strong> Click the plus icon (<i class="fas fa-plus"></i>) to open a new tab, or
+        select an existing tab to switch between your scripts.
+      </li>
+      <li>
+        <strong>Write Your Code:</strong> Use the editor to type or paste your JavaScript code. Enjoy syntax
+        highlighting, automatic formatting, and other smart editor features.
+      </li>
+      <li>
+        <strong>Run Your Code:</strong> Click the "Run" button (<i class="fas fa-play"></i>) to execute your script. See
+        your output, log messages, and any errors in the console panel below.
+      </li>
+      <li>
+        <strong>Toggle Full-Screen Mode:</strong> Activate the full-screen view for a more focused workspace by clicking
+        the full-screen icon.
+      </li>
+      <li>
+        <strong>Manage Your Files:</strong> Use the File menu to upload new files into a tab or save your current script
+        as a .js file.
+      </li>
+    </ol>
+
+    <h3>Additional Tips</h3>
+    <p>
+      Our compiler runs your code in a protected sandbox, so you can confidently experiment without any risk to your
+      system. Whether you’re debugging code or prototyping new features, enjoy a reliable and efficient coding
+      experience every time.
+    </p>
+
+    <p style="text-align: center; margin-top: 20px;">
+      <a href="{% url 'tools_menu' %}">
+        Explore More Tools
+      </a>
+    </p>
+  </div>
+
+  <section class="faq-section" id="faq">
+    <h2 class="faq-title">Frequently Asked Questions (FAQ)</h2>
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">How do I run my JavaScript code?</h3>
+      <div class="faq-answer">
+        <p>
+          Simply write or paste your code into the editor and click the "Run" button. The output and any errors will be
+          displayed in the console below.
+        </p>
+      </div>
+    </div>
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">How do I open a new tab?</h3>
+      <div class="faq-answer">
+        <p>
+          Click the plus icon (<i class="fas fa-plus"></i>) located on the tab bar to create a new tab, where you can
+          start a new script.
+        </p>
+      </div>
+    </div>
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Can I upload my JavaScript files?</h3>
+      <div class="faq-answer">
+        <p>
+          Yes – use the File menu to upload a JavaScript (.js) file directly into a new tab.
+        </p>
+      </div>
+    </div>
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Is my code executed safely?</h3>
+      <div class="faq-answer">
+        <p>
+          Absolutely. Your code runs in a sandboxed environment to ensure both your safety and that of your data.
+        </p>
+      </div>
+    </div>
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Do I need to register to use the compiler?</h3>
+      <div class="faq-answer">
+        <p>
+          No, our Online JS Compiler is free and open to everyone without any registration required.
+        </p>
+      </div>
+    </div>
+  </section>
+
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script src="{% static 'js/page_info.js' %}"></script>
+
   <script>
     console.warn = () => { };
     const workerPath = "{% url 'betzi_test_js' %}";
@@ -1539,6 +2070,7 @@
     let draggedTabId = null;
     let lastDropSide = null;
     let darkModeFlag = true;
+    let fullscreenFlag = false;
     let nextWorker;
     let tabSizeInput = document.getElementById("tabSizeInput");
     let tabSizeDisplay = document.getElementById("tabSizeDisplay");
@@ -1554,17 +2086,6 @@
       return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
     }
     isMobile = isMobileDevice();
-    if (isMobile) {
-      compiler.style.width = '100%';
-      compiler.style.height = '100vh';
-      compiler.style.margin = '0';
-    } else {
-      window.onload = function () {
-        compiler.style.width = '60%';
-        fullScreen();
-      };
-    }
-
 
     function stopAll(event) {
       event.preventDefault();
@@ -1573,27 +2094,62 @@
     }
 
     function fullScreen() {
-      if (compiler.style.width === "60%") {
+      if (!fullscreenFlag) {
+        fullscreenFlag = true;
+        document.getElementById('fullScreen').style.display = "none";
+        document.getElementById('smallScreen').style.display = "block";
+        document.getElementById('webMenu').style.display = "none";
+        document.getElementById('navbarMedia').style.display = "none";
+        document.getElementById('smallFooter').style.display = "none";
+        document.getElementById('title').style.display = "none";
+        document.getElementById('page-info').style.display = "none";
+        document.getElementById('page-blog').style.display = "none";
+        document.getElementById('faq').style.display = "none";
+
         compiler.style.width = "100%";
         compiler.style.height = "100vh";
         compiler.style.margin = "0";
+        compiler.style.zIndex = "9999";
+        compiler.style.borderRadius = "0px";
+
+        if (isMobile) {
+          compiler.style.height = window.innerHeight + 'px';
+        }
       } else {
-        compiler.style.width = "60%";
+        fullscreenFlag = false;
+        document.getElementById('fullScreen').style.display = "block";
+        document.getElementById('smallScreen').style.display = "none";
+        document.getElementById('webMenu').style.display = "block";
+        document.getElementById('navbarMedia').style.display = "block";
+        document.getElementById('smallFooter').style.display = "block";
+        document.getElementById('title').style.display = "flex";
+        document.getElementById('page-info').style.display = "block";
+        document.getElementById('page-blog').style.display = "block";
+        document.getElementById('faq').style.display = "block";
+
         compiler.style.height = "500px";
-        compiler.style.margin = '100px auto';
+        compiler.style.width = "95%";
+        compiler.style.margin = '50px auto';
+        compiler.style.zIndex = "0";
+        compiler.style.borderRadius = "15px";
+        if (!isMobile) {
+          compiler.style.width = "60%";
+          compiler.style.minWidth = "600px";
+        }
       }
     }
+
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape' && modalIsOpen()) {
           closeModal("close");
-        } else if (event.key === 'Escape') {
-          compiler.style.width = "60%";
-          compiler.style.height = "500px";
-          compiler.style.margin = '100px auto';
+        }
+        else if (event.key == 'Escape') {
+          fullScreen();
         }
       }
     });
+
 
     function saveSettings() {
       localStorage.setItem("tabSize", spaces);
@@ -1634,6 +2190,8 @@
 
         document.getElementById('compiler').classList.add("lightMode");
         document.getElementById('compiler').classList.remove("darkMode");
+        modal.classList.add("lightMode");
+        modal.classList.remove("darkMode");
 
         darkModeFlag = false;
 
@@ -1644,6 +2202,8 @@
 
         document.getElementById('compiler').classList.remove("lightMode");
         document.getElementById('compiler').classList.add("darkMode");
+        modal.classList.remove("lightMode");
+        modal.classList.add("darkMode");
 
         lightModeDiv.innerHTML = '<i id="sun" class="fa-solid fa-sun"></i>';
         darkModeFlag = true;
@@ -2544,43 +3104,7 @@ console.log("This is a log");
 console.info("This is an info");
 console.warn("This is a warning");
 console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-console.log("This is a log");
-console.info("This is an info");
-console.warn("This is a warning");
-console.error("This is an error");
-prompt("This is a prompt:");
-`);
+prompt("This is a prompt:");`);
       }
       switchTab(id);
       if (tabs.length > 1) {
@@ -2832,6 +3356,7 @@ prompt("This is a prompt:");
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
+            console.log("Table data:", e.data, "msg", msg);
             appendTable(tab.outputElement, e.data, msg);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
@@ -3154,9 +3679,10 @@ prompt("This is a prompt:");
       let actualMsg = "";
       let subMsgDiv
       for (let key in msg) {
+        console.log("key", key, "msg[key]", msg[key]);
         subMsgDiv = document.createElement("div");
-        if (msg[key][1]) {
-          subMsgDiv = lazyRenderTreeNode(null, msg[key][0])
+        if (msg[key].object) {
+          subMsgDiv = lazyRenderTreeNode(null, msg[key].object)
           subMsgDiv.style.marginRight = "8px";
           wrapBoth.appendChild(subMsgDiv);
         } else {
@@ -3916,139 +4442,36 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-    // Apply basic formatting using execCommand
-    function applyFormat(command) {
-      document.execCommand(command, false, null);
+    if (!window.customQuillFormatsRegistered) {
+      const Size = Quill.import('attributors/style/size');
+      Size.whitelist = ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'];
+      Quill.register(Size, true);
+
+      const Font = Quill.import('attributors/style/font');
+      Font.whitelist = ['arial', 'times-new-roman', 'courier-new'];
+      Quill.register(Font, true);
+
+      window.customQuillFormatsRegistered = true;
     }
 
-    // Apply font size by wrapping selection in a span
-    function applyFontSize(size) {
-      if (!size) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-size: ${size}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
+    const quillToolbarOptions = [
+      ['bold', 'italic', 'underline'],
+      [{ 'size': ['8px', '12px', '16px', '20px', '24px', '36px', '48px', '72px'] }],
+      [{ 'color': [] }],
+      [{ 'font': ['arial', 'times-new-roman', 'courier-new'] }],
+      [{ 'align': [] }],
+      [{ "direction": "rtl" }],
+    ];
+
+    function initQuil(quilInstance) {
+      quilInstance.format('bold', false);
+      quilInstance.format('italic', false);
+      quilInstance.format('underline', false);
+      quilInstance.format('color', darkModeFlag ? '#ffffff' : '#000000');
+      quilInstance.format('font', 'arial');
+      quilInstance.format('align', 'left');
+      quilInstance.getModule('toolbar').container.querySelector('span.ql-size span.ql-picker-options span.ql-picker-item[data-value="16px"]').click()
     }
-
-    // Apply text color by wrapping selection in a span
-    function applyColor(color) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="color: ${color}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
-    }
-
-    // Apply font family by wrapping selection in a span
-    function applyFontFamily(family) {
-      if (!family) return;
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const html = `<span style="font-family: ${family}">${range.toString()}</span>`;
-        document.execCommand('insertHTML', false, html);
-      }
-    }
-
-    // Apply text alignment to the entire header div
-    function applyAlignment(align) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const commonAncestor = range.commonAncestorContainer;
-        let parentElement = commonAncestor.nodeType === 1 ? commonAncestor : commonAncestor.parentElement;
-        while (parentElement && !parentElement.classList.contains('headerText')) {
-          parentElement = parentElement.parentElement;
-        }
-        if (parentElement) {
-          parentElement.style.textAlign = align;
-        }
-      }
-    }
-
-    function selectionChangeHandler() {
-      const selection = window.getSelection();
-      const toolbar = document.getElementById('richTextToolbar');
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        const commonAncestor = range.commonAncestorContainer;
-        const isInHeader = currentHeaderDivs.some(div => div.contains(commonAncestor));
-        if (isInHeader && !selection.isCollapsed) {
-          const rect = range.getBoundingClientRect();
-          const modalRect = exportModalContent.getBoundingClientRect();
-          const left = rect.left - modalRect.left;
-          const top = rect.top - modalRect.top - toolbar.offsetHeight - 5;
-          toolbar.style.left = `${left}px`;
-          toolbar.style.top = `${top}px`;
-          toolbar.style.display = 'block';
-        } else {
-          toolbar.style.display = 'none';
-        }
-      } else {
-        toolbar.style.display = 'none';
-      }
-    }
-
-    // Show toolbar above the focused header div
-    function showToolbar(headerDiv) {
-      const toolbar = document.getElementById('richTextToolbar');
-      const headerRect = headerDiv.getBoundingClientRect();
-      const modalRect = exportModalContent.getBoundingClientRect();
-      let left = headerRect.left - modalRect.left;
-      const top = headerRect.top - modalRect.top - toolbar.offsetHeight - 10; // Increased from 5 to 10
-      const toolbarWidth = toolbar.offsetWidth;
-      const modalWidth = modalRect.width;
-      if (left < 0) left = 0;
-      if (left + toolbarWidth > modalWidth) left = modalWidth - toolbarWidth;
-      toolbar.style.left = `${left}px`;
-      toolbar.style.top = `${top}px`;
-      toolbar.style.display = 'block';
-    }
-
-    // Hide the toolbar
-    let isToolbarActive = false;
-
-    function hideToolbar() {
-      if (!isToolbarActive) {
-        const toolbar = document.getElementById('richTextToolbar');
-        toolbar.style.display = 'none';
-      }
-    }
-
-    // Apply style to selection without overwriting existing styles
-    function applyStyleToSelection(styleProperty, value) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        let span = range.commonAncestorContainer;
-        if (span.nodeType === 3) span = span.parentNode;
-        if (span.nodeName === 'SPAN') {
-          span.style[styleProperty] = value;
-        } else {
-          const html = `<span style="${styleProperty}: ${value}">${range.toString()}</span>`;
-          document.execCommand('insertHTML', false, html);
-        }
-      }
-    }
-
-    // Updated formatting functions
-    function applyFontSize(size) {
-      if (!size) return;
-      applyStyleToSelection('fontSize', size);
-    }
-
-    function applyColor(color) {
-      applyStyleToSelection('color', color);
-    }
-
-    function applyFontFamily(family) {
-      if (!family) return;
-      applyStyleToSelection('fontFamily', family);
-    }
-
 
     async function takeImage(domElem) {
       const canvas = await html2canvas(domElem, {
@@ -4059,17 +4482,16 @@ prompt("This is a prompt:");
         allowTaint: true,
         useCORS: true
       });
-
       return canvas.toDataURL("image/png");
     }
 
     async function getOutputDivClone() {
       const backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px"
+      const maxWidth = currentTab.editorInstance.getLayoutInfo().contentWidth + "px";
       const outputWrapper = document.createElement('div');
       outputWrapper.classList.add("outputContainer", "isClone", darkModeFlag ? "darkMode" : "lightMode");
       outputWrapper.style.backgroundColor = backgroundColor;
-      tempOutputDiv = currentTab.outputElement.cloneNode(true);
+      const tempOutputDiv = currentTab.outputElement.cloneNode(true);
       outputWrapper.appendChild(tempOutputDiv);
       tempOutputDiv.classList.add(...currentTab.outputElement.classList);
       tempOutputDiv.style.width = maxWidth;
@@ -4083,13 +4505,10 @@ prompt("This is a prompt:");
       const model = currentTab.editorInstance.getModel();
       const code = model.getValue();
       const language = "javascript";
-
       const codeLines = code.split('\n');
-
       const highlightedLines = await Promise.all(
         codeLines.map((line) => monaco.editor.colorize(line, language, {}))
       );
-
       const fontSize = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontSize) || 14;
       const lineHeight = currentTab.editorInstance.getOption(monaco.editor.EditorOption.lineHeight) || 20;
       const fontFamily = currentTab.editorInstance.getOption(monaco.editor.EditorOption.fontFamily) || 'Fira Code, monospace';
@@ -4103,27 +4522,22 @@ prompt("This is a prompt:");
       wrapperDiv.style.whiteSpace = "pre-wrap";
       wrapperDiv.style.width = '100%';
       wrapperDiv.style.color = textColor;
-
       document.addEventListener('DOMContentLoaded', function () {
         if (window.screen.width < 768) {
           wrapperDiv.style.transform = "scale(0.7)";
           showAlert("Please note that the code may not be displayed properly on small screens.");
         }
       });
-
       codeLines.forEach((line, index) => {
         const lineWrapper = document.createElement('div');
         lineWrapper.style.display = "flex";
         lineWrapper.style.alignItems = "flex-start";
-
         const lineNumberDiv = document.createElement('div');
         lineNumberDiv.classList.add(darkModeFlag ? "lineNumDark" : "lineNumLight", "lineNum", "numberDiv");
         lineNumberDiv.textContent = index + 1;
-
         const codeLineDiv = document.createElement('div');
-        codeLineDiv.classList.add("codeLineDiv")
+        codeLineDiv.classList.add("codeLineDiv");
         codeLineDiv.innerHTML = highlightedLines[index] || '';
-
         lineWrapper.appendChild(lineNumberDiv);
         lineWrapper.appendChild(codeLineDiv);
         wrapperDiv.appendChild(lineWrapper);
@@ -4131,116 +4545,132 @@ prompt("This is a prompt:");
       return wrapperDiv;
     }
 
-
     async function exportImage() {
       const wrapperBoth = document.createElement('div');
+      wrapperBoth.style.position = 'relative';
+      wrapperBoth.style.paddingTop = '1px';
       wrapperBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+
       const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText");
-      editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header"; // Optional default text
+      editorTextDiv.id = 'editorText';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapperBoth.appendChild(editorTextDiv);
-      wrapperBoth.appendChild(await getEditorDiv());
+      const editorQuill = new Quill(editorTextDiv, {
+        theme: 'snow',
+        placeholder: 'Enter your text here...',
+        modules: { toolbar: quillToolbarOptions },
+      });
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      editorToolbar.id = 'editorRichTextToolbar';
+      function repositionToolbar(toolbar, element) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = wrapperBoth.getBoundingClientRect();
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+      }
+      repositionToolbar(editorToolbar, editorTextDiv);
+      setTimeout(() => {
+        initQuil(editorQuill);
+      }, 200);
+      const editorDiv = await getEditorDiv();
+      wrapperBoth.appendChild(editorDiv);
+
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
-      let tempOutputDiv;
+      let outputToolbar, outputQuill;
       if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText");
-        textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header"; // Optional default text
-        wrapperBoth.appendChild(textDiv);
+        const outputTextDiv = document.createElement('div');
+        outputTextDiv.id = 'outputText';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+        wrapperBoth.appendChild(outputTextDiv);
+        outputQuill = new Quill(outputTextDiv, {
+          theme: 'snow',
+          placeholder: 'Enter your text here...',
+          modules: { toolbar: quillToolbarOptions }
+        });
+        outputToolbar = outputQuill.getModule('toolbar').container;
+        repositionToolbar(outputToolbar, outputTextDiv);
+        setTimeout(() => {
+          initQuil(outputQuill);
+        }, 200);
         const outputClone = await getOutputDivClone();
-        tempOutputDiv = outputClone.querySelector('.output');
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
         wrapperBoth.appendChild(outputClone);
-
+        const headerTextContainer = document.createElement("span");
+        headerTextContainer.style.display = "inline-flex";
+        headerTextContainer.style.alignItems = "center";
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.id = "headerTextCheckbox";
         headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
         headerTextCheckbox.checked = true;
+        const headerTextLabel = document.createElement("label");
+        headerTextLabel.setAttribute("for", "headerTextCheckbox");
+        headerTextLabel.textContent = "Show Output Text";
+        headerTextLabel.style.marginLeft = "4px";
+        headerTextContainer.appendChild(headerTextCheckbox);
+        headerTextContainer.appendChild(headerTextLabel);
+        exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
 
+
+        const exportContainer = document.createElement("span");
+        exportContainer.style.display = "inline-flex";
+        exportContainer.style.alignItems = "center";
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
+        exportCheckbox.id = "exportCheckbox";
         exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
         exportCheckbox.checked = true;
+        const exportLabel = document.createElement("label");
+        exportLabel.setAttribute("for", "exportCheckbox");
+        exportLabel.textContent = "Show Output Clone";
+        exportLabel.style.marginLeft = "4px";
+        exportContainer.appendChild(exportCheckbox);
+        exportContainer.appendChild(exportLabel);
+        exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
           outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
+          outputTextDiv.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
+          headerTextLabel.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
+
+
+
       }
 
+      const editorHeaderContainer = document.createElement("span");
+      editorHeaderContainer.style.display = "inline-flex";
+      editorHeaderContainer.style.alignItems = "center";
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.id = "editorHeaderCheckbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
       editorHeaderCheckbox.checked = true;
+      const editorHeaderLabel = document.createElement("label");
+      editorHeaderLabel.setAttribute("for", "editorHeaderCheckbox");
+      editorHeaderLabel.textContent = "Show Editor Header";
+      editorHeaderLabel.style.marginLeft = "4px";
+      editorHeaderContainer.appendChild(editorHeaderCheckbox);
+      editorHeaderContainer.appendChild(editorHeaderLabel);
+      exportBtnsWrapper.appendChild(editorHeaderContainer);
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+        editorToolbar.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
-      // Create the rich text toolbar
-      const toolbar = document.createElement('div');
-      toolbar.id = 'richTextToolbar';
-      toolbar.style.position = 'absolute';
-      toolbar.style.display = 'none';
-      toolbar.innerHTML = `
-        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-        <input type="color" onchange="applyColor(this.value)">
-        <select onchange="applyFontFamily(this.value)">
-            <option value="">Font Family</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New</option>
-        </select>
-        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-    `;
 
-      // Set toolbar theme
-      if (darkModeFlag) {
-        toolbar.style.background = '#333';
-        toolbar.style.borderColor = '#555';
-        toolbar.style.color = '#fff';
-      } else {
-        toolbar.style.background = '#f0f0f0';
-        toolbar.style.borderColor = '#ccc';
-        toolbar.style.color = '#000';
-      }
 
       exportModalContent.appendChild(wrapperBoth);
-      exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
-
-      // Add focus and blur event listeners
-      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
-      editorTextDiv.addEventListener('blur', () => hideToolbar());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapperBoth.querySelectorAll('.headerText')[1];
-        textDiv.addEventListener('focus', () => showToolbar(textDiv));
-        textDiv.addEventListener('blur', () => hideToolbar());
-      }
-
-      toolbar.addEventListener('mouseenter', () => {
-        isToolbarActive = true;
-      });
-      toolbar.addEventListener('mouseleave', () => {
-        isToolbarActive = false;
-        setTimeout(hideToolbar, 100);
-      });
-      toolbar.addEventListener('click', (event) => {
-        event.stopPropagation();
-        isToolbarActive = true;
-      });
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export Image";
@@ -4249,7 +4679,10 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture
+        editorToolbar.style.display = 'none';
+        if (outputToolbar) {
+          outputToolbar.style.display = 'none';
+        }
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const imgSrc = await takeImage(wrapperBoth);
@@ -4257,19 +4690,13 @@ prompt("This is a prompt:");
         const bothImg = new Image();
         bothImg.src = imgSrc;
         let theyReady = false;
-
-        bothImg.onload = () => {
-          theyReady = true;
-        };
-
+        bothImg.onload = () => { theyReady = true; };
         while (!theyReady) {
-          await new Promise((resolve) => setTimeout(resolve, 150));
+          await new Promise(resolve => setTimeout(resolve, 150));
         }
-
         canvas.width = bothImg.width;
         canvas.height = bothImg.height;
         ctx.drawImage(bothImg, 0, 0);
-
         const a = document.createElement('a');
         a.href = canvas.toDataURL("image/png");
         a.download = `${currentTab.name}.png`;
@@ -4279,119 +4706,130 @@ prompt("This is a prompt:");
       displayModal();
     }
 
-
     async function exportPDF() {
       const editorDiv = await getEditorDiv();
       const wrapBoth = document.createElement('div');
+      wrapBoth.style.position = 'relative';
+      wrapBoth.style.paddingTop = '1px';
       wrapBoth.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+
+      // --- Editor Header using Quill ---
       const editorTextDiv = document.createElement('div');
-      editorTextDiv.classList.add("headerText");
-      editorTextDiv.contentEditable = true;
-      editorTextDiv.textContent = "Editor Header"; // Optional default text
+      editorTextDiv.id = 'editorText';
+      editorTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+      editorTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
       wrapBoth.appendChild(editorTextDiv);
+      const editorQuill = new Quill(editorTextDiv, {
+        theme: 'snow',
+        placeholder: 'Enter your text here...',
+        modules: { toolbar: quillToolbarOptions }
+      });
+      const editorToolbar = editorTextDiv.parentElement.querySelector('.ql-toolbar');
+      function repositionToolbar(toolbar, element) {
+        const elementRect = element.getBoundingClientRect();
+        const containerRect = wrapBoth.getBoundingClientRect();
+        toolbar.style.top = (elementRect.top - containerRect.top - toolbar.offsetHeight) + 'px';
+        toolbar.style.left = (elementRect.left - containerRect.left) + 'px';
+      }
+      repositionToolbar(editorToolbar, editorTextDiv);
+      setTimeout(() => {
+        initQuil(editorQuill);
+      }, 200);
+
       wrapBoth.appendChild(editorDiv);
+
       const exportBtnsWrapper = document.createElement('div');
       exportBtnsWrapper.classList.add("exportBtnsWrapper");
 
-      let outputDiv;
+      let outputToolbar, outputQuill;
       if (currentTab.outputElement.innerHTML.trim()) {
-        const outputClone = await getOutputDivClone();
-        outputDiv = outputClone.querySelector('.output');
-        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
-        const textDiv = document.createElement('div');
-        textDiv.classList.add("headerText");
-        textDiv.contentEditable = true;
-        textDiv.textContent = "Output Header"; // Optional default text
-        wrapBoth.appendChild(textDiv);
-        wrapBoth.appendChild(outputClone);
+        const outputTextDiv = document.createElement('div');
+        outputTextDiv.id = 'outputText';
+        outputTextDiv.style.border = darkModeFlag ? '1px solid #333' : '1px solid #c0c0c0';
+        outputTextDiv.style.color = darkModeFlag ? '#fff' : '#000000';
+        wrapBoth.appendChild(outputTextDiv);
+        outputQuill = new Quill(outputTextDiv, {
+          theme: 'snow',
+          placeholder: 'Enter your text here...',
+          modules: { toolbar: quillToolbarOptions }
+        });
+        outputToolbar = outputQuill.getModule('toolbar').container;
+        repositionToolbar(outputToolbar, outputTextDiv);
+        setTimeout(() => {
+          initQuil(outputQuill);
+        }, 200);
 
+        const outputClone = await getOutputDivClone();
+        outputClone.style.backgroundColor = darkModeFlag ? '#1E1E1E' : '#FFFFFF';
+        wrapBoth.appendChild(outputClone);
+        const headerTextContainer = document.createElement("span");
+        headerTextContainer.style.display = "inline-flex";
+        headerTextContainer.style.alignItems = "center";
         const headerTextCheckbox = document.createElement("input");
         headerTextCheckbox.type = "checkbox";
+        headerTextCheckbox.id = "headerTextCheckbox";
         headerTextCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(headerTextCheckbox);
         headerTextCheckbox.checked = true;
+        const headerTextLabel = document.createElement("label");
+        headerTextLabel.setAttribute("for", "headerTextCheckbox");
+        headerTextLabel.textContent = "Show Output Text";
+        headerTextLabel.style.marginLeft = "4px";
+        headerTextContainer.appendChild(headerTextCheckbox);
+        headerTextContainer.appendChild(headerTextLabel);
+        exportBtnsWrapper.appendChild(headerTextContainer);
         headerTextCheckbox.addEventListener("change", () => {
-          textDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputTextDiv.style.display = headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = headerTextCheckbox.checked ? "block" : "none";
         });
 
+
+        const exportContainer = document.createElement("span");
+        exportContainer.style.display = "inline-flex";
+        exportContainer.style.alignItems = "center";
         const exportCheckbox = document.createElement("input");
         exportCheckbox.type = "checkbox";
+        exportCheckbox.id = "exportCheckbox";
         exportCheckbox.classList.add("exportCheckbox");
-        exportBtnsWrapper.appendChild(exportCheckbox);
         exportCheckbox.checked = true;
+        const exportLabel = document.createElement("label");
+        exportLabel.setAttribute("for", "exportCheckbox");
+        exportLabel.textContent = "Show Output Clone";
+        exportLabel.style.marginLeft = "4px";
+        exportContainer.appendChild(exportCheckbox);
+        exportContainer.appendChild(exportLabel);
+        exportBtnsWrapper.appendChild(exportContainer);
         exportCheckbox.addEventListener("change", () => {
-          outputClone.style.display = exportCheckbox.checked ? "block" : "none";
+          outputClone.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
+          outputToolbar.style.display = exportCheckbox.checked && headerTextCheckbox.checked ? "block" : "none";
           headerTextCheckbox.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
+          headerTextLabel.style.visibility = exportCheckbox.checked ? "visible" : "hidden";
         });
       }
 
+      const editorHeaderContainer = document.createElement("span");
+      editorHeaderContainer.style.display = "inline-flex";
+      editorHeaderContainer.style.alignItems = "center";
       const editorHeaderCheckbox = document.createElement("input");
       editorHeaderCheckbox.type = "checkbox";
+      editorHeaderCheckbox.id = "editorHeaderCheckbox";
       editorHeaderCheckbox.classList.add("exportCheckbox");
-      exportBtnsWrapper.appendChild(editorHeaderCheckbox);
       editorHeaderCheckbox.checked = true;
+      const editorHeaderLabel = document.createElement("label");
+      editorHeaderLabel.setAttribute("for", "editorHeaderCheckbox");
+      editorHeaderLabel.textContent = "Show Editor Header";
+      editorHeaderLabel.style.marginLeft = "4px";
+      editorHeaderContainer.appendChild(editorHeaderCheckbox);
+      editorHeaderContainer.appendChild(editorHeaderLabel);
+      exportBtnsWrapper.appendChild(editorHeaderContainer);
       editorHeaderCheckbox.addEventListener("change", () => {
         editorTextDiv.style.display = editorHeaderCheckbox.checked ? "block" : "none";
+        editorToolbar.style.display = editorHeaderCheckbox.checked ? "block" : "none";
       });
 
-      // Create the rich text toolbar
-      const toolbar = document.createElement('div');
-      toolbar.id = 'richTextToolbar';
-      toolbar.style.position = 'absolute';
-      toolbar.style.display = 'none';
-      toolbar.innerHTML = `
-        <button onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
-        <button onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
-        <button onclick="applyFormat('underline')"><i class="fas fa-underline"></i></button>
-        <input type="number" min="8" max="72" placeholder="Size" onchange="applyFontSize(this.value + 'px')">
-        <input type="color" onchange="applyColor(this.value)">
-        <select onchange="applyFontFamily(this.value)">
-            <option value="">Font Family</option>
-            <option value="Arial">Arial</option>
-            <option value="Times New Roman">Times New Roman</option>
-            <option value="Courier New">Courier New</option>
-        </select>
-        <button onclick="applyAlignment('left')"><i class="fas fa-align-left"></i></button>
-        <button onclick="applyAlignment('center')"><i class="fas fa-align-center"></i></button>
-        <button onclick="applyAlignment('right')"><i class="fas fa-align-right"></i></button>
-    `;
 
-      // Set toolbar theme
-      if (darkModeFlag) {
-        toolbar.style.background = '#333';
-        toolbar.style.borderColor = '#555';
-        toolbar.style.color = '#fff';
-      } else {
-        toolbar.style.background = '#f0f0f0';
-        toolbar.style.borderColor = '#ccc';
-        toolbar.style.color = '#000';
-      }
 
       exportModalContent.appendChild(wrapBoth);
-      exportModalContent.appendChild(toolbar);
       exportModalContent.appendChild(exportBtnsWrapper);
-
-      // Add focus and blur event listeners
-      editorTextDiv.addEventListener('focus', () => showToolbar(editorTextDiv));
-      editorTextDiv.addEventListener('blur', () => hideToolbar());
-      if (currentTab.outputElement.innerHTML.trim()) {
-        const textDiv = wrapBoth.querySelectorAll('.headerText')[1];
-        textDiv.addEventListener('focus', () => showToolbar(textDiv));
-        textDiv.addEventListener('blur', () => hideToolbar());
-      }
-
-      toolbar.addEventListener('mouseenter', () => {
-        isToolbarActive = true;
-      });
-      toolbar.addEventListener('mouseleave', () => {
-        isToolbarActive = false;
-        setTimeout(hideToolbar, 100);
-      });
-      toolbar.addEventListener('click', (event) => {
-        event.stopPropagation();
-        isToolbarActive = true;
-      });
-
 
       const exportBtn = document.createElement('button');
       exportBtn.textContent = "Export PDF";
@@ -4400,7 +4838,10 @@ prompt("This is a prompt:");
 
       exportBtn.onclick = async function () {
         exportBtn.disabled = true;
-        toolbar.style.display = 'none'; // Hide toolbar before capture
+        editorToolbar.style.display = 'none';
+        if (outputToolbar) {
+          outputToolbar.style.display = 'none';
+        }
         const contentWidth = wrapBoth.offsetWidth;
         const contentHeight = wrapBoth.offsetHeight;
         let doc = new jsPDF({
@@ -4452,8 +4893,6 @@ prompt("This is a prompt:");
       if (event.target === modal || event === "close") {
         modal.classList.remove("active");
         modal.dispatchEvent(new Event("modalClosed"));
-        const toolbar = document.getElementById('richTextToolbar');
-        if (toolbar) toolbar.style.display = 'none';
       }
     }
 
@@ -4464,7 +4903,7 @@ prompt("This is a prompt:");
       let alertDiv = document.createElement("div");
       alertDiv.classList.add("alertText");
       alertDiv.textContent = message;
-      const btn = document.createElement("alertButton");
+      const btn = document.createElement("button");
       btn.textContent = "Close";
       btn.classList.add("exportBtn");
       btn.addEventListener("click", () => {
@@ -4488,19 +4927,21 @@ prompt("This is a prompt:");
       return modal.classList.contains("active");
     }
 
+    function rgbToHex(rgb) {
+      const match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if (!match) return rgb;
+      return "#" + [match[1], match[2], match[3]].map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+    }
+
     const getEventNames = (root) => {
       let events = [];
-
       const objectHasSubPrototype = (object, comp) => {
         let proto = Object.getPrototypeOf(object);
-
         while (proto !== null && proto !== EventTarget) {
           proto = Object.getPrototypeOf(proto);
         }
-
         return (proto !== null);
       };
-
       const addEventNames = (propNames) => {
         propNames.filter(x => x.match(/^on\w+$/)).forEach((propName) => {
           propName = propName.substr(2);
@@ -4509,35 +4950,32 @@ prompt("This is a prompt:");
           }
         });
       };
-
       Object.getOwnPropertyNames(root).forEach((name) => {
         let value = root[name];
-
         if (value) {
           if (objectHasSubPrototype(value, EventTarget)) {
             let propNames = Object.getOwnPropertyNames(Object.getPrototypeOf(value).prototype);
             addEventNames(propNames);
-
             propNames = Object.getOwnPropertyNames(window);
             addEventNames(propNames);
           }
         }
       });
-
       return events;
     };
 
     function focusTab(tabElem) {
-      if (!tabElem) { tabElem = currentTab }
-      tabElem.editorInstance.focus()
+      if (!tabElem) { tabElem = currentTab; }
+      tabElem.editorInstance.focus();
     }
 
     document.getElementById("selectAllBtn").addEventListener("click", () => {
       const range = currentTab.editorInstance.getModel().getFullModelRange();
       currentTab.editorInstance.setSelection(range);
-      focusTab()
-      closeDropdowns()
+      focusTab();
+      closeDropdowns();
     });
+
 
 
   </script>
@@ -4545,3 +4983,5 @@ prompt("This is a prompt:");
 </body>
 
 </html>
+
+{% endblock %}
