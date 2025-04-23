@@ -70,11 +70,6 @@
       transition: width 0.3s ease, height 0.3s ease, margin 0.3s ease;
     }
 
-    #compiler.fullscreen .monaco-editor,
-    #compiler.fullscreen .output {
-      overflow: auto !important;
-    }
-
     .vs-logo {
       position: absolute;
       top: 0;
@@ -2119,10 +2114,6 @@
 
         if (isMobile) {
           compiler.style.height = window.innerHeight + 'px';
-          document.body.style.overflow = "hidden";
-          body.style.overflow = "hidden";
-          compiler.classList.add('fullscreen');
-
         }
       } else {
         fullscreenFlag = false;
@@ -2144,8 +2135,6 @@
         if (!isMobile) {
           compiler.style.width = "60%";
           compiler.style.minWidth = "600px";
-          body.style.overflow = "";
-          compiler.classList.remove('fullscreen');
         }
       }
     }
