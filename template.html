@@ -2122,67 +2122,74 @@
       if (!fullscreenFlag) {
         fullscreenFlag = true;
 
-        // 1) Hide your page UI
+        // 1) Hide your page UI:
         fullBtn.style.display = "none";
         smallBtn.style.display = "block";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // 2) Stretch the compiler container
-        compiler.style.cssText += `
-      width:100%;
-      height:${isMobile ? window.innerHeight + 'px' : '100vh'};
-      margin:0;
-      z-index:9999;
-      border-radius:0;
-    `;
-
-        // 3) Lock scrolling on body
-        body.style.overflow = "hidden";
-        compiler.classList.add('fullscreen');
-
-        // 4) **Instantly** jump to the top of the page
+        // 2) Reset scroll to top so compiler sits at the top:
         window.scrollTo(0, 0);
 
-        // 5) Request real browser fullscreen
+        // 3) Fix compiler at top-left:
+        compiler.style.position = 'fixed';
+        compiler.style.top = '0';
+        compiler.style.left = '0';
+
+        // 4) Stretch compiler to fill viewport:
+        compiler.style.width = '100vw';
+        compiler.style.height = isMobile
+          ? window.innerHeight + 'px'
+          : '100vh';
+        compiler.style.margin = '0';
+        compiler.style.zIndex = '9999';
+        compiler.style.borderRadius = '0';
+
+        // 5) Lock page scrolling:
+        body.style.overflow = 'hidden';
+        compiler.classList.add('fullscreen');
+
+        // 6) Enter real full-screen:
         try {
           await enterBrowserFullscreen(compiler);
-        } catch (err) {
-          console.warn("Fullscreen API failed:", err);
+        } catch (e) {
+          console.warn('Fullscreen API failed:', e);
         }
 
       } else {
-        // 1) Exit real browser fullscreen
+        // Exit real full-screen first:
         try {
           await exitBrowserFullscreen();
-        } catch (err) {
-          console.warn("Exit Fullscreen API failed:", err);
+        } catch (e) {
+          console.warn('Exit Fullscreen API failed:', e);
         }
 
-        // 2) Restore page UI
+        // Restore flag and page UI:
         fullscreenFlag = false;
-        fullBtn.style.display = "block";
-        smallBtn.style.display = "none";
+        fullBtn.style.display = 'block';
+        smallBtn.style.display = 'none';
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = '');
 
-        // 3) Restore compiler size
-        compiler.style.cssText += `
-      height:500px;
-      width:${isMobile ? '95%' : '60%'};
-      min-width:${isMobile ? '' : '600px'};
-      margin:50px auto;
-      z-index:0;
-      border-radius:15px;
-    `;
+        // Restore compiler positioning and size:
+        compiler.style.position = '';        // back to default (relative)
+        compiler.style.top = '';
+        compiler.style.left = '';
+        compiler.style.width = isMobile ? '95%' : '60%';
+        compiler.style.minWidth = isMobile ? '' : '600px';
+        compiler.style.height = '500px';
+        compiler.style.margin = '50px auto';
+        compiler.style.zIndex = '0';
+        compiler.style.borderRadius = '15px';
         compiler.classList.remove('fullscreen');
 
-        // 4) Unlock body scroll
-        body.style.overflow = "";
+        // Unlock page scroll:
+        body.style.overflow = '';
       }
     }
 
-    alert(1);
+
+    alert(2);
 
 
 
