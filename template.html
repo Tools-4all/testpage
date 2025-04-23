@@ -2092,13 +2092,14 @@
       event.stopImmediatePropagation();
       event.stopPropagation();
     }
-    // 1) Cross-browser helpers:
+
+
     function enterBrowserFullscreen(el) {
       if (el.requestFullscreen) {
         return el.requestFullscreen();
-      } else if (el.webkitRequestFullscreen) {    // Safari
+      } else if (el.webkitRequestFullscreen) {
         return el.webkitRequestFullscreen();
-      } else if (el.msRequestFullscreen) {         // IE11
+      } else if (el.msRequestFullscreen) {
         return el.msRequestFullscreen();
       }
     }
@@ -2113,32 +2114,36 @@
       }
     }
 
-    // 2) Your fullscreen toggle, now awaiting the browser full-screen entry/exit:
     async function fullScreen() {
       const body = document.body;
+      const html = document.documentElement;
       const fullBtn = document.getElementById('fullScreen');
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag) {
-        // — your UI toggles:
+        // 1) Hide your UI chrome:
         fullscreenFlag = true;
         fullBtn.style.display = "none";
         smallBtn.style.display = "block";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // — stretch compiler container:
+        // 2) Stretch compiler container:
         compiler.style.width = "100%";
         compiler.style.height = isMobile ? window.innerHeight + 'px' : "100vh";
         compiler.style.margin = "0";
         compiler.style.zIndex = "9999";
         compiler.style.borderRadius = "0";
 
-        // — lock page scroll:
+        // 3) Lock body scroll:
         body.style.overflow = "hidden";
         compiler.classList.add('fullscreen');
 
-        // — **enter browser fullscreen**:
+        // 4) Jump to top instantly (so fullscreen starts at top):
+        html.scrollTop = 0;
+        body.scrollTop = 0;
+
+        // 5) Enter browser fullscreen:
         try {
           await enterBrowserFullscreen(compiler);
         } catch (e) {
@@ -2146,21 +2151,21 @@
         }
 
       } else {
-        // — exit browser fullscreen first:
+        // 1) Exit browser fullscreen:
         try {
           await exitBrowserFullscreen();
         } catch (e) {
           console.warn("Exit Fullscreen API failed:", e);
         }
 
-        // — restore UI:
+        // 2) Restore your UI:
         fullscreenFlag = false;
         fullBtn.style.display = "block";
         smallBtn.style.display = "none";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = '');
 
-        // — restore compiler size:
+        // 3) Restore compiler size:
         compiler.style.height = "500px";
         compiler.style.width = isMobile ? "95%" : "60%";
         compiler.style.minWidth = isMobile ? "" : "600px";
@@ -2168,11 +2173,12 @@
         compiler.style.zIndex = "0";
         compiler.style.borderRadius = "15px";
 
-        // — unlock page scroll:
+        // 4) Unlock body scroll:
         body.style.overflow = "";
         compiler.classList.remove('fullscreen');
       }
     }
+
 
 
     document.addEventListener('keydown', function (event) {
