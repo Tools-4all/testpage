@@ -358,7 +358,7 @@
         return;
       }
 
-      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
+      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png") && !dataURL.startsWith("blob:")) {
         console.error("Main: Invalid dataURL received:", dataURL);
         showError("Invalid background-removed image data");
         removeImage();
