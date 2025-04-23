@@ -2116,68 +2116,72 @@
 
     async function fullScreen() {
       const body = document.body;
-      const html = document.documentElement;
       const fullBtn = document.getElementById('fullScreen');
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag) {
-        // 1) Hide your UI chrome:
         fullscreenFlag = true;
+
+        // 1) Hide your page UI
         fullBtn.style.display = "none";
         smallBtn.style.display = "block";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // 2) Stretch compiler container:
-        compiler.style.width = "100%";
-        compiler.style.height = isMobile ? window.innerHeight + 'px' : "100vh";
-        compiler.style.margin = "0";
-        compiler.style.zIndex = "9999";
-        compiler.style.borderRadius = "0";
+        // 2) Stretch the compiler container
+        compiler.style.cssText += `
+      width:100%;
+      height:${isMobile ? window.innerHeight + 'px' : '100vh'};
+      margin:0;
+      z-index:9999;
+      border-radius:0;
+    `;
 
-        // 3) Lock body scroll:
+        // 3) Lock scrolling on body
         body.style.overflow = "hidden";
         compiler.classList.add('fullscreen');
 
-        // 4) Jump to top instantly (so fullscreen starts at top):
-        html.scrollTop = 0;
-        body.scrollTop = 0;
+        // 4) **Instantly** jump to the top of the page
+        window.scrollTo(0, 0);
 
-        // 5) Enter browser fullscreen:
+        // 5) Request real browser fullscreen
         try {
           await enterBrowserFullscreen(compiler);
-        } catch (e) {
-          console.warn("Fullscreen API failed:", e);
+        } catch (err) {
+          console.warn("Fullscreen API failed:", err);
         }
 
       } else {
-        // 1) Exit browser fullscreen:
+        // 1) Exit real browser fullscreen
         try {
           await exitBrowserFullscreen();
-        } catch (e) {
-          console.warn("Exit Fullscreen API failed:", e);
+        } catch (err) {
+          console.warn("Exit Fullscreen API failed:", err);
         }
 
-        // 2) Restore your UI:
+        // 2) Restore page UI
         fullscreenFlag = false;
         fullBtn.style.display = "block";
         smallBtn.style.display = "none";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = '');
 
-        // 3) Restore compiler size:
-        compiler.style.height = "500px";
-        compiler.style.width = isMobile ? "95%" : "60%";
-        compiler.style.minWidth = isMobile ? "" : "600px";
-        compiler.style.margin = "50px auto";
-        compiler.style.zIndex = "0";
-        compiler.style.borderRadius = "15px";
-
-        // 4) Unlock body scroll:
-        body.style.overflow = "";
+        // 3) Restore compiler size
+        compiler.style.cssText += `
+      height:500px;
+      width:${isMobile ? '95%' : '60%'};
+      min-width:${isMobile ? '' : '600px'};
+      margin:50px auto;
+      z-index:0;
+      border-radius:15px;
+    `;
         compiler.classList.remove('fullscreen');
+
+        // 4) Unlock body scroll
+        body.style.overflow = "";
       }
     }
+
 
 
 
