@@ -2122,21 +2122,17 @@
       if (!fullscreenFlag) {
         fullscreenFlag = true;
 
-        // 1) Hide your page UI:
         fullBtn.style.display = "none";
         smallBtn.style.display = "block";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // 2) Reset scroll to top so compiler sits at the top:
         window.scrollTo(0, 0);
 
-        // 3) Fix compiler at top-left:
         compiler.style.position = 'fixed';
         compiler.style.top = '0';
         compiler.style.left = '0';
 
-        // 4) Stretch compiler to fill viewport:
         compiler.style.width = '100vw';
         compiler.style.height = isMobile
           ? window.innerHeight + 'px'
@@ -2145,11 +2141,9 @@
         compiler.style.zIndex = '9999';
         compiler.style.borderRadius = '0';
 
-        // 5) Lock page scrolling:
         body.style.overflow = 'hidden';
         compiler.classList.add('fullscreen');
 
-        // 6) Enter real full-screen:
         try {
           await enterBrowserFullscreen(compiler);
         } catch (e) {
@@ -2157,22 +2151,19 @@
         }
 
       } else {
-        // Exit real full-screen first:
         try {
           await exitBrowserFullscreen();
         } catch (e) {
           console.warn('Exit Fullscreen API failed:', e);
         }
 
-        // Restore flag and page UI:
         fullscreenFlag = false;
         fullBtn.style.display = 'block';
         smallBtn.style.display = 'none';
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = '');
 
-        // Restore compiler positioning and size:
-        compiler.style.position = '';        // back to default (relative)
+        compiler.style.position = '';
         compiler.style.top = '';
         compiler.style.left = '';
         compiler.style.width = isMobile ? '95%' : '60%';
@@ -2183,14 +2174,9 @@
         compiler.style.borderRadius = '15px';
         compiler.classList.remove('fullscreen');
 
-        // Unlock page scroll:
         body.style.overflow = '';
       }
     }
-
-
-    alert(2);
-
 
 
 
