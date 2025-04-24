@@ -7,7 +7,9 @@
   <title>WebSprint</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
 
   <!-- <link rel="stylesheet" href="base.css" /> -->
@@ -394,7 +396,7 @@
     /* about */
 
     .about-section {
-      padding: 100px 20px;
+      padding: 150px 20px 50px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -409,15 +411,6 @@
       height: 200px;
       background: radial-gradient(circle, rgba(0, 123, 255, 0.2), transparent);
       border-radius: 50%;
-    }
-
-    .about-section h2 {
-      font-size: 2.8rem;
-      margin-bottom: 40px;
-      color: #222;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
     }
 
     .about-content {
@@ -482,17 +475,20 @@
     /* our services */
 
     .services-section {
-      padding: 100px 20px;
+      padding: 150px 20px 50px;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
 
-    .services-section h2 {
+    .services-section h2,
+    .about-section h2,
+    #our-projects h2 {
       font-size: 3rem;
       margin-bottom: 50px;
       color: #222;
       font-weight: bold;
+      text-align: center;
       text-transform: uppercase;
       letter-spacing: 2px;
       animation: popIn 1s ease-in-out;
@@ -928,7 +924,8 @@
 
       .about-section h2,
       .services-section h2,
-      .counter-section h2 {
+      .counter-section h2,
+      #our-projects h2 {
         font-size: 2.2rem;
       }
 
@@ -983,6 +980,122 @@
         font-size: 1rem;
       }
 
+    }
+
+
+
+    #our-projects {
+      position: relative;
+      padding: 150px 20px 50px;
+      background: #fff;
+      position: relative;
+
+    }
+
+    .left_arrow,
+    .right_arrow {
+      position: absolute;
+      top: 65%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 30px;
+      background-color: rgba(0, 0, 0, 0.64);
+      color: #fff;
+      padding: 10px 10px 8px;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s, background-color 0.3s;
+      z-index: 99;
+    }
+
+    .left_arrow {
+      left: 5px;
+    }
+
+    .right_arrow {
+      right: 5px;
+    }
+
+    #media_left_arrow,
+    #media_right_arrow {
+      display: none;
+    }
+
+    .slider-container {
+      width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: auto;
+      display: flex;
+      gap: 5px;
+      padding: 20px 20px 0px !important;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    .slides {
+      display: flex;
+    }
+
+    .slide {
+      position: relative;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 15px;
+      text-align: center;
+      box-sizing: border-box;
+      scroll-snap-align: center;
+      flex: 0 0 calc((100% - 2 * 35px) / 3);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      overflow: hidden;
+    }
+
+
+    .slide:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #our-projects .slide img {
+      object-fit: cover;
+    }
+
+    .swiper-horizontal>.swiper-pagination-bullets,
+    .swiper-pagination-bullets.swiper-pagination-horizontal,
+    .swiper-pagination-custom,
+    .swiper-pagination-fraction {
+      bottom: -5px !important;
+    }
+
+    .my-pagination .swiper-pagination-bullet-active {
+      background-color: #2a4d8d;
+    }
+
+    .my-pagination {
+      text-align: center;
+      position: relative;
+      bottom: 5px;
+      width: 100%;
+    }
+
+
+    .dot {
+      height: 10px;
+      width: 10px;
+      background-color: #bbb;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background-color: #000;
+    }
+
+    ::-webkit-scrollbar {
+      display: none;
     }
   </style>
 
@@ -1117,9 +1230,113 @@
           </div>
       </section>
 
-      <section id="our-projects" class="projects-section section">
-        <!-- <h2>Our Projects</h2> -->
+      <section id="our-projects" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+        <h2>Our Projects</h2>
+        <div class="slider-wrapper">
+          <div class="swiper slider-container" id="sliderContainer1">
+            <div class="swiper-wrapper slides">
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+              <div class="swiper-slide slide">
+                <div class="image-placeholder">
+                  <img style="object-fit: cover;"
+                    src="https://media.istockphoto.com/id/1316134499/photo/a-concept-image-of-a-magnifying-glass-on-blue-background-with-a-word-example-zoom-inside-the.webp?a=1&b=1&s=612x612&w=0&k=20&c=RM_r6r-nq9t05ZiB8YjUpxydv-OpUebg9iyJI5vXq7I="
+                    alt="דירה">
+                </div>
+                <div class="caption">exapmle</div>
+              </div>
+            </div>
+          </div>
+          <div class="my-pagination"></div>
+          <div id="leftArrow1" class="left_arrow">
+            <i id="web_left_arrow" class="fa-solid fa-left-long"></i>
+            <p id="media_left_arrow">&#8249;</p>
+          </div>
+          <div id="rightArrow1" class="right_arrow">
+            <i id="web_right_arrow" class="fa-solid fa-right-long"></i>
+            <p id="media_right_arrow"> &#8250; </p>
+          </div>
+        </div>
       </section>
+
     </div>
 
     <section class="faq-section" id="faq" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
@@ -1219,7 +1436,7 @@
     </footer>
 
 
-
+    <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
     <script src=" https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>AOS.init();</script>
     <script>
@@ -1258,7 +1475,7 @@
 
       function setActiveLink(el) {
         navLinks.forEach((link) => link.classList.remove("active"));
-        el.classList.add("active");
+        if (el) el.classList.add("active");
       }
 
       navLinks.forEach((link) => {
@@ -1276,6 +1493,7 @@
       window.addEventListener("scroll", () => {
         const scrollPos = window.scrollY + 100;
         let currentId = "";
+
         sections.forEach((sec) => {
           const top = sec.offsetTop;
           const bottom = top + sec.offsetHeight;
@@ -1283,13 +1501,16 @@
             currentId = sec.getAttribute("id");
           }
         });
+
         if (currentId) {
-          const activeLink = document.querySelector(
-            `.nav-links a[href="#${currentId}"]`
-          );
-          if (activeLink) setActiveLink(activeLink);
+          const activeLink = document.querySelector(`.nav-links a[href="#${currentId}"]`);
+          setActiveLink(activeLink);
+        } else {
+          // not in any section → clear all
+          setActiveLink(null);
         }
       });
+
 
       window.addEventListener("scroll", () => {
         const scrollBar = document.getElementById("scroll-indicator-bar");
@@ -1355,6 +1576,123 @@
           }
         });
       });
+      function setUpSlider(nodeId, rightArrowSel, leftArrowSel, spaceBetween = 32, slidesPerViewPc = 3, paginationEl = ".my-pagination", delay = 4) {
+        const sliderContainer = document.querySelector(nodeId);
+        const actualId = "#" + sliderContainer.id;
+
+        const rightArrow = document.querySelector(rightArrowSel);
+        const leftArrow = document.querySelector(leftArrowSel);
+
+        const swiper = new Swiper(actualId, {
+          pagination: {
+            el: paginationEl,
+            clickable: true,
+            renderBullet: (index, className) => `<span class="${className}"></span>`
+          },
+          loop: true,
+          initialSlide: document.querySelectorAll(`${actualId} .swiper-slide`).length - 1,
+          slidesPerGroup: 1,
+          loopedSlides: document.querySelectorAll(`${actualId} .swiper-slide`).length - 1,
+          spaceBetween,
+          breakpoints: {
+            0: { slidesPerView: 1 },
+            800: { slidesPerView: slidesPerViewPc }
+          },
+          simulateTouch: true,
+          autoplay: {
+            delay: delay * 1000,
+            reverseDirection: true,
+            disableOnInteraction: false
+          },
+          speed: 500
+        });
+
+        sliderContainer.addEventListener('wheel', e => {
+          const threshold = 20;
+          if ((Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) && Math.abs(e.deltaX) > threshold) {
+            e.preventDefault();
+            e.deltaX > 0 ? swiper.slideNext() : swiper.slidePrev();
+          }
+        });
+
+        if (window.innerWidth > 800) {
+          sliderContainer.addEventListener('mouseenter', () => {
+            swiper.autoplay.stop();
+            leftArrow.style.opacity = rightArrow.style.opacity = 1;
+          });
+          sliderContainer.addEventListener('mouseleave', () => {
+            swiper.autoplay.start();
+            leftArrow.style.opacity = rightArrow.style.opacity = 0;
+          });
+        }
+
+        if (leftArrow && rightArrow) {
+          rightArrow.addEventListener('click', () => {
+            swiper.slideNext();
+          });
+          leftArrow.addEventListener('click', () => {
+            swiper.slidePrev();
+          });
+
+          if (window.innerWidth > 800) {
+            leftArrow.addEventListener('mouseenter', () => {
+              leftArrow.style.opacity = 1;
+              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.859)';
+              rightArrow.style.opacity = 1;
+              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
+            });
+
+            leftArrow.addEventListener('mouseleave', () => {
+              leftArrow.style.opacity = 1;
+              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
+            });
+
+            rightArrow.addEventListener('mouseenter', () => {
+              rightArrow.style.opacity = 1;
+              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.859)';
+              leftArrow.style.opacity = 1;
+              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
+            });
+
+            rightArrow.addEventListener('mouseleave', () => {
+              rightArrow.style.opacity = 1;
+              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
+            });
+          }
+          else {
+            leftArrow.addEventListener('mouseenter', () => {
+              rightArrow.style.opacity = 1;
+              leftArrow.style.opacity = 1;
+            });
+
+            leftArrow.addEventListener('mouseleave', () => {
+              rightArrow.style.opacity = 1;
+              leftArrow.style.opacity = 1;
+            });
+
+            rightArrow.addEventListener('mouseenter', () => {
+              rightArrow.style.opacity = 1;
+              leftArrow.style.opacity = 1;
+            });
+
+            rightArrow.addEventListener('mouseleave', () => {
+              rightArrow.style.opacity = 1;
+              leftArrow.style.opacity = 1;
+            });
+          }
+
+        }
+
+        swiper.update();
+        return swiper;
+      }
+
+      const swiper1 = setUpSlider(
+        '#sliderContainer1',
+        '#rightArrow1',
+        '#leftArrow1',
+        35
+      );
 
 
     </script>
