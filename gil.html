@@ -10,6 +10,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/removeBG.css' %}" />
+  <style>
+    .background-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-size: cover;
+      background-position: center;
+    }
+    .img-original, .removedImg {
+      position: relative;
+      z-index: 2;
+    }
+  </style>
 </head>
 
 <body>
@@ -125,10 +141,20 @@
     let file;
     let worker;
     let originalForegroundDataUrl = null; // Store the original background-removed image
+    let currentBackground = { type: null, value: null }; // Track current background (color or image URL)
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
+
+    // Debounce utility
+    function debounce(func, wait) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
 
     // Initialize Web Worker
     function initWorker() {
@@ -189,7 +215,7 @@
 
     // Stop spinner and show main content
     function stopSpinner() {
-      const spinnerDiv = document.getElementById("spinner")
+      const spinnerDiv = document.getElementById("spinner");
       const spinner = document.querySelector(".spinner img");
 
       spinner.classList.remove("spin-active");
@@ -323,11 +349,15 @@
       }
     }
 
-    // Display images
+    // Display images with background layer
     function displayImages(originalSrc) {
       console.log("Main: Displaying original image");
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
+
+      // Background layer (color or image)
+      const backgroundLayer = document.createElement("div");
+      backgroundLayer.classList.add("background-layer");
 
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
@@ -345,6 +375,7 @@
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
 
+      imageHolder.appendChild(backgroundLayer);
       imageHolder.appendChild(originalImgEl);
       imageHolder.appendChild(removedImgEl);
       imageHolder.appendChild(overlay);
@@ -356,7 +387,7 @@
       previewImg.style.display = "block";
       document.getElementById('title').style.display = "none";
 
-      return removedImgEl;
+      return { removedImgEl, backgroundLayer };
     }
 
     async function handleFileSelect(e, isFile = false) {
@@ -376,7 +407,7 @@
       try {
         console.log("Main: Handling file:", file.name);
         const originalDataURL = await readFileAsDataURL(file);
-        const removedImgEl = displayImages(originalDataURL);
+        const { removedImgEl, backgroundLayer } = displayImages(originalDataURL);
 
         startStarsAnimation(true);
         modelLoadingEl.classList.add("show");
@@ -393,6 +424,9 @@
           showError("Failed to load the background-removed image.");
           removeImage();
         };
+
+        // Store backgroundLayer for later updates
+        removedImgEl.dataset.backgroundLayer = backgroundLayer;
       } catch (err) {
         console.error("Main: Error in handleFileSelect:", err);
         showError("Failed to remove background");
@@ -421,8 +455,9 @@
         return;
       }
 
-      originalForegroundDataUrl = dataURL; // Store the original background-removed image
-      finalDataUrl = dataURL;
+      originalForegroundDataUrl = dataURL;
+      finalDataUrl = dataURL; // Initial state: no background
+      currentBackground = { type: null, value: null }; // No background initially
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
@@ -458,6 +493,7 @@
       uploadFileInput.value = "";
       finalDataUrl = null;
       originalForegroundDataUrl = null;
+      currentBackground = { type: null, value: null };
 
       while (previewImg.querySelector('.imageHolder')) {
         const child = previewImg.querySelector('.imageHolder');
@@ -470,18 +506,31 @@
     }
 
     // Download button
-    downloadBtn.addEventListener("click", () => {
-      if (!finalDataUrl) {
+    downloadBtn.addEventListener("click", async () => {
+      if (!originalForegroundDataUrl) {
         console.log("Main: No image to download");
         return;
       }
       console.log("Main: Downloading image");
-      const a = document.createElement("a");
-      a.href = finalDataUrl;
-      a.download = "bg_removed.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try {
+        // Composite the image only for download
+        let downloadDataUrl = originalForegroundDataUrl;
+        if (currentBackground.type === "color") {
+          downloadDataUrl = await compositeImages(originalForegroundDataUrl, null, currentBackground.value);
+        } else if (currentBackground.type === "image") {
+          downloadDataUrl = await compositeImages(originalForegroundDataUrl, currentBackground.value);
+        }
+
+        const a = document.createElement("a");
+        a.href = downloadDataUrl;
+        a.download = "bg_removed.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (err) {
+        console.error("Main: Error during download:", err);
+        showError("Failed to generate download image");
+      }
     });
 
     // Stars animation
@@ -573,16 +622,16 @@
 
     // Handle color button clicks
     document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", async () => {
+      button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
         try {
-          const newDataUrl = await compositeImages(originalForegroundDataUrl, null, button.style.backgroundColor);
-          finalDataUrl = newDataUrl;
-          const removedImgEl = previewImg.querySelector(".removedImg");
-          if (removedImgEl) {
-            removedImgEl.src = newDataUrl;
+          const backgroundLayer = previewImg.querySelector(".removedImg").parentNode.querySelector(".background-layer");
+          if (backgroundLayer) {
+            backgroundLayer.style.background = button.style.backgroundColor;
+            backgroundLayer.style.backgroundImage = "none";
+            currentBackground = { type: "color", value: button.style.backgroundColor };
           }
         } catch (err) {
           console.error("Main: Error applying background color:", err);
@@ -595,24 +644,24 @@
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
-    customColorInput.addEventListener("input", async () => {
+    customColorInput.addEventListener("input", debounce(() => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
       try {
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, null, customColorInput.value);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
+        const backgroundLayer = previewImg.querySelector(".removedImg").parentNode.querySelector(".background-layer");
+        if (backgroundLayer) {
+          backgroundLayer.style.background = customColorInput.value;
+          backgroundLayer.style.backgroundImage = "none";
+          currentBackground = { type: "color", value: customColorInput.value };
         }
       } catch (err) {
         console.error("Main: Error applying custom background color:", err);
         showError("Failed to apply custom background color");
       }
-    });
+    }, 100));
 
     // Handle background image upload
     document.getElementById("imageUploader").addEventListener("change", async (e) => {
@@ -624,13 +673,12 @@
       console.log("Main: Background image selected:", bgFile.name);
       try {
         const bgDataUrl = await readFileAsDataURL(bgFile);
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, bgDataUrl);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
+        const backgroundLayer = previewImg.querySelector(".removedImg").parentNode.querySelector(".background-layer");
+        if (backgroundLayer) {
+          backgroundLayer.style.background = "none";
+          backgroundLayer.style.backgroundImage = `url(${bgDataUrl})`;
+          currentBackground = { type: "image", value: bgDataUrl };
         }
-        // Reset the file input
         e.target.value = "";
       } catch (err) {
         console.error("Main: Error applying background image:", err);
