@@ -525,6 +525,78 @@
       console.log("Main: Showing error:", msg);
       alert(msg);
     }
+
+    let bgColor = null;
+    let bgImage = null;  // will hold an HTMLImageElement
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // 2. Hook up your existing colour buttons and custom-picker:
+    document.querySelectorAll(".colorBtn").forEach(button => {
+      button.addEventListener("click", () => {
+        bgImage = null;                // clear any image
+        bgColor = button.style.backgroundColor;
+        compositeBackground();
+      });
+    });
+    const customColorInput = document.getElementById("customColor");
+    customColorInput.addEventListener("input", () => {
+      bgImage = null;
+      bgColor = customColorInput.value;
+      compositeBackground();
+    });
+
+    // 3. Hook up the background-image uploader:
+    const bgUploader = document.getElementById("imageUploader");
+    bgUploader.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result;
+        img.onload = () => {
+          bgColor = null;   // clear any solid colour
+          bgImage = img;
+          compositeBackground();
+        };
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // 4. The workhorse: redraws the PNG + background onto a temporary canvas
+    //    and updates both the preview and finalDataUrl for downloading.
+    function compositeBackground() {
+      if (!finalDataUrl) return;                      // nothing to composite yet
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      const baseImg = new Image();
+      baseImg.src = finalDataUrl;
+      baseImg.onload = () => {
+        const w = baseImg.width, h = baseImg.height;
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+
+        // draw the background layer
+        if (bgImage) {
+          ctx.drawImage(bgImage, 0, 0, w, h);
+        } else if (bgColor) {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, w, h);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+        }
+
+        // draw the transparent PNG on top
+        ctx.drawImage(baseImg, 0, 0, w, h);
+
+        // get a new DataURL and update everything
+        const compositeUrl = canvas.toDataURL("image/png");
+        removedImgEl.src = compositeUrl;
+        finalDataUrl = compositeUrl;
+      };
+    }
   </script>
 </body>
 {% endblock %}
