@@ -428,7 +428,8 @@
         console.log("Main: Background-removed image loaded successfully");
         removedImgEl.classList.add("reveal");
         removedImgBtn.style.display = "block";
-        // hiddenDiv.style.display = "flex";
+        hiddenDiv.style.display = "flex";
+        removedImgEl.onload = null; // Remove the onload event to prevent multiple calls
       };
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
