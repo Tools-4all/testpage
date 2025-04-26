@@ -329,6 +329,10 @@
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
+      // Background layer div
+      const backgroundLayer = document.createElement("div");
+      backgroundLayer.classList.add("background-layer");
+
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
@@ -345,6 +349,7 @@
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
 
+      imageHolder.appendChild(backgroundLayer); // Add background layer
       imageHolder.appendChild(originalImgEl);
       imageHolder.appendChild(removedImgEl);
       imageHolder.appendChild(overlay);
@@ -467,21 +472,49 @@
       if (colorsDiv.style.display === "block") {
         colorsDiv.style.display = "none";
       }
+
+      // Clear background layer data
+      const backgroundLayer = previewImg.querySelector(".background-layer");
+      if (backgroundLayer) {
+        backgroundLayer.style.backgroundColor = "transparent";
+        backgroundLayer.style.backgroundImage = "none";
+        backgroundLayer.dataset.bgDataUrl = "";
+      }
     }
 
     // Download button
-    downloadBtn.addEventListener("click", () => {
+    downloadBtn.addEventListener("click", async () => {
       if (!finalDataUrl) {
         console.log("Main: No image to download");
         return;
       }
       console.log("Main: Downloading image");
-      const a = document.createElement("a");
-      a.href = finalDataUrl;
-      a.download = "bg_removed.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      try {
+        const backgroundLayer = previewImg.querySelector(".background-layer");
+        let newDataUrl = originalForegroundDataUrl;
+
+        // Check if there's a background to composite
+        const bgColor = backgroundLayer.style.backgroundColor;
+        const bgImageUrl = backgroundLayer.dataset.bgDataUrl;
+
+        if (bgColor || bgImageUrl) {
+          newDataUrl = await compositeImages(
+            originalForegroundDataUrl,
+            bgImageUrl || null,
+            bgColor || null
+          );
+        }
+
+        const a = document.createElement("a");
+        a.href = newDataUrl;
+        a.download = "bg_removed.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (err) {
+        console.error("Main: Error downloading image:", err);
+        showError("Failed to download image");
+      }
     });
 
     // Stars animation
@@ -573,20 +606,15 @@
 
     // Handle color button clicks
     document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", async () => {
+      button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-        try {
-          const newDataUrl = await compositeImages(originalForegroundDataUrl, null, button.style.backgroundColor);
-          finalDataUrl = newDataUrl;
-          const removedImgEl = previewImg.querySelector(".removedImg");
-          if (removedImgEl) {
-            removedImgEl.src = newDataUrl;
-          }
-        } catch (err) {
-          console.error("Main: Error applying background color:", err);
-          showError("Failed to apply background color");
+        const backgroundLayer = previewImg.querySelector(".background-layer");
+        if (backgroundLayer) {
+          backgroundLayer.style.backgroundColor = button.style.backgroundColor;
+          backgroundLayer.style.backgroundImage = "none"; // Clear any background image
+          backgroundLayer.dataset.bgDataUrl = ""; // Clear stored background image
         }
       });
     });
@@ -595,22 +623,17 @@
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
-    customColorInput.addEventListener("input", async () => {
+    customColorInput.addEventListener("input", () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
-      try {
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, null, customColorInput.value);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
-        }
-      } catch (err) {
-        console.error("Main: Error applying custom background color:", err);
-        showError("Failed to apply custom background color");
+      const backgroundLayer = previewImg.querySelector(".background-layer");
+      if (backgroundLayer) {
+        backgroundLayer.style.backgroundColor = customColorInput.value;
+        backgroundLayer.style.backgroundImage = "none"; // Clear any background image
+        backgroundLayer.dataset.bgDataUrl = ""; // Clear stored background image
       }
     });
 
@@ -624,11 +647,11 @@
       console.log("Main: Background image selected:", bgFile.name);
       try {
         const bgDataUrl = await readFileAsDataURL(bgFile);
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, bgDataUrl);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
+        const backgroundLayer = previewImg.querySelector(".background-layer");
+        if (backgroundLayer) {
+          backgroundLayer.style.backgroundImage = `url(${bgDataUrl})`;
+          backgroundLayer.style.backgroundColor = "transparent"; // Clear any background color
+          backgroundLayer.dataset.bgDataUrl = bgDataUrl; // Store for download
         }
         // Reset the file input
         e.target.value = "";
