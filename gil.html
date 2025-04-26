@@ -125,20 +125,10 @@
     let file;
     let worker;
     let originalForegroundDataUrl = null; // Store the original background-removed image
-    let cachedForegroundImg = null; // Cache for foreground image
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
-
-    // Debounce utility
-    function debounce(func, wait) {
-      let timeout;
-      return function (...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-      };
-    }
 
     // Initialize Web Worker
     function initWorker() {
@@ -263,27 +253,20 @@
     async function compositeImages(foregroundSrc, backgroundSrc = null, backgroundColor = null) {
       console.log("Main: Compositing images");
       try {
-        const foregroundImg = cachedForegroundImg || new Image();
-        if (!cachedForegroundImg) {
-          foregroundImg.src = foregroundSrc;
-          await new Promise((resolve, reject) => {
-            foregroundImg.onload = resolve;
-            foregroundImg.onerror = reject;
-          });
-        }
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-        // Use OffscreenCanvas if available, else fallback to regular canvas
-        const canvas = typeof OffscreenCanvas !== "undefined"
-          ? new OffscreenCanvas(foregroundImg.width, foregroundImg.height)
-          : document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
-        ctx.imageSmoothingEnabled = false; // Faster scaling, if needed
+        // Load foreground image
+        const foregroundImg = new Image();
+        foregroundImg.src = foregroundSrc;
+        await new Promise((resolve, reject) => {
+          foregroundImg.onload = resolve;
+          foregroundImg.onerror = reject;
+        });
 
-        // Set canvas size (only needed for regular canvas)
-        if (!(canvas instanceof OffscreenCanvas)) {
-          canvas.width = foregroundImg.width;
-          canvas.height = foregroundImg.height;
-        }
+        // Set canvas size to match foreground image
+        canvas.width = foregroundImg.width;
+        canvas.height = foregroundImg.height;
 
         // Draw background
         if (backgroundColor) {
@@ -304,6 +287,7 @@
           const bgAspect = backgroundImg.width / backgroundImg.height;
 
           let srcWidth, srcHeight, srcX, srcY;
+
           if (bgAspect > fgAspect) {
             // Background is wider: crop horizontally
             srcHeight = backgroundImg.height;
@@ -318,6 +302,7 @@
             srcY = (backgroundImg.height - srcHeight) / 2;
           }
 
+          // Draw cropped background image
           ctx.drawImage(
             backgroundImg,
             srcX, srcY, srcWidth, srcHeight, // Source rectangle
@@ -329,18 +314,7 @@
         ctx.drawImage(foregroundImg, 0, 0);
 
         // Convert canvas to data URL
-        let dataURL;
-        if (canvas instanceof OffscreenCanvas) {
-          const blob = await canvas.convertToBlob({ type: "image/png" });
-          dataURL = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-          });
-        } else {
-          dataURL = canvas.toDataURL("image/png");
-        }
-
+        const dataURL = canvas.toDataURL("image/png");
         console.log("Main: Compositing complete, dataURL length:", dataURL.length);
         return dataURL;
       } catch (err) {
@@ -447,15 +421,8 @@
         return;
       }
 
-      originalForegroundDataUrl = dataURL;
+      originalForegroundDataUrl = dataURL; // Store the original background-removed image
       finalDataUrl = dataURL;
-      cachedForegroundImg = new Image();
-      cachedForegroundImg.src = dataURL;
-      await new Promise((resolve, reject) => {
-        cachedForegroundImg.onload = resolve;
-        cachedForegroundImg.onerror = reject;
-      });
-
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
@@ -491,7 +458,6 @@
       uploadFileInput.value = "";
       finalDataUrl = null;
       originalForegroundDataUrl = null;
-      cachedForegroundImg = null; // Clear cached image
 
       while (previewImg.querySelector('.imageHolder')) {
         const child = previewImg.querySelector('.imageHolder');
@@ -629,7 +595,7 @@
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
-    customColorInput.addEventListener("input", debounce(async () => {
+    customColorInput.addEventListener("input", async () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
@@ -646,7 +612,7 @@
         console.error("Main: Error applying custom background color:", err);
         showError("Failed to apply custom background color");
       }
-    }, 100));
+    });
 
     // Handle background image upload
     document.getElementById("imageUploader").addEventListener("change", async (e) => {
