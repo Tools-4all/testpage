@@ -145,6 +145,7 @@
         } else if (type === "modelLoaded") {
           console.log("Main: Model loaded in worker");
           modelLoadingEl.classList.remove("show");
+          stopSpinner();
         }
       };
       worker.onerror = (error) => {
@@ -201,7 +202,6 @@
       console.log("Main: Initializing worker and preloading model");
       initWorker();
       await preloadModel();
-      stopSpinner();
     });
 
     // Drag and drop overlay
