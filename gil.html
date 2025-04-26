@@ -80,6 +80,7 @@
           </div>
 
           <button id="downloadBtn">download</button>
+          <button id="resetBackgroundBtn">Reset Background</button>
         </div>
 
         <div id="colorsDiv">
@@ -470,6 +471,7 @@
         starsContainer.style.display = "none";
       }
     }
+
     function displayColors() {
       console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
@@ -484,7 +486,7 @@
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
       console.log("Main: Closing colors div");
-      hiddenDiv.style.display = "block";
+      hiddenDiv.style.display = "flex";
       colorsDiv.style.display = "none";
     });
 
@@ -494,15 +496,31 @@
       });
     }
 
+    // Handle color button clicks
     document.querySelectorAll(".colorBtn").forEach(button => {
       button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-        document.body.style.backgroundColor = button.style.backgroundColor;
+
+        // Get the imageHolder
+        const imageHolder = previewImg.querySelector(".imageHolder");
+        if (!imageHolder) {
+          console.error("Main: imageHolder not found");
+          showError("Failed to find image container");
+          return;
+        }
+
+        // Apply background color and clear background image
+        imageHolder.style.backgroundColor = button.style.backgroundColor;
+        imageHolder.style.backgroundImage = "none";
+
+        // Update finalDataUrl for download
+        updateFinalDataUrlWithBackground(button.style.backgroundColor);
       });
     });
 
+    // Handle custom color picker
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
@@ -511,20 +529,159 @@
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
-      document.body.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
+
+      // Get the imageHolder
+      const imageHolder = previewImg.querySelector(".imageHolder");
+      if (!imageHolder) {
+        console.error("Main: imageHolder not found");
+        showError("Failed to find image container");
+        return;
+      }
+
+      // Apply background color and clear background image
+      imageHolder.style.backgroundColor = customColorInput.value;
+      imageHolder.style.backgroundImage = "none";
+
+      // Update finalDataUrl for download
+      updateFinalDataUrlWithBackground(customColorInput.value);
     });
 
+    // Function to update finalDataUrl with a solid background color
+    async function updateFinalDataUrlWithBackground(bgColor) {
+      console.log("Main: Updating finalDataUrl with background color:", bgColor);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Load the foreground image
+      const fgImg = new Image();
+      fgImg.src = finalDataUrl;
+      await new Promise((resolve) => (fgImg.onload = resolve));
+
+      // Set canvas size to match the foreground image
+      canvas.width = fgImg.width;
+      canvas.height = fgImg.height;
+
+      // Draw background color
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw foreground image
+      ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
+
+      // Update finalDataUrl
+      finalDataUrl = canvas.toDataURL("image/png");
+    }
+
+    // Handle background image upload
+    const imageUploader = document.getElementById("imageUploader");
+    imageUploader.addEventListener("change", async (e) => {
+      console.log("Main: Handling background image upload");
+      const bgFile = e.target.files[0];
+      if (!bgFile) {
+        console.log("Main: No background image selected");
+        return;
+      }
+
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
+      if (!allowedTypes.includes(bgFile.type)) {
+        showError("Unsupported file type for background image. Please upload a valid image.");
+        console.log("Main: Unsupported background file type:", bgFile.type);
+        return;
+      }
+
+      try {
+        // Read the background image as a Data URL
+        const bgDataURL = await readFileAsDataURL(bgFile);
+        console.log("Main: Background image loaded, dataURL length:", bgDataURL.length);
+
+        // Get the imageHolder container
+        const imageHolder = previewImg.querySelector(".imageHolder");
+        if (!imageHolder) {
+          console.error("Main: imageHolder not found");
+          showError("Failed to find image container");
+          return;
+        }
+
+        // Remove any existing background color or image
+        imageHolder.style.backgroundColor = "transparent";
+        imageHolder.style.backgroundImage = `url(${bgDataURL})`;
+        imageHolder.style.backgroundSize = "cover"; // Adjust as needed (cover, contain, etc.)
+        imageHolder.style.backgroundPosition = "center";
+        imageHolder.style.backgroundRepeat = "no-repeat";
+
+        // Ensure the foreground image (removedImgEl) remains on top
+        const removedImgEl = imageHolder.querySelector(".removedImg");
+        if (removedImgEl) {
+          removedImgEl.style.position = "relative";
+          removedImgEl.style.zIndex = "2"; // Ensure foreground is above background
+        }
+
+        // Update finalDataUrl for download
+        finalDataUrl = await compositeImages(bgDataURL, removedImgEl.src);
+      } catch (err) {
+        console.error("Main: Error handling background image:", err);
+        showError("Failed to load background image");
+      }
+    });
+
+    // Function to composite background and foreground images for download
+    async function compositeImages(bgDataURL, fgDataURL) {
+      console.log("Main: Compositing background and foreground images");
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Load background image
+      const bgImg = new Image();
+      bgImg.src = bgDataURL;
+      await new Promise((resolve) => (bgImg.onload = resolve));
+
+      // Load foreground image
+      const fgImg = new Image();
+      fgImg.src = fgDataURL;
+      await new Promise((resolve) => (fgImg.onload = resolve));
+
+      // Set canvas size to match the foreground image
+      canvas.width = fgImg.width;
+      canvas.height = fgImg.height;
+
+      // Draw background image (scaled to fit canvas)
+      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+
+      // Draw foreground image
+      ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
+
+      // Return the composited image as a Data URL
+      return canvas.toDataURL("image/png");
+    }
+
+    // Reset background
+    document.getElementById("resetBackgroundBtn").addEventListener("click", () => {
+      console.log("Main: Resetting background");
+      const imageHolder = previewImg.querySelector(".imageHolder");
+      if (imageHolder) {
+        imageHolder.style.backgroundColor = "transparent";
+        imageHolder.style.backgroundImage = "none";
+      }
+      // Reset finalDataUrl to original background-removed image
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      if (removedImgEl) {
+        finalDataUrl = removedImgEl.src;
+      }
+    });
+
+    // Show error
+    function showError(msg) {
+      console.log("Main: Showing error:", msg);
+      alert(msg);
+    }
+
+    // Handle uploadSection click (unchanged)
     document.getElementById("uploadSection").addEventListener("click", () => {
       console.log("Main: Opening background image uploader");
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
-
-    function showError(msg) {
-      console.log("Main: Showing error:", msg);
-      alert(msg);
-    }
   </script>
 </body>
 {% endblock %}
