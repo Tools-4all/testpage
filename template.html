@@ -2145,13 +2145,17 @@
         compiler.classList.add('fullscreen');
 
         try {
-          await enterBrowserFullscreen(compiler);
+          if (isMobile) {
+            await enterBrowserFullscreen(compiler);
+          }
         } catch (e) {
         }
 
       } else {
         try {
-          await exitBrowserFullscreen();
+          if (isMobile) {
+            await exitBrowserFullscreen();
+          }
         } catch (e) {
         }
 
@@ -2176,11 +2180,13 @@
       }
     }
 
-    document.addEventListener('fullscreenchange', function () {
-      if (!document.fullscreenElement) {
-        fullScreen(true);
-      }
-    });
+    if (isMobile) {
+      document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement) {
+          fullScreen(true);
+        }
+      });
+    }
 
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
