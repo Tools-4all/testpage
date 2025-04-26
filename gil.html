@@ -188,7 +188,7 @@
 
     // Stop spinner and show main content
     function stopSpinner() {
-      const spinnerDiv = document.getElementById("spinner");
+      const spinnerDiv = document.getElementById("Spinner");
       const spinner = document.querySelector(".spinner img");
 
       spinner.classList.remove("spin-active");
@@ -281,8 +281,33 @@
             backgroundImg.onload = resolve;
             backgroundImg.onerror = reject;
           });
-          // Scale background image to cover canvas
-          ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+          // Calculate cropping dimensions to cover the canvas without stretching
+          const fgAspect = canvas.width / canvas.height;
+          const bgAspect = backgroundImg.width / backgroundImg.height;
+
+          let srcWidth, srcHeight, srcX, srcY;
+
+          if (bgAspect > fgAspect) {
+            // Background is wider: crop horizontally
+            srcHeight = backgroundImg.height;
+            srcWidth = srcHeight * fgAspect;
+            srcX = (backgroundImg.width - srcWidth) / 2;
+            srcY = 0;
+          } else {
+            // Background is taller: crop vertically
+            srcWidth = backgroundImg.width;
+            srcHeight = srcWidth / fgAspect;
+            srcX = 0;
+            srcY = (backgroundImg.height - srcHeight) / 2;
+          }
+
+          // Draw cropped background image
+          ctx.drawImage(
+            backgroundImg,
+            srcX, srcY, srcWidth, srcHeight, // Source rectangle
+            0, 0, canvas.width, canvas.height // Destination rectangle
+          );
         }
 
         // Draw foreground image
