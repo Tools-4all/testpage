@@ -80,7 +80,6 @@
           </div>
 
           <button id="downloadBtn">download</button>
-          <button id="resetBackgroundBtn">Reset Background</button>
         </div>
 
         <div id="colorsDiv">
@@ -125,7 +124,6 @@
     let finalDataUrl = null;
     let file;
     let worker;
-    let originalRemovedImage = null; // Store the original background-removed image for reset
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
@@ -349,7 +347,6 @@
       }
 
       finalDataUrl = dataURL;
-      originalRemovedImage = dataURL; // Store the original for reset
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
@@ -383,7 +380,6 @@
       hiddenDiv.style.display = "none";
       uploadFileInput.value = "";
       finalDataUrl = null;
-      originalRemovedImage = null;
 
       while (previewImg.querySelector('.imageHolder')) {
         const child = previewImg.querySelector('.imageHolder');
@@ -474,7 +470,6 @@
         starsContainer.style.display = "none";
       }
     }
-
     function displayColors() {
       console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
@@ -489,7 +484,7 @@
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
       console.log("Main: Closing colors div");
-      hiddenDiv.style.display = "flex";
+      hiddenDiv.style.display = "block";
       colorsDiv.style.display = "none";
     });
 
@@ -499,184 +494,37 @@
       });
     }
 
-    // Handle color button clicks
     document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", async () => {
+      button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (!removedImgEl) {
-          console.error("Main: removedImgEl not found");
-          showError("Failed to find image element");
-          return;
-        }
-
-        try {
-          // Composite the color with the original background-removed image
-          finalDataUrl = await compositeWithColor(originalRemovedImage, button.style.backgroundColor);
-          removedImgEl.src = finalDataUrl;
-        } catch (err) {
-          console.error("Main: Error compositing color:", err);
-          showError("Failed to apply background color");
-        }
+        document.body.style.backgroundColor = button.style.backgroundColor;
       });
     });
 
-    // Handle custom color picker
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
-    customColorInput.addEventListener("input", async () => {
+    customColorInput.addEventListener("input", () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
+      document.body.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
-
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      if (!removedImgEl) {
-        console.error("Main: removedImgEl not found");
-        showError("Failed to find image element");
-        return;
-      }
-
-      try {
-        // Composite the color with the original background-removed image
-        finalDataUrl = await compositeWithColor(originalRemovedImage, customColorInput.value);
-        removedImgEl.src = finalDataUrl;
-      } catch (err) {
-        console.error("Main: Error compositing color:", err);
-        showError("Failed to apply background color");
-      }
     });
 
-    // Function to composite with a solid background color
-    async function compositeWithColor(fgDataURL, bgColor) {
-      console.log("Main: Compositing with background color:", bgColor);
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      // Load the foreground image
-      const fgImg = new Image();
-      fgImg.src = fgDataURL;
-      await new Promise((resolve, reject) => {
-        fgImg.onload = resolve;
-        fgImg.onerror = reject;
-      });
-
-      // Set canvas size to match the foreground image
-      canvas.width = fgImg.width;
-      canvas.height = fgImg.height;
-
-      // Draw background color
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw foreground image
-      ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
-
-      // Return the composited image as a Data URL
-      return canvas.toDataURL("image/png");
-    }
-
-    // Handle background image upload
-    const imageUploader = document.getElementById("imageUploader");
-    imageUploader.addEventListener("change", async (e) => {
-      console.log("Main: Handling background image upload");
-      const bgFile = e.target.files[0];
-      if (!bgFile) {
-        console.log("Main: No background image selected");
-        return;
-      }
-
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
-      if (!allowedTypes.includes(bgFile.type)) {
-        showError("Unsupported file type for background image. Please upload a valid image.");
-        console.log("Main: Unsupported background file type:", bgFile.type);
-        return;
-      }
-
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      if (!removedImgEl) {
-        console.error("Main: removedImgEl not found");
-        showError("Failed to find image element");
-        return;
-      }
-
-      try {
-        // Read the background image as a Data URL
-        const bgDataURL = await readFileAsDataURL(bgFile);
-        console.log("Main: Background image loaded, dataURL length:", bgDataURL.length);
-
-        // Composite the background image with the original background-removed image
-        finalDataUrl = await compositeImages(bgDataURL, originalRemovedImage);
-        removedImgEl.src = finalDataUrl;
-      } catch (err) {
-        console.error("Main: Error handling background image:", err);
-        showError("Failed to load background image");
-      }
-    });
-
-    // Function to composite background and foreground images
-    async function compositeImages(bgDataURL, fgDataURL) {
-      console.log("Main: Compositing background and foreground images");
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      // Load background image
-      const bgImg = new Image();
-      bgImg.src = bgDataURL;
-      await new Promise((resolve, reject) => {
-        bgImg.onload = resolve;
-        bgImg.onerror = reject;
-      });
-
-      // Load foreground image
-      const fgImg = new Image();
-      fgImg.src = fgDataURL;
-      await new Promise((resolve, reject) => {
-        fgImg.onload = resolve;
-        fgImg.onerror = reject;
-      });
-
-      // Set canvas size to match the foreground image
-      canvas.width = fgImg.width;
-      canvas.height = fgImg.height;
-
-      // Draw background image (scaled to fit canvas)
-      ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-
-      // Draw foreground image
-      ctx.drawImage(fgImg, 0, 0, canvas.width, canvas.height);
-
-      // Return the composited image as a Data URL
-      return canvas.toDataURL("image/png");
-    }
-
-    // Reset background
-    document.getElementById("resetBackgroundBtn").addEventListener("click", () => {
-      console.log("Main: Resetting background");
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      if (removedImgEl && originalRemovedImage) {
-        finalDataUrl = originalRemovedImage;
-        removedImgEl.src = originalRemovedImage;
-      }
-    });
-
-    // Show error
-    function showError(msg) {
-      console.log("Main: Showing error:", msg);
-      alert(msg);
-    }
-
-    // Handle uploadSection click
     document.getElementById("uploadSection").addEventListener("click", () => {
       console.log("Main: Opening background image uploader");
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
+
+    function showError(msg) {
+      console.log("Main: Showing error:", msg);
+      alert(msg);
+    }
   </script>
 </body>
 {% endblock %}
