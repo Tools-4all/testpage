@@ -2122,27 +2122,27 @@
       if (!fullscreenFlag && !exitFullscreen) {
         fullscreenFlag = true;
 
-        // fullBtn.style.display = "none";
-        // smallBtn.style.display = "block";
-        // ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
-        //   .forEach(id => document.getElementById(id).style.display = 'none');
+        fullBtn.style.display = "none";
+        smallBtn.style.display = "block";
+        ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
+          .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // window.scrollTo(0, 0);
+        window.scrollTo(0, 0);
 
-        // compiler.style.position = 'fixed';
-        // compiler.style.top = '0';
-        // compiler.style.left = '0';
+        compiler.style.position = 'fixed';
+        compiler.style.top = '0';
+        compiler.style.left = '0';
 
-        // compiler.style.width = '100vw';
-        // compiler.style.height = isMobile
-        //   ? window.innerHeight + 'px'
-        //   : '100vh';
-        // compiler.style.margin = '0';
-        // compiler.style.zIndex = '9999';
-        // compiler.style.borderRadius = '0';
+        compiler.style.width = '100vw';
+        compiler.style.height = isMobile
+          ? window.innerHeight + 'px'
+          : '100vh';
+        compiler.style.margin = '0';
+        compiler.style.zIndex = '9999';
+        compiler.style.borderRadius = '0';
 
-        // body.style.overflow = 'hidden';
-        // compiler.classList.add('fullscreen');
+        body.style.overflow = 'hidden';
+        compiler.classList.add('fullscreen');
 
         try {
           if (isMobile) {
@@ -2160,23 +2160,23 @@
         }
 
         fullscreenFlag = false;
-        // fullBtn.style.display = 'block';
-        // smallBtn.style.display = 'none';
-        // ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
-        //   .forEach(id => document.getElementById(id).style.display = '');
+        fullBtn.style.display = 'block';
+        smallBtn.style.display = 'none';
+        ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
+          .forEach(id => document.getElementById(id).style.display = '');
 
-        // compiler.style.position = '';
-        // compiler.style.top = '';
-        // compiler.style.left = '';
-        // compiler.style.width = isMobile ? '95%' : '60%';
-        // compiler.style.minWidth = isMobile ? '' : '600px';
-        // compiler.style.height = '500px';
-        // compiler.style.margin = '50px auto';
-        // compiler.style.zIndex = '0';
-        // compiler.style.borderRadius = '15px';
-        // compiler.classList.remove('fullscreen');
+        compiler.style.position = '';
+        compiler.style.top = '';
+        compiler.style.left = '';
+        compiler.style.width = isMobile ? '95%' : '60%';
+        compiler.style.minWidth = isMobile ? '' : '600px';
+        compiler.style.height = '500px';
+        compiler.style.margin = '50px auto';
+        compiler.style.zIndex = '0';
+        compiler.style.borderRadius = '15px';
+        compiler.classList.remove('fullscreen');
 
-        // body.style.overflow = '';
+        body.style.overflow = '';
       }
     }
 
