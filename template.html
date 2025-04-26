@@ -2147,14 +2147,12 @@
         try {
           await enterBrowserFullscreen(compiler);
         } catch (e) {
-          console.warn('Fullscreen API failed:', e);
         }
 
       } else {
         try {
           await exitBrowserFullscreen();
         } catch (e) {
-          console.warn('Exit Fullscreen API failed:', e);
         }
 
         fullscreenFlag = false;
@@ -2178,7 +2176,24 @@
       }
     }
 
-
+    document.addEventListener('fullscreenchange', function () {
+      if (!document.fullscreenElement) {
+        fullscreenFlag = false;
+        const fullBtn = document.getElementById('fullScreen');
+        const smallBtn = document.getElementById('smallScreen');
+        fullBtn.style.display = 'block';
+        smallBtn.style.display = 'none';
+        compiler.style.position = '';
+        compiler.style.top = '';
+        compiler.style.left = '';
+        compiler.style.width = isMobile ? '95%' : '60%';
+        compiler.style.minWidth = isMobile ? '' : '600px';
+        compiler.style.height = '500px';
+        compiler.style.margin = '50px auto';
+        compiler.style.zIndex = '0';
+        compiler.style.borderRadius = '15px';
+      }
+    });
 
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
