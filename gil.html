@@ -183,6 +183,7 @@
         console.error("Model preload failed:", err);
         showError("Failed to preload the model");
       }
+      stopSpinner();
     }
 
     // Stop spinner and show main content
@@ -200,7 +201,6 @@
       console.log("Main: Initializing worker and preloading model");
       initWorker();
       preloadModel();
-      setTimeout(stopSpinner, 2000);
     });
 
     // Drag and drop overlay
@@ -471,7 +471,6 @@
       }
     }
 
-    // Change background color
     function displayColors() {
       console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
@@ -517,7 +516,6 @@
       colorPreview.textContent = "";
     });
 
-    // Upload background image
     document.getElementById("uploadSection").addEventListener("click", () => {
       console.log("Main: Opening background image uploader");
       const imageUploader = document.getElementById("imageUploader");
