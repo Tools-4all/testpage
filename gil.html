@@ -124,6 +124,7 @@
     let finalDataUrl = null;
     let file;
     let worker;
+    let originalForegroundDataUrl = null; // Store the original background-removed image
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
@@ -248,6 +249,55 @@
       });
     }
 
+    // Composite background (color or image) with foreground image
+    async function compositeImages(foregroundSrc, backgroundSrc = null, backgroundColor = null) {
+      console.log("Main: Compositing images");
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Load foreground image
+        const foregroundImg = new Image();
+        foregroundImg.src = foregroundSrc;
+        await new Promise((resolve, reject) => {
+          foregroundImg.onload = resolve;
+          foregroundImg.onerror = reject;
+        });
+
+        // Set canvas size to match foreground image
+        canvas.width = foregroundImg.width;
+        canvas.height = foregroundImg.height;
+
+        // Draw background
+        if (backgroundColor) {
+          console.log("Main: Applying background color:", backgroundColor);
+          ctx.fillStyle = backgroundColor;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else if (backgroundSrc) {
+          console.log("Main: Applying background image");
+          const backgroundImg = new Image();
+          backgroundImg.src = backgroundSrc;
+          await new Promise((resolve, reject) => {
+            backgroundImg.onload = resolve;
+            backgroundImg.onerror = reject;
+          });
+          // Scale background image to cover canvas
+          ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw foreground image
+        ctx.drawImage(foregroundImg, 0, 0);
+
+        // Convert canvas to data URL
+        const dataURL = canvas.toDataURL("image/png");
+        console.log("Main: Compositing complete, dataURL length:", dataURL.length);
+        return dataURL;
+      } catch (err) {
+        console.error("Main: Error in compositeImages:", err);
+        throw err;
+      }
+    }
+
     // Display images
     function displayImages(originalSrc) {
       console.log("Main: Displaying original image");
@@ -326,7 +376,7 @@
     }
 
     // Handle Web Worker result
-    function handleWorkerResult(dataURL) {
+    async function handleWorkerResult(dataURL) {
       console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
       startStarsAnimation(false);
       modelLoadingEl.classList.remove("show");
@@ -346,6 +396,7 @@
         return;
       }
 
+      originalForegroundDataUrl = dataURL; // Store the original background-removed image
       finalDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
@@ -380,6 +431,7 @@
       hiddenDiv.style.display = "none";
       uploadFileInput.value = "";
       finalDataUrl = null;
+      originalForegroundDataUrl = null;
 
       while (previewImg.querySelector('.imageHolder')) {
         const child = previewImg.querySelector('.imageHolder');
@@ -451,7 +503,6 @@
       if (run) {
         console.log("Main: Starting stars animation");
         starsContainer.style.display = "block";
-        // Create stars when starting the animation
         createStars(starsContainer);
         const stars = starsContainer.querySelectorAll(".star");
         stars.forEach(star => {
@@ -463,13 +514,13 @@
         stars.forEach(star => {
           star.style.animationPlayState = "paused";
         });
-        // Clear all stars when stopping
         while (starsContainer.firstChild) {
           starsContainer.removeChild(starsContainer.firstChild);
         }
         starsContainer.style.display = "none";
       }
     }
+
     function displayColors() {
       console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
@@ -484,7 +535,7 @@
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
       console.log("Main: Closing colors div");
-      hiddenDiv.style.display = "block";
+      hiddenDiv.style.display = "flex";
       colorsDiv.style.display = "none";
     });
 
@@ -494,25 +545,71 @@
       });
     }
 
+    // Handle color button clicks
     document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", async () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-        document.body.style.backgroundColor = button.style.backgroundColor;
+        try {
+          const newDataUrl = await compositeImages(originalForegroundDataUrl, null, button.style.backgroundColor);
+          finalDataUrl = newDataUrl;
+          const removedImgEl = previewImg.querySelector(".removedImg");
+          if (removedImgEl) {
+            removedImgEl.src = newDataUrl;
+          }
+        } catch (err) {
+          console.error("Main: Error applying background color:", err);
+          showError("Failed to apply background color");
+        }
       });
     });
 
+    // Handle custom color input
     const customColorInput = document.getElementById("customColor");
     const colorPreview = document.getElementById("colorPreview");
 
-    customColorInput.addEventListener("input", () => {
+    customColorInput.addEventListener("input", async () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
-      document.body.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
+      try {
+        const newDataUrl = await compositeImages(originalForegroundDataUrl, null, customColorInput.value);
+        finalDataUrl = newDataUrl;
+        const removedImgEl = previewImg.querySelector(".removedImg");
+        if (removedImgEl) {
+          removedImgEl.src = newDataUrl;
+        }
+      } catch (err) {
+        console.error("Main: Error applying custom background color:", err);
+        showError("Failed to apply custom background color");
+      }
+    });
+
+    // Handle background image upload
+    document.getElementById("imageUploader").addEventListener("change", async (e) => {
+      const bgFile = e.target.files[0];
+      if (!bgFile) {
+        console.log("Main: No background image selected");
+        return;
+      }
+      console.log("Main: Background image selected:", bgFile.name);
+      try {
+        const bgDataUrl = await readFileAsDataURL(bgFile);
+        const newDataUrl = await compositeImages(originalForegroundDataUrl, bgDataUrl);
+        finalDataUrl = newDataUrl;
+        const removedImgEl = previewImg.querySelector(".removedImg");
+        if (removedImgEl) {
+          removedImgEl.src = newDataUrl;
+        }
+        // Reset the file input
+        e.target.value = "";
+      } catch (err) {
+        console.error("Main: Error applying background image:", err);
+        showError("Failed to apply background image");
+      }
     });
 
     document.getElementById("uploadSection").addEventListener("click", () => {
@@ -524,78 +621,6 @@
     function showError(msg) {
       console.log("Main: Showing error:", msg);
       alert(msg);
-    }
-
-    let bgColor = null;
-    let bgImage = null;  // will hold an HTMLImageElement
-    // ─────────────────────────────────────────────────────────────────────────────
-
-    // 2. Hook up your existing colour buttons and custom-picker:
-    document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", () => {
-        bgImage = null;                // clear any image
-        bgColor = button.style.backgroundColor;
-        compositeBackground();
-      });
-    });
-    const customColorInput = document.getElementById("customColor");
-    customColorInput.addEventListener("input", () => {
-      bgImage = null;
-      bgColor = customColorInput.value;
-      compositeBackground();
-    });
-
-    // 3. Hook up the background-image uploader:
-    const bgUploader = document.getElementById("imageUploader");
-    bgUploader.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.src = reader.result;
-        img.onload = () => {
-          bgColor = null;   // clear any solid colour
-          bgImage = img;
-          compositeBackground();
-        };
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // ─────────────────────────────────────────────────────────────────────────────
-    // 4. The workhorse: redraws the PNG + background onto a temporary canvas
-    //    and updates both the preview and finalDataUrl for downloading.
-    function compositeBackground() {
-      if (!finalDataUrl) return;                      // nothing to composite yet
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      const baseImg = new Image();
-      baseImg.src = finalDataUrl;
-      baseImg.onload = () => {
-        const w = baseImg.width, h = baseImg.height;
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-
-        // draw the background layer
-        if (bgImage) {
-          ctx.drawImage(bgImage, 0, 0, w, h);
-        } else if (bgColor) {
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, w, h);
-        } else {
-          ctx.clearRect(0, 0, w, h);
-        }
-
-        // draw the transparent PNG on top
-        ctx.drawImage(baseImg, 0, 0, w, h);
-
-        // get a new DataURL and update everything
-        const compositeUrl = canvas.toDataURL("image/png");
-        removedImgEl.src = compositeUrl;
-        finalDataUrl = compositeUrl;
-      };
     }
   </script>
 </body>
