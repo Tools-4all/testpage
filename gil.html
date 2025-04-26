@@ -284,7 +284,6 @@
       return removedImgEl;
     }
 
-    // Handle file selection
     async function handleFileSelect(e, isFile = false) {
       file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
       if (!file) {
@@ -408,31 +407,7 @@
     });
 
     // Stars animation
-    function startStarsAnimation(run) {
-      const starsContainer = document.querySelector(".stars-container");
-      if (!starsContainer) {
-        console.log("Main: Stars container not found");
-        return;
-      }
-      if (run) {
-        console.log("Main: Starting stars animation");
-        starsContainer.style.display = "block";
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
-          star.style.animationPlayState = "running";
-        });
-      } else {
-        console.log("Main: Stopping stars animation");
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
-          star.style.animationPlayState = "paused";
-        });
-        starsContainer.style.display = "none";
-      }
-    }
-
     function createStars(parentEl) {
-      console.log("Main: Creating stars");
       const totalStars = 15;
       const gridSize = Math.sqrt(totalStars);
       const starPositions = [];
@@ -464,13 +439,37 @@
         star.style.animationDuration = `${Math.random() * 2 + 1}s`;
 
         parentEl.appendChild(star);
-
-        setTimeout(() => {
-          star.remove();
-        }, 3000);
       }
     }
 
+    function startStarsAnimation(run) {
+      const starsContainer = document.querySelector(".stars-container");
+      if (!starsContainer) {
+        console.log("Main: Stars container not found");
+        return;
+      }
+      if (run) {
+        console.log("Main: Starting stars animation");
+        starsContainer.style.display = "block";
+        // Create stars when starting the animation
+        createStars(starsContainer);
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "running";
+        });
+      } else {
+        console.log("Main: Stopping stars animation");
+        const stars = starsContainer.querySelectorAll(".star");
+        stars.forEach(star => {
+          star.style.animationPlayState = "paused";
+        });
+        // Clear all stars when stopping
+        while (starsContainer.firstChild) {
+          starsContainer.removeChild(starsContainer.firstChild);
+        }
+        starsContainer.style.display = "none";
+      }
+    }
     function displayColors() {
       console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
