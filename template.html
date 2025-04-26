@@ -2114,12 +2114,12 @@
       }
     }
 
-    async function fullScreen() {
+    async function fullScreen(exitFullscreen = false) {
       const body = document.body;
       const fullBtn = document.getElementById('fullScreen');
       const smallBtn = document.getElementById('smallScreen');
 
-      if (!fullscreenFlag) {
+      if (!fullscreenFlag && !exitFullscreen) {
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
@@ -2178,20 +2178,7 @@
 
     document.addEventListener('fullscreenchange', function () {
       if (!document.fullscreenElement) {
-        fullscreenFlag = false;
-        const fullBtn = document.getElementById('fullScreen');
-        const smallBtn = document.getElementById('smallScreen');
-        fullBtn.style.display = 'block';
-        smallBtn.style.display = 'none';
-        compiler.style.position = '';
-        compiler.style.top = '';
-        compiler.style.left = '';
-        compiler.style.width = isMobile ? '95%' : '60%';
-        compiler.style.minWidth = isMobile ? '' : '600px';
-        compiler.style.height = '500px';
-        compiler.style.margin = '50px auto';
-        compiler.style.zIndex = '0';
-        compiler.style.borderRadius = '15px';
+        fullScreen(true);
       }
     });
 
