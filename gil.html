@@ -183,7 +183,6 @@
         console.error("Model preload failed:", err);
         showError("Failed to preload the model");
       }
-      stopSpinner();
     }
 
     // Stop spinner and show main content
@@ -197,10 +196,11 @@
     }
 
     // Initialize on page load
-    window.addEventListener("load", () => {
+    window.addEventListener("load", async () => {
       console.log("Main: Initializing worker and preloading model");
       initWorker();
-      preloadModel();
+      await preloadModel();
+      stopSpinner();
     });
 
     // Drag and drop overlay
