@@ -3337,7 +3337,7 @@
         tab.groupStack = [];
         let w;
         if (!nextWorker) {
-          w = new Worker(workerPath);
+          w = new Worker(workerBlobURL);
         } else {
           w = nextWorker;
           nextWorker = null;
@@ -3432,7 +3432,7 @@
           "The script has finished running with exit code 1.", true);
       }
       btn.disabled = false;
-      nextWorker = new Worker(workerPath);
+      nextWorker = new Worker(workerBlobURL);
     }
     function clearConsole(outputDiv) {
       outputDiv.innerHTML = "";
