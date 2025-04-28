@@ -258,18 +258,17 @@
         linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
         linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
       background-size: 10px 10px;
+      /* Match checkerboard size */
     }
 
-    .imageHolder .img-original {
+    .img-original {
       display: block;
       max-width: 100%;
       height: auto;
       z-index: 1;
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      transition: clip-path 1.5s ease;
     }
 
-    .imageHolder .removedImg {
+    .removedImg {
       position: absolute;
       top: 0;
       left: 0;
@@ -277,17 +276,14 @@
       height: 100%;
       object-fit: cover;
       z-index: 10;
-      clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+      clip-path: polygon(100% 0, 100% 100%, 100% 100%, 100% 0);
+      transition: clip-path 1.5s ease;
+      background-color: #fff;
       opacity: 0;
-      transition: clip-path 1.5s ease, opacity 1.5s ease;
     }
 
-    .imageHolder.reveal .img-original {
-      clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-    }
-
-    .imageHolder.reveal .removedImg {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    .removedImg.reveal {
+      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
       opacity: 1;
     }
 
@@ -649,6 +645,7 @@
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
 
+    // Initialize Web Worker
     function initWorker() {
       worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
       worker.onmessage = (e) => {
@@ -678,6 +675,7 @@
       };
     }
 
+    // Preload and cache the model
     async function preloadModel() {
       try {
         const cache = await caches.open(cacheName);
@@ -704,6 +702,7 @@
       }
     }
 
+    // Stop spinner and show main content
     function stopSpinner() {
       const spinnerDiv = document.getElementById("spinner");
       const spinner = document.querySelector(".spinner img");
@@ -713,12 +712,14 @@
       document.getElementById("mainDiv").style.display = "flex";
     }
 
+    // Initialize on page load
     window.addEventListener("load", async () => {
       console.log("Main: Initializing worker and preloading model");
       initWorker();
       await preloadModel();
     });
 
+    // Drag and drop overlay
     const overlay = document.createElement("div");
     overlay.id = "dropOverlay";
     const overlayText = document.createElement("h2");
@@ -753,6 +754,7 @@
       }
     });
 
+    // Read file as Data URL
     function readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -762,6 +764,7 @@
       });
     }
 
+    // Composite background with foreground image
     async function compositeImages(foregroundSrc, backgroundSrc = null, backgroundColor = null) {
       console.log("Main: Compositing images");
       try {
@@ -826,6 +829,7 @@
       }
     }
 
+    // Display images
     function displayImages(originalSrc) {
       console.log("Main: Displaying original image");
       const imageHolder = document.createElement("div");
@@ -906,6 +910,7 @@
       }
     }
 
+    // Handle Web Worker result
     async function handleWorkerResult(dataURL) {
       console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
       startStarsAnimation(false);
@@ -930,8 +935,7 @@
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
-        const imageHolder = previewImg.querySelector(".imageHolder");
-        imageHolder.classList.add("reveal");
+        removedImgEl.classList.add("reveal");
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
         setTimeout(() => {
@@ -959,6 +963,7 @@
       };
     }
 
+    // Handle Web Worker error
     function handleWorkerError(error) {
       console.error("Main: Handling worker error:", error);
       startStarsAnimation(false);
@@ -967,6 +972,7 @@
       removeImage();
     }
 
+    // Remove image
     function removeImage() {
       console.log("Main: Removing image");
       document.getElementById('title').style.display = "block";
@@ -989,6 +995,7 @@
       }
     }
 
+    // Download button
     downloadBtn.addEventListener("click", async () => {
       if (!originalForegroundDataUrl) {
         console.log("Main: No image to download");
@@ -1013,6 +1020,7 @@
       }
     });
 
+    // Stars animation
     function createStars(parentEl) {
       const totalStars = 15;
       const gridSize = Math.sqrt(totalStars);
@@ -1099,6 +1107,7 @@
       });
     }
 
+    // Handle color button clicks
     document.querySelectorAll(".colorBtn:not(.transparentBtn)").forEach(button => {
       button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
@@ -1117,6 +1126,7 @@
       });
     });
 
+    // Handle transparent button
     document.querySelector(".transparentBtn").addEventListener("click", () => {
       console.log("Main: Transparent background selected");
       removeHighlight();
@@ -1133,6 +1143,7 @@
       }
     });
 
+    // Handle custom color input
     customColorInput.addEventListener("input", () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
@@ -1151,6 +1162,7 @@
       }
     });
 
+    // Handle background image upload
     document.getElementById("imageUploader").addEventListener("change", async (e) => {
       const bgFile = e.target.files[0];
       if (!bgFile) {
