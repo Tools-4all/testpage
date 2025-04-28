@@ -3149,6 +3149,7 @@
         editorInstance.setValue(content);
       } else {
         editorInstance.setValue(`// ${name}`)
+      }
       switchTab(id);
       if (tabs.length > 1) {
         document.body.classList.remove("lastTab");
@@ -3399,7 +3400,6 @@
             clearConsole(tab.outputElement);
           }
           else if (type === "table") {
-            console.log("Table data:", e.data, "msg", msg);
             appendTable(tab.outputElement, e.data, msg);
           }
           else if (["log", "error", "warn", "info"].includes(type)) {
@@ -3722,7 +3722,6 @@
       let actualMsg = "";
       let subMsgDiv
       for (let key in msg) {
-        console.log("key", key, "msg[key]", msg[key]);
         subMsgDiv = document.createElement("div");
         if (msg[key].object) {
           subMsgDiv = lazyRenderTreeNode(null, msg[key].object)
@@ -4014,7 +4013,9 @@
         }
       });
       loadSettings();
-      createTab();
+      createTab(null, `
+console.log("Hello World!");
+// Type your code here...`);
     });
 
     function updateStatusPosition() {
