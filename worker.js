@@ -1334,7 +1334,6 @@ self.addEventListener("message", (event) => {
         };
 
         self.onerror = (e) => {
-            console.error(e);
             self.postMessage({
                 type: "error",
                 message: `Uncaught ${e.name}: ${e.message}\n${relativeStack(e)}`,
