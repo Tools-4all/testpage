@@ -162,56 +162,14 @@
       max-height: 375px;
     }
 
-    .imageHolder {
-      display: flex;
-      overflow: hidden;
-      width: 100%;
-      height: auto;
-      position: relative;
-    }
-
-    .left-div {
-      width: 100%; /* Starts full width */
-      transition: width 1.5s ease; /* Smooth width transition */
-      overflow: hidden;
-    }
-
-    .right-div {
-      width: 0%; /* Starts hidden */
-      transition: width 1.5s ease; /* Smooth width transition */
-      position: relative;
-      overflow: hidden;
-    }
-
-    .img-original,
-    .removedImg {
+    #previewImage img {
+      background-color: transparent;
       width: 100%;
       height: 100%;
-      object-fit: cover; /* Ensures images fill their containers */
-      display: block;
-      border-radius: 35px; /* Matches your design */
-    }
-
-    .backgroundLayer {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0; /* Behind the removed image */
+      max-height: 380px;
+      border: 1px solid black;
       border-radius: 35px;
-    }
-
-    .checkerboard {
-      background: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
-    }
-
-    .removedImg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 1; /* Above the background layer */
-      opacity: 1; /* Always visible when loaded */
+      overflow: hidden;
     }
 
     #overlay {
@@ -262,6 +220,71 @@
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
       animation: spinAndFade 1.5s ease-in-out infinite;
       animation-play-state: paused;
+    }
+
+    .imageHolder {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+    }
+
+    .imageHolder img {
+      border-radius: 35px;
+    }
+
+    .backgroundLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      border-radius: 35px;
+    }
+
+    .checkerboard {
+      background-color: #fff;
+      background-image:
+        linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),
+        linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+    }
+
+    .transparentBtn {
+      background-image:
+        linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
+        linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
+      background-size: 10px 10px;
+      /* Match checkerboard size */
+    }
+
+    .img-original {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      z-index: 1;
+    }
+
+    .removedImg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 10;
+      clip-path: polygon(100% 0, 100% 100%, 100% 100%, 100% 0);
+      transition: clip-path 1.5s ease;
+      background-color: #fff;
+      opacity: 0;
+    }
+
+    .removedImg.reveal {
+      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+      opacity: 1;
     }
 
     .image-overlay {
@@ -540,13 +563,11 @@
             </svg>
           </button>
           <div class="imageHolder">
-            <div class="left-div">
-              <img class="img-original" src="" />
-            </div>
-            <div class="right-div">
-              <div class="backgroundLayer checkerboard"></div>
-              <img class="removedImg" src="" />
-            </div>
+            <div class="backgroundLayer"></div>
+            <img class="img-original" src="" />
+            <img class="removedImg" src="" />
+            <div class="image-overlay"></div>
+            <div class="stars-container"></div>
           </div>
         </div>
 
@@ -814,27 +835,29 @@
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
-      // Left div for original image
-      const leftDiv = document.createElement("div");
-      leftDiv.classList.add("left-div");
+      const backgroundLayer = document.createElement("div");
+      backgroundLayer.classList.add("backgroundLayer");
+      imageHolder.appendChild(backgroundLayer);
+
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
-      leftDiv.appendChild(originalImgEl);
+      imageHolder.appendChild(originalImgEl);
 
-      // Right div for background layer and removed image
-      const rightDiv = document.createElement("div");
-      rightDiv.classList.add("right-div");
-      const backgroundLayer = document.createElement("div");
-      backgroundLayer.classList.add("backgroundLayer", "checkerboard");
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
-      rightDiv.appendChild(backgroundLayer);
-      rightDiv.appendChild(removedImgEl);
+      imageHolder.appendChild(removedImgEl);
 
-      imageHolder.appendChild(leftDiv);
-      imageHolder.appendChild(rightDiv);
+      const overlay = document.createElement("div");
+      overlay.id = "imageOverlay";
+      overlay.classList.add("image-overlay");
+      imageHolder.appendChild(overlay);
+
+      const starsContainer = document.createElement("div");
+      starsContainer.classList.add("stars-container");
+      createStars(starsContainer);
+      imageHolder.appendChild(starsContainer);
 
       previewImg.innerHTML = '';
       previewImg.appendChild(imageHolder);
@@ -912,21 +935,30 @@
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
-        const leftDiv = previewImg.querySelector(".left-div");
-        const rightDiv = previewImg.querySelector(".right-div");
-        leftDiv.style.width = "0%";
-        rightDiv.style.width = "100%";
+        removedImgEl.classList.add("reveal");
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
         setTimeout(() => {
-          leftDiv.style.display = "none";
+          const originalImgEl = previewImg.querySelector(".img-original");
+          if (originalImgEl) {
+            originalImgEl.style.display = "none";
+          }
           backgroundType = 'transparent';
           backgroundValue = null;
+          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+          if (backgroundLayer) {
+            backgroundLayer.classList.add("checkerboard");
+            backgroundLayer.style.backgroundColor = "";
+            backgroundLayer.style.backgroundImage = "";
+            backgroundLayer.style.backgroundSize = "";
+            backgroundLayer.style.backgroundPosition = "";
+          }
         }, 1500);
+        removedImgEl.onload = null;
       };
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
-        showError("Failed to load the background-removed image.");
+        showError("Failed to load the background-removed image");
         removeImage();
       };
     }
