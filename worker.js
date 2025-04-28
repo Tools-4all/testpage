@@ -910,7 +910,7 @@ const wrapperSuffix = `})();`;
 const WRAPPER_LINE_COUNT = wrapperPrefixLines.length + 2;
 const WRAPPER_LINE_COUNT_FOR_ERR = wrapperPrefixLines.length + 2;
 function createWrappedCode(userCode) {
-    return wrapperPrefixLines.join('\n') + '\n' + userCode + wrapperSuffix;
+    return wrapperPrefixLines.join('\n') + '\n' + userCode + "\n" + wrapperSuffix;
 }
 
 
