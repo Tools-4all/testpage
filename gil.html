@@ -9,7 +9,512 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/removeBG.css' %}" />
+  <!-- <link rel="stylesheet" href="{% static 'css/removeBG.css' %}" /> -->
+  <style>
+    #bigFooter {
+      display: none;
+    }
+
+    #smallFooter {
+      display: block;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #spinner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .spinner img {
+      width: 300px;
+      height: 105px;
+    }
+
+    #mainDiv {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #removedImgBtn {
+      display: none;
+      margin-top: 0px;
+      align-self: start;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      position: absolute;
+      margin-top: 10px;
+      margin-left: 10px;
+      z-index: 15;
+    }
+
+    .uplodePhoto {
+      padding-top: 5px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .header {
+      font-size: 22px;
+      font-weight: 500;
+      color: black;
+    }
+
+    .support {
+      font-size: 18px;
+      text-align: center;
+      width: 80%;
+      color: black;
+      margin: 10px 0 15px 0;
+    }
+
+    #dropOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      z-index: 9999;
+      display: none;
+    }
+
+    #dropOverlay h2 {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    #uploadBtn {
+      color: black;
+      border-radius: 30px;
+      background-color: #71b8fb;
+      border: none;
+      padding: 10px 20px;
+      font-size: 25px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    #uploadBtn img {
+      width: 40px;
+      margin-left: 10px;
+    }
+
+    #uploadBtn:hover {
+      background-color: #59aefd;
+    }
+
+    .dragBox {
+      background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='31' ry='31' stroke='%23050575FF' stroke-width='11' stroke-dasharray='2%2c 6' stroke-dashoffset='100' stroke-linecap='butt'/%3e%3c/svg%3e");
+      border-radius: 31px;
+      background-color: white;
+      height: 280px;
+      width: 540px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin: 10px auto;
+      overflow: hidden;
+      transition: background-color 0.3s ease;
+    }
+
+    .dragBox input[type="file"] {
+      display: none;
+    }
+
+    .draging {
+      transform: scale(1.1);
+    }
+
+    #previewDiv {
+      display: flex;
+    }
+
+    #previewImage {
+      min-width: 400px;
+      min-height: 300px;
+      max-width: 550px;
+      max-height: 375px;
+    }
+
+    #previewImage img {
+      background-color: white;
+      width: 100%;
+      height: 100%;
+      max-height: 380px;
+      border: 1px solid black;
+      border-radius: 35px;
+      overflow: hidden;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+    }
+
+    .stars-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 10;
+      display: none;
+    }
+
+    @keyframes spinAndFade {
+      0% {
+        opacity: 0;
+        transform: rotate(0deg) scale(0);
+      }
+
+      50% {
+        opacity: 1;
+        transform: rotate(360deg) scale(1.5);
+      }
+
+      100% {
+        opacity: 0;
+        transform: rotate(720deg) scale(0);
+      }
+    }
+
+    .star {
+      position: absolute;
+      width: 17px;
+      height: 17px;
+      background-color: #71b8fbb8;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: spinAndFade 1.5s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+
+    .imageHolder {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      background-color: transparent;
+    }
+
+    .imageHolder img {
+      border-radius: 35px;
+    }
+
+    .backgroundLayer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+    }
+
+    .checkerboard {
+      background-color: #fff;
+      background-image:
+        linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
+        linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
+      background-size: 20px 20px;
+    }
+
+    .transparentBtn {
+      background-image:
+        linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
+        linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
+      background-size: 20px 20px;
+    }
+
+    .img-original {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      z-index: 1;
+    }
+
+    .removedImg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 10;
+      clip-path: polygon(100% 0, 100% 100%, 100% 100%, 100% 0);
+      transition: clip-path 1.5s ease;
+      background-color: #fff;
+      opacity: 0;
+    }
+
+    .removedImg.reveal {
+      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+      opacity: 1;
+    }
+
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.71);
+      pointer-events: none;
+      z-index: 1;
+      padding: 5px;
+      border-radius: 35px;
+    }
+
+    .BgColorChange {
+      border: 2px dashed #ccc !important;
+      background-color: #f3f3f3;
+    }
+
+    #modelLoading {
+      display: none;
+      text-align: center;
+      margin-top: 20px;
+      color: #fff;
+    }
+
+    #modelLoading.show {
+      display: block;
+    }
+
+    #hiddenDiv {
+      display: none;
+      flex-direction: column;
+      margin-left: 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    #circleBtnDiv {
+      display: flex;
+    }
+
+    .circleBtn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid black;
+      cursor: pointer;
+      position: relative;
+      margin-top: 20px;
+      margin-right: 15px;
+    }
+
+    .circleBtn img {
+      width: 100%;
+      border-radius: 60%;
+    }
+
+    .circleBtnP {
+      margin-top: 35px;
+      font-weight: 700;
+    }
+
+    #bgImage {
+      width: 71%;
+      margin-top: 10px;
+      border-radius: 0px;
+    }
+
+    #downloadBtn {
+      position: absolute;
+      bottom: 0px;
+      left: 0px;
+      background-color: #71b8fb;
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 35px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    #downloadBtn:hover {
+      background-color: #5397d7;
+    }
+
+    #closeColorsDiv {
+      position: absolute;
+      top: 8px;
+      right: 13px;
+      width: 7px;
+      height: 7px;
+    }
+
+    #closeColorsDiv:focus,
+    #closeColorsDiv:active {
+      outline: none !important;
+      box-shadow: none;
+    }
+
+    #colorsDiv {
+      position: relative;
+      display: none;
+      margin-left: 30px;
+      width: 275px;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      border-radius: 25px;
+      padding: 10px;
+      background-color: #fff;
+    }
+
+    #colorsDiv h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      margin-top: 18px;
+    }
+
+    .colorBtn {
+      width: 50px;
+      height: 50px;
+      border-radius: 30%;
+      border: 1px solid black;
+      margin: 10px;
+    }
+
+    #customColorDiv {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      margin-top: 35px;
+    }
+
+    #colorPreview {
+      width: 120px;
+      height: 50px;
+      border-radius: 10px;
+      border: 2px solid #aaa7a7;
+      background-color: #f8e9e9;
+      padding: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    #customColor {
+      opacity: 0;
+      position: absolute;
+      width: 100px;
+      height: 50px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 840px) {
+      .functionTitle {
+        font-size: 32px;
+        margin-right: 10px;
+      }
+
+      .btn-info {
+        margin-left: 2px;
+        margin-top: 12px;
+      }
+
+      .dragBox {
+        width: 320px;
+      }
+
+      .wrapper {
+        height: 101vh;
+        width: 100%;
+      }
+
+      #previewDiv {
+        width: 90%;
+        margin: 0 auto;
+        flex-direction: column;
+      }
+
+      #previewImage {
+        min-width: 250px;
+        min-height: 250px;
+      }
+
+      #hiddenDiv {
+        flex-direction: row;
+        margin-left: 0px;
+        justify-content: space-between;
+      }
+
+      #circleBtnDiv {
+        flex-direction: column;
+        align-items: center;
+        width: 40%;
+      }
+
+      .circleBtnP {
+        margin-top: 0px;
+        margin-bottom: 70px;
+        font-size: 14px;
+      }
+
+      #removedImgBtn {
+        margin-left: 10px;
+        margin-top: 9px;
+      }
+
+      #downloadBtn {
+        margin-top: 50px;
+      }
+
+      #error {
+        width: 70%;
+      }
+
+      #error p {
+        font-size: 12px;
+      }
+
+      #uploadBtn {
+        font-size: 20px;
+      }
+    }
+  </style>
+  </style>
 </head>
 
 <body>
@@ -56,6 +561,13 @@
               </g>
             </svg>
           </button>
+          <div class="imageHolder">
+            <div class="backgroundLayer"></div>
+            <img class="img-original" src="" />
+            <img class="removedImg" src="" />
+            <div class="image-overlay"></div>
+            <div class="stars-container"></div>
+          </div>
         </div>
 
         <div id="hiddenDiv">
@@ -85,7 +597,7 @@
         <div id="colorsDiv">
           <button type="button" id="closeColorsDiv" class="btn-close" aria-label="Close"></button>
           <h2>Change background color</h2>
-          <div style="display: flex;flex-wrap: wrap;justify-content: center;">
+          <div style="display: flex; flex-wrap: wrap; justify-content: center;">
             <button class="colorBtn" style="background-color: white;"></button>
             <button class="colorBtn" style="background-color: black;"></button>
             <button class="colorBtn" style="background-color: gray;"></button>
@@ -95,6 +607,7 @@
             <button class="colorBtn" style="background-color: purple;"></button>
             <button class="colorBtn" style="background-color: blue;"></button>
             <button class="colorBtn" style="background-color: green;"></button>
+            <button class="colorBtn transparentBtn">Transparent</button>
           </div>
 
           <div id="customColorDiv">
@@ -120,11 +633,12 @@
     const downloadBtn = document.getElementById("downloadBtn");
     const previewImg = document.getElementById("previewImage");
     const colorsDiv = document.getElementById("colorsDiv");
+    const customColorInput = document.getElementById("customColor");
+    const colorPreview = document.getElementById("colorPreview");
 
-    let finalDataUrl = null;
-    let file;
-    let worker;
-    let originalForegroundDataUrl = null; // Store the original background-removed image
+    let backgroundType = 'transparent';
+    let backgroundValue = null;
+    let originalForegroundDataUrl = null;
 
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
@@ -189,7 +703,7 @@
 
     // Stop spinner and show main content
     function stopSpinner() {
-      const spinnerDiv = document.getElementById("spinner")
+      const spinnerDiv = document.getElementById("spinner");
       const spinner = document.querySelector(".spinner img");
 
       spinner.classList.remove("spin-active");
@@ -249,14 +763,13 @@
       });
     }
 
-    // Composite background (color or image) with foreground image
+    // Composite background with foreground image
     async function compositeImages(foregroundSrc, backgroundSrc = null, backgroundColor = null) {
       console.log("Main: Compositing images");
       try {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
 
-        // Load foreground image
         const foregroundImg = new Image();
         foregroundImg.src = foregroundSrc;
         await new Promise((resolve, reject) => {
@@ -264,11 +777,9 @@
           foregroundImg.onerror = reject;
         });
 
-        // Set canvas size to match foreground image
         canvas.width = foregroundImg.width;
         canvas.height = foregroundImg.height;
 
-        // Draw background
         if (backgroundColor) {
           console.log("Main: Applying background color:", backgroundColor);
           ctx.fillStyle = backgroundColor;
@@ -282,38 +793,32 @@
             backgroundImg.onerror = reject;
           });
 
-          // Calculate cropping dimensions to cover the canvas without stretching
           const fgAspect = canvas.width / canvas.height;
           const bgAspect = backgroundImg.width / backgroundImg.height;
 
           let srcWidth, srcHeight, srcX, srcY;
 
           if (bgAspect > fgAspect) {
-            // Background is wider: crop horizontally
             srcHeight = backgroundImg.height;
             srcWidth = srcHeight * fgAspect;
             srcX = (backgroundImg.width - srcWidth) / 2;
             srcY = 0;
           } else {
-            // Background is taller: crop vertically
             srcWidth = backgroundImg.width;
             srcHeight = srcWidth / fgAspect;
             srcX = 0;
             srcY = (backgroundImg.height - srcHeight) / 2;
           }
 
-          // Draw cropped background image
           ctx.drawImage(
             backgroundImg,
-            srcX, srcY, srcWidth, srcHeight, // Source rectangle
-            0, 0, canvas.width, canvas.height // Destination rectangle
+            srcX, srcY, srcWidth, srcHeight,
+            0, 0, canvas.width, canvas.height
           );
         }
 
-        // Draw foreground image
         ctx.drawImage(foregroundImg, 0, 0);
 
-        // Convert canvas to data URL
         const dataURL = canvas.toDataURL("image/png");
         console.log("Main: Compositing complete, dataURL length:", dataURL.length);
         return dataURL;
@@ -329,27 +834,31 @@
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
+      const backgroundLayer = document.createElement("div");
+      backgroundLayer.classList.add("backgroundLayer");
+      imageHolder.appendChild(backgroundLayer);
+
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
+      imageHolder.appendChild(originalImgEl);
 
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
+      imageHolder.appendChild(removedImgEl);
 
       const overlay = document.createElement("div");
       overlay.id = "imageOverlay";
       overlay.classList.add("image-overlay");
+      imageHolder.appendChild(overlay);
 
       const starsContainer = document.createElement("div");
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
-
-      imageHolder.appendChild(originalImgEl);
-      imageHolder.appendChild(removedImgEl);
-      imageHolder.appendChild(overlay);
       imageHolder.appendChild(starsContainer);
 
+      previewImg.innerHTML = '';
       previewImg.appendChild(imageHolder);
 
       dragBox.style.display = "none";
@@ -360,7 +869,7 @@
     }
 
     async function handleFileSelect(e, isFile = false) {
-      file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
+      const file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
       if (!file) {
         console.log("Main: No file selected");
         return;
@@ -421,15 +930,28 @@
         return;
       }
 
-      originalForegroundDataUrl = dataURL; // Store the original background-removed image
-      finalDataUrl = dataURL;
+      originalForegroundDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
         removedImgEl.classList.add("reveal");
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
-        removedImgEl.onload = null; // Remove the onload event to prevent multiple calls
+        setTimeout(() => {
+          const originalImgEl = previewImg.querySelector(".img-original");
+          if (originalImgEl) {
+            originalImgEl.style.display = "none";
+          }
+          backgroundType = 'transparent';
+          backgroundValue = null;
+          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+          if (backgroundLayer) {
+            backgroundLayer.classList.add("checkerboard");
+            backgroundLayer.style.backgroundColor = "";
+            backgroundLayer.style.backgroundImage = "";
+          }
+        }, 1500);
+        removedImgEl.onload = null;
       };
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
@@ -456,8 +978,9 @@
       removedImgBtn.style.display = "none";
       hiddenDiv.style.display = "none";
       uploadFileInput.value = "";
-      finalDataUrl = null;
       originalForegroundDataUrl = null;
+      backgroundType = 'transparent';
+      backgroundValue = null;
 
       while (previewImg.querySelector('.imageHolder')) {
         const child = previewImg.querySelector('.imageHolder');
@@ -470,18 +993,28 @@
     }
 
     // Download button
-    downloadBtn.addEventListener("click", () => {
-      if (!finalDataUrl) {
+    downloadBtn.addEventListener("click", async () => {
+      if (!originalForegroundDataUrl) {
         console.log("Main: No image to download");
         return;
       }
-      console.log("Main: Downloading image");
-      const a = document.createElement("a");
-      a.href = finalDataUrl;
-      a.download = "bg_removed.png";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      let dataUrl;
+      if (backgroundType === 'transparent') {
+        dataUrl = originalForegroundDataUrl;
+      } else if (backgroundType === 'color') {
+        dataUrl = await compositeImages(originalForegroundDataUrl, null, backgroundValue);
+      } else if (backgroundType === 'image') {
+        dataUrl = await compositeImages(originalForegroundDataUrl, backgroundValue);
+      }
+      if (dataUrl) {
+        console.log("Main: Downloading image");
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "bg_removed.png";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
     });
 
     // Stars animation
@@ -572,45 +1105,51 @@
     }
 
     // Handle color button clicks
-    document.querySelectorAll(".colorBtn").forEach(button => {
-      button.addEventListener("click", async () => {
+    document.querySelectorAll(".colorBtn:not(.transparentBtn)").forEach(button => {
+      button.addEventListener("click", () => {
         console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
-        try {
-          const newDataUrl = await compositeImages(originalForegroundDataUrl, null, button.style.backgroundColor);
-          finalDataUrl = newDataUrl;
-          const removedImgEl = previewImg.querySelector(".removedImg");
-          if (removedImgEl) {
-            removedImgEl.src = newDataUrl;
-          }
-        } catch (err) {
-          console.error("Main: Error applying background color:", err);
-          showError("Failed to apply background color");
+        backgroundType = 'color';
+        backgroundValue = button.style.backgroundColor;
+        const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+        if (backgroundLayer) {
+          backgroundLayer.classList.remove("checkerboard");
+          backgroundLayer.style.backgroundColor = backgroundValue;
+          backgroundLayer.style.backgroundImage = "";
         }
       });
     });
 
-    // Handle custom color input
-    const customColorInput = document.getElementById("customColor");
-    const colorPreview = document.getElementById("colorPreview");
+    // Handle transparent button
+    document.querySelector(".transparentBtn").addEventListener("click", () => {
+      console.log("Main: Transparent background selected");
+      removeHighlight();
+      document.querySelector(".transparentBtn").style.boxShadow = "#71b8fb 0px 0px 15px 3px";
+      backgroundType = 'transparent';
+      backgroundValue = null;
+      const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+      if (backgroundLayer) {
+        backgroundLayer.classList.add("checkerboard");
+        backgroundLayer.style.backgroundColor = "";
+        backgroundLayer.style.backgroundImage = "";
+      }
+    });
 
-    customColorInput.addEventListener("input", async () => {
+    // Handle custom color input
+    customColorInput.addEventListener("input", () => {
       console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
       colorPreview.textContent = "";
-      try {
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, null, customColorInput.value);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
-        }
-      } catch (err) {
-        console.error("Main: Error applying custom background color:", err);
-        showError("Failed to apply custom background color");
+      backgroundType = 'color';
+      backgroundValue = customColorInput.value;
+      const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+      if (backgroundLayer) {
+        backgroundLayer.classList.remove("checkerboard");
+        backgroundLayer.style.backgroundColor = backgroundValue;
+        backgroundLayer.style.backgroundImage = "";
       }
     });
 
@@ -624,13 +1163,16 @@
       console.log("Main: Background image selected:", bgFile.name);
       try {
         const bgDataUrl = await readFileAsDataURL(bgFile);
-        const newDataUrl = await compositeImages(originalForegroundDataUrl, bgDataUrl);
-        finalDataUrl = newDataUrl;
-        const removedImgEl = previewImg.querySelector(".removedImg");
-        if (removedImgEl) {
-          removedImgEl.src = newDataUrl;
+        backgroundType = 'image';
+        backgroundValue = bgDataUrl;
+        const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+        if (backgroundLayer) {
+          backgroundLayer.classList.remove("checkerboard");
+          backgroundLayer.style.backgroundColor = "";
+          backgroundLayer.style.backgroundImage = `url(${bgDataUrl})`;
+          backgroundLayer.style.backgroundSize = "cover";
+          backgroundLayer.style.backgroundPosition = "center";
         }
-        // Reset the file input
         e.target.value = "";
       } catch (err) {
         console.error("Main: Error applying background image:", err);
