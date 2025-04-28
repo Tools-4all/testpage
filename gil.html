@@ -9,7 +9,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- <link rel="stylesheet" href="{% static 'css/removeBG.css' %}" /> -->
   <style>
     #bigFooter {
       display: none;
@@ -20,13 +19,8 @@
     }
 
     @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-
-      to {
-        transform: rotate(360deg);
-      }
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     #spinner {
@@ -197,20 +191,9 @@
     }
 
     @keyframes spinAndFade {
-      0% {
-        opacity: 0;
-        transform: rotate(0deg) scale(0);
-      }
-
-      50% {
-        opacity: 1;
-        transform: rotate(360deg) scale(1.5);
-      }
-
-      100% {
-        opacity: 0;
-        transform: rotate(720deg) scale(0);
-      }
+      0% { opacity: 0; transform: rotate(0deg) scale(0); }
+      50% { opacity: 1; transform: rotate(360deg) scale(1.5); }
+      100% { opacity: 0; transform: rotate(720deg) scale(0); }
     }
 
     .star {
@@ -250,14 +233,14 @@
       background-image:
         linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
         linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
-      background-size: 20px 20px;
+      background-size: 10px 10px; /* Smaller cubes */
     }
 
     .transparentBtn {
       background-image:
         linear-gradient(45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff),
         linear-gradient(-45deg, #ddd 25%, #fff 25%, #fff 50%, #ddd 50%, #ddd 75%, #fff 75%, #fff);
-      background-size: 20px 20px;
+      background-size: 10px 10px; /* Match checkerboard size */
     }
 
     .img-original {
@@ -515,7 +498,6 @@
       }
     }
   </style>
-  </style>
 </head>
 
 <body>
@@ -538,27 +520,18 @@
           <img src="{% static 'site_images/upload.webp' %}" alt="Upload your image">
         </button>
         <span class="header" id="browseBtn">or drop it here</span>
-        <span class="support"><span style="font-weight: bold;">Supports:</span> jpeg, png, gif, webp, bmp, ico, svg,
-          ff, hdr, qoi, tga, pnm</span>
-        <input type="file" accept=".jpeg, .jpg, .png, .gif, .svg, .webp, .bmp, .ico, .svg, .ff, .hdr, .qoi, .tga, .pnm"
-          onChange="handleFileSelect(event)" id="uploadFile" />
+        <span class="support"><span style="font-weight: bold;">Supports:</span> jpeg, png, gif, webp, bmp, ico, svg, ff, hdr, qoi, tga, pnm</span>
+        <input type="file" accept=".jpeg, .jpg, .png, .gif, .svg, .webp, .bmp, .ico, .svg, .ff, .hdr, .qoi, .tga, .pnm" onChange="handleFileSelect(event)" id="uploadFile" />
       </div>
 
       <div id="previewDiv">
         <div id="previewImage" style="display: none;">
           <button type="button" onclick="removeImage()" id="removedImgBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25"
-              height="25" viewBox="0 0 256 256" xml:space="preserve">
-              <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
-                transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
-                <circle cx="45" cy="45" r="45"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(230,62,50); fill-rule: nonzero; opacity: 1;" />
-                <path
-                  d="M 27.169 64.83 c -0.512 0 -1.024 -0.195 -1.414 -0.586 c -0.781 -0.781 -0.781 -2.047 0 -2.828 l 35.661 -35.661 c 0.781 -0.781 2.047 -0.781 2.828 0 c 0.781 0.781 0.781 2.047 0 2.828 L 28.583 64.244 C 28.193 64.635 27.681 64.83 27.169 64.83 z"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
-                <path
-                  d="M 62.83 64.83 c -0.512 0 -1.023 -0.195 -1.414 -0.586 L 25.755 28.583 c -0.781 -0.781 -0.781 -2.047 0 -2.828 c 0.78 -0.781 2.048 -0.781 2.828 0 l 35.661 35.661 c 0.781 0.781 0.781 2.047 0 2.828 C 63.854 64.635 63.342 64.83 62.83 64.83 z"
-                  style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25" height="25" viewBox="0 0 256 256" xml:space="preserve">
+              <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;" transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
+                <circle cx="45" cy="45" r="45" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(230,62,50); fill-rule: nonzero; opacity: 1;" />
+                <path d="M 27.169 64.83 c -0.512 0 -1.024 -0.195 -1.414 -0.586 c -0.781 -0.781 -0.781 -2.047 0 -2.828 l 35.661 -35.661 c 0.781 -0.781 2.047 -0.781 2.828 0 c 0.781 0.781 0.781 2.047 0 2.828 L 28.583 64.244 C 28.193 64.635 27.681 64.83 27.169 64.83 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
+                <path d="M 62.83 64.83 c -0.512 0 -1.023 -0.195 -1.414 -0.586 L 25.755 28.583 c -0.781 -0.781 -0.781 -2.047 0 -2.828 c 0.78 -0.781 2.048 -0.781 2.828 0 l 35.661 35.661 c 0.781 0.781 0.781 2.047 0 2.828 C 63.854 64.635 63.342 64.83 62.83 64.83 z" style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" />
               </g>
             </svg>
           </button>
@@ -582,8 +555,7 @@
           <div id="circleBtnDiv" style="align-items: center;">
             <div class="circleBtn" id="uploadSection" style="padding-top: 2px;">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-                <rect x="14" y="14" width="20" height="20" rx="3" ry="3" fill="none" stroke="#000000"
-                  stroke-width="2" />
+                <rect x="14" y="14" width="20" height="20" rx="3" ry="3" fill="none" stroke="#000000" stroke-width="2" />
                 <path d="M24 18 L20 22 H22 V26 H26 V22 H28 Z" fill="#000000" />
                 <rect x="18" y="28" width="12" height="2" fill="#000000" />
               </svg>
@@ -950,6 +922,8 @@
             backgroundLayer.classList.add("checkerboard");
             backgroundLayer.style.backgroundColor = "";
             backgroundLayer.style.backgroundImage = "";
+            backgroundLayer.style.backgroundSize = "";
+            backgroundLayer.style.backgroundPosition = "";
           }
         }, 1500);
         removedImgEl.onload = null;
@@ -1118,6 +1092,8 @@
           backgroundLayer.classList.remove("checkerboard");
           backgroundLayer.style.backgroundColor = backgroundValue;
           backgroundLayer.style.backgroundImage = "";
+          backgroundLayer.style.backgroundSize = "";
+          backgroundLayer.style.backgroundPosition = "";
         }
       });
     });
@@ -1134,6 +1110,8 @@
         backgroundLayer.classList.add("checkerboard");
         backgroundLayer.style.backgroundColor = "";
         backgroundLayer.style.backgroundImage = "";
+        backgroundLayer.style.backgroundSize = "";
+        backgroundLayer.style.backgroundPosition = "";
       }
     });
 
@@ -1151,6 +1129,8 @@
         backgroundLayer.classList.remove("checkerboard");
         backgroundLayer.style.backgroundColor = backgroundValue;
         backgroundLayer.style.backgroundImage = "";
+        backgroundLayer.style.backgroundSize = "";
+        backgroundLayer.style.backgroundPosition = "";
       }
     });
 
