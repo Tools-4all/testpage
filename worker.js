@@ -1118,6 +1118,7 @@ function getObjectOrStringForLog(...args) {
 
 
 self.addEventListener("message", (event) => {
+    console.log("Worker received message:", event.data);
     const { type, code, sharedBuffer, flexSwitchCheckDefault } = event.data;
     if (type === "execute") {
         const countMap = {};
