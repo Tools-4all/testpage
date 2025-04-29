@@ -836,7 +836,7 @@ function buildTableData(input, columns) {
                     tableData[col][i] = (col === "Values") ? formatValue(row) : "";
                 }
             });
-        }
+        } 
     } else {
         // Otherwise, auto-detect columns.
         let columnsSet = new Set();
