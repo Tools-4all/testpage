@@ -3846,10 +3846,7 @@
 
             [/\basync(?=\s+function\b)/, 'special.keyword'],
 
-            [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
-            [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
-            [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
-
+            // Match keywords first to prevent them from being mistaken as methods
             [/[a-z_$][\w$]*/, {
               cases: {
                 '@specialKeywords': 'special.keyword',
@@ -3858,6 +3855,12 @@
                 '@default': 'identifier'
               }
             }],
+
+            // Method and attribute matching after keywords
+            [/(\.)([a-z_$][\w$]*)(?=\s*\()/, ['delimiter', 'method']],
+            [/([a-z_$][\w$]*)(?=\s*\()/, 'method'],
+            [/(\.)([a-z_$][\w$]*)/, ['delimiter', 'attribute']],
+
             [/[A-Z][\w\$]*/, 'type.identifier'],
 
             { include: '@whitespace' },
