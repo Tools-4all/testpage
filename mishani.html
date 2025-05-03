@@ -1,36 +1,70 @@
 <!DOCTYPE html>
 <html lang="he">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>סקר תמונה - אנימציה ושאלות אמריקאיות</title>
   <style>
+    :root {
+      --primary: #007bff;
+      --secondary: #f8f9fa;
+      --text: #212529;
+      --accent: #ffc107;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       direction: rtl;
       text-align: center;
-      background-color: #f4f4f4;
+      background-color: var(--secondary);
+      color: var(--text);
       margin: 0;
       padding: 20px;
     }
 
-    .hidden {
-      display: none;
+    #app {
+      max-width: 700px;
+      margin: auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     }
+
+    .hidden { display: none; }
 
     button {
       margin: 10px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 1rem;
       cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      background-color: var(--primary);
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     #survey-image {
-      width: 90%;
-      max-width: 400px;
+      width: 100%;
+      max-width: 500px;
       height: auto;
       margin-bottom: 20px;
+      border-radius: 8px;
     }
 
     .slide {
@@ -47,15 +81,37 @@
     #question-container {
       position: relative;
       min-height: 150px;
+      padding: 10px;
+    }
+
+    label {
+      display: block;
+      text-align: right;
+      margin: 8px auto;
+      font-size: 1.1rem;
+    }
+
+    input[type="radio"] {
+      margin-left: 8px;
+    }
+
+    @media (max-width: 600px) {
+      #app {
+        padding: 20px;
+      }
+
+      button {
+        width: 100%;
+        font-size: 1.1rem;
+      }
     }
   </style>
 </head>
-
 <body>
   <div id="app">
     <div id="name-screen">
       <h2>הכנס את שמך:</h2>
-      <input type="text" id="user-name" />
+      <input type="text" id="user-name" placeholder="הקלד את שמך..." />
       <button onclick="startQuiz()">התחל</button>
     </div>
 
@@ -113,7 +169,7 @@
 
       const html = `
         <p>${q.question}</p>
-        ${q.options.map((opt, i) => `<label><input type="radio" name="q" value="${i}"> ${opt}</label><br>`).join("")}
+        ${q.options.map((opt, i) => `<label><input type="radio" name="q" value="${i}"> ${opt}</label>`).join("")}
         <br>
         <button onclick="next()">${currentQuestion === questions.length - 1 ? "סיום" : "הבא"}</button>
       `;
@@ -137,7 +193,7 @@
         document.getElementById("score").innerText = `${userName}, ענית נכון על ${correctAnswers} מתוך ${questions.length}`;
       }
     }
+    alert(1);
   </script>
 </body>
-
 </html>
