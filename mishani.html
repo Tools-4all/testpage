@@ -1,1681 +1,330 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WebSprint</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;700&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-
-  <!-- <link rel="stylesheet" href="base.css" /> -->
+  <title>סקר תמונה</title>
   <style>
-    body,
-    html {
-      margin: 0;
-      padding: 0;
-      font-family: "Roboto", sans-serif;
-      height: 100%;
-      user-select: none;
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-user-drag: none;
-      -webkit-tap-highlight-color: transparent;
+    :root {
+      --primary: #4a90e2;
+      --background: #f4f7fa;
+      --text: #333;
+      --accent: #ff9800;
     }
 
-    .navbar {
-      background: linear-gradient(135deg,
-          #1e1e2f,
-          #3c3c5c);
-      width: 100%;
-      position: fixed;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-      transition: background 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    }
-
-    .navbar.scrolled {
-      background: #1a1a2e;
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .navbar-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 40px;
-      height: 80px;
-    }
-
-    .brand a {
-      font-weight: bold;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-decoration: none;
-      font-size: 2rem;
-      font-weight: bold;
-      transition: color 0.3s ease-in-out;
-    }
-
-    .brand a:hover {
-      color: #ff8a00;
-    }
-
-    .nav-links {
-      list-style: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-      gap: 30px;
-    }
-
-    .nav-links li {
-      margin: 0;
-    }
-
-    .nav-links a {
-      color: #f8f9fa;
-      text-decoration: none;
-      font-size: 1.2em;
-      font-weight: 500;
-      padding: 10px 15px;
-      transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
-      position: relative;
-    }
-
-    .nav-links a:hover {
-      color: #ff8a00;
-      transform: scale(1.1);
-    }
-
-    .nav-links a::after {
-      content: "";
-      display: block;
-      width: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      transition: width 0.3s ease-in-out;
-      position: absolute;
-      left: 50%;
-      bottom: -5px;
-      transform: translateX(-50%);
-    }
-
-    .nav-links a:hover::after {
-      width: 100%;
-    }
-
-    .nav-links a.active {
-      color: #ff8a00;
-      font-weight: bold;
-    }
-
-    .nav-links a.active::after {
-      width: 100%;
-    }
-
-    .menu-icon {
-      display: none;
-      flex-direction: column;
-      cursor: pointer;
-      background: none;
-      border: none;
-      gap: 6px;
-    }
-
-    .menu-icon .bar {
-      width: 35px;
-      height: 4px;
-      background-color: #f8f9fa;
-      border-radius: 5px;
-      transition: transform 0.4s, background 0.3s;
-    }
-
-    #scroll-indicator-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 6px;
-      background: transparent;
-      z-index: 9999;
-    }
-
-    #scroll-indicator-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      transition: width 0.25s ease-out;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-      border-radius: 0 4px 4px 0;
-    }
-
-    /* media menu */
-    #menuTogglerDiv {
-      display: none;
-      width: 35px;
-      margin-top: 2px;
-    }
-
-    .bar1,
-    .bar2,
-    .bar3 {
-      position: relative;
-      width: 25px;
-      height: 2px;
-      background-color: white;
-      margin: 8px 0;
-      transition: 0.4s;
-    }
-
-    .change .bar1 {
-      transform: translate(0, 11px) rotate(-45deg);
-      margin: 9px;
-    }
-
-    .change .bar2 {
-      opacity: 0;
-      margin: 9px;
-    }
-
-    .change .bar3 {
-      transform: translate(0, -11px) rotate(45deg);
-      margin: 9px;
-    }
-
-    #media_menu {
-      display: none;
-      position: fixed;
-      right: 0px;
-      height: 100%;
-      width: 100%;
-      background: linear-gradient(135deg, #1e1e2f, #3c3c5c);
-      transition: transform 0.3s ease;
-      z-index: 100;
-      padding-top: 100px;
-    }
-
-
-    .humburgerBtn {
-      font-size: 25px;
-      font-weight: bold;
-      color: #ff8a00;
-      background-color: transparent;
-      margin-top: 20px;
-      margin-bottom: 30px;
-      border: none;
-      cursor: pointer;
-      margin-left: 10px;
-    }
-
-    /* footer */
-
-    .footer {
-      background: #22223b;
-      color: white;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      direction: rtl;
       text-align: center;
-      padding: 10px 15px;
-      font-size: 1rem;
-      position: relative;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
-      transition: all 0.3s ease-in-out;
+      background-color: var(--background);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
     }
 
-
-    .footer-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-    }
-
-    .footer-nav {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-      animation: fadeInUp 1.2s ease-in-out;
-    }
-
-    .footer-nav a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: color 0.3s ease, transform 0.2s ease;
-      padding: 8px 12px;
-      border-radius: 5px;
-      transition: all 0.3s ease-in-out;
-    }
-
-    .footer-nav a:hover {
-      color: #ff8a00;
-      transform: translateY(-2px) scale(1.1);
-    }
-
-    .footer-bottom {
-      margin-top: 15px;
-      font-size: 0.9rem;
-      opacity: 0.8;
-      animation: fadeInUp 1.5s ease-in-out;
-    }
-
-
-    @media (max-width: 950px) {
-
-      .navbar-container {
-        padding: 10px;
-        height: 40px;
-      }
-
-      .nav-links {
-        display: none;
-      }
-
-      #menuTogglerDiv {
-        display: block;
-      }
-
-      .brand a {
-        font-size: 1.8rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .footer {
-        padding: 30px 10px;
-      }
-
-      .footer-container {
-        flex-direction: column;
-        gap: 15px;
-      }
-
-      .footer-nav {
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .footer-nav a {
-        font-size: 1rem;
-      }
+    #app {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     }
 
     h1,
-    h2,
-    h3 {
-      font-family: "Montserrat", sans-serif;
+    h2 {
+      color: var(--primary);
     }
 
-    .hero-section {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      color: white;
-      text-align: center;
-      padding: 120px 20px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
+    .hidden {
+      display: none;
     }
 
-    .hero-content {
-      text-align: center;
-      position: relative;
-      z-index: 2;
-    }
-
-    .hero-content h1 {
-      font-size: 5vw;
-      margin: 0;
-      animation: popIn 1.2s ease-in-out;
-      text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.3);
-    }
-
-    .hero-content .brand-name {
-      font-weight: bold;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      -webkit-background-clip: text;
-      color: transparent;
-      animation: gradientMove 3s infinite;
-    }
-
-    .hero-content p {
-      font-size: 1.5vw;
-      margin-top: 15px;
-      color: #ddd;
-    }
-
-    .hero-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 30px;
-    }
-
-    .cta-button {
-      background: #ff8a00;
-      padding: 14px 28px;
-      border-radius: 10px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      text-decoration: none;
-      color: white;
-      transition: all 0.8s ease;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .cta-button:hover {
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      transform: scale(1.08);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .cta-button.secondary {
-      background: transparent;
-      border: 2px solid white;
-      color: white;
-      padding: 14px 28px;
-    }
-
-    .cta-button.secondary:hover {
-      background: white;
-      color: #333;
-    }
-
-    /* about */
-
-    .about-section {
-      padding: 150px 20px 50px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .about-section::before {
-      content: "";
-      position: absolute;
-      top: -50px;
-      left: -50px;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(0, 123, 255, 0.2), transparent);
-      border-radius: 50%;
-    }
-
-    .about-content {
-      max-width: 950px;
-      margin: 0 auto;
-      text-align: left;
-      background: white;
-      padding: 50px;
-      border-radius: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-
-    .about-content:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .about-content h3 {
-      font-size: 2rem;
-      margin-top: 25px;
-      color: #0056b3;
-      font-weight: 700;
-    }
-
-    .about-content p {
-      font-size: 1.1rem;
-      color: #444;
-      line-height: 1.8;
-      margin-bottom: 20px;
-    }
-
-    .about-list {
-      list-style: none;
-      padding: 0;
-      margin-top: 25px;
-    }
-
-    .about-list li {
-      font-size: 24px;
-      line-height: 1.8;
-      background: #e3f2fd;
-      padding: 18px;
-      border-radius: 12px;
-      margin: 12px 0;
-      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    }
-
-    .about-list li:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .about-list li strong {
-      color: #0056b3;
-    }
-
-    .about-list li span {
+    button {
       margin: 10px;
-    }
-
-    /* our services */
-
-    .services-section {
-      padding: 150px 20px 50px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .services-section h2,
-    .about-section h2,
-    #our-projects h2 {
-      font-size: 3rem;
-      margin-bottom: 50px;
-      color: #222;
-      font-weight: bold;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      animation: popIn 1s ease-in-out;
-    }
-
-    .services-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 30px;
-      margin: 0 auto;
-    }
-
-    .service {
-      background: white;
-      padding: 35px;
-      border-radius: 20px;
-      max-width: 360px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      animation: scaleEffect 1.5s ease-in-out, floatEffect 7s infinite ease-in-out;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .service::before {
-      content: "";
-      position: absolute;
-      width: 120%;
-      height: 120%;
-      top: -10%;
-      left: -10%;
-      background: radial-gradient(circle, rgba(0, 123, 255, 0.2), transparent 70%);
-      transition: transform 0.6s ease-in-out;
-    }
-
-    .service:hover {
-      transform: translateY(-12px) scale(1.1) rotate(3deg);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-    }
-
-    .service:hover::before {
-      transform: translate(60%, 60%);
-    }
-
-    .service h3 {
-      font-size: 2rem;
-      margin-bottom: 20px;
-      color: #0056b3;
-      font-weight: 800;
-    }
-
-    .service p {
-      font-size: 1.2rem;
-      color: #444;
-      line-height: 1.8;
-    }
-
-    @keyframes floatEffect {
-      0% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-8px);
-      }
-
-      100% {
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes scaleEffect {
-      0% {
-        transform: scale(0.8);
-        opacity: 0;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    @keyframes popIn {
-      0% {
-        transform: scale(0.5);
-        opacity: 0;
-      }
-
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* our impact */
-
-    .counter-section {
-      background: linear-gradient(135deg, #1e1e2f, #3c3c5c);
-      color: #fff;
-      padding: 100px 20px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .counter-section h2 {
-      font-size: 3rem;
-      margin-bottom: 60px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-    }
-
-    .counter-container {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 50px;
-    }
-
-    .counter-box {
-      flex: 1 1 200px;
-      max-width: 25%;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 40px 20px;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease;
-    }
-
-    .counter-box:hover {
-      transform: translateY(-10px);
-    }
-
-    .counter {
-      font-size: 3rem;
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-weight: bold;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
-      -webkit-background-clip: text;
-      color: transparent;
-
-    }
-
-    .counter-box p {
-      font-size: 1.2rem;
-      color: #ddd;
-    }
-
-
-    .faq-section {
-      position: relative;
-      padding: 100px 20px;
-      text-align: center;
-      overflow: hidden;
-      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
-    }
-
-    .faq-header {
-      margin-bottom: 40px;
-      z-index: 2;
-      position: relative;
-    }
-
-    .faq-title {
-      font-size: 2.8rem;
-      font-weight: bold;
-      color: #222;
-      font-family: "Montserrat", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 20px;
-    }
-
-    .faq-subtitle {
-      font-size: 1.2rem;
-      color: #64748b;
-    }
-
-    /* FAQ Container */
-    .faq-container {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: left;
-      z-index: 2;
-      position: relative;
-    }
-
-    /* FAQ Item */
-    /* FAQ Section */
-    .faq-section {
-      position: relative;
-      padding: 100px 20px;
-      text-align: center;
-      overflow: hidden;
-      background: linear-gradient(to bottom right, #f8fafc, #e2e8f0);
-    }
-
-    .faq-header {
-      margin-bottom: 40px;
-      z-index: 2;
-      position: relative;
-    }
-
-    .faq-title {
-      font-size: 2.8rem;
-      font-weight: 700;
-      color: #222;
-      font-family: "Montserrat", sans-serif;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 20px;
-    }
-
-    .faq-subtitle {
-      font-size: 1.2rem;
-      color: #64748b;
-    }
-
-    /* FAQ Container */
-    .faq-container {
-      max-width: 800px;
-      margin: 0 auto;
-      text-align: left;
-      z-index: 2;
-      position: relative;
-    }
-
-    /* FAQ Item */
-    .faq-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 15px;
-      margin: 18px 0;
-      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .faq-item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    /* Question */
-    .faq-question {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #0056b3;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      padding: 12px 24px;
+      font-size: 1rem;
       cursor: pointer;
-      transition: color 0.3s ease;
-      background: none;
-      border: none;
-      width: 100%;
-      text-align: left;
-    }
-
-    /* Arrow icon */
-    .faq-question::after {
-      content: "▸";
-      font-size: 27px;
-      transform: rotate(0deg);
-      transition: transform 0.3s ease, color 0.3s ease;
-      color: #94a3b8;
-    }
-
-    .faq-item.active .faq-question::after {
-      transform: rotate(90deg);
-      color: #ff8a00;
-    }
-
-    .faq-item.active .faq-question {
-      color: #ff8a00;
-    }
-
-    /* Answer */
-    .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      margin-top: 0;
-      color: #334155;
-      font-size: 1rem;
-      line-height: 1.7;
-      transition:
-        max-height 0.4s ease,
-        opacity 0.4s ease,
-        margin-top 0.4s ease;
-    }
-
-    .faq-item.active .faq-answer {
-      max-height: 600px;
-      opacity: 1;
-      margin-top: 15px;
-    }
-
-    /* Contact Section */
-    .contact-section {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      padding: 80px 20px;
-      text-align: center;
-      color: rgb(255, 255, 255);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .contact-section h2 {
-      font-size: 2.8rem;
-      margin-bottom: 20px;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .contact-section p {
-      font-size: 1.2rem;
-      color: #ddd;
-      margin-bottom: 30px;
-    }
-
-    .contact-form {
-      background: rgba(255, 255, 255, 0.1);
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 40px;
-      border-radius: 15px;
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .contact-form:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      font-weight: bold;
-      color: white;
-      margin-bottom: 5px;
-    }
-
-    .form-group input,
-    .form-group textarea {
-      resize: none;
-      box-sizing: border-box;
-      width: 100%;
-      padding: 12px;
-      font-size: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-      border-color: #ff8a00;
-      box-shadow: 0 0 10px rgba(255, 138, 0, 0.3);
-      outline: none;
-    }
-
-    .submit-btn {
-      display: inline-block;
-      width: 100%;
-      padding: 14px;
-      font-size: 1.2rem;
-      background: linear-gradient(90deg, #ff8a00, #e52e71);
+      background-color: var(--primary);
       color: white;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      border-radius: 6px;
+      transition: background 0.3s;
     }
 
-    .submit-btn:hover {
-      background: linear-gradient(90deg, #e52e71, #ff8a00);
-      transform: scale(1.05);
+    button:hover {
+      background-color: #357ab7;
     }
 
-
-
-    @media (max-width: 768px) {
-
-
-      .hero-section {
-        padding: 15px;
-      }
-
-      .hero-content h1 {
-        font-size: 3rem;
-      }
-
-      .hero-content p {
-        font-size: 1.2rem;
-        margin-bottom: 70px;
-      }
-
-      .hero-buttons {
-        flex-direction: column;
-        width: 250px;
-        margin: 0 auto;
-      }
-
-      .about-section {
-        padding: 150px 20px 50px;
-      }
-
-      .about-content {
-        padding: 10px;
-        width: 98%;
-      }
-
-      .about-content:hover {
-        transform: translateY(0);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      }
-
-      .about-section h2,
-      .services-section h2,
-      .counter-section h2,
-      #our-projects h2 {
-        font-size: 2.2rem;
-      }
-
-      .about-content h3 {
-        font-size: 1.8rem;
-      }
-
-      .about-list li {
-        font-size: 18px;
-        padding: 14px;
-      }
-
-      .about-list li:hover {
-        transform: scale(1);
-        box-shadow: none;
-      }
-
-      .services-section {
-        padding: 100px 20px;
-      }
-
-      .services-container {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .service {
-        max-width: 90%;
-      }
-
-      .faq-title {
-        font-size: 25px;
-      }
-
-      .faq-question {
-        font-size: 1rem;
-      }
-
-      /* .faq-question::after {
-        font-size: 20px;
-      } */
-
-      .faq-answer {
-        font-size: 0.95rem;
-      }
-
-      .contact-section h2 {
-        font-size: 2.2rem;
-      }
-
-      .contact-form {
-        padding: 30px;
-      }
-
-      .submit-btn {
-        font-size: 1rem;
-      }
-
+    input[type="text"],
+    textarea {
+      padding: 10px;
+      width: 90%;
+      max-width: 400px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
-
-
-    #our-projects {
-      position: relative;
-      padding: 150px 20px 50px;
-      background: #fff;
-      position: relative;
-
+    textarea {
+      height: 80px;
     }
 
-    .left_arrow,
-    .right_arrow {
-      position: absolute;
-      top: 65%;
-      transform: translateY(-50%);
-      cursor: pointer;
-      font-size: 30px;
-      background-color: rgba(0, 0, 0, 0.64);
-      color: #fff;
-      padding: 10px 10px 8px;
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.3s, background-color 0.3s;
-      z-index: 99;
-    }
-
-    .left_arrow {
-      left: 5px;
-    }
-
-    .right_arrow {
-      right: 5px;
-    }
-
-    #media_left_arrow,
-    #media_right_arrow {
-      display: none;
-    }
-
-    .slider-container {
+    #survey-image {
       width: 100%;
+      max-width: 500px;
+      height: auto;
+      margin: 20px auto;
+      border-radius: 10px;
+    }
+
+    #timer {
+      font-size: 1.5rem;
+      color: var(--accent);
+      margin: 20px 0;
+    }
+
+    #results-table {
+      margin-top: 40px;
       overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: auto;
-      display: flex;
-      gap: 5px;
-      padding: 20px 20px 0px !important;
-      box-sizing: border-box;
-      scroll-behavior: smooth;
     }
 
-    .slides {
-      display: flex;
-    }
-
-    .slide {
-      position: relative;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 15px;
-      text-align: center;
-      box-sizing: border-box;
-      scroll-snap-align: center;
-      flex: 0 0 calc((100% - 2 * 35px) / 3);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
-      overflow: hidden;
-    }
-
-
-    .slide:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    #our-projects .slide img {
-      object-fit: cover;
-    }
-
-    .swiper-horizontal>.swiper-pagination-bullets,
-    .swiper-pagination-bullets.swiper-pagination-horizontal,
-    .swiper-pagination-custom,
-    .swiper-pagination-fraction {
-      bottom: -5px !important;
-    }
-
-    .my-pagination .swiper-pagination-bullet-active {
-      background-color: #2a4d8d;
-    }
-
-    .my-pagination {
-      text-align: center;
-      position: relative;
-      bottom: 5px;
+    table {
       width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
     }
 
-
-    .dot {
-      height: 10px;
-      width: 10px;
-      background-color: #bbb;
-      border-radius: 50%;
-      display: inline-block;
-      margin: 0 5px;
-      cursor: pointer;
+    th,
+    td {
+      padding: 12px;
+      border: 1px solid #ccc;
     }
 
-    .dot.active {
-      background-color: #000;
+    th {
+      background-color: #e0e0e0;
     }
 
-    ::-webkit-scrollbar {
-      display: none;
-    }
+    @media (max-width: 600px) {
+      button {
+        width: 90%;
+        margin: 10px auto;
+      }
 
-    .image-placeholder {
-      height: 350px;
-      width: 100%;
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      input[type="text"],
+      textarea {
+        width: 95%;
+      }
+
+      table,
+      th,
+      td {
+        font-size: 0.9rem;
+      }
     }
   </style>
 
-
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <nav class="navbar" role="navigation" aria-label="Main Navigation">
-    <div class="navbar-container">
-      <div class="brand">
-        <a href="#home">WebSprint</a>
-      </div>
-
-      <ul class="nav-links">
-        <li><a href="#home" class="active">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#our-projects">Our Projects</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-      <div class="container" id="menuTogglerDiv" onclick="handleMenu(this)">
-        <div class="bar1" id="menuToggler"></div>
-        <div class="bar2" id="menuToggler"></div>
-        <div class="bar3" id="menuToggler"></div>
-      </div>
+  <div id="app">
+    <div id="start-screen">
+      <h1>בחר סקר</h1>
+      <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
+      <button onclick="startSurvey(1)">סקר 2 - זמן ארוך + הסחות קלות</button>
+      <button onclick="startSurvey(2)">סקר 3 - זמן קצר + הסחות רבות</button>
     </div>
 
-  </nav>
+    <div id="name-screen" class="hidden">
+      <h2>הכנס את שמך:</h2>
+      <input type="text" id="user-name" placeholder="הקלד את שמך..." />
+      <br />
+      <button onclick="beginSurvey()">התחל</button>
+    </div>
 
+    <div id="survey-screen" class="hidden">
+      <h2 id="user-greeting"></h2>
+      <img id="survey-image" src="https://via.placeholder.com/500x250" alt="תמונה לשאלון" />
+      <div id="questions"></div>
+      <div id="timer" class="hidden"></div>
+      <button onclick="submitAnswers()">סיים ושלח</button>
+    </div>
 
+    <div id="result-screen" class="hidden">
+      <h2>תוצאה</h2>
+      <p id="score"></p>
+      <button onclick="location.reload()">חזרה להתחלה</button>
+    </div>
 
-  <div id="media_menu" style="display: none;">
-    <a style="text-decoration: none;margin-top: 100px;" href="#home" onclick="handleMenu()">
-      <div style="width: 100%;text-align: center;"><button class="humburgerBtn">Home</button></div>
-    </a>
-
-    <a style="text-decoration: none;" href="#about" onclick="handleMenu()">
-      <div style="width: 100%;text-align: center;"><button class="humburgerBtn">About</button></div>
-    </a>
-
-    <a style="text-decoration: none;" href="#services" onclick="handleMenu()">
-      <div style="width: 100%;text-align: center;"><button class="humburgerBtn">Services</button></div>
-    </a>
-
-    <a style="text-decoration: none;" href="#our-projects" onclick="handleMenu()">
-      <div style="width: 100%;text-align: center;"><button class="humburgerBtn">Our Projects</button></div>
-    </a>
-
-    <a style="text-decoration: none;" href="#contact" onclick="handleMenu()">
-      <div style="width: 100%;text-align: center;"><button class="humburgerBtn">Contact</button></div>
-    </a>
+    <div id="results-table">
+      <h2>טבלת משתתפים</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>שם</th>
+            <th>סקר</th>
+            <th>תשובות נכונות</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
   </div>
 
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-  <body>
-    <div id="scroll-indicator-container">
-      <div id="scroll-indicator-bar"></div>
-    </div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    <!-- Hero Section -->
-    <header class="hero-section" id="home">
-      <div class="overlay"></div>
+    const surveys = [
+      { timeLimit: null, distractions: 0 },
+      { timeLimit: 60, distractions: 1 },
+      { timeLimit: 20, distractions: 3 },
+    ];
 
-      <div class="hero-content">
-        <h1>Welcome to <span class="brand-name">WebSprint</span></h1>
-        <p class="hero-description">
-          Your dream team of developers & a UI/UX expert – premium quality at
-          breakthrough prices!
-        </p>
+    const questions = [
+      { question: "מה מופיע בתמונה?", answer: "ים" },
+      { question: "מה צבע השמיים?", answer: "כחול" },
+      { question: "כמה עצים יש בתמונה?", answer: "2" },
+      { question: "האם יש אנשים בתמונה?", answer: "לא" },
+    ];
 
-        <div class="hero-buttons">
-          <a href="#about" class="cta-button">Get Started</a>
-          <a href="#contact" class="cta-button secondary">Contact Us</a>
-        </div>
-      </div>
-    </header>
+    let selectedSurvey = null;
+    let userName = "";
+    let timer = null;
+    let timeRemaining = 0;
 
-    <div background="background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);">
-      <section id="about" class="about-section section">
-        <div data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
-          <h2>About Us</h2>
-          <div class="about-content">
-            <p>
-              At <strong>WebSprint</strong>, we specialize in crafting
-              high-converting, visually stunning landing pages designed to elevate
-              businesses of all sizes. Our team of experienced developers and a
-              dedicated UI/UX expert work closely with each client, ensuring a
-              personalized approach tailored to their unique needs.
-            </p>
-            <h3>Why Choose Us?</h3>
-            <ul class="about-list">
-              <li>
-                <strong>Unbeatable Prices</strong> <br> Competitive rates for all.
-              </li>
-              <li>
-                <strong>Top-Tier Quality</strong> <br> Fully responsive & modern.
-              </li>
-              <li>
-                <strong>Personalized Service</strong> <br> Bringing your vision to
-                life.
-              </li>
-              <li>
-                <strong>Seamless Launch Support</strong> <br> From domain to
-                deployment.
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
+    function startSurvey(index) {
+      selectedSurvey = surveys[index];
+      document.getElementById("start-screen").classList.add("hidden");
+      document.getElementById("name-screen").classList.remove("hidden");
+    }
 
-      <section id="services" class="services-section section" data-aos="fade-up" data-aos-duration="1000"
-        data-aos-delay="100">
-        <h2>Our Services</h2>
-        <div class="services-container">
-          <div class="service">
-            <h3>Landing Page Development</h3>
-            <p>High-quality, fast, and responsive pages tailored for success.</p>
-          </div>
-          <div class="service">
-            <h3>UI/UX Design</h3>
-            <p>Modern, user-friendly, and conversion-focused interfaces.</p>
-          </div>
-        </div>
-        <div class="services-container" style="margin-top: 35px;">
-          <div class="service">
-            <h3>Domain & Hosting Setup</h3>
-            <p>We assist with domain purchase, hosting, and site launch.</p>
-          </div>
-          <div class="service">
-            <h3>Ongoing Support</h3>
-            <p>Technical support and guidance to keep your site running.</p>
-          </div>
-      </section>
+    function beginSurvey() {
+      const nameInput = document.getElementById("user-name").value.trim();
+      if (!nameInput) return alert("אנא הזן שם");
+      userName = nameInput;
 
-      <section id="our-projects" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
-        <h2>Our Projects</h2>
-        <div class="slider-wrapper">
-          <div class="swiper slider-container" id="sliderContainer1">
-            <div class="swiper-wrapper slides">
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-              <div class="swiper-slide slide">
-                <div class="image-placeholder">
-                </div>
-                <div class="caption">exapmle</div>
-              </div>
-            </div>
-          </div>
-          <div class="my-pagination"></div>
-          <div id="leftArrow1" class="left_arrow">
-            <i id="web_left_arrow" class="fa-solid fa-left-long"></i>
-            <p id="media_left_arrow">&#8249;</p>
-          </div>
-          <div id="rightArrow1" class="right_arrow">
-            <i id="web_right_arrow" class="fa-solid fa-right-long"></i>
-            <p id="media_right_arrow"> &#8250; </p>
-          </div>
-        </div>
-      </section>
+      document.getElementById("name-screen").classList.add("hidden");
+      document.getElementById("survey-screen").classList.remove("hidden");
+      document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
+      loadQuestions();
+      startTimer();
+      addDistractions();
+    }
 
-    </div>
+    function loadQuestions() {
+      const container = document.getElementById("questions");
+      container.innerHTML = "";
+      questions.forEach((q, i) => {
+        const div = document.createElement("div");
+        div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}" placeholder="התשובה שלך..."></textarea>`;
+        container.appendChild(div);
+      });
+    }
 
-    <section class="faq-section" id="faq" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
-      <div class="faq-header">
-        <h2 class="faq-title">Frequently Asked Questions</h2>
-        <p class="faq-subtitle">
-          Got questions? We've got answers! Find everything you need to know below.
-        </p>
-      </div>
+    function startTimer() {
+      if (!selectedSurvey.timeLimit) return;
+      const timeBox = document.getElementById("timer");
+      timeRemaining = selectedSurvey.timeLimit;
+      timeBox.classList.remove("hidden");
+      timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
 
-      <div class="faq-container">
-        <div class="faq-item">
-          <button class="faq-question">What services do you offer?</button>
-          <div class="faq-answer">
-            <p>We offer full-stack development, UI/UX design, and custom web tools tailored to your needs.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">How long does it take to build a website?</button>
-          <div class="faq-answer">
-            <p>Project timelines vary based on complexity. Typically, it takes between 1 to 3 weeks.</p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">What are your prices?</button>
-          <div class="faq-answer">
-            <p>Our prices are affordable and competitive. We offer custom quotes based on your specific requirements.
-            </p>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <button class="faq-question">How do I get started?</button>
-          <div class="faq-answer">
-            <p>Just click on "Contact Us" and fill out the contact form. We'll get back to you within 24 hours.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Counter Section - our impact-->
-    <section class="counter-section" id="stats">
-      <h2>Our Impact</h2>
-      <div class="counter-container">
-        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="100">
-          <div class="counter" data-target="107">0</div>
-          <p>Happy Clients</p>
-        </div>
-        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="200">
-          <div class="counter" data-target="107">0</div>
-          <p>Projects Delivered</p>
-        </div>
-        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="300">
-          <div class="counter" data-target="5">0</div>
-          <p>Years of Experience</p>
-        </div>
-        <div class="counter-box" data-aos="fade-in" data-aos-duration="1000" data-aos-delay="400">
-          <div class="counter" data-target="4">0</div>
-          <p>Team Members</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact-section section">
-      <h2>Contact Us</h2>
-      <p>Fill out the form below, and we'll get back to you shortly.</p>
-      <form class="contact-form">
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" placeholder="Enter your name" required />
-        </div>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" placeholder="Enter your email" required />
-        </div>
-        <div class="form-group">
-          <label for="message">Your Message</label>
-          <textarea id="message" name="message" placeholder="Type your message here..." rows="5" required></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Send Message</button>
-      </form>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="footer-container">
-        <p>&copy; 2025 WebSprint. All rights reserved.</p>
-        <nav class="footer-nav">
-          <a href="#services">Services</a>
-          <a href="#about">About Us</a>
-          <a href="#contact">Contact</a>
-        </nav>
-      </div>
-    </footer>
-
-
-    <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
-    <script src=" https://unpkg.com/aos@next/dist/aos.js"></script>
-    <script>AOS.init();</script>
-    <script>
-
-      const menuTogglerDiv = document.getElementById("menuTogglerDiv");
-      let menuIsOpen = false;
-
-      function handleMenu(x) {
-        const menu = document.getElementById("media_menu");
-        menuIsOpen = !menuIsOpen;
-        if (menuIsOpen) {
-          menu.style.display = "block";
-          menuTogglerDiv.classList.add("change");
-          document.body.style.overflow = "hidden";
-        } else {
-          menu.style.display = "none";
-          menuTogglerDiv.classList.remove("change");
-          document.body.style.overflow = "auto";
+      timer = setInterval(() => {
+        timeRemaining--;
+        timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
+        if (timeRemaining <= 0) {
+          clearInterval(timer);
+          alert("הזמן תם!");
+          submitAnswers();
         }
+      }, 1000);
+    }
+
+    function submitAnswers() {
+      if (timer) clearInterval(timer);
+      let correct = 0;
+      questions.forEach((q, i) => {
+        const input = document.getElementById(`q${i}`);
+        const val = input.value.trim().toLowerCase();
+        const expected = q.answer.trim().toLowerCase();
+        if (val === expected) correct++;
+      });
+
+      const surveyName = getSurveyName(selectedSurvey);
+      saveResult(userName, surveyName, correct);
+
+      document.getElementById("survey-screen").classList.add("hidden");
+      document.getElementById("result-screen").classList.remove("hidden");
+      document.getElementById("score").innerText = `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
+    }
+
+    function getSurveyName(survey) {
+      if (!survey.timeLimit) return "ללא זמן";
+      if (survey.timeLimit === 60) return "זמן ארוך";
+      return "זמן קצר";
+    }
+
+    function saveResult(name, surveyType, score) {
+      const ref = db.ref("results").push();
+      ref.set({ name, surveyType, score, timestamp: Date.now() });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById("table-body");
+      db.ref("results").on("value", (snapshot) => {
+        tbody.innerHTML = "";
+        const data = snapshot.val();
+        if (!data) return;
+
+        const rows = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+        rows.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.name}</td>
+            <td>${row.surveyType}</td>
+            <td>${row.score}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function addDistractions() {
+      for (let i = 0; i < selectedSurvey.distractions; i++) {
+        setTimeout(() => {
+          const popup = document.createElement("div");
+          popup.innerText = "הסחת דעת!";
+          popup.style.position = "fixed";
+          popup.style.top = `${Math.random() * 80 + 10}%`;
+          popup.style.left = `${Math.random() * 80 + 10}%`;
+          popup.style.background = "orange";
+          popup.style.padding = "12px";
+          popup.style.border = "2px solid black";
+          popup.style.zIndex = 9999;
+          popup.style.fontWeight = "bold";
+          document.body.appendChild(popup);
+          setTimeout(() => popup.remove(), 3000);
+        }, Math.random() * (selectedSurvey.timeLimit || 30) * 1000);
       }
+    }
 
-      document.addEventListener("click", function (e) {
-        const menu = document.getElementById("media_menu");
-        if (
-          menuIsOpen &&
-          !menu.contains(e.target) &&
-          !menuTogglerDiv.contains(e.target)
-        ) {
-          handleMenu();
-        }
-      });
-
-
-      const navLinks = document.querySelectorAll(".nav-links a");
-      const sections = Array.from(document.querySelectorAll("section[id], header"));
-
-      function setActiveLink(el) {
-        navLinks.forEach((link) => link.classList.remove("active"));
-        if (el) el.classList.add("active");
-      }
-
-      navLinks.forEach((link) => {
-        link.addEventListener("click", function (e) {
-          e.preventDefault();
-          setActiveLink(this);
-          const target = document.querySelector(this.getAttribute("href"));
-          if (target) {
-            target.scrollIntoView({ behavior: "smooth" });
-          }
-          if (menuIsOpen) handleMenu();
-        });
-      });
-
-      window.addEventListener("scroll", () => {
-        const scrollPos = window.scrollY + 100;
-        let currentId = "";
-
-        sections.forEach((sec) => {
-          const top = sec.offsetTop;
-          const bottom = top + sec.offsetHeight;
-          if (scrollPos >= top && scrollPos < bottom) {
-            currentId = sec.getAttribute("id");
-          }
-        });
-
-        if (currentId) {
-          const activeLink = document.querySelector(`.nav-links a[href="#${currentId}"]`);
-          setActiveLink(activeLink);
-        } else {
-          // not in any section → clear all
-          setActiveLink(null);
-        }
-      });
-
-
-      window.addEventListener("scroll", () => {
-        const scrollBar = document.getElementById("scroll-indicator-bar");
-        const scrollTop = window.scrollY;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollPercent = (scrollTop / docHeight) * 100;
-        scrollBar.style.width = `${scrollPercent}%`;
-      });
-
-      const counters = document.querySelectorAll('.counter');
-
-      function animateCounters() {
-        counters.forEach(counter => {
-          const target = +counter.dataset.target;
-          counter.innerText = '0';
-
-          const totalDuration = target <= 10 ? 1000 : 500;
-          const interval = totalDuration / target;
-
-          let current = 0;
-          function update() {
-            current++;
-            counter.innerText = current;
-            if (current < target) {
-              setTimeout(update, interval);
-            }
-          }
-          update();
-        });
-      }
-
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            animateCounters();
-          } else {
-            counters.forEach(c => c.innerText = '0');
-          }
-        });
-      }, { threshold: 0.5 });
-
-      observer.observe(document.querySelector('.counter-section'));
-
-
-
-
-      document.querySelectorAll(".faq-item").forEach(item => {
-        const question = item.querySelector(".faq-question");
-        const answer = item.querySelector(".faq-answer");
-        answer.style.maxHeight = "0";
-
-        question.addEventListener("click", () => {
-          const isOpen = item.classList.contains("active");
-
-          if (isOpen) {
-            answer.style.maxHeight = answer.scrollHeight + "px";
-            +            answer.offsetHeight;
-            answer.style.maxHeight = "0";
-            item.classList.remove("active");
-          } else {
-            answer.style.maxHeight = answer.scrollHeight + "px";
-            item.classList.add("active");
-          }
-        });
-      });
-      function setUpSlider(nodeId, rightArrowSel, leftArrowSel, spaceBetween = 32, slidesPerViewPc = 3, paginationEl = ".my-pagination", delay = 4) {
-        const sliderContainer = document.querySelector(nodeId);
-        const actualId = "#" + sliderContainer.id;
-
-        const rightArrow = document.querySelector(rightArrowSel);
-        const leftArrow = document.querySelector(leftArrowSel);
-
-        const swiper = new Swiper(actualId, {
-          pagination: {
-            el: paginationEl,
-            clickable: true,
-            renderBullet: (index, className) => `<span class="${className}"></span>`
-          },
-          loop: true,
-          initialSlide: document.querySelectorAll(`${actualId} .swiper-slide`).length - 1,
-          slidesPerGroup: 1,
-          loopedSlides: document.querySelectorAll(`${actualId} .swiper-slide`).length - 1,
-          spaceBetween,
-          breakpoints: {
-            0: { slidesPerView: 1 },
-            800: { slidesPerView: slidesPerViewPc }
-          },
-          simulateTouch: true,
-          autoplay: {
-            delay: delay * 1000,
-            reverseDirection: true,
-            disableOnInteraction: false
-          },
-          speed: 500
-        });
-
-        sliderContainer.addEventListener('wheel', e => {
-          const threshold = 20;
-          if ((Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) && Math.abs(e.deltaX) > threshold) {
-            e.preventDefault();
-            e.deltaX > 0 ? swiper.slideNext() : swiper.slidePrev();
-          }
-        });
-
-        if (window.innerWidth > 800) {
-          sliderContainer.addEventListener('mouseenter', () => {
-            swiper.autoplay.stop();
-            leftArrow.style.opacity = rightArrow.style.opacity = 1;
-          });
-          sliderContainer.addEventListener('mouseleave', () => {
-            swiper.autoplay.start();
-            leftArrow.style.opacity = rightArrow.style.opacity = 0;
-          });
-        }
-
-        if (leftArrow && rightArrow) {
-          rightArrow.addEventListener('click', () => {
-            swiper.slideNext();
-          });
-          leftArrow.addEventListener('click', () => {
-            swiper.slidePrev();
-          });
-
-          if (window.innerWidth > 800) {
-            leftArrow.addEventListener('mouseenter', () => {
-              leftArrow.style.opacity = 1;
-              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.859)';
-              rightArrow.style.opacity = 1;
-              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
-            });
-
-            leftArrow.addEventListener('mouseleave', () => {
-              leftArrow.style.opacity = 1;
-              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
-            });
-
-            rightArrow.addEventListener('mouseenter', () => {
-              rightArrow.style.opacity = 1;
-              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.859)';
-              leftArrow.style.opacity = 1;
-              leftArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
-            });
-
-            rightArrow.addEventListener('mouseleave', () => {
-              rightArrow.style.opacity = 1;
-              rightArrow.style.backgroundColor = 'rgba(0, 0, 0, 0.64)';
-            });
-          }
-          else {
-            leftArrow.addEventListener('mouseenter', () => {
-              rightArrow.style.opacity = 1;
-              leftArrow.style.opacity = 1;
-            });
-
-            leftArrow.addEventListener('mouseleave', () => {
-              rightArrow.style.opacity = 1;
-              leftArrow.style.opacity = 1;
-            });
-
-            rightArrow.addEventListener('mouseenter', () => {
-              rightArrow.style.opacity = 1;
-              leftArrow.style.opacity = 1;
-            });
-
-            rightArrow.addEventListener('mouseleave', () => {
-              rightArrow.style.opacity = 1;
-              leftArrow.style.opacity = 1;
-            });
-          }
-
-        }
-
-        swiper.update();
-        return swiper;
-      }
-
-      const swiper1 = setUpSlider(
-        '#sliderContainer1',
-        '#rightArrow1',
-        '#leftArrow1',
-        35
-      );
-
-
-    </script>
-
-  </body>
+    document.addEventListener("DOMContentLoaded", renderTable);
+  </script>
+</body>
 
 </html>
