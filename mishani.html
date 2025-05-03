@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="he">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -31,7 +32,8 @@
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
       color: var(--primary);
     }
 
@@ -55,7 +57,8 @@
       background-color: #357ab7;
     }
 
-    input[type="text"], textarea {
+    input[type="text"],
+    textarea {
       padding: 10px;
       width: 90%;
       max-width: 400px;
@@ -83,24 +86,27 @@
       margin: 20px 0;
     }
 
-    #results-table {
-      margin-top: 40px;
-      overflow-x: auto;
+    #questions {
+      margin-top: 20px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+    .question {
+      margin-bottom: 20px;
+      display: none;
+      transition: transform 0.5s ease-in-out;
     }
 
-    th, td {
-      padding: 12px;
-      border: 1px solid #ccc;
+    .question.active {
+      display: block;
+      transform: translateX(0);
     }
 
-    th {
-      background-color: #e0e0e0;
+    .question.left {
+      transform: translateX(-100%);
+    }
+
+    .question.right {
+      transform: translateX(100%);
     }
 
     @media (max-width: 600px) {
@@ -109,12 +115,9 @@
         margin: 10px auto;
       }
 
-      input[type="text"], textarea {
+      input[type="text"],
+      textarea {
         width: 95%;
-      }
-
-      table, th, td {
-        font-size: 0.9rem;
       }
     }
   </style>
@@ -123,6 +126,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
+
 <body>
   <div id="app">
     <div id="start-screen">
@@ -130,6 +134,12 @@
       <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
       <button onclick="startSurvey(1)">סקר 2 - זמן ארוך + הסחות קלות</button>
       <button onclick="startSurvey(2)">סקר 3 - זמן קצר + הסחות רבות</button>
+    </div>
+
+    <div id="password-screen" class="hidden">
+      <h2>הכנס סיסמה:</h2>
+      <input type="text" id="password-input" placeholder="הקלד סיסמה..." />
+      <button onclick="verifyPassword()">אשר</button>
     </div>
 
     <div id="name-screen" class="hidden">
@@ -150,7 +160,6 @@
     <div id="result-screen" class="hidden">
       <h2>תוצאה</h2>
       <p id="score"></p>
-      <button onclick="location.reload()">חזרה להתחלה</button>
     </div>
 
     <div id="results-table">
@@ -183,27 +192,38 @@
     const db = firebase.database();
 
     const surveys = [
-      { timeLimit: null, distractions: 0 },
-      { timeLimit: 60, distractions: 1 },
-      { timeLimit: 20, distractions: 3 },
+      { timeLimit: null, distractions: 0, password: "shay1" },
+      { timeLimit: 60, distractions: 1, password: "shay2" },
+      { timeLimit: 20, distractions: 3, password: "shay3" }
     ];
 
     const questions = [
       { question: "מה מופיע בתמונה?", answer: "ים" },
       { question: "מה צבע השמיים?", answer: "כחול" },
       { question: "כמה עצים יש בתמונה?", answer: "2" },
-      { question: "האם יש אנשים בתמונה?", answer: "לא" },
+      { question: "האם יש אנשים בתמונה?", answer: "לא" }
     ];
 
     let selectedSurvey = null;
     let userName = "";
+    let currentQuestionIndex = 0;
     let timer = null;
     let timeRemaining = 0;
 
     function startSurvey(index) {
       selectedSurvey = surveys[index];
       document.getElementById("start-screen").classList.add("hidden");
-      document.getElementById("name-screen").classList.remove("hidden");
+      document.getElementById("password-screen").classList.remove("hidden");
+    }
+
+    function verifyPassword() {
+      const password = document.getElementById("password-input").value.trim();
+      if (password === selectedSurvey.password) {
+        document.getElementById("password-screen").classList.add("hidden");
+        document.getElementById("name-screen").classList.remove("hidden");
+      } else {
+        alert("סיסמה שגויה!");
+      }
     }
 
     function beginSurvey() {
@@ -216,7 +236,6 @@
       document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
       loadQuestions();
       startTimer();
-      addDistractions();
     }
 
     function loadQuestions() {
@@ -224,27 +243,20 @@
       container.innerHTML = "";
       questions.forEach((q, i) => {
         const div = document.createElement("div");
+        div.classList.add("question");
         div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}" placeholder="התשובה שלך..."></textarea>`;
         container.appendChild(div);
       });
+      showNextQuestion();
     }
 
-    function startTimer() {
-      if (!selectedSurvey.timeLimit) return;
-      const timeBox = document.getElementById("timer");
-      timeRemaining = selectedSurvey.timeLimit;
-      timeBox.classList.remove("hidden");
-      timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
-
-      timer = setInterval(() => {
-        timeRemaining--;
-        timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
-        if (timeRemaining <= 0) {
-          clearInterval(timer);
-          alert("הזמן תם!");
-          submitAnswers();
-        }
-      }, 1000);
+    function showNextQuestion() {
+      const questionsElements = document.querySelectorAll(".question");
+      if (currentQuestionIndex < questionsElements.length) {
+        const currentQuestion = questionsElements[currentQuestionIndex];
+        currentQuestion.classList.add("active");
+        currentQuestion.classList.remove("left", "right");
+      }
     }
 
     function submitAnswers() {
@@ -275,47 +287,7 @@
       const ref = db.ref("results").push();
       ref.set({ name, surveyType, score, timestamp: Date.now() });
     }
-
-    function renderTable() {
-      const tbody = document.getElementById("table-body");
-      db.ref("results").on("value", (snapshot) => {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) return;
-
-        const rows = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
-        rows.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.name}</td>
-            <td>${row.surveyType}</td>
-            <td>${row.score}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function addDistractions() {
-      for (let i = 0; i < selectedSurvey.distractions; i++) {
-        setTimeout(() => {
-          const popup = document.createElement("div");
-          popup.innerText = "הסחת דעת!";
-          popup.style.position = "fixed";
-          popup.style.top = `${Math.random() * 80 + 10}%`;
-          popup.style.left = `${Math.random() * 80 + 10}%`;
-          popup.style.background = "orange";
-          popup.style.padding = "12px";
-          popup.style.border = "2px solid black";
-          popup.style.zIndex = 9999;
-          popup.style.fontWeight = "bold";
-          document.body.appendChild(popup);
-          setTimeout(() => popup.remove(), 3000);
-        }, Math.random() * (selectedSurvey.timeLimit || 30) * 1000);
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", renderTable);
   </script>
 </body>
+
 </html>
