@@ -269,9 +269,29 @@
         const currentQuestion = questionsElements[currentQuestionIndex];
         currentQuestion.classList.add("active");
         currentQuestionIndex++;
+        if (selectedSurvey.timeLimit && currentQuestionIndex === questionsElements.length) {
+          startTimer();
+        }
       } else {
         submitAnswers();
       }
+    }
+
+    function startTimer() {
+      const timeBox = document.getElementById("timer");
+      timeBox.classList.remove("hidden");
+      timeRemaining = selectedSurvey.timeLimit;
+      timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
+
+      timer = setInterval(() => {
+        timeRemaining--;
+        timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
+        if (timeRemaining <= 0) {
+          clearInterval(timer);
+          alert("הזמן תם!");
+          submitAnswers();
+        }
+      }, 1000);
     }
 
     function submitAnswers() {
