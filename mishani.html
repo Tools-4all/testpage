@@ -4,15 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>סקר תמונה</title>
+  <title>סקר תמונה - אנימציה ושאלות אמריקאיות</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       direction: rtl;
       text-align: center;
-      background-color: #f9f9f9;
+      background-color: #f4f4f4;
       margin: 0;
-      padding: 40px;
+      padding: 20px;
     }
 
     .hidden {
@@ -26,77 +26,48 @@
       cursor: pointer;
     }
 
-    input[type="text"],
-    textarea {
-      padding: 10px;
-      width: 60%;
-      margin: 10px 0;
-      font-size: 1rem;
-    }
-
-    textarea {
-      height: 60px;
-    }
-
     #survey-image {
-      width: 400px;
-      height: 200px;
+      width: 90%;
+      max-width: 400px;
+      height: auto;
       margin-bottom: 20px;
     }
 
-    #timer {
-      font-size: 1.5rem;
-      color: red;
-      margin: 20px 0;
+    .slide {
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.5s ease;
     }
 
-    #results-table {
-      margin-top: 50px;
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
     }
 
-    table {
-      margin: 0 auto;
-      border-collapse: collapse;
-      width: 80%;
-    }
-
-    th,
-    td {
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-
-    th {
-      background-color: #eee;
+    #question-container {
+      position: relative;
+      min-height: 150px;
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
   <div id="app">
-    <div id="start-screen">
-      <h1>בחר סקר</h1>
-      <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
-      <button onclick="startSurvey(1)">סקר 2 - זמן ארוך + הסחות קלות</button>
-      <button onclick="startSurvey(2)">סקר 3 - זמן קצר + הסחות רבות</button>
-    </div>
-
-    <div id="name-screen" class="hidden">
+    <div id="name-screen">
       <h2>הכנס את שמך:</h2>
       <input type="text" id="user-name" />
-      <button onclick="beginSurvey()">התחל</button>
+      <button onclick="startQuiz()">התחל</button>
     </div>
 
-    <div id="survey-screen" class="hidden">
-      <h2 id="user-greeting"></h2>
+    <div id="image-screen" class="hidden">
+      <h2>התבונן בתמונה</h2>
       <img id="survey-image" src="https://via.placeholder.com/400x200" alt="תמונה לשאלון" />
-      <div id="questions"></div>
-      <div id="timer" class="hidden"></div>
-      <button onclick="submitAnswers()">סיים ושלח</button>
+      <button onclick="showNextQuestion()">הבא</button>
+    </div>
+
+    <div id="quiz-screen" class="hidden">
+      <h2 id="user-greeting"></h2>
+      <div id="question-container"></div>
     </div>
 
     <div id="result-screen" class="hidden">
@@ -104,170 +75,68 @@
       <p id="score"></p>
       <button onclick="location.reload()">חזרה להתחלה</button>
     </div>
-
-    <div id="results-table">
-      <h2>טבלת משתתפים</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>שם</th>
-            <th>סקר</th>
-            <th>תשובות נכונות</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const surveys = [
-      { timeLimit: null, distractions: 0 },
-      { timeLimit: 60, distractions: 1 },
-      { timeLimit: 20, distractions: 3 },
-    ];
-
     const questions = [
-      { question: "מה מופיע בתמונה?", answer: "ים" },
-      { question: "מה צבע השמיים?", answer: "כחול" },
-      { question: "כמה עצים יש בתמונה?", answer: "2" },
-      { question: "האם יש אנשים בתמונה?", answer: "לא" },
+      { question: "מה מופיע בתמונה?", options: ["ים", "כביש", "שדה", "בניין"], answer: 0 },
+      { question: "מה צבע השמיים?", options: ["כחול", "אפור", "ירוק", "אדום"], answer: 0 },
+      { question: "כמה עצים יש בתמונה?", options: ["1", "2", "3", "4"], answer: 1 },
+      { question: "האם יש אנשים בתמונה?", options: ["כן", "לא"], answer: 1 }
     ];
 
-    let selectedSurvey = null;
+    let currentQuestion = 0;
+    let correctAnswers = 0;
     let userName = "";
-    let timer = null;
-    let timeRemaining = 0;
 
-    function startSurvey(index) {
-      selectedSurvey = surveys[index];
-      document.getElementById("start-screen").classList.add("hidden");
-      document.getElementById("name-screen").classList.remove("hidden");
-    }
-
-    function beginSurvey() {
-      const nameInput = document.getElementById("user-name").value.trim();
-      if (!nameInput) return alert("אנא הזן שם");
-      userName = nameInput;
-
+    function startQuiz() {
+      userName = document.getElementById("user-name").value.trim();
+      if (!userName) return alert("אנא הזן שם");
       document.getElementById("name-screen").classList.add("hidden");
-      document.getElementById("survey-screen").classList.remove("hidden");
+      document.getElementById("image-screen").classList.remove("hidden");
+    }
+
+    function showNextQuestion() {
+      document.getElementById("image-screen").classList.add("hidden");
+      document.getElementById("quiz-screen").classList.remove("hidden");
       document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
-      loadQuestions();
-      startTimer();
-      addDistractions();
+      showQuestion();
     }
 
-    function loadQuestions() {
-      const container = document.getElementById("questions");
+    function showQuestion() {
+      const container = document.getElementById("question-container");
       container.innerHTML = "";
-      questions.forEach((q, i) => {
-        const div = document.createElement("div");
-        div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}"></textarea>`;
-        container.appendChild(div);
-      });
+
+      const q = questions[currentQuestion];
+      const slide = document.createElement("div");
+      slide.classList.add("slide", "active");
+
+      const html = `
+        <p>${q.question}</p>
+        ${q.options.map((opt, i) => `<label><input type="radio" name="q" value="${i}"> ${opt}</label><br>`).join("")}
+        <br>
+        <button onclick="next()">${currentQuestion === questions.length - 1 ? "סיום" : "הבא"}</button>
+      `;
+      slide.innerHTML = html;
+      container.appendChild(slide);
     }
 
-    function startTimer() {
-      if (!selectedSurvey.timeLimit) return;
-      const timeBox = document.getElementById("timer");
-      timeRemaining = selectedSurvey.timeLimit;
-      timeBox.classList.remove("hidden");
-      timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
+    function next() {
+      const selected = document.querySelector("input[name='q']:checked");
+      if (!selected) return alert("בחר תשובה");
+      if (parseInt(selected.value) === questions[currentQuestion].answer) correctAnswers++;
 
-      timer = setInterval(() => {
-        timeRemaining--;
-        timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
-        if (timeRemaining <= 0) {
-          clearInterval(timer);
-          alert("הזמן תם!");
-          submitAnswers();
-        }
-      }, 1000);
-    }
-
-    function submitAnswers() {
-      if (timer) clearInterval(timer);
-      let correct = 0;
-      questions.forEach((q, i) => {
-        const input = document.getElementById(`q${i}`);
-        const val = input.value.trim().toLowerCase();
-        const expected = q.answer.trim().toLowerCase();
-        if (val === expected) correct++;
-      });
-
-      const surveyName = getSurveyName(selectedSurvey);
-      saveResult(userName, surveyName, correct);
-
-      document.getElementById("survey-screen").classList.add("hidden");
-      document.getElementById("result-screen").classList.remove("hidden");
-      document.getElementById("score").innerText = `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
-    }
-
-    function getSurveyName(survey) {
-      if (!survey.timeLimit) return "ללא זמן";
-      if (survey.timeLimit === 60) return "זמן ארוך";
-      return "זמן קצר";
-    }
-
-    function saveResult(name, surveyType, score) {
-      const ref = db.ref("results").push();
-      ref.set({ name, surveyType, score, timestamp: Date.now() });
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById("table-body");
-      db.ref("results").on("value", (snapshot) => {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) return;
-
-        const rows = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
-        rows.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.name}</td>
-            <td>${row.surveyType}</td>
-            <td>${row.score}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
-    }
-
-    function addDistractions() {
-      for (let i = 0; i < selectedSurvey.distractions; i++) {
-        setTimeout(() => {
-          const popup = document.createElement("div");
-          popup.innerText = "הסחת דעת!";
-          popup.style.position = "fixed";
-          popup.style.top = `${Math.random() * 80 + 10}%`;
-          popup.style.left = `${Math.random() * 80 + 10}%`;
-          popup.style.background = "orange";
-          popup.style.padding = "12px";
-          popup.style.border = "2px solid black";
-          popup.style.zIndex = 9999;
-          popup.style.fontWeight = "bold";
-          document.body.appendChild(popup);
-          setTimeout(() => popup.remove(), 3000);
-        }, Math.random() * (selectedSurvey.timeLimit || 30) * 1000);
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        const slides = document.querySelectorAll(".slide");
+        slides.forEach(s => s.classList.remove("active"));
+        setTimeout(showQuestion, 500);
+      } else {
+        document.getElementById("quiz-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+        document.getElementById("score").innerText = `${userName}, ענית נכון על ${correctAnswers} מתוך ${questions.length}`;
       }
     }
-
-    document.addEventListener("DOMContentLoaded", renderTable);
   </script>
 </body>
 
