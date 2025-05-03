@@ -57,8 +57,7 @@
       background-color: #357ab7;
     }
 
-    input[type="text"],
-    textarea {
+    input[type="text"] {
       padding: 10px;
       width: 90%;
       max-width: 400px;
@@ -66,10 +65,6 @@
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 5px;
-    }
-
-    textarea {
-      height: 80px;
     }
 
     #survey-image {
@@ -86,25 +81,26 @@
       margin: 20px 0;
     }
 
-    #results-table {
-      margin-top: 40px;
-      overflow-x: auto;
+    .slide {
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.5s ease;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
     }
 
-    th,
-    td {
-      padding: 12px;
-      border: 1px solid #ccc;
+    .question-container label {
+      display: block;
+      text-align: right;
+      margin: 8px auto;
+      font-size: 1.1rem;
     }
 
-    th {
-      background-color: #e0e0e0;
+    input[type="radio"] {
+      margin-left: 8px;
     }
 
     @media (max-width: 600px) {
@@ -113,22 +109,11 @@
         margin: 10px auto;
       }
 
-      input[type="text"],
-      textarea {
+      input[type="text"] {
         width: 95%;
-      }
-
-      table,
-      th,
-      td {
-        font-size: 0.9rem;
       }
     }
   </style>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
@@ -147,12 +132,16 @@
       <button onclick="beginSurvey()">התחל</button>
     </div>
 
+    <div id="image-screen" class="hidden">
+      <h2>התבונן בתמונה</h2>
+      <img id="survey-image" src="https://via.placeholder.com/500x250" alt="תמונה לשאלון" />
+      <button onclick="startQuestions()">הבא</button>
+    </div>
+
     <div id="survey-screen" class="hidden">
       <h2 id="user-greeting"></h2>
-      <img id="survey-image" src="https://via.placeholder.com/500x250" alt="תמונה לשאלון" />
-      <div id="questions"></div>
+      <div id="question-container"></div>
       <div id="timer" class="hidden"></div>
-      <button onclick="submitAnswers()">סיים ושלח</button>
     </div>
 
     <div id="result-screen" class="hidden">
@@ -160,36 +149,9 @@
       <p id="score"></p>
       <button onclick="location.reload()">חזרה להתחלה</button>
     </div>
-
-    <div id="results-table">
-      <h2>טבלת משתתפים</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>שם</th>
-            <th>סקר</th>
-            <th>תשובות נכונות</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const surveys = [
       { timeLimit: null, distractions: 0 },
       { timeLimit: 60, distractions: 1 },
@@ -197,14 +159,16 @@
     ];
 
     const questions = [
-      { question: "מה מופיע בתמונה?", answer: "ים" },
-      { question: "מה צבע השמיים?", answer: "כחול" },
-      { question: "כמה עצים יש בתמונה?", answer: "2" },
-      { question: "האם יש אנשים בתמונה?", answer: "לא" },
+      { question: "מה מופיע בתמונה?", options: ["ים", "כביש", "שדה", "בניין"], answer: 0 },
+      { question: "מה צבע השמיים?", options: ["כחול", "אפור", "ירוק", "אדום"], answer: 0 },
+      { question: "כמה עצים יש בתמונה?", options: ["1", "2", "3", "4"], answer: 1 },
+      { question: "האם יש אנשים בתמונה?", options: ["כן", "לא"], answer: 1 }
     ];
 
     let selectedSurvey = null;
     let userName = "";
+    let currentQuestion = 0;
+    let correctAnswers = 0;
     let timer = null;
     let timeRemaining = 0;
 
@@ -218,23 +182,49 @@
       const nameInput = document.getElementById("user-name").value.trim();
       if (!nameInput) return alert("אנא הזן שם");
       userName = nameInput;
-
       document.getElementById("name-screen").classList.add("hidden");
-      document.getElementById("survey-screen").classList.remove("hidden");
-      document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
-      loadQuestions();
-      startTimer();
-      addDistractions();
+      document.getElementById("image-screen").classList.remove("hidden");
     }
 
-    function loadQuestions() {
-      const container = document.getElementById("questions");
+    function startQuestions() {
+      document.getElementById("image-screen").classList.add("hidden");
+      document.getElementById("survey-screen").classList.remove("hidden");
+      document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
+      startTimer();
+      addDistractions();
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const container = document.getElementById("question-container");
       container.innerHTML = "";
-      questions.forEach((q, i) => {
-        const div = document.createElement("div");
-        div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}" placeholder="התשובה שלך..."></textarea>`;
-        container.appendChild(div);
-      });
+
+      if (currentQuestion >= questions.length) {
+        document.getElementById("survey-screen").classList.add("hidden");
+        document.getElementById("result-screen").classList.remove("hidden");
+        document.getElementById("score").innerText = `${userName}, ענית נכון על ${correctAnswers} מתוך ${questions.length} שאלות.`;
+        return;
+      }
+
+      const q = questions[currentQuestion];
+      const slide = document.createElement("div");
+      slide.className = "slide active question-container";
+      slide.innerHTML = `
+        <p>${q.question}</p>
+        ${q.options.map((opt, i) => `<label><input type='radio' name='q' value='${i}'> ${opt}</label>`).join('')}<br>
+        <button onclick='nextQuestion()'>${currentQuestion === questions.length - 1 ? "סיום" : "הבא"}</button>
+      `;
+      container.appendChild(slide);
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector("input[name='q']:checked");
+      if (!selected) return alert("בחר תשובה");
+      if (parseInt(selected.value) === questions[currentQuestion].answer) correctAnswers++;
+      currentQuestion++;
+      const slides = document.querySelectorAll(".slide");
+      slides.forEach(s => s.classList.remove("active"));
+      setTimeout(showQuestion, 300);
     }
 
     function startTimer() {
@@ -250,58 +240,10 @@
         if (timeRemaining <= 0) {
           clearInterval(timer);
           alert("הזמן תם!");
-          submitAnswers();
+          currentQuestion = questions.length;
+          showQuestion();
         }
       }, 1000);
-    }
-
-    function submitAnswers() {
-      if (timer) clearInterval(timer);
-      let correct = 0;
-      questions.forEach((q, i) => {
-        const input = document.getElementById(`q${i}`);
-        const val = input.value.trim().toLowerCase();
-        const expected = q.answer.trim().toLowerCase();
-        if (val === expected) correct++;
-      });
-
-      const surveyName = getSurveyName(selectedSurvey);
-      saveResult(userName, surveyName, correct);
-
-      document.getElementById("survey-screen").classList.add("hidden");
-      document.getElementById("result-screen").classList.remove("hidden");
-      document.getElementById("score").innerText = `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
-    }
-
-    function getSurveyName(survey) {
-      if (!survey.timeLimit) return "ללא זמן";
-      if (survey.timeLimit === 60) return "זמן ארוך";
-      return "זמן קצר";
-    }
-
-    function saveResult(name, surveyType, score) {
-      const ref = db.ref("results").push();
-      ref.set({ name, surveyType, score, timestamp: Date.now() });
-    }
-
-    function renderTable() {
-      const tbody = document.getElementById("table-body");
-      db.ref("results").on("value", (snapshot) => {
-        tbody.innerHTML = "";
-        const data = snapshot.val();
-        if (!data) return;
-
-        const rows = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
-        rows.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.name}</td>
-            <td>${row.surveyType}</td>
-            <td>${row.score}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-      });
     }
 
     function addDistractions() {
@@ -322,8 +264,6 @@
         }, Math.random() * (selectedSurvey.timeLimit || 30) * 1000);
       }
     }
-
-    document.addEventListener("DOMContentLoaded", renderTable);
   </script>
 </body>
 
