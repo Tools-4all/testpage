@@ -269,9 +269,6 @@
         const currentQuestion = questionsElements[currentQuestionIndex];
         currentQuestion.classList.add("active");
         currentQuestionIndex++;
-        if (selectedSurvey.timeLimit && currentQuestionIndex === questionsElements.length) {
-          startTimer();
-        }
       } else {
         submitAnswers();
       }
