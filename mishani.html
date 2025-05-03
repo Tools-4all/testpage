@@ -6,35 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>סקר תמונה</title>
   <style>
-    :root {
-      --primary: #4a90e2;
-      --background: #f4f7fa;
-      --text: #333;
-      --accent: #ff9800;
-    }
-
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       direction: rtl;
       text-align: center;
-      background-color: var(--background);
-      color: var(--text);
+      background-color: #f9f9f9;
       margin: 0;
-      padding: 20px;
-    }
-
-    #app {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
-    }
-
-    h1,
-    h2 {
-      color: var(--primary);
+      padding: 40px;
     }
 
     .hidden {
@@ -43,86 +21,53 @@
 
     button {
       margin: 10px;
-      padding: 12px 24px;
+      padding: 10px 20px;
       font-size: 1rem;
       cursor: pointer;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #357ab7;
     }
 
     input[type="text"],
     textarea {
       padding: 10px;
-      width: 90%;
-      max-width: 400px;
+      width: 60%;
       margin: 10px 0;
       font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
     }
 
     textarea {
-      height: 80px;
+      height: 60px;
     }
 
     #survey-image {
-      width: 100%;
-      max-width: 500px;
-      height: auto;
-      margin: 20px auto;
-      border-radius: 10px;
+      width: 400px;
+      height: 200px;
+      margin-bottom: 20px;
     }
 
     #timer {
       font-size: 1.5rem;
-      color: var(--accent);
+      color: red;
       margin: 20px 0;
     }
 
     #results-table {
-      margin-top: 40px;
-      overflow-x: auto;
+      margin-top: 50px;
     }
 
     table {
-      width: 100%;
+      margin: 0 auto;
       border-collapse: collapse;
-      margin-top: 10px;
+      width: 80%;
     }
 
     th,
     td {
-      padding: 12px;
+      padding: 10px;
       border: 1px solid #ccc;
     }
 
     th {
-      background-color: #e0e0e0;
-    }
-
-    @media (max-width: 600px) {
-      button {
-        width: 90%;
-        margin: 10px auto;
-      }
-
-      input[type="text"],
-      textarea {
-        width: 95%;
-      }
-
-      table,
-      th,
-      td {
-        font-size: 0.9rem;
-      }
+      background-color: #eee;
     }
   </style>
 
@@ -142,14 +87,13 @@
 
     <div id="name-screen" class="hidden">
       <h2>הכנס את שמך:</h2>
-      <input type="text" id="user-name" placeholder="הקלד את שמך..." />
-      <br />
+      <input type="text" id="user-name" />
       <button onclick="beginSurvey()">התחל</button>
     </div>
 
     <div id="survey-screen" class="hidden">
       <h2 id="user-greeting"></h2>
-      <img id="survey-image" src="https://via.placeholder.com/500x250" alt="תמונה לשאלון" />
+      <img id="survey-image" src="https://via.placeholder.com/400x200" alt="תמונה לשאלון" />
       <div id="questions"></div>
       <div id="timer" class="hidden"></div>
       <button onclick="submitAnswers()">סיים ושלח</button>
@@ -232,7 +176,7 @@
       container.innerHTML = "";
       questions.forEach((q, i) => {
         const div = document.createElement("div");
-        div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}" placeholder="התשובה שלך..."></textarea>`;
+        div.innerHTML = `<p>${i + 1}. ${q.question}</p><textarea id="q${i}"></textarea>`;
         container.appendChild(div);
       });
     }
