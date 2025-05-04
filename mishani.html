@@ -21,11 +21,28 @@
       color: var(--text);
       margin: 0;
       padding: 20px;
+      position: relative;
+    }
+
+    #admin-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #444;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #admin-btn:hover {
+      background-color: #333;
     }
 
     #app {
       max-width: 800px;
-      margin: auto;
+      margin: 0 auto;
       background: white;
       padding: 30px;
       border-radius: 10px;
@@ -57,8 +74,7 @@
       background-color: #357ab7;
     }
 
-    input[type="text"],
-    textarea {
+    input[type="text"] {
       padding: 10px;
       width: 90%;
       max-width: 400px;
@@ -68,13 +84,9 @@
       border-radius: 5px;
     }
 
-    textarea {
-      height: 80px;
-    }
-
     #survey-image {
       width: 100%;
-      max-width: 500px;
+      max-width: 400px;
       height: auto;
       margin: 20px auto;
       border-radius: 10px;
@@ -82,7 +94,7 @@
 
     #timer {
       font-size: 1.5rem;
-      color: var(--accent);
+      color: red;
       margin: 20px 0;
     }
 
@@ -113,52 +125,63 @@
       margin-right: 10px;
     }
 
-    @media (max-width: 600px) {
-      button {
-        width: 90%;
-        margin: 10px auto;
-      }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
 
-      input[type="text"],
-      textarea {
-        width: 95%;
-      }
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+
+    th {
+      background-color: var(--primary);
+      color: white;
     }
   </style>
-
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
 </head>
 
 <body>
+  <button id="admin-btn" onclick="enterAdmin()">Admin</button>
+
   <div id="app">
-    <div id="start-screen">
+    <div id="start-screen" style="margin-top: 100px;margin-bottom: 200px;">
       <h1>בחר סקר</h1>
       <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
-      <button onclick="startSurvey(1)">סקר 2 - זמן ארוך + הסחות קלות</button>
-      <button onclick="startSurvey(2)">סקר 3 - זמן קצר + הסחות רבות</button>
+      <button onclick="startSurvey(1)">סקר 2 - 60 שניות + הסחות קלות</button>
+      <button onclick="startSurvey(2)">סקר 3 - 20 שניות + הסחות רבות</button>
     </div>
 
     <div id="password-screen" class="hidden">
       <h2>הכנס סיסמה:</h2>
       <input type="text" id="password-input" placeholder="הקלד סיסמה..." />
-      <button onclick="verifyPassword()">אשר</button>
+      <button onclick="verifySurveyPassword()">אשר</button>
     </div>
 
     <div id="name-screen" class="hidden">
       <h2>הכנס את שמך:</h2>
       <input type="text" id="user-name" placeholder="הקלד את שמך..." />
-      <br />
       <button onclick="beginSurvey()">התחל</button>
+    </div>
+
+    <div id="instructions-screen" class="hidden">
+      <h2>הוראות לסקר</h2>
+      <p id="instructions-text"></p>
+      <button onclick="showImage()">התחל</button>
     </div>
 
     <div id="survey-screen" class="hidden">
       <h2 id="user-greeting"></h2>
-      <img id="survey-image" src="https://via.placeholder.com/500x250" alt="תמונה לשאלון" />
-      <div id="questions"></div>
       <div id="timer" class="hidden"></div>
-      <button onclick="showNextQuestion()">הבא</button>
+      <img id="survey-image" src="exple.jpg" alt="תמונה לשאלון" />
+      <div id="questions"></div>
+      <button onclick="onNextClicked()">הבא</button>
     </div>
 
     <div id="result-screen" class="hidden">
@@ -166,14 +189,14 @@
       <p id="score"></p>
     </div>
 
-    <div id="results-table">
+    <div id="results-table" class="hidden" style="margin-top: 200px;">
       <h2>טבלת משתתפים</h2>
       <table>
         <thead>
           <tr>
             <th>שם</th>
             <th>סקר</th>
-            <th>תשובות נכונות</th>
+            <th>ציון</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -182,47 +205,87 @@
   </div>
 
   <script>
+    // Firebase
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyCcKh69vdKosOaMR8D_6cLmRerjXBA4_ug",
+      authDomain: "shay-d0765.firebaseapp.com",
+      databaseURL: "https://shay-d0765-default-rtdb.firebaseio.com",  // ← כך
+      projectId: "shay-d0765",
+      storageBucket: "shay-d0765.firebasestorage.app",
+      messagingSenderId: "71944363741",
+      appId: "1:71944363741:web:3e6aec7f2ae1ee5d560534",
+      measurementId: "G-ZVPSH5BQKY"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // סקרים
     const surveys = [
-      { timeLimit: null, distractions: 0, password: "shay1" },
-      { timeLimit: 60, distractions: 1, password: "shay2" },
-      { timeLimit: 20, distractions: 3, password: "shay3" }
+      { timeLimit: null, distractions: 0, password: "shay1", name: "ללא זמן" },
+      { timeLimit: 60, distractions: 1, password: "shay2", name: "זמן ארוך" },
+      { timeLimit: 20, distractions: 3, password: "shay3", name: "זמן קצר" }
     ];
 
+    // שאלות
     const questions = [
-      { question: "מה מופיע בתמונה?", options: ["ים", "הר", "מדבר", "יער"], answer: "ים" },
-      { question: "מה צבע השמיים?", options: ["כחול", "אדום", "שחור", "ירוק"], answer: "כחול" },
-      { question: "כמה עצים יש בתמונה?", options: ["1", "2", "3", "4"], answer: "2" },
-      { question: "האם יש אנשים בתמונה?", options: ["כן", "לא"], answer: "לא" }
+      {
+        question: "איזה כלי נגינה מופיע למעלה משמאל?",
+        options: ["גיטרה", "קלרינט", "תוף", "פסנתר"],
+        answer: "גיטרה"
+      },
+      {
+        question: "באיזו חיה שנמצאת במים?",
+        options: ["פינגווין", "דג זהב", "קרפדה", "ברווז"],
+        answer: "פינגווין"
+      },
+      {
+        question: "כמה אנשים יושבים על השמיכה בפיקניק?",
+        options: ["3", "4", "5", "6"],
+        answer: "5"
+      },
+      {
+        question: "איזו חיה מופיעה בצד ימין למטה?",
+        options: ["ג'ירפה", "אריה", "נמר", "זברה"],
+        answer: "ג'ירפה"
+      }
     ];
 
-    let selectedSurvey = null;
-    let userName = "";
-    let currentQuestionIndex = 0;
-    let timer = null;
-    let timeRemaining = 0;
+    const ADMIN_PASSWORD = "shayAdmin";
+    let selectedSurvey, userName;
+    let currentQuestionIndex, timer, timeRemaining, finish;
 
-    function startSurvey(index) {
-      selectedSurvey = surveys[index];
+    function enterAdmin() {
+      const pwd = prompt("הכנס סיסמת מנהל:");
+      if (pwd === ADMIN_PASSWORD) {
+        document.getElementById("results-table").classList.remove("hidden");
+        loadResultsTable();
+      } else {
+        alert("סיסמת מנהל שגויה!");
+      }
+    }
+
+    function loadResultsTable() {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+      db.ref("results").once("value", snapshot => {
+        snapshot.forEach(child => {
+          const { name, surveyType, score } = child.val();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${name}</td><td>${surveyType}</td><td>${score}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
+    }
+
+    function startSurvey(idx) {
+      selectedSurvey = surveys[idx];
       document.getElementById("start-screen").classList.add("hidden");
       document.getElementById("password-screen").classList.remove("hidden");
     }
 
-    function verifyPassword() {
-      const password = document.getElementById("password-input").value.trim();
-      if (password === selectedSurvey.password) {
+    function verifySurveyPassword() {
+      const pwd = document.getElementById("password-input").value.trim();
+      if (pwd === selectedSurvey.password) {
         document.getElementById("password-screen").classList.add("hidden");
         document.getElementById("name-screen").classList.remove("hidden");
       } else {
@@ -231,13 +294,29 @@
     }
 
     function beginSurvey() {
-      const nameInput = document.getElementById("user-name").value.trim();
-      if (!nameInput) return alert("אנא הזן שם");
-      userName = nameInput;
-
+      const name = document.getElementById("user-name").value.trim();
+      if (!name) return alert("אנא הזן שם");
+      userName = name;
       document.getElementById("name-screen").classList.add("hidden");
+
+      const instr = `זהו סקר "${selectedSurvey.name}". ` +
+        (selectedSurvey.timeLimit
+          ? `יש לך ${selectedSurvey.timeLimit} שניות לענות על 4 שאלות`
+          : `אין הגבלת זמן`) +
+        `, והסחות דעת: ${selectedSurvey.distractions === 0 ? "אין"
+          : selectedSurvey.distractions === 1 ? "קלות"
+            : "רבות"
+        }.`;
+      document.getElementById("instructions-text").innerText = instr;
+      document.getElementById("instructions-screen").classList.remove("hidden");
+    }
+
+    function showImage() {
+      document.getElementById("instructions-screen").classList.add("hidden");
       document.getElementById("survey-screen").classList.remove("hidden");
       document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
+      currentQuestionIndex = 0;
+      finish = false;
       loadQuestions();
     }
 
@@ -248,29 +327,31 @@
         const div = document.createElement("div");
         div.classList.add("question");
         div.innerHTML = `<p>${i + 1}. ${q.question}</p>`;
-        const optionsList = document.createElement("ul");
-        optionsList.classList.add("options");
-
-        q.options.forEach(option => {
+        const ul = document.createElement("ul");
+        ul.classList.add("options");
+        q.options.forEach(opt => {
           const li = document.createElement("li");
-          li.innerHTML = `<input type="radio" name="q${i}" value="${option}" /> ${option}`;
-          optionsList.appendChild(li);
+          li.innerHTML = `<input type="radio" name="q${i}" value="${opt}" /> ${opt}`;
+          ul.appendChild(li);
         });
-
-        div.appendChild(optionsList);
+        div.appendChild(ul);
         container.appendChild(div);
       });
+    }
+
+    function onNextClicked() {
+      if (currentQuestionIndex === 0) {
+        document.getElementById("survey-image").classList.add("hidden");
+        if (selectedSurvey.timeLimit) startTimer();
+      }
       showNextQuestion();
     }
 
     function showNextQuestion() {
-      const questionsElements = document.querySelectorAll(".question");
-      // Hide all questions
-      questionsElements.forEach((q) => q.classList.remove("active"));
-
-      if (currentQuestionIndex < questionsElements.length) {
-        const currentQuestion = questionsElements[currentQuestionIndex];
-        currentQuestion.classList.add("active");
+      const elems = document.querySelectorAll(".question");
+      elems.forEach(el => el.classList.remove("active"));
+      if (currentQuestionIndex < elems.length) {
+        elems[currentQuestionIndex].classList.add("active");
         currentQuestionIndex++;
       } else {
         submitAnswers();
@@ -278,15 +359,14 @@
     }
 
     function startTimer() {
-      const timeBox = document.getElementById("timer");
-      timeBox.classList.remove("hidden");
+      const box = document.getElementById("timer");
+      box.classList.remove("hidden");
       timeRemaining = selectedSurvey.timeLimit;
-      timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
-
+      box.innerText = `זמן נותר: ${timeRemaining} שניות`;
       timer = setInterval(() => {
         timeRemaining--;
-        timeBox.innerText = `זמן נותר: ${timeRemaining} שניות`;
-        if (timeRemaining <= 0) {
+        box.innerText = `זמן נותר: ${timeRemaining} שניות`;
+        if (timeRemaining <= 0 && !finish) {
           clearInterval(timer);
           alert("הזמן תם!");
           submitAnswers();
@@ -295,24 +375,18 @@
     }
 
     function submitAnswers() {
+      finish = true;
+      clearInterval(timer);
       let correct = 0;
       questions.forEach((q, i) => {
-        const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
-        if (selectedOption && selectedOption.value === q.answer) correct++;
+        const sel = document.querySelector(`input[name="q${i}"]:checked`);
+        if (sel && sel.value === q.answer) correct++;
       });
-
-      const surveyName = getSurveyName(selectedSurvey);
-      saveResult(userName, surveyName, correct);
-
+      saveResult(userName, selectedSurvey.name, correct);
       document.getElementById("survey-screen").classList.add("hidden");
       document.getElementById("result-screen").classList.remove("hidden");
-      document.getElementById("score").innerText = `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
-    }
-
-    function getSurveyName(survey) {
-      if (!survey.timeLimit) return "ללא זמן";
-      if (survey.timeLimit === 60) return "זמן ארוך";
-      return "זמן קצר";
+      document.getElementById("score").innerText =
+        `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
     }
 
     function saveResult(name, surveyType, score) {
