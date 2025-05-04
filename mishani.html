@@ -142,16 +142,44 @@
       color: white;
     }
   </style>
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+
+  <!-- Firebase modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      set,
+      get,
+      child
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCcKh69vdKosOaMR8D_6cLmRerjXBA4_ug",
+      authDomain: "shay-d0765.firebaseapp.com",
+      databaseURL: "https://shay-d0765-default-rtdb.firebaseio.com",
+      projectId: "shay-d0765",
+      storageBucket: "shay-d0765.firebasestorage.app",
+      messagingSenderId: "71944363741",
+      appId: "1:71944363741:web:3e6aec7f2ae1ee5d560534",
+      measurementId: "G-ZVPSH5BQKY"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // expose for non-module scripts
+    window.firebaseDB = db;
+    window.firebaseRefs = { ref, push, set, get, child };
+  </script>
 </head>
 
 <body>
   <button id="admin-btn" onclick="enterAdmin()">Admin</button>
 
   <div id="app">
-    <div id="start-screen" style="margin-top: 100px;margin-bottom: 200px;">
+    <div id="start-screen">
       <h1>בחר סקר</h1>
       <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
       <button onclick="startSurvey(1)">סקר 2 - 60 שניות + הסחות קלות</button>
@@ -189,7 +217,7 @@
       <p id="score"></p>
     </div>
 
-    <div id="results-table" class="hidden" style="margin-top: 200px;">
+    <div id="results-table" class="hidden">
       <h2>טבלת משתתפים</h2>
       <table>
         <thead>
@@ -205,28 +233,15 @@
   </div>
 
   <script>
-    // Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCcKh69vdKosOaMR8D_6cLmRerjXBA4_ug",
-      authDomain: "shay-d0765.firebaseapp.com",
-      databaseURL: "https://shay-d0765-default-rtdb.firebaseio.com",  // ← כך
-      projectId: "shay-d0765",
-      storageBucket: "shay-d0765.firebasestorage.app",
-      messagingSenderId: "71944363741",
-      appId: "1:71944363741:web:3e6aec7f2ae1ee5d560534",
-      measurementId: "G-ZVPSH5BQKY"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const { ref, push, set, get, child } = window.firebaseRefs;
+    const db = window.firebaseDB;
 
-    // סקרים
+    const ADMIN_PASSWORD = "shayAdmin";
     const surveys = [
       { timeLimit: null, distractions: 0, password: "shay1", name: "ללא זמן" },
       { timeLimit: 60, distractions: 1, password: "shay2", name: "זמן ארוך" },
       { timeLimit: 20, distractions: 3, password: "shay3", name: "זמן קצר" }
     ];
-
-    // שאלות
     const questions = [
       {
         question: "איזה כלי נגינה מופיע למעלה משמאל?",
@@ -234,7 +249,7 @@
         answer: "גיטרה"
       },
       {
-        question: "באיזו חיה שנמצאת במים?",
+        question: "באיזו חיה נמצאת במים?",
         options: ["פינגווין", "דג זהב", "קרפדה", "ברווז"],
         answer: "פינגווין"
       },
@@ -250,15 +265,14 @@
       }
     ];
 
-    const ADMIN_PASSWORD = "shayAdmin";
     let selectedSurvey, userName;
     let currentQuestionIndex, timer, timeRemaining, finish;
 
     function enterAdmin() {
       const pwd = prompt("הכנס סיסמת מנהל:");
       if (pwd === ADMIN_PASSWORD) {
-        document.getElementById("results-table").classList.remove("hidden");
         loadResultsTable();
+        document.getElementById("results-table").classList.remove("hidden");
       } else {
         alert("סיסמת מנהל שגויה!");
       }
@@ -267,14 +281,19 @@
     function loadResultsTable() {
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
-      db.ref("results").once("value", snapshot => {
-        snapshot.forEach(child => {
-          const { name, surveyType, score } = child.val();
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td>${name}</td><td>${surveyType}</td><td>${score}</td>`;
-          tbody.appendChild(tr);
-        });
-      });
+      const dbRef = ref(db);
+      get(child(dbRef, 'results'))
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            snapshot.forEach(childSnap => {
+              const { name, surveyType, score } = childSnap.val();
+              const tr = document.createElement("tr");
+              tr.innerHTML = `<td>${name}</td><td>${surveyType}</td><td>${score}</td>`;
+              tbody.appendChild(tr);
+            });
+          }
+        })
+        .catch(console.error);
     }
 
     function startSurvey(idx) {
@@ -377,21 +396,30 @@
     function submitAnswers() {
       finish = true;
       clearInterval(timer);
+
       let correct = 0;
       questions.forEach((q, i) => {
         const sel = document.querySelector(`input[name="q${i}"]:checked`);
         if (sel && sel.value === q.answer) correct++;
       });
-      saveResult(userName, selectedSurvey.name, correct);
+
+      saveResult(userName, selectedSurvey.name, correct, () => {
+        loadResultsTable();
+        document.getElementById("results-table").classList.remove("hidden");
+      });
+
       document.getElementById("survey-screen").classList.add("hidden");
       document.getElementById("result-screen").classList.remove("hidden");
       document.getElementById("score").innerText =
         `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
     }
 
-    function saveResult(name, surveyType, score) {
-      const ref = db.ref("results").push();
-      ref.set({ name, surveyType, score, timestamp: Date.now() });
+    function saveResult(name, surveyType, score, callback) {
+      const resultsRef = ref(db, 'results');
+      const newItemRef = push(resultsRef);
+      set(newItemRef, { name, surveyType, score, timestamp: Date.now() })
+        .then(() => { if (callback) callback(); })
+        .catch(console.error);
     }
   </script>
 </body>
