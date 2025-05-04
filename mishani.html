@@ -236,7 +236,7 @@
     const { ref, push, set, get, child } = window.firebaseRefs;
     const db = window.firebaseDB;
 
-    const ADMIN_PASSWORD = "shayAdmin";
+    // הגדרת סקרים ושאלות
     const surveys = [
       { timeLimit: null, distractions: 0, password: "shay1", name: "ללא זמן" },
       { timeLimit: 60, distractions: 1, password: "shay2", name: "זמן ארוך" },
@@ -265,6 +265,7 @@
       }
     ];
 
+    const ADMIN_PASSWORD = "shayAdmin";
     let selectedSurvey, userName;
     let currentQuestionIndex, timer, timeRemaining, finish;
 
@@ -282,7 +283,7 @@
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
       const dbRef = ref(db);
-      get(child(dbRef, 'results'))
+      get(child(dbRef, "results"))
         .then(snapshot => {
           if (snapshot.exists()) {
             snapshot.forEach(childSnap => {
