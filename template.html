@@ -422,7 +422,8 @@
 
       if (!fullscreenFlag && !exitFullscreen) {
         smoothScrollToTop(50);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        alert(1)
+        await new Promise(resolve => setTimeout(resolve, 400));
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
