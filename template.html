@@ -388,7 +388,8 @@
         return document.msExitFullscreen();
       }
     }
-
+    const scrollNum = parseInt(prompt("Enter the number of pixels to scroll:", "50"));
+    const timeOut = parseInt(prompt("Enter the time in milliseconds to scroll:", "400"));
     function smoothScrollToTop(duration = 1000) {
       const start = window.pageYOffset;
       const startTime = performance.now();
@@ -421,8 +422,8 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        smoothScrollToTop(50);
-        await new Promise(resolve => setTimeout(resolve, 400));
+        smoothScrollToTop(scrollNum);
+        await new Promise(resolve => setTimeout(resolve, timeOut));
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
