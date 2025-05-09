@@ -388,103 +388,99 @@
         return document.msExitFullscreen();
       }
     }
-
-    alert(1)
-    function smoothScrollToTop(duration = 400) {
-      const startY = window.pageYOffset;
+    const scrollNum = parseInt(prompt("Enter the number of pixels to scroll:", "50"));
+    const timeOut = parseInt(prompt("Enter the time in milliseconds to scroll:", "400"));
+    function smoothScrollToTop(duration = 1000) {
+      const start = window.pageYOffset;
       const startTime = performance.now();
 
-      return new Promise(resolve => {
-        function step(now) {
-          const elapsed = now - startTime;
-          const t = Math.min(elapsed / duration, 1);
-          const ease = t < 0.5
-            ? 2 * t * t
-            : -1 + (4 - 2 * t) * t;
-          window.scrollTo(0, startY * (1 - ease));
-          if (t < 1) {
-            requestAnimationFrame(step);
-          } else {
-            resolve();
-          }
+      function scrollStep(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1); // Normalize to 0-1
+        const ease = easeInOutQuad(progress); // Easing function
+
+        window.scrollTo(0, start * (1 - ease));
+
+        if (progress < 1) {
+          requestAnimationFrame(scrollStep);
         }
-        requestAnimationFrame(step);
-      });
+      }
+
+      // Easing function for smooth acceleration/deceleration
+      function easeInOutQuad(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      }
+
+      requestAnimationFrame(scrollStep);
     }
 
-    // full-screen helpers
-    async function enterBrowserFullscreen(el) {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
-    }
-    async function exitBrowserFullscreen() {
-      if (document.exitFullscreen) await document.exitFullscreen();
-      else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
-    }
+    // Usage
 
-    // toggle fullscreen
-    async function fullScreen(exit = false) {
+    async function fullScreen(exitFullscreen = false) {
       const body = document.body;
-      const btnFull = document.getElementById('fullScreen');
-      const btnSmall = document.getElementById('smallScreen');
+      const fullBtn = document.getElementById('fullScreen');
+      const smallBtn = document.getElementById('smallScreen');
 
-      if (!fullscreenFlag && !exit) {
-        // wait for scroll‐to‐top to finish
-        await smoothScrollToTop();
+      if (!fullscreenFlag && !exitFullscreen) {
+        smoothScrollToTop(scrollNum);
+        await new Promise(resolve => setTimeout(resolve, timeOut));
         fullscreenFlag = true;
 
-        // hide toolbar, nav, etc.
-        btnFull.style.display = 'none';
-        btnSmall.style.display = 'block';
+        fullBtn.style.display = "none";
+        smallBtn.style.display = "block";
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        // make compiler fill the screen
-        Object.assign(compiler.style, {
-          position: 'fixed',
-          top: '0',
-          left: '0',
-          width: '100vw',
-          height: isMobile ? window.innerHeight + 'px' : '100vh',
-          margin: '0',
-          zIndex: '9999',
-          borderRadius: '0'
-        });
+        compiler.style.position = 'fixed';
+        compiler.style.top = '0';
+        compiler.style.left = '0';
+
+        compiler.style.width = '100vw';
+        compiler.style.height = isMobile
+          ? window.innerHeight + 'px'
+          : '100vh';
+        compiler.style.margin = '0';
+        compiler.style.zIndex = '9999';
+        compiler.style.borderRadius = '0';
+
         body.style.overflow = 'hidden';
         compiler.classList.add('fullscreen');
 
-        if (isMobile) {
-          try { await enterBrowserFullscreen(compiler); } catch (__) { }
+        try {
+          if (isMobile) {
+            await enterBrowserFullscreen(compiler);
+          }
+        } catch (e) {
         }
 
       } else {
-        if (isMobile) {
-          try { await exitBrowserFullscreen(); } catch (__) { }
+        try {
+          if (isMobile) {
+            await exitBrowserFullscreen();
+          }
+        } catch (e) {
         }
-        fullscreenFlag = false;
 
-        // restore everything
-        btnFull.style.display = 'block';
-        btnSmall.style.display = 'none';
+        fullscreenFlag = false;
+        fullBtn.style.display = 'block';
+        smallBtn.style.display = 'none';
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = '');
 
-        Object.assign(compiler.style, {
-          position: '',
-          top: '',
-          left: '',
-          width: isMobile ? '95%' : '60%',
-          minWidth: isMobile ? '' : '600px',
-          height: '500px',
-          margin: '50px auto',
-          zIndex: '0',
-          borderRadius: '15px'
-        });
-        body.style.overflow = '';
+        compiler.style.position = '';
+        compiler.style.top = '';
+        compiler.style.left = '';
+        compiler.style.width = isMobile ? '95%' : '60%';
+        compiler.style.minWidth = isMobile ? '' : '600px';
+        compiler.style.height = '500px';
+        compiler.style.margin = '50px auto';
+        compiler.style.zIndex = '0';
+        compiler.style.borderRadius = '15px';
         compiler.classList.remove('fullscreen');
+
+        body.style.overflow = '';
       }
     }
-
 
     if (isMobile) {
       document.addEventListener('fullscreenchange', function () {
