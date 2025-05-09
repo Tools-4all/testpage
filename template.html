@@ -402,15 +402,15 @@
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        window.scrollTo(0, 0);
+        window.scrollTo(0, 0); // Ensure the page is at the top
 
         compiler.style.position = 'fixed';
         compiler.style.top = '0';
         compiler.style.left = '0';
-
         compiler.style.width = '100vw';
+        // Use visualViewport to account for dynamic viewport changes
         compiler.style.height = isMobile
-          ? window.innerHeight + 'px'
+          ? `${window.visualViewport?.height || window.innerHeight}px`
           : '100vh';
         compiler.style.margin = '0';
         compiler.style.zIndex = '9999';
@@ -419,19 +419,24 @@
         body.style.overflow = 'hidden';
         compiler.classList.add('fullscreen');
 
-        try {
-          if (isMobile) {
+        // Force viewport recalculation
+        if (isMobile) {
+          window.dispatchEvent(new Event('resize')); // Trigger resize to update viewport
+          try {
             await enterBrowserFullscreen(compiler);
+          } catch (e) {
+            console.error('Fullscreen error:', e);
           }
-        } catch (e) {
         }
 
       } else {
+        // Exit fullscreen logic remains the same
         try {
           if (isMobile) {
             await exitBrowserFullscreen();
           }
         } catch (e) {
+          console.error('Exit fullscreen error:', e);
         }
 
         fullscreenFlag = false;
