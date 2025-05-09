@@ -422,8 +422,15 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        smoothScrollToTop(scrollNum);
-        await new Promise(resolve => setTimeout(resolve, timeOut));
+        if (navigator.userAgent.indexOf('iPhone') != -1) {
+          addEventListener("load", function () {
+            setTimeout(hideURLbar, 0);
+          }, false);
+        }
+
+        function hideURLbar() {
+          window.scrollTo(0, 1);
+        }
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
