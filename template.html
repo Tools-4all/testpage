@@ -421,8 +421,8 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        smoothScrollToTop(50);
-        await new Promise(resolve => setTimeout(resolve, 600));
+        // smoothScrollToTop(50);
+        // await new Promise(resolve => setTimeout(resolve, 600));
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
@@ -449,7 +449,7 @@
           if (isMobile) {
             await enterBrowserFullscreen(compiler);
             window.scrollTo(0, 1);
-            alert(1)
+            // alert(1)
           }
         } catch (e) {
         }
