@@ -421,7 +421,7 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        smoothScrollToTop(1000);
+        smoothScrollToTop(100);
         await new Promise(resolve => setTimeout(resolve, 1000));
         fullscreenFlag = true;
 
