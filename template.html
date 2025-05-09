@@ -484,6 +484,14 @@
     }
 
 
+    if (isMobile) {
+      document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement) {
+          fullScreen(true);
+        }
+      });
+    }
+
     document.addEventListener('keydown', function (event) {
       if (compiler.style.width === "100%") {
         if (event.key === 'Escape' && modalIsOpen()) {
