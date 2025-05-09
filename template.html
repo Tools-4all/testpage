@@ -40,11 +40,7 @@
       }
     }
     </script>
-    <style>
-      #navbarMedia {
-        display: none;
-      }
-    </style>
+
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
@@ -406,8 +402,10 @@
         ['webMenu', 'navbarMedia', 'smallFooter', 'title', 'page-info', 'page-blog', 'faq']
           .forEach(id => document.getElementById(id).style.display = 'none');
 
-        window.scrollTo(0, 0);
-
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
         compiler.style.position = 'fixed';
         compiler.style.top = '0';
         compiler.style.left = '0';
