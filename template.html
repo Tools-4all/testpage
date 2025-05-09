@@ -389,31 +389,6 @@
       }
     }
 
-    function smoothScrollToTop(duration = 1000) {
-      const start = window.pageYOffset;
-      const startTime = performance.now();
-
-      function scrollStep(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1); // Normalize to 0-1
-        const ease = easeInOutQuad(progress); // Easing function
-
-        window.scrollTo(0, start * (1 - ease));
-
-        if (progress < 1) {
-          requestAnimationFrame(scrollStep);
-        }
-      }
-
-      // Easing function for smooth acceleration/deceleration
-      function easeInOutQuad(t) {
-        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-      }
-
-      requestAnimationFrame(scrollStep);
-    }
-
-    // Usage
 
     async function fullScreen(exitFullscreen = false) {
       const body = document.body;
@@ -421,8 +396,6 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        // smoothScrollToTop(50);
-        // await new Promise(resolve => setTimeout(resolve, 600));
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
@@ -448,8 +421,6 @@
         try {
           if (isMobile) {
             await enterBrowserFullscreen(compiler);
-            window.scrollTo(0, 1);
-            // alert(1)
           }
         } catch (e) {
         }
