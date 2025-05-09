@@ -389,6 +389,8 @@
       }
     }
 
+    const isIphone = navigator.userAgent.match(/iPhone/i);
+
 
     async function fullScreen(exitFullscreen = false) {
       const body = document.body;
@@ -421,6 +423,9 @@
         try {
           if (isMobile) {
             await enterBrowserFullscreen(compiler);
+            if (isIphone) {
+              compiler.style.height = "95%"
+            }
           }
         } catch (e) {
         }
