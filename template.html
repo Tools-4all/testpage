@@ -7,8 +7,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-
   <title>Multi-Tab Sandboxed JS interpreter</title>
   <link rel="stylesheet" href="{% static 'css/page_info.css' %}?v=1" />
   <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
@@ -17,7 +15,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{% static 'css/js_compiler.css' %}?v=1" />
-  
+
 
   <script type="application/ld+json">
     {
@@ -42,7 +40,11 @@
       }
     }
     </script>
-
+    <style>
+      .navbarMedia {
+        display: none;
+      }
+    </style>
   <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
   <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>
