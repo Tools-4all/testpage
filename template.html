@@ -388,8 +388,7 @@
         return document.msExitFullscreen();
       }
     }
-    const scrollNum = parseInt(prompt("Enter the number of pixels to scroll:", "50"));
-    const timeOut = parseInt(prompt("Enter the time in milliseconds to scroll:", "400"));
+
     function smoothScrollToTop(duration = 1000) {
       const start = window.pageYOffset;
       const startTime = performance.now();
@@ -422,15 +421,8 @@
       const smallBtn = document.getElementById('smallScreen');
 
       if (!fullscreenFlag && !exitFullscreen) {
-        if (navigator.userAgent.indexOf('iPhone') != -1) {
-          addEventListener("load", function () {
-            setTimeout(hideURLbar, 0);
-          }, false);
-        }
-
-        function hideURLbar() {
-          window.scrollTo(0, 1);
-        }
+        smoothScrollToTop(50);
+        await new Promise(resolve => setTimeout(resolve, 600));
         fullscreenFlag = true;
 
         fullBtn.style.display = "none";
