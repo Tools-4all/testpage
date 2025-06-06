@@ -645,6 +645,8 @@
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
 
+ console.log("ffdf");
+
     // Initialize Web Worker
     function initWorker() {
       worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
@@ -963,9 +965,6 @@
         removeImage();
       };
     }
-
-    console.log("ffdf");
-    
 
     // Handle Web Worker error
     function handleWorkerError(error) {
