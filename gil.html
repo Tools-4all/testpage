@@ -58,7 +58,7 @@
       position: absolute;
       margin-top: 10px;
       margin-left: 10px;
-      z-index: 15;
+      z-index: 9999;
     }
 
     .uplodePhoto {
@@ -644,9 +644,6 @@
     const modelPath = "https://huggingface.co/tools-4all/bg_remover/resolve/main/bg_remover.onnx";
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
-
-    console.log("gjnjf");
-    
 
     // Initialize Web Worker
     function initWorker() {
