@@ -156,7 +156,7 @@
     }
 
     #previewImage {
-      min-width: 400px;
+      min-width: 550px;
       min-height: 300px;
       max-width: 550px;
       max-height: 375px;
@@ -245,12 +245,12 @@
     }
 
     .checkerboard {
-      /* background-color: #fff;
+      background-color: #fff;
       background-image:
         linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%),
         linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%);
       background-size: 20px 20px;
-      background-position: 0 0, 10px 10px; */
+      background-position: 0 0, 10px 10px;
     }
 
     .transparentBtn {
@@ -645,8 +645,6 @@
     const cacheName = "bg-remover-model-cache";
     const modelCacheKey = "bg-remover-model";
 
- console.log("ffdf");
-
     // Initialize Web Worker
     function initWorker() {
       worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
@@ -950,11 +948,11 @@
           backgroundValue = null;
           const backgroundLayer = previewImg.querySelector(".backgroundLayer");
           if (backgroundLayer) {
-            // backgroundLayer.classList.add("checkerboard");
-            // backgroundLayer.style.backgroundColor = "";
-            // backgroundLayer.style.backgroundImage = "";
-            // backgroundLayer.style.backgroundSize = "";
-            // backgroundLayer.style.backgroundPosition = "";
+            backgroundLayer.classList.add("checkerboard");
+            backgroundLayer.style.backgroundColor = "";
+            backgroundLayer.style.backgroundImage = "";
+            backgroundLayer.style.backgroundSize = "";
+            backgroundLayer.style.backgroundPosition = "";
           }
         }, 1500);
         removedImgEl.onload = null;
