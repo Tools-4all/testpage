@@ -49,7 +49,7 @@
     }
 
     #removedImgBtn {
-      display: block;
+      display: none;
       margin-top: 0px;
       align-self: start;
       background-color: transparent;
@@ -58,7 +58,7 @@
       position: absolute;
       margin-top: 10px;
       margin-left: 10px;
-      z-index: 9999;
+      z-index: 15;
     }
 
     .uplodePhoto {
@@ -156,7 +156,7 @@
     }
 
     #previewImage {
-      min-width: 550px;
+      min-width: 400px;
       min-height: 300px;
       max-width: 550px;
       max-height: 375px;
@@ -912,56 +912,56 @@
 
     // Handle Web Worker result
     async function handleWorkerResult(dataURL) {
-      console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
-      startStarsAnimation(false);
-      modelLoadingEl.classList.remove("show");
+      // console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
+      // startStarsAnimation(false);
+      // modelLoadingEl.classList.remove("show");
 
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      if (!removedImgEl) {
-        console.error("Main: removedImgEl not found");
-        showError("Failed to find image element");
-        removeImage();
-        return;
-      }
+      // const removedImgEl = previewImg.querySelector(".removedImg");
+      // if (!removedImgEl) {
+      //   console.error("Main: removedImgEl not found");
+      //   showError("Failed to find image element");
+      //   removeImage();
+      //   return;
+      // }
 
-      if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
-        console.error("Main: Invalid dataURL received:", dataURL);
-        showError("Invalid background-removed image data");
-        removeImage();
-        return;
-      }
+      // if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
+      //   console.error("Main: Invalid dataURL received:", dataURL);
+      //   showError("Invalid background-removed image data");
+      //   removeImage();
+      //   return;
+      // }
 
-      originalForegroundDataUrl = dataURL;
-      removedImgEl.src = dataURL;
-      removedImgEl.onload = () => {
+      // originalForegroundDataUrl = dataURL;
+      // removedImgEl.src = dataURL;
+      // removedImgEl.onload = () => {
         
-        console.log("Main: Background-removed image loaded successfully");
-        removedImgEl.classList.add("reveal");
-        removedImgBtn.style.display = "block";
-        hiddenDiv.style.display = "flex";
-        setTimeout(() => {
-          const originalImgEl = previewImg.querySelector(".img-original");
-          if (originalImgEl) {
-            originalImgEl.style.display = "none";
-          }
-          backgroundType = 'transparent';
-          backgroundValue = null;
-          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
-          if (backgroundLayer) {
-            backgroundLayer.classList.add("checkerboard");
-            backgroundLayer.style.backgroundColor = "";
-            backgroundLayer.style.backgroundImage = "";
-            backgroundLayer.style.backgroundSize = "";
-            backgroundLayer.style.backgroundPosition = "";
-          }
-        }, 1500);
-        removedImgEl.onload = null;
-      };
-      removedImgEl.onerror = () => {
-        console.error("Main: Failed to load background-removed image");
-        showError("Failed to load the background-removed image");
-        removeImage();
-      };
+      //   console.log("Main: Background-removed image loaded successfully");
+      //   removedImgEl.classList.add("reveal");
+      //   removedImgBtn.style.display = "block";
+      //   hiddenDiv.style.display = "flex";
+      //   setTimeout(() => {
+      //     const originalImgEl = previewImg.querySelector(".img-original");
+      //     if (originalImgEl) {
+      //       originalImgEl.style.display = "none";
+      //     }
+      //     backgroundType = 'transparent';
+      //     backgroundValue = null;
+      //     const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+      //     if (backgroundLayer) {
+      //       backgroundLayer.classList.add("checkerboard");
+      //       backgroundLayer.style.backgroundColor = "";
+      //       backgroundLayer.style.backgroundImage = "";
+      //       backgroundLayer.style.backgroundSize = "";
+      //       backgroundLayer.style.backgroundPosition = "";
+      //     }
+      //   }, 1500);
+      //   removedImgEl.onload = null;
+      // };
+      // removedImgEl.onerror = () => {
+      //   console.error("Main: Failed to load background-removed image");
+      //   showError("Failed to load the background-removed image");
+      //   removeImage();
+      // };
     }
 
     // Handle Web Worker error
