@@ -340,9 +340,12 @@
     }
 
     .img-original {
-      display: block;
-      max-width: 100%;
-      height: auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       z-index: 2;
       border-radius: 35px;
     }
@@ -359,37 +362,17 @@
       border-radius: 35px;
     }
 
-    .original-mask {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 3;
-      overflow: hidden;
-      border-radius: 35px;
-      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .original-mask .img-original {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: var(--original-width);
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .original-mask.slide-away {
-      width: 0%;
+    .img-original.slide-away {
+      clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
+      transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     @keyframes slideReveal {
       0% {
-        width: 100%;
+        clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
       }
       100% {
-        width: 0%;
+        clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
       }
     }
 
@@ -1127,42 +1110,17 @@
       backgroundLayer.classList.add("backgroundLayer");
       imageHolder.appendChild(backgroundLayer);
 
-      // Create the processed image element (will be behind the original)
+      // Create the processed image element (will be always visible behind)
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
       imageHolder.appendChild(removedImgEl);
 
-      // Create a mask container for the original image
-      const originalMask = document.createElement("div");
-      originalMask.classList.add("original-mask");
-
-      // Create the original image inside the mask
+      // Create the original image (this will be the one that slides away)
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
-      
-      // Wait for the image to load to get its dimensions
-      originalImgEl.onload = () => {
-        const containerRect = previewImg.getBoundingClientRect();
-        const imgAspect = originalImgEl.naturalWidth / originalImgEl.naturalHeight;
-        const containerAspect = containerRect.width / containerRect.height;
-        
-        let displayWidth, displayHeight;
-        if (imgAspect > containerAspect) {
-          displayWidth = Math.min(550, containerRect.width);
-          displayHeight = displayWidth / imgAspect;
-        } else {
-          displayHeight = Math.min(375, containerRect.height);
-          displayWidth = displayHeight * imgAspect;
-        }
-        
-        // Set the CSS custom property for the original image width
-        originalMask.style.setProperty('--original-width', `${displayWidth}px`);
-      };
-      
-      originalMask.appendChild(originalImgEl);
-      imageHolder.appendChild(originalMask);
+      imageHolder.appendChild(originalImgEl);
 
       const overlay = document.createElement("div");
       overlay.id = "imageOverlay";
@@ -1181,7 +1139,7 @@
       previewImg.style.display = "block";
       document.getElementById('title').style.display = "none";
 
-      return { removedImgEl, originalMask };
+      return removedImgEl;
     }
 
     async function handleFileSelect(e, isFile = false) {
@@ -1201,7 +1159,7 @@
       try {
         console.log("Main: Handling file:", file.name);
         const originalDataURL = await readFileAsDataURL(file);
-        const { removedImgEl, originalMask } = displayImages(originalDataURL);
+        const removedImgEl = displayImages(originalDataURL);
 
         startStarsAnimation(true);
         modelLoadingEl.classList.add("show");
@@ -1232,9 +1190,9 @@
       modelLoadingEl.classList.remove("show");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
-      const originalMask = previewImg.querySelector(".original-mask");
+      const originalImgEl = previewImg.querySelector(".img-original");
       
-      if (!removedImgEl || !originalMask) {
+      if (!removedImgEl || !originalImgEl) {
         console.error("Main: Required image elements not found");
         showError("Failed to find image elements");
         removeImage();
@@ -1256,7 +1214,7 @@
         
         // Start the slide-away animation after a brief delay
         setTimeout(() => {
-          originalMask.classList.add("slide-away");
+          originalImgEl.classList.add("slide-away");
           
           // Show controls after the slide animation starts
           setTimeout(() => {
