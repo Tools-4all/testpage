@@ -107,23 +107,61 @@
     }
 
     #uploadBtn {
-      color: black;
+      color: white;
       border-radius: 30px;
-      background-color: #71b8fb;
+      background: linear-gradient(135deg, #71b8fb 0%, #5da7f0 100%);
       border: none;
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 25px;
-      font-weight: 500;
-      transition: background-color 0.3s ease;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(113, 184, 251, 0.3);
+      position: relative;
+      overflow: hidden;
+      animation: subtlePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% {
+        box-shadow: 0 4px 15px rgba(113, 184, 251, 0.3);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(113, 184, 251, 0.5);
+      }
+    }
+
+    #uploadBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    #uploadBtn:hover {
+      background: linear-gradient(135deg, #5da7f0 0%, #4a96e6 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(113, 184, 251, 0.4);
+      animation: none;
+    }
+
+    #uploadBtn:hover::before {
+      left: 100%;
     }
 
     #uploadBtn img {
       width: 40px;
       margin-left: 10px;
+      filter: brightness(0) invert(1);
     }
 
-    #uploadBtn:hover {
-      background-color: #59aefd;
+    #uploadBtn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 10px rgba(113, 184, 251, 0.3);
     }
 
     .dragBox {
@@ -140,7 +178,37 @@
       flex-direction: column;
       margin: 10px auto;
       overflow: hidden;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .dragBox::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(113, 184, 251, 0.05) 0%, rgba(93, 167, 240, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 31px;
+      z-index: 1;
+    }
+
+    .dragBox:hover::before {
+      opacity: 1;
+    }
+
+    .dragBox:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .dragBox * {
+      position: relative;
+      z-index: 2;
     }
 
     .dragBox input[type="file"] {
@@ -148,7 +216,12 @@
     }
 
     .draging {
-      transform: scale(1.1);
+      transform: scale(1.02) translateY(-5px);
+      box-shadow: 0 10px 40px rgba(113, 184, 251, 0.3);
+    }
+
+    .draging::before {
+      opacity: 1;
     }
 
     #previewDiv {
@@ -200,12 +273,16 @@
         opacity: 0;
         transform: rotate(0deg) scale(0);
       }
-
+      10% {
+        opacity: 0.3;
+      }
       50% {
         opacity: 1;
-        transform: rotate(360deg) scale(1.5);
+        transform: rotate(360deg) scale(1.8);
       }
-
+      80% {
+        opacity: 0.8;
+      }
       100% {
         opacity: 0;
         transform: rotate(720deg) scale(0);
@@ -214,12 +291,13 @@
 
     .star {
       position: absolute;
-      width: 17px;
-      height: 17px;
-      background-color: #71b8fbb8;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(45deg, #71b8fb, #5da7f0, #4a96e6);
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      animation: spinAndFade 1.5s ease-in-out infinite;
+      animation: spinAndFade 2s ease-in-out infinite;
       animation-play-state: paused;
+      filter: drop-shadow(0 0 6px rgba(113, 184, 251, 0.6));
     }
 
     .imageHolder {
@@ -276,15 +354,33 @@
       height: 100%;
       object-fit: cover;
       z-index: 10;
-      clip-path: polygon(100% 0, 100% 100%, 100% 100%, 100% 0);
-      transition: clip-path 1.5s ease;
-      background-color: #fff;
+      transform: translateX(100%);
+      transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
       opacity: 0;
+      border-radius: 35px;
     }
 
     .removedImg.reveal {
-      clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+      transform: translateX(0);
       opacity: 1;
+    }
+
+    .removedImg.slide-in {
+      animation: slideInFromRight 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes slideInFromRight {
+      0% {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
 
     .image-overlay {
@@ -309,11 +405,56 @@
       display: none;
       text-align: center;
       margin-top: 20px;
-      color: #fff;
+      padding: 20px;
+      background: linear-gradient(135deg, rgba(113, 184, 251, 0.1) 0%, rgba(93, 167, 240, 0.15) 100%);
+      border-radius: 15px;
+      border: 1px solid rgba(113, 184, 251, 0.2);
+      backdrop-filter: blur(10px);
     }
 
     #modelLoading.show {
       display: block;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    #modelLoading p {
+      color: #2c3e50;
+      font-weight: 500;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background-color: rgba(113, 184, 251, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 15px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #71b8fb, #5da7f0);
+      border-radius: 3px;
+      width: 0%;
+      animation: progressPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes progressPulse {
+      0%, 100% { width: 20%; }
+      50% { width: 80%; }
+    }
+
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     #hiddenDiv {
@@ -329,19 +470,54 @@
     }
 
     .circleBtn {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      border: 1px solid black;
+      border: 2px solid #e0e6ed;
       cursor: pointer;
       position: relative;
       margin-top: 20px;
       margin-right: 15px;
+      transition: all 0.3s ease;
+      background: white;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
     }
 
-    .circleBtn img {
+    .circleBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(113, 184, 251, 0.1) 0%, rgba(93, 167, 240, 0.2) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 50%;
+    }
+
+    .circleBtn:hover {
+      transform: translateY(-3px);
+      border-color: #71b8fb;
+      box-shadow: 0 6px 25px rgba(113, 184, 251, 0.2);
+    }
+
+    .circleBtn:hover::before {
+      opacity: 1;
+    }
+
+    .circleBtn img, .circleBtn svg {
       width: 100%;
-      border-radius: 60%;
+      height: 100%;
+      border-radius: 50%;
+      position: relative;
+      z-index: 2;
+      transition: transform 0.3s ease;
+    }
+
+    .circleBtn:hover img, .circleBtn:hover svg {
+      transform: scale(1.1);
     }
 
     .circleBtnP {
@@ -359,19 +535,45 @@
       position: absolute;
       bottom: 0px;
       left: 0px;
-      background-color: #71b8fb;
+      background: linear-gradient(135deg, #71b8fb 0%, #5da7f0 100%);
       border: none;
       color: white;
-      padding: 10px 20px;
+      padding: 14px 28px;
       border-radius: 35px;
       font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       width: 100%;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(113, 184, 251, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #downloadBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    #downloadBtn:hover::before {
+      left: 100%;
     }
 
     #downloadBtn:hover {
-      background-color: #5397d7;
+      background: linear-gradient(135deg, #5da7f0 0%, #4a96e6 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(113, 184, 251, 0.4);
+    }
+
+    #downloadBtn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 10px rgba(113, 184, 251, 0.3);
     }
 
     #closeColorsDiv {
@@ -393,25 +595,54 @@
       display: none;
       margin-left: 30px;
       width: 275px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e6ed;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
       border-radius: 25px;
-      padding: 10px;
-      background-color: #fff;
+      padding: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      backdrop-filter: blur(10px);
     }
 
     #colorsDiv h2 {
       font-size: 18px;
-      margin-bottom: 10px;
-      margin-top: 18px;
+      margin-bottom: 15px;
+      margin-top: 10px;
+      color: #2c3e50;
+      font-weight: 600;
     }
 
     .colorBtn {
       width: 50px;
       height: 50px;
-      border-radius: 30%;
-      border: 1px solid black;
-      margin: 10px;
+      border-radius: 12px;
+      border: 2px solid #e0e6ed;
+      margin: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .colorBtn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.2);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .colorBtn:hover {
+      transform: translateY(-2px);
+      border-color: #71b8fb;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .colorBtn:hover::before {
+      opacity: 1;
     }
 
     #customColorDiv {
@@ -443,6 +674,38 @@
       width: 100px;
       height: 50px;
       cursor: pointer;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #71b8fb 0%, #5da7f0 100%);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(113, 184, 251, 0.3);
+      z-index: 10000;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      font-weight: 500;
+      max-width: 300px;
+    }
+
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .notification.error {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+      box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
+    }
+
+    .notification.success {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      box-shadow: 0 4px 20px rgba(46, 204, 113, 0.3);
     }
 
     @media (max-width: 840px) {
@@ -513,6 +776,13 @@
 
       #uploadBtn {
         font-size: 20px;
+      }
+
+      .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
       }
     }
   </style>
@@ -621,7 +891,12 @@
       </div>
     </div>
 
-    <div id="modelLoading">Loading background removal model...</div>
+    <div id="modelLoading">
+      <p>Processing your image...</p>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+    </div>
   </div>
 
   <script src="{% static 'js/errorComponent.js' %}"></script>
@@ -730,17 +1005,20 @@
     document.addEventListener("dragover", (event) => {
       event.preventDefault();
       overlay.style.display = "flex";
+      dragBox.classList.add("draging");
     });
 
     document.addEventListener("dragleave", (event) => {
       if (event.relatedTarget === null || event.relatedTarget.nodeName === "HTML") {
         overlay.style.display = "none";
+        dragBox.classList.remove("draging");
       }
     });
 
     document.addEventListener("drop", async (event) => {
       event.preventDefault();
       overlay.style.display = "none";
+      dragBox.classList.remove("draging");
 
       const files = event.dataTransfer.files;
       if (files.length) {
@@ -934,27 +1212,42 @@
       originalForegroundDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
-        
         console.log("Main: Background-removed image loaded successfully");
+        showSuccess("Background removed successfully!");
+        
+        // Add slide-in animation class and reveal
+        removedImgEl.classList.add("slide-in");
         removedImgEl.classList.add("reveal");
-        removedImgBtn.style.display = "block";
-        hiddenDiv.style.display = "flex";
+        
+        // Show controls with a slight delay
         setTimeout(() => {
-          const originalImgEl = previewImg.querySelector(".img-original");
-          if (originalImgEl) {
-            originalImgEl.style.display = "none";
-          }
-          backgroundType = 'transparent';
-          backgroundValue = null;
-          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
-          if (backgroundLayer) {
-            backgroundLayer.classList.add("checkerboard");
-            backgroundLayer.style.backgroundColor = "";
-            backgroundLayer.style.backgroundImage = "";
-            backgroundLayer.style.backgroundSize = "";
-            backgroundLayer.style.backgroundPosition = "";
-          }
-        }, 1500);
+          removedImgBtn.style.display = "block";
+          hiddenDiv.style.display = "flex";
+          
+          // Hide original image after transition
+          setTimeout(() => {
+            const originalImgEl = previewImg.querySelector(".img-original");
+            if (originalImgEl) {
+              originalImgEl.style.transition = "opacity 0.5s ease";
+              originalImgEl.style.opacity = "0";
+              setTimeout(() => {
+                originalImgEl.style.display = "none";
+              }, 500);
+            }
+          }, 600);
+        }, 300);
+        
+        // Set transparent background as default
+        backgroundType = 'transparent';
+        backgroundValue = null;
+        const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+        if (backgroundLayer) {
+          backgroundLayer.classList.add("checkerboard");
+          backgroundLayer.style.backgroundColor = "";
+          backgroundLayer.style.backgroundImage = "";
+          backgroundLayer.style.backgroundSize = "";
+          backgroundLayer.style.backgroundPosition = "";
+        }
         removedImgEl.onload = null;
       };
       removedImgEl.onerror = () => {
@@ -1000,6 +1293,7 @@
     downloadBtn.addEventListener("click", async () => {
       if (!originalForegroundDataUrl) {
         console.log("Main: No image to download");
+        showError("No image available to download");
         return;
       }
       let dataUrl;
@@ -1018,6 +1312,7 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
+        showSuccess("Image downloaded successfully!");
       }
     });
 
@@ -1123,7 +1418,11 @@
           backgroundLayer.style.backgroundImage = "";
           backgroundLayer.style.backgroundSize = "";
           backgroundLayer.style.backgroundPosition = "";
+          
+          // Add a subtle animation
+          backgroundLayer.style.transition = "all 0.3s ease";
         }
+        showSuccess("Background color changed!");
       });
     });
 
@@ -1141,7 +1440,11 @@
         backgroundLayer.style.backgroundImage = "";
         backgroundLayer.style.backgroundSize = "";
         backgroundLayer.style.backgroundPosition = "";
+        
+        // Add a subtle animation
+        backgroundLayer.style.transition = "all 0.3s ease";
       }
+      showSuccess("Background set to transparent!");
     });
 
     // Handle custom color input
@@ -1160,7 +1463,11 @@
         backgroundLayer.style.backgroundImage = "";
         backgroundLayer.style.backgroundSize = "";
         backgroundLayer.style.backgroundPosition = "";
+        
+        // Add a subtle animation
+        backgroundLayer.style.transition = "all 0.3s ease";
       }
+      showSuccess("Custom background color applied!");
     });
 
     // Handle background image upload
@@ -1182,8 +1489,12 @@
           backgroundLayer.style.backgroundImage = `url(${bgDataUrl})`;
           backgroundLayer.style.backgroundSize = "cover";
           backgroundLayer.style.backgroundPosition = "center";
+          
+          // Add a subtle animation
+          backgroundLayer.style.transition = "all 0.3s ease";
         }
         e.target.value = "";
+        showSuccess("Background image applied!");
       } catch (err) {
         console.error("Main: Error applying background image:", err);
         showError("Failed to apply background image");
@@ -1196,9 +1507,39 @@
       imageUploader.click();
     });
 
+    function showNotification(message, type = 'info', duration = 4000) {
+      // Remove any existing notifications
+      const existingNotifications = document.querySelectorAll('.notification');
+      existingNotifications.forEach(notif => notif.remove());
+
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      // Hide notification after duration
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, duration);
+    }
+
     function showError(msg) {
       console.log("Main: Showing error:", msg);
-      alert(msg);
+      showNotification(msg, 'error');
+    }
+
+    function showSuccess(msg) {
+      console.log("Main: Showing success:", msg);
+      showNotification(msg, 'success');
     }
   </script>
 </body>
