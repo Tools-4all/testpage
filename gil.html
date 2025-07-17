@@ -367,6 +367,10 @@
       transition: clip-path 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    .img-original.slide-complete {
+      display: none;
+    }
+
     @keyframes slideReveal {
       0% {
         clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
@@ -1221,6 +1225,14 @@
             removedImgBtn.style.display = "block";
             hiddenDiv.style.display = "flex";
           }, 300);
+          
+          // After animation completes, hide original and ensure processed is visible
+          setTimeout(() => {
+            originalImgEl.classList.add("slide-complete");
+            // Ensure the processed image is definitely visible
+            removedImgEl.style.opacity = "1";
+            removedImgEl.style.zIndex = "2";
+          }, 1500);
           
         }, 500);
         
