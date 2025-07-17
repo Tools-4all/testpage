@@ -343,7 +343,8 @@
       display: block;
       max-width: 100%;
       height: auto;
-      z-index: 1;
+      z-index: 2;
+      border-radius: 35px;
     }
 
     .removedImg {
@@ -353,33 +354,42 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: 10;
-      transform: translateX(100%);
-      transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-      opacity: 0;
+      z-index: 1;
+      opacity: 1;
       border-radius: 35px;
     }
 
-    .removedImg.reveal {
-      transform: translateX(0);
-      opacity: 1;
+    .original-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      overflow: hidden;
+      border-radius: 35px;
+      transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .removedImg.slide-in {
-      animation: slideInFromRight 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    .original-mask .img-original {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--original-width);
+      height: 100%;
+      object-fit: cover;
     }
 
-    @keyframes slideInFromRight {
+    .original-mask.slide-away {
+      width: 0%;
+    }
+
+    @keyframes slideReveal {
       0% {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      20% {
-        opacity: 1;
+        width: 100%;
       }
       100% {
-        transform: translateX(0);
-        opacity: 1;
+        width: 0%;
       }
     }
 
@@ -1117,15 +1127,42 @@
       backgroundLayer.classList.add("backgroundLayer");
       imageHolder.appendChild(backgroundLayer);
 
-      const originalImgEl = document.createElement("img");
-      originalImgEl.src = originalSrc;
-      originalImgEl.classList.add("img-original");
-      imageHolder.appendChild(originalImgEl);
-
+      // Create the processed image element (will be behind the original)
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
       imageHolder.appendChild(removedImgEl);
+
+      // Create a mask container for the original image
+      const originalMask = document.createElement("div");
+      originalMask.classList.add("original-mask");
+
+      // Create the original image inside the mask
+      const originalImgEl = document.createElement("img");
+      originalImgEl.src = originalSrc;
+      originalImgEl.classList.add("img-original");
+      
+      // Wait for the image to load to get its dimensions
+      originalImgEl.onload = () => {
+        const containerRect = previewImg.getBoundingClientRect();
+        const imgAspect = originalImgEl.naturalWidth / originalImgEl.naturalHeight;
+        const containerAspect = containerRect.width / containerRect.height;
+        
+        let displayWidth, displayHeight;
+        if (imgAspect > containerAspect) {
+          displayWidth = Math.min(550, containerRect.width);
+          displayHeight = displayWidth / imgAspect;
+        } else {
+          displayHeight = Math.min(375, containerRect.height);
+          displayWidth = displayHeight * imgAspect;
+        }
+        
+        // Set the CSS custom property for the original image width
+        originalMask.style.setProperty('--original-width', `${displayWidth}px`);
+      };
+      
+      originalMask.appendChild(originalImgEl);
+      imageHolder.appendChild(originalMask);
 
       const overlay = document.createElement("div");
       overlay.id = "imageOverlay";
@@ -1144,7 +1181,7 @@
       previewImg.style.display = "block";
       document.getElementById('title').style.display = "none";
 
-      return removedImgEl;
+      return { removedImgEl, originalMask };
     }
 
     async function handleFileSelect(e, isFile = false) {
@@ -1164,7 +1201,7 @@
       try {
         console.log("Main: Handling file:", file.name);
         const originalDataURL = await readFileAsDataURL(file);
-        const removedImgEl = displayImages(originalDataURL);
+        const { removedImgEl, originalMask } = displayImages(originalDataURL);
 
         startStarsAnimation(true);
         modelLoadingEl.classList.add("show");
@@ -1195,9 +1232,11 @@
       modelLoadingEl.classList.remove("show");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
-      if (!removedImgEl) {
-        console.error("Main: removedImgEl not found");
-        showError("Failed to find image element");
+      const originalMask = previewImg.querySelector(".original-mask");
+      
+      if (!removedImgEl || !originalMask) {
+        console.error("Main: Required image elements not found");
+        showError("Failed to find image elements");
         removeImage();
         return;
       }
@@ -1215,27 +1254,17 @@
         console.log("Main: Background-removed image loaded successfully");
         showSuccess("Background removed successfully!");
         
-        // Add slide-in animation class and reveal
-        removedImgEl.classList.add("slide-in");
-        removedImgEl.classList.add("reveal");
-        
-        // Show controls with a slight delay
+        // Start the slide-away animation after a brief delay
         setTimeout(() => {
-          removedImgBtn.style.display = "block";
-          hiddenDiv.style.display = "flex";
+          originalMask.classList.add("slide-away");
           
-          // Hide original image after transition
+          // Show controls after the slide animation starts
           setTimeout(() => {
-            const originalImgEl = previewImg.querySelector(".img-original");
-            if (originalImgEl) {
-              originalImgEl.style.transition = "opacity 0.5s ease";
-              originalImgEl.style.opacity = "0";
-              setTimeout(() => {
-                originalImgEl.style.display = "none";
-              }, 500);
-            }
-          }, 600);
-        }, 300);
+            removedImgBtn.style.display = "block";
+            hiddenDiv.style.display = "flex";
+          }, 300);
+          
+        }, 500);
         
         // Set transparent background as default
         backgroundType = 'transparent';
