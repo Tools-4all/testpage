@@ -58,7 +58,7 @@
       position: absolute;
       margin-top: 10px;
       margin-left: 10px;
-      z-index: 15;
+      z-index: 50;
     }
 
     .uplodePhoto {
@@ -1375,46 +1375,38 @@
       const starsContainer = document.querySelector(".stars-container");
       const imageOverlay = document.querySelector(".image-overlay");
 
-      if (!starsContainer || !imageOverlay) {
-        console.log("Main: Stars container or overlay not found");
-        return;
-      }
+      if (!starsContainer || !imageOverlay) return;
 
       if (run) {
-        console.log("Main: Starting stars animation");
-
-        // Show overlay and stars
         imageOverlay.style.display = "block";
         starsContainer.style.display = "block";
-
-        // Create stars and start animations
         createStars(starsContainer);
         starsContainer.querySelectorAll(".star").forEach(star => {
           star.style.animationPlayState = "running";
         });
-
       } else {
-        console.log("Main: Sliding away overlay and stars");
-
-        // Trigger slide-out animation
+        // Animate overlay and stars away
         imageOverlay.classList.add("overlay-slide-out");
         starsContainer.classList.add("overlay-slide-out");
 
-        // After animation ends, hide and clean
         setTimeout(() => {
           imageOverlay.style.display = "none";
           starsContainer.style.display = "none";
-
           imageOverlay.classList.remove("overlay-slide-out");
           starsContainer.classList.remove("overlay-slide-out");
 
-          // Remove all stars
+          // Remove stars
           while (starsContainer.firstChild) {
             starsContainer.removeChild(starsContainer.firstChild);
           }
+
+          // Show remove button NOW
+          removedImgBtn.style.display = "block";
+
         }, 1000); // match animation duration
       }
     }
+
 
 
     function displayColors() {
