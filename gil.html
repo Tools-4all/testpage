@@ -388,6 +388,7 @@
     }
 
     .image-overlay {
+      display: none;
       position: absolute;
       top: 0;
       left: 0;
@@ -398,6 +399,10 @@
       z-index: 15;
       padding: 5px;
       border-radius: 35px;
+    }
+
+    .overlay-slide-out {
+      animation: slideReveal 1s ease forwards;
     }
 
     .BgColorChange {
@@ -1207,7 +1212,9 @@
     // Handle Web Worker result
     async function handleWorkerResult(dataURL) {
       console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
-      startStarsAnimation(false);
+      setTimeout(() => {
+        startStarsAnimation(false);
+      }, 200);
       modelLoadingEl.classList.remove("show");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
@@ -1355,30 +1362,49 @@
 
     function startStarsAnimation(run) {
       const starsContainer = document.querySelector(".stars-container");
-      if (!starsContainer) {
-        console.log("Main: Stars container not found");
+      const imageOverlay = document.querySelector(".image-overlay");
+
+      if (!starsContainer || !imageOverlay) {
+        console.log("Main: Stars container or overlay not found");
         return;
       }
+
       if (run) {
         console.log("Main: Starting stars animation");
+
+        // Show overlay and stars
+        imageOverlay.style.display = "block";
         starsContainer.style.display = "block";
+
+        // Create stars and start animations
         createStars(starsContainer);
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
+        starsContainer.querySelectorAll(".star").forEach(star => {
           star.style.animationPlayState = "running";
         });
+
       } else {
-        console.log("Main: Stopping stars animation");
-        const stars = starsContainer.querySelectorAll(".star");
-        stars.forEach(star => {
-          star.style.animationPlayState = "paused";
-        });
-        while (starsContainer.firstChild) {
-          starsContainer.removeChild(starsContainer.firstChild);
-        }
-        starsContainer.style.display = "none";
+        console.log("Main: Sliding away overlay and stars");
+
+        // Trigger slide-out animation
+        imageOverlay.classList.add("overlay-slide-out");
+        starsContainer.classList.add("overlay-slide-out");
+
+        // After animation ends, hide and clean
+        setTimeout(() => {
+          imageOverlay.style.display = "none";
+          starsContainer.style.display = "none";
+
+          imageOverlay.classList.remove("overlay-slide-out");
+          starsContainer.classList.remove("overlay-slide-out");
+
+          // Remove all stars
+          while (starsContainer.firstChild) {
+            starsContainer.removeChild(starsContainer.firstChild);
+          }
+        }, 1000); // match animation duration
       }
     }
+
 
     function displayColors() {
       console.log("Main: Toggling colors div");
