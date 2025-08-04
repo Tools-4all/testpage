@@ -308,20 +308,13 @@
 
     .imageHolder {
       position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      max-width: 400px;
-      max-height: 400px;
+      display: inline-block;
       width: 100%;
-      height: auto;
+      height: 100%;
       background-color: transparent;
     }
 
     .imageHolder img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
       border-radius: 35px;
     }
 
@@ -698,13 +691,8 @@
       }
 
       #previewImage {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        max-width: 400px;
-        max-height: 400px;
-        width: 100%;
-        height: auto;
+        min-width: 250px;
+        min-height: 250px;
       }
 
       #hiddenDiv {
@@ -1232,8 +1220,6 @@
       showError(error);
       removeImage();
     }
-
-    alert("1")
 
     // Remove image
     function removeImage() {
