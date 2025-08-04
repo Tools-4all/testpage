@@ -123,9 +123,12 @@
     }
 
     @keyframes subtlePulse {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: 0 4px 15px rgba(113, 184, 251, 0.3);
       }
+
       50% {
         box-shadow: 0 4px 20px rgba(113, 184, 251, 0.5);
       }
@@ -138,7 +141,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: left 0.5s ease;
     }
 
@@ -156,7 +159,6 @@
     #uploadBtn img {
       width: 40px;
       margin-left: 10px;
-      filter: brightness(0) invert(1);
     }
 
     #uploadBtn:active {
@@ -273,16 +275,20 @@
         opacity: 0;
         transform: rotate(0deg) scale(0);
       }
+
       10% {
         opacity: 0.3;
       }
+
       50% {
         opacity: 1;
         transform: rotate(360deg) scale(1.8);
       }
+
       80% {
         opacity: 0.8;
       }
+
       100% {
         opacity: 0;
         transform: rotate(720deg) scale(0);
@@ -375,6 +381,7 @@
       0% {
         clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
       }
+
       100% {
         clip-path: polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%);
       }
@@ -439,8 +446,15 @@
     }
 
     @keyframes progressPulse {
-      0%, 100% { width: 20%; }
-      50% { width: 80%; }
+
+      0%,
+      100% {
+        width: 20%;
+      }
+
+      50% {
+        width: 80%;
+      }
     }
 
     @keyframes fadeInUp {
@@ -448,6 +462,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       100% {
         opacity: 1;
         transform: translateY(0);
@@ -504,7 +519,8 @@
       opacity: 1;
     }
 
-    .circleBtn img, .circleBtn svg {
+    .circleBtn img,
+    .circleBtn svg {
       width: 100%;
       height: 100%;
       border-radius: 50%;
@@ -513,7 +529,8 @@
       transition: transform 0.3s ease;
     }
 
-    .circleBtn:hover img, .circleBtn:hover svg {
+    .circleBtn:hover img,
+    .circleBtn:hover svg {
       transform: scale(1.1);
     }
 
@@ -554,7 +571,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: left 0.5s ease;
     }
 
@@ -1193,15 +1210,25 @@
       startStarsAnimation(false);
       modelLoadingEl.classList.remove("show");
 
+<<<<<<< HEAD
+      const removedImgEl = previewImg.querySelector(".removedImg");
+      if (!removedImgEl) {
+        console.error("Main: removedImgEl not found");
+        showError("Failed to find image element");
+        removeImage();
+        return;
+      }
+=======
       const removedImgEl = previewImg.querySelector(".removedImg");
       const originalImgEl = previewImg.querySelector(".img-original");
-      
+
       if (!removedImgEl || !originalImgEl) {
         console.error("Main: Required image elements not found");
         showError("Failed to find image elements");
         removeImage();
         return;
       }
+>>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
 
       if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
         console.error("Main: Invalid dataURL received:", dataURL);
@@ -1210,22 +1237,57 @@
         return;
       }
 
+<<<<<<< HEAD
+      originalForegroundDataUrl = dataURL;
+      removedImgEl.src = dataURL;
+      removedImgEl.onload = () => {
+=======
       originalForegroundDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
         showSuccess("Background removed successfully!");
-        
+>>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
+
+<<<<<<< HEAD
+        console.log("Main: Background-removed image loaded successfully");
+        removedImgEl.classList.add("reveal");
+        removedImgBtn.style.display = "block";
+        hiddenDiv.style.display = "flex";
+        setTimeout(() => {
+          const originalImgEl = previewImg.querySelector(".img-original");
+          if (originalImgEl) {
+            originalImgEl.style.display = "none";
+          }
+          backgroundType = 'transparent';
+          backgroundValue = null;
+          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+          if (backgroundLayer) {
+            backgroundLayer.classList.add("checkerboard");
+            backgroundLayer.style.backgroundColor = "";
+            backgroundLayer.style.backgroundImage = "";
+            backgroundLayer.style.backgroundSize = "";
+            backgroundLayer.style.backgroundPosition = "";
+          }
+        }, 1500);
+        removedImgEl.onload = null;
+      };
+      removedImgEl.onerror = () => {
+        console.error("Main: Failed to load background-removed image");
+        showError("Failed to load the background-removed image");
+        removeImage();
+      };
+=======
         // Start the slide-away animation after a brief delay
         setTimeout(() => {
           originalImgEl.classList.add("slide-away");
-          
+
           // Show controls after the slide animation starts
           setTimeout(() => {
             removedImgBtn.style.display = "block";
             hiddenDiv.style.display = "flex";
           }, 300);
-          
+
           // After animation completes, hide original and ensure processed is visible
           setTimeout(() => {
             originalImgEl.classList.add("slide-complete");
@@ -1233,9 +1295,9 @@
             removedImgEl.style.opacity = "1";
             removedImgEl.style.zIndex = "2";
           }, 1500);
-          
+
         }, 500);
-        
+
         // Set transparent background as default
         backgroundType = 'transparent';
         backgroundValue = null;
@@ -1254,6 +1316,7 @@
         showError("Failed to load the background-removed image");
         removeImage();
       };
+>>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
     }
 
     // Handle Web Worker error
@@ -1417,7 +1480,7 @@
           backgroundLayer.style.backgroundImage = "";
           backgroundLayer.style.backgroundSize = "";
           backgroundLayer.style.backgroundPosition = "";
-          
+
           // Add a subtle animation
           backgroundLayer.style.transition = "all 0.3s ease";
         }
@@ -1439,7 +1502,7 @@
         backgroundLayer.style.backgroundImage = "";
         backgroundLayer.style.backgroundSize = "";
         backgroundLayer.style.backgroundPosition = "";
-        
+
         // Add a subtle animation
         backgroundLayer.style.transition = "all 0.3s ease";
       }
@@ -1462,7 +1525,7 @@
         backgroundLayer.style.backgroundImage = "";
         backgroundLayer.style.backgroundSize = "";
         backgroundLayer.style.backgroundPosition = "";
-        
+
         // Add a subtle animation
         backgroundLayer.style.transition = "all 0.3s ease";
       }
@@ -1488,7 +1551,7 @@
           backgroundLayer.style.backgroundImage = `url(${bgDataUrl})`;
           backgroundLayer.style.backgroundSize = "cover";
           backgroundLayer.style.backgroundPosition = "center";
-          
+
           // Add a subtle animation
           backgroundLayer.style.transition = "all 0.3s ease";
         }
@@ -1514,14 +1577,14 @@
       const notification = document.createElement('div');
       notification.className = `notification ${type}`;
       notification.textContent = message;
-      
+
       document.body.appendChild(notification);
-      
+
       // Show notification
       setTimeout(() => {
         notification.classList.add('show');
       }, 100);
-      
+
       // Hide notification after duration
       setTimeout(() => {
         notification.classList.remove('show');
