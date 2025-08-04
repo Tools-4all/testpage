@@ -9,7 +9,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
   <style>
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+    }
+
     #bigFooter {
       display: none;
     }
@@ -232,7 +238,7 @@
 
     #previewImage {
       min-width: 400px;
-      min-height: 300px;
+      min-height: 437px;
       max-width: 550px;
       max-height: 375px;
     }
@@ -536,7 +542,6 @@
     #closeColorsDiv {
       position: absolute;
       top: 8px;
-      right: 13px;
       width: 7px;
       height: 7px;
     }
@@ -633,37 +638,6 @@
       cursor: pointer;
     }
 
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: linear-gradient(135deg, #71b8fb 0%, #5da7f0 100%);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(113, 184, 251, 0.3);
-      z-index: 10000;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.3s ease;
-      font-weight: 500;
-      max-width: 300px;
-    }
-
-    .notification.show {
-      opacity: 1;
-      transform: translateX(0);
-    }
-
-    .notification.error {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-      box-shadow: 0 4px 20px rgba(231, 76, 60, 0.3);
-    }
-
-    .notification.success {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-      box-shadow: 0 4px 20px rgba(46, 204, 113, 0.3);
-    }
 
     @media (max-width: 840px) {
       .functionTitle {
@@ -733,13 +707,6 @@
 
       #uploadBtn {
         font-size: 20px;
-      }
-
-      .notification {
-        top: 10px;
-        right: 10px;
-        left: 10px;
-        max-width: none;
       }
     }
   </style>
@@ -835,7 +802,7 @@
             <button class="colorBtn" style="background-color: purple;"></button>
             <button class="colorBtn" style="background-color: blue;"></button>
             <button class="colorBtn" style="background-color: green;"></button>
-            <button class="colorBtn transparentBtn">Transparent</button>
+            <button class="colorBtn transparentBtn" style="width: 100px;">Transparent</button>
           </div>
 
           <div id="customColorDiv">
@@ -1474,30 +1441,6 @@
       imageUploader.click();
     });
 
-    function showNotification(message, type = 'info', duration = 4000) {
-      // Remove any existing notifications
-      const existingNotifications = document.querySelectorAll('.notification');
-      existingNotifications.forEach(notif => notif.remove());
-
-      const notification = document.createElement('div');
-      notification.className = `notification ${type}`;
-      notification.textContent = message;
-
-      document.body.appendChild(notification);
-
-      // Show notification
-      setTimeout(() => {
-        notification.classList.add('show');
-      }, 100);
-
-      // Hide notification after duration
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          notification.remove();
-        }, 300);
-      }, duration);
-    }
 
     function showError(msg) {
       console.log("Main: Showing error:", msg);
