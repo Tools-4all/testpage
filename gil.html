@@ -1210,7 +1210,6 @@
       startStarsAnimation(false);
       modelLoadingEl.classList.remove("show");
 
-<<<<<<< HEAD
       const removedImgEl = previewImg.querySelector(".removedImg");
       if (!removedImgEl) {
         console.error("Main: removedImgEl not found");
@@ -1218,17 +1217,6 @@
         removeImage();
         return;
       }
-=======
-      const removedImgEl = previewImg.querySelector(".removedImg");
-      const originalImgEl = previewImg.querySelector(".img-original");
-
-      if (!removedImgEl || !originalImgEl) {
-        console.error("Main: Required image elements not found");
-        showError("Failed to find image elements");
-        removeImage();
-        return;
-      }
->>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
 
       if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
         console.error("Main: Invalid dataURL received:", dataURL);
@@ -1237,19 +1225,10 @@
         return;
       }
 
-<<<<<<< HEAD
       originalForegroundDataUrl = dataURL;
       removedImgEl.src = dataURL;
       removedImgEl.onload = () => {
-=======
-      originalForegroundDataUrl = dataURL;
-      removedImgEl.src = dataURL;
-      removedImgEl.onload = () => {
-        console.log("Main: Background-removed image loaded successfully");
-        showSuccess("Background removed successfully!");
->>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
 
-<<<<<<< HEAD
         console.log("Main: Background-removed image loaded successfully");
         removedImgEl.classList.add("reveal");
         removedImgBtn.style.display = "block";
@@ -1277,46 +1256,6 @@
         showError("Failed to load the background-removed image");
         removeImage();
       };
-=======
-        // Start the slide-away animation after a brief delay
-        setTimeout(() => {
-          originalImgEl.classList.add("slide-away");
-
-          // Show controls after the slide animation starts
-          setTimeout(() => {
-            removedImgBtn.style.display = "block";
-            hiddenDiv.style.display = "flex";
-          }, 300);
-
-          // After animation completes, hide original and ensure processed is visible
-          setTimeout(() => {
-            originalImgEl.classList.add("slide-complete");
-            // Ensure the processed image is definitely visible
-            removedImgEl.style.opacity = "1";
-            removedImgEl.style.zIndex = "2";
-          }, 1500);
-
-        }, 500);
-
-        // Set transparent background as default
-        backgroundType = 'transparent';
-        backgroundValue = null;
-        const backgroundLayer = previewImg.querySelector(".backgroundLayer");
-        if (backgroundLayer) {
-          backgroundLayer.classList.add("checkerboard");
-          backgroundLayer.style.backgroundColor = "";
-          backgroundLayer.style.backgroundImage = "";
-          backgroundLayer.style.backgroundSize = "";
-          backgroundLayer.style.backgroundPosition = "";
-        }
-        removedImgEl.onload = null;
-      };
-      removedImgEl.onerror = () => {
-        console.error("Main: Failed to load background-removed image");
-        showError("Failed to load the background-removed image");
-        removeImage();
-      };
->>>>>>> 5ead1a65d18ce8a6b69338a0c0186d11c80f4ea2
     }
 
     // Handle Web Worker error
