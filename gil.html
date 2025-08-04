@@ -1212,9 +1212,6 @@
     // Handle Web Worker result
     async function handleWorkerResult(dataURL) {
       console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
-      setTimeout(() => {
-        startStarsAnimation(false);
-      }, 200);
       modelLoadingEl.classList.remove("show");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
@@ -1233,37 +1230,48 @@
       }
 
       originalForegroundDataUrl = dataURL;
-      removedImgEl.src = dataURL;
-      removedImgEl.onload = () => {
 
+      // Show processed image immediately behind overlay
+      removedImgEl.src = dataURL;
+
+      removedImgEl.onload = () => {
         console.log("Main: Background-removed image loaded successfully");
-        removedImgEl.classList.add("reveal");
+
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
-        setTimeout(() => {
-          const originalImgEl = previewImg.querySelector(".img-original");
-          if (originalImgEl) {
-            originalImgEl.style.display = "none";
-          }
-          backgroundType = 'transparent';
-          backgroundValue = null;
-          const backgroundLayer = previewImg.querySelector(".backgroundLayer");
-          if (backgroundLayer) {
-            backgroundLayer.classList.add("checkerboard");
-            backgroundLayer.style.backgroundColor = "";
-            backgroundLayer.style.backgroundImage = "";
-            backgroundLayer.style.backgroundSize = "";
-            backgroundLayer.style.backgroundPosition = "";
-          }
-        }, 1500);
+
+        // Start stars+overlay slide-out animation at the same time image is ready
+        startStarsAnimation(false);
+
+        // Also hide the original image at the same time
+        const originalImgEl = previewImg.querySelector(".img-original");
+        if (originalImgEl) {
+          originalImgEl.style.display = "none";
+        }
+
+        // Set transparent background as default
+        backgroundType = 'transparent';
+        backgroundValue = null;
+
+        const backgroundLayer = previewImg.querySelector(".backgroundLayer");
+        if (backgroundLayer) {
+          backgroundLayer.classList.add("checkerboard");
+          backgroundLayer.style.backgroundColor = "";
+          backgroundLayer.style.backgroundImage = "";
+          backgroundLayer.style.backgroundSize = "";
+          backgroundLayer.style.backgroundPosition = "";
+        }
+
         removedImgEl.onload = null;
       };
+
       removedImgEl.onerror = () => {
         console.error("Main: Failed to load background-removed image");
         showError("Failed to load the background-removed image");
         removeImage();
       };
     }
+
 
     // Handle Web Worker error
     function handleWorkerError(error) {
