@@ -1128,45 +1128,59 @@
 
     // Display images
     function displayImages(originalSrc) {
-      console.log("Main: Displaying original image");
+      // Remove only the old imageHolder, not the remove button
+      const oldHolder = previewImg.querySelector(".imageHolder");
+      if (oldHolder) oldHolder.remove();
+
+      // Create new imageHolder
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
+      // Background layer
       const backgroundLayer = document.createElement("div");
       backgroundLayer.classList.add("backgroundLayer");
       imageHolder.appendChild(backgroundLayer);
 
-      // Create the processed image element (will be always visible behind)
+      // Processed image (removed background)
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
       removedImgEl.src = "";
       imageHolder.appendChild(removedImgEl);
 
-      // Create the original image (this will be the one that slides away)
+      // Original image (will slide away)
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
       imageHolder.appendChild(originalImgEl);
 
+      // Overlay
       const overlay = document.createElement("div");
       overlay.id = "imageOverlay";
       overlay.classList.add("image-overlay");
       imageHolder.appendChild(overlay);
 
+      // Stars container
       const starsContainer = document.createElement("div");
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
       imageHolder.appendChild(starsContainer);
 
-      previewImg.innerHTML = '';
+      // Append new imageHolder
       previewImg.appendChild(imageHolder);
 
+      // Hide drag box and show preview
       dragBox.style.display = "none";
       previewImg.style.display = "block";
       document.getElementById('title').style.display = "none";
 
+      // Make sure remove button exists and is hidden until ready
+      if (removedImgBtn) {
+        removedImgBtn.style.display = "none";
+      }
+
       return removedImgEl;
     }
+
 
     async function handleFileSelect(e, isFile = false) {
       const file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
@@ -1273,7 +1287,7 @@
     }
 
 
-    alert("1")
+
 
 
     // Handle Web Worker error
