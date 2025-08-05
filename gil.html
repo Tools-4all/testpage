@@ -718,6 +718,52 @@
         margin: 15px auto;
       }
     }
+
+
+    .unique-slider-container {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .unique-slider-container img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .unique-slider-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .unique-slider-overlay img {
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+    }
+
+    .unique-slider-handle {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 100%;
+      background: #fff;
+      cursor: ew-resize;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
   </style>
 </head>
 
@@ -823,6 +869,16 @@
         </div>
       </div>
     </div>
+
+    <div class="unique-slider-container">
+      <img src=" {% static 'site_images/WhenToUsePNGArticle.webp' %}" alt="With Background" class="unique-slider-bg">
+      <div class="unique-slider-overlay">
+        <img src=" {% static 'site_images/WhenToUsePNGArticle.webp' %}" alt="Without Background">
+      </div>
+      <div class="unique-slider-handle"></div>
+    </div>
+
+
   </div>
 
   <script src="{% static 'js/errorComponent.js' %}"></script>
@@ -1440,8 +1496,40 @@
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
-
-
   </script>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const sliderContainer = document.querySelector(".unique-slider-container");
+      const overlay = sliderContainer.querySelector(".unique-slider-overlay");
+      const handle = sliderContainer.querySelector(".unique-slider-handle");
+
+      let isDragging = false;
+
+      const moveSlider = (x) => {
+        let rect = sliderContainer.getBoundingClientRect();
+        let offsetX = x - rect.left;
+        if (offsetX < 0) offsetX = 0;
+        if (offsetX > rect.width) offsetX = rect.width;
+        let percent = (offsetX / rect.width) * 100;
+        overlay.style.width = percent + "%";
+        handle.style.left = percent + "%";
+      };
+
+      handle.addEventListener("mousedown", () => isDragging = true);
+      window.addEventListener("mouseup", () => isDragging = false);
+      window.addEventListener("mousemove", (e) => {
+        if (isDragging) moveSlider(e.clientX);
+      });
+
+      sliderContainer.addEventListener("touchstart", () => isDragging = true);
+      window.addEventListener("touchend", () => isDragging = false);
+      window.addEventListener("touchmove", (e) => {
+        if (isDragging) moveSlider(e.touches[0].clientX);
+      });
+    });
+  </script>
+
 </body>
 {% endblock %}
