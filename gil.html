@@ -275,6 +275,7 @@
       overflow: hidden;
       z-index: 20;
       display: none;
+      border-radius: 25px;
     }
 
     @keyframes spinAndFade {
@@ -1444,15 +1445,6 @@
     });
 
 
-    function showError(msg) {
-      console.log("Main: Showing error:", msg);
-      showNotification(msg, 'error');
-    }
-
-    function showSuccess(msg) {
-      console.log("Main: Showing success:", msg);
-      showNotification(msg, 'success');
-    }
   </script>
 </body>
 {% endblock %}
