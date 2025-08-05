@@ -950,11 +950,8 @@
         console.log("Main: Dropped file:", file.name);
         await handleFileSelect(file, true);
       }
-
-      if (previewImg.style.display === "block") {
-        removeImage();
-      }
     });
+
 
     // Read file as Data URL
     function readFileAsDataURL(file) {
