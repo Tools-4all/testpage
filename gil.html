@@ -1400,7 +1400,6 @@
       }
 
       try {
-        console.log("Main: Handling file:", file.name);
         const originalDataURL = await readFileAsDataURL(file);
         const removedImgEl = displayImages(originalDataURL);
 
@@ -1487,7 +1486,6 @@
 
     // Remove image
     function removeImage() {
-      console.log("Main: Removing image");
       document.getElementById('title').style.display = "block";
       dragBox.style.display = "flex";
       previewImg.style.display = "none";
@@ -1511,7 +1509,6 @@
     // Download button
     downloadBtn.addEventListener("click", async () => {
       if (!originalForegroundDataUrl) {
-        console.log("Main: No image to download");
         showError("No image available to download");
         return;
       }
@@ -1524,7 +1521,6 @@
         dataUrl = await compositeImages(originalForegroundDataUrl, backgroundValue);
       }
       if (dataUrl) {
-        console.log("Main: Downloading image");
         const a = document.createElement("a");
         a.href = dataUrl;
         a.download = "bg_removed.png";
@@ -1610,7 +1606,6 @@
 
 
     function displayColors() {
-      console.log("Main: Toggling colors div");
       if (colorsDiv.style.display === "block") {
         hiddenDiv.style.display = "flex";
         colorsDiv.style.display = "none";
@@ -1622,7 +1617,6 @@
 
     const closeColorsDiv = document.getElementById("closeColorsDiv");
     closeColorsDiv.addEventListener("click", () => {
-      console.log("Main: Closing colors div");
       hiddenDiv.style.display = "flex";
       colorsDiv.style.display = "none";
     });
@@ -1636,7 +1630,6 @@
     // Handle color button clicks
     document.querySelectorAll(".colorBtn:not(.transparentBtn)").forEach(button => {
       button.addEventListener("click", () => {
-        console.log("Main: Color button clicked:", button.style.backgroundColor);
         removeHighlight();
         button.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
         backgroundType = 'color';
@@ -1658,7 +1651,6 @@
 
     // Handle transparent button
     document.querySelector(".transparentBtn").addEventListener("click", () => {
-      console.log("Main: Transparent background selected");
       removeHighlight();
       document.querySelector(".transparentBtn").style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       backgroundType = 'transparent';
@@ -1679,7 +1671,6 @@
 
     // Handle custom color input
     customColorInput.addEventListener("input", () => {
-      console.log("Main: Custom color selected:", customColorInput.value);
       removeHighlight();
       colorPreview.style.boxShadow = "#71b8fb 0px 0px 15px 3px";
       colorPreview.style.backgroundColor = customColorInput.value;
@@ -1704,10 +1695,8 @@
     document.getElementById("imageUploader").addEventListener("change", async (e) => {
       const bgFile = e.target.files[0];
       if (!bgFile) {
-        console.log("Main: No background image selected");
         return;
       }
-      console.log("Main: Background image selected:", bgFile.name);
       try {
         const bgDataUrl = await readFileAsDataURL(bgFile);
         backgroundType = 'image';
@@ -1732,7 +1721,6 @@
     });
 
     document.getElementById("uploadSection").addEventListener("click", () => {
-      console.log("Main: Opening background image uploader");
       const imageUploader = document.getElementById("imageUploader");
       imageUploader.click();
     });
