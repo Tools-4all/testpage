@@ -720,6 +720,8 @@
     }
 
 
+
+
     .lambo-comparison-container {
       position: relative;
       width: 900px;
@@ -729,6 +731,13 @@
       border: 3px solid #5da7f0;
       user-select: none;
       margin-top: 80px;
+    }
+
+    .lambo-comparison-container img {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      pointer-events: none;
     }
 
     .lambo-background {
@@ -1624,17 +1633,17 @@
     });
 
     lamboHandle.addEventListener('touchstart', (e) => {
-      e.preventDefault(); 
+      e.preventDefault();
       isDragging = true;
       lamboHandleCircle.classList.add('active');
-      document.body.style.overflow = 'hidden'; 
+      document.body.style.overflow = 'hidden';
     });
 
     window.addEventListener('touchend', () => {
       if (isDragging) {
         isDragging = false;
         lamboHandleCircle.classList.remove('active');
-        document.body.style.overflow = ''; 
+        document.body.style.overflow = '';
       }
     });
 
@@ -1642,7 +1651,7 @@
       if (!isDragging) return;
       e.preventDefault();
       moveHandle(e.touches[0].clientX);
-    }, { passive: false }); 
+    }, { passive: false });
 
     function moveHandle(x) {
       const rect = lamboContainer.getBoundingClientRect();
