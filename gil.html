@@ -1527,7 +1527,6 @@
         document.body.appendChild(a);
         a.click();
         a.remove();
-        showSuccess("Image downloaded successfully!");
       }
     });
 
@@ -1645,7 +1644,6 @@
           // Add a subtle animation
           backgroundLayer.style.transition = "all 0.3s ease";
         }
-        showSuccess("Background color changed!");
       });
     });
 
@@ -1666,7 +1664,6 @@
         // Add a subtle animation
         backgroundLayer.style.transition = "all 0.3s ease";
       }
-      showSuccess("Background set to transparent!");
     });
 
     // Handle custom color input
@@ -1688,7 +1685,6 @@
         // Add a subtle animation
         backgroundLayer.style.transition = "all 0.3s ease";
       }
-      showSuccess("Custom background color applied!");
     });
 
     // Handle background image upload
@@ -1713,7 +1709,6 @@
           backgroundLayer.style.transition = "all 0.3s ease";
         }
         e.target.value = "";
-        showSuccess("Background image applied!");
       } catch (err) {
         console.error("Main: Error applying background image:", err);
         showError("Failed to apply background image");
