@@ -1177,16 +1177,12 @@
     function initWorker() {
       worker = new Worker("{% static 'js/bgRemovalWorker.js' %}");
       worker.onmessage = (e) => {
-        console.log("Main: Received message from worker:", e.data);
         const { type, data, error } = e.data;
         if (type === "result") {
-          console.log("Main: Processing result with dataURL:", data);
           handleWorkerResult(data);
         } else if (type === "error") {
-          console.log("Main: Worker error:", error);
           handleWorkerError(error);
         } else if (type === "modelLoaded") {
-          console.log("Main: Model loaded in worker");
           stopSpinner();
         }
       };
@@ -1207,13 +1203,11 @@
         const cache = await caches.open(cacheName);
         const cachedResponse = await cache.match(modelCacheKey);
         if (cachedResponse) {
-          console.log("Model found in cache");
           const blob = await cachedResponse.blob();
           worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
           return;
         }
 
-        console.log("Fetching model...");
         const response = await fetch(modelPath);
         if (!response.ok) throw new Error("Failed to fetch model");
 
@@ -1223,12 +1217,10 @@
         const blob = await response.blob();
         worker.postMessage({ type: "loadModel", modelUrl: URL.createObjectURL(blob) });
       } catch (err) {
-        console.error("Model preload failed:", err);
         showError("Failed to preload the model");
       }
     }
 
-    // Stop spinner and show main content
     function stopSpinner() {
       const spinnerDiv = document.getElementById("spinner");
       const spinner = document.querySelector(".spinner img");
@@ -1238,14 +1230,11 @@
       document.getElementById("mainDiv").style.display = "flex";
     }
 
-    // Initialize on page load
     window.addEventListener("load", async () => {
-      console.log("Main: Initializing worker and preloading model");
       initWorker();
       await preloadModel();
     });
 
-    // Drag and drop overlay
     const overlay = document.createElement("div");
     overlay.id = "dropOverlay";
     const overlayText = document.createElement("h2");
@@ -1274,13 +1263,11 @@
       const files = event.dataTransfer.files;
       if (files.length) {
         const file = files[0];
-        console.log("Main: Dropped file:", file.name);
         await handleFileSelect(file, true);
       }
     });
 
 
-    // Read file as Data URL
     function readFileAsDataURL(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1290,9 +1277,7 @@
       });
     }
 
-    // Composite background with foreground image
     async function compositeImages(foregroundSrc, backgroundSrc = null, backgroundColor = null) {
-      console.log("Main: Compositing images");
       try {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -1308,11 +1293,9 @@
         canvas.height = foregroundImg.height;
 
         if (backgroundColor) {
-          console.log("Main: Applying background color:", backgroundColor);
           ctx.fillStyle = backgroundColor;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         } else if (backgroundSrc) {
-          console.log("Main: Applying background image");
           const backgroundImg = new Image();
           backgroundImg.src = backgroundSrc;
           await new Promise((resolve, reject) => {
@@ -1347,7 +1330,6 @@
         ctx.drawImage(foregroundImg, 0, 0);
 
         const dataURL = canvas.toDataURL("image/png");
-        console.log("Main: Compositing complete, dataURL length:", dataURL.length);
         return dataURL;
       } catch (err) {
         console.error("Main: Error in compositeImages:", err);
@@ -1408,14 +1390,12 @@
     async function handleFileSelect(e, isFile = false) {
       const file = isFile ? e : (e.target.files || e.dataTransfer.files)[0];
       if (!file) {
-        console.log("Main: No file selected");
         return;
       }
 
       const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/svg+xml", "image/vnd.microsoft.icon"];
       if (!allowedTypes.includes(file.type)) {
         showError("Unsupported file type. Please upload a valid image.");
-        console.log("Main: Unsupported file type:", file.type);
         return;
       }
 
@@ -1427,19 +1407,16 @@
         startStarsAnimation(true);
 
         const arrayBuffer = await file.arrayBuffer();
-        console.log("Main: Sending file to worker, arrayBuffer size:", arrayBuffer.byteLength);
         worker.postMessage(
           { type: "removeBg", arrayBuffer: arrayBuffer, fileName: file.name, fileType: file.type },
           [arrayBuffer]
         );
 
         removedImgEl.onerror = () => {
-          console.error("Main: Failed to load background-removed image");
           showError("Failed to load the background-removed image.");
           removeImage();
         };
       } catch (err) {
-        console.error("Main: Error in handleFileSelect:", err);
         showError("Failed to remove background");
         removeImage();
       }
@@ -1447,18 +1424,15 @@
 
     // Handle Web Worker result
     async function handleWorkerResult(dataURL) {
-      console.log("Main: Handling worker result, dataURL length:", dataURL ? dataURL.length : "null");
 
       const removedImgEl = previewImg.querySelector(".removedImg");
       if (!removedImgEl) {
-        console.error("Main: removedImgEl not found");
         showError("Failed to find image element");
         removeImage();
         return;
       }
 
       if (!dataURL || typeof dataURL !== "string" || !dataURL.startsWith("data:image/png")) {
-        console.error("Main: Invalid dataURL received:", dataURL);
         showError("Invalid background-removed image data");
         removeImage();
         return;
@@ -1466,25 +1440,20 @@
 
       originalForegroundDataUrl = dataURL;
 
-      // Show processed image immediately behind overlay
       removedImgEl.src = dataURL;
 
       removedImgEl.onload = () => {
-        console.log("Main: Background-removed image loaded successfully");
 
         removedImgBtn.style.display = "block";
         hiddenDiv.style.display = "flex";
 
-        // Start stars+overlay slide-out animation at the same time image is ready
         startStarsAnimation(false);
 
-        // Also hide the original image at the same time
         const originalImgEl = previewImg.querySelector(".img-original");
         if (originalImgEl) {
           originalImgEl.style.display = "none";
         }
 
-        // Set transparent background as default
         backgroundType = 'transparent';
         backgroundValue = null;
 
@@ -1831,8 +1800,8 @@
   </script>
 
   <script src="{% static 'js/page_info.js' %}"></script>
-  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
 
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
   <script>AOS.init();</script>
 
 </body>
