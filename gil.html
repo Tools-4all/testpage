@@ -16,10 +16,6 @@
       user-drag: none;
     }
 
-    img[data-empty="true"] {
-      display: none;
-    }
-
     #bigFooter {
       display: none;
     }
@@ -1034,54 +1030,48 @@
       }
     }
 
-    // Display images
     function displayImages(originalSrc) {
-      // Remove only the old imageHolder, not the remove button
       const oldHolder = previewImg.querySelector(".imageHolder");
       if (oldHolder) oldHolder.remove();
 
-      // Create new imageHolder
       const imageHolder = document.createElement("div");
       imageHolder.classList.add("imageHolder");
 
-      // Background layer
       const backgroundLayer = document.createElement("div");
       backgroundLayer.classList.add("backgroundLayer");
       imageHolder.appendChild(backgroundLayer);
 
-      // Processed image (removed background)
       const removedImgEl = document.createElement("img");
       removedImgEl.classList.add("removedImg");
-      removedImgEl.src = "";
+
+      const transparentPlaceholder =
+        "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+      removedImgEl.src = transparentPlaceholder;
+
       imageHolder.appendChild(removedImgEl);
 
-      // Original image (will slide away)
+
       const originalImgEl = document.createElement("img");
       originalImgEl.src = originalSrc;
       originalImgEl.classList.add("img-original");
       imageHolder.appendChild(originalImgEl);
 
-      // Overlay
       const overlay = document.createElement("div");
       overlay.id = "imageOverlay";
       overlay.classList.add("image-overlay");
       imageHolder.appendChild(overlay);
 
-      // Stars container
       const starsContainer = document.createElement("div");
       starsContainer.classList.add("stars-container");
       createStars(starsContainer);
       imageHolder.appendChild(starsContainer);
 
-      // Append new imageHolder
       previewImg.appendChild(imageHolder);
 
-      // Hide drag box and show preview
       dragBox.style.display = "none";
       previewImg.style.display = "block";
       document.getElementById('title').style.display = "none";
 
-      // Make sure remove button exists and is hidden until ready
       if (removedImgBtn) {
         removedImgBtn.style.display = "none";
       }
