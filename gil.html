@@ -238,19 +238,18 @@
 
     #previewImage {
       min-width: 400px;
-      min-height: 437px;
+      min-height: 400px;
       max-width: 550px;
-      max-height: 375px;
+      max-height: 450px;
     }
 
     #previewImage img {
       background-color: transparent;
       width: 100%;
       height: 100%;
-      max-height: 437px;
       border: 1px solid black;
       border-radius: 25px;
-      overflow: hidden;
+      object-fit: contain;
     }
 
     #overlay {
@@ -316,10 +315,8 @@
     .imageHolder {
       position: relative;
       display: inline-block;
-      min-width: 350px;
-      max-width: 450px;
-      min-height: 350px;
-      max-height: 450px;
+      width: 100%;
+      height: 100%;
       background-color: transparent;
     }
 
