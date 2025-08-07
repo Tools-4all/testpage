@@ -302,33 +302,34 @@
 
     .imageHolder {
       display: inline-block;
-      padding: 0;
-      margin: 0 auto;
+      position: relative;
       background-color: transparent;
-      border-radius: 25px;
+      margin: 0 auto;
+      padding: 0;
       overflow: hidden;
+      border-radius: 25px;
 
-      /* הוספה הכרחית! */
+      /* מסגרת של הגודל */
       max-width: 500px;
       max-height: 500px;
       min-width: 250px;
       min-height: 250px;
 
-      width: fit-content;
-      height: fit-content;
+      /* הורד את fit-content — הוא הורס כאן */
+      width: auto;
+      height: auto;
     }
 
     .imageHolder img {
       display: block;
       width: 100%;
       height: auto;
-      max-width: 500px;
-      max-height: 500px;
-      min-width: 250px;
-      min-height: 250px;
       object-fit: contain;
+      max-width: 100%;
+      max-height: 100%;
       border-radius: 25px;
     }
+
 
 
     .backgroundLayer {
