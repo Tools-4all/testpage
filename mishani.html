@@ -1,428 +1,1877 @@
-<!DOCTYPE html>
-<html lang="he">
+{% extends 'base_template.html' %}
+{% block content %}
+{% load static %}
+{% load rating_tags %}
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>סקר תמונה</title>
+  <title>{{ title }}</title>
+  <meta name="description"
+    content="Convert batch scripts to EXE files locally in your browser. Customize icons, version info, and more. No server-side processing." />
+  <link rel="stylesheet" href="{% static 'css/batch_to_exe.css' %}?v=1" />
+  <link rel="stylesheet" href="{% static 'css/page_info.css' %}?v=1" />
+  <link rel="stylesheet" href="{% static 'css/errorComponent.css' %}" />
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
     :root {
-      --primary: #4a90e2;
-      --background: #f4f7fa;
-      --text: #333;
-      --accent: #ff9800;
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --card: #0f1623;
+      --acc: #58a6ff;
+      --err: #ff6b6b;
+      --ok: #3ddc97;
+      --b: #8c929e;
+      --in: #0b1320;
+      --ring: #2a6ae6;
+
+      --info-bg: #0b1326;
+      --info-border: #21345b;
+      --info-shadow: 0 20px 50px rgba(0, 0, 0, .6), 0 0 0 1px rgba(42, 106, 230, .15) inset;
     }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      direction: rtl;
-      text-align: center;
-      background-color: var(--background);
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
-      position: relative;
-    }
 
-    #admin-btn {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      background-color: #444;
-      color: white;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
 
-    #admin-btn:hover {
-      background-color: #333;
-    }
-
-    #app {
-      max-width: 800px;
+    main {
+      max-width: 1200px;
       margin: 0 auto;
-      background: white;
-      padding: 30px;
+      padding: 16px;
+      display: grid;
+      gap: 16px
+    }
+
+    .card {
+      border: 1px solid var(--b);
+      border-radius: 14px;
+      padding: 16px
+    }
+
+    .row {
+      display: grid;
+      gap: 12px
+    }
+
+    .grid-2 {
+      grid-template-columns: 1fr 1fr
+    }
+
+    .grid-3 {
+      grid-template-columns: 1fr 1fr 1fr
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--mut)
+    }
+
+    textarea,
+    input[type="text"],
+    select {
+      width: 100%;
+      height: 45px;
+      background: var(--in);
+      color: var(--fg);
+      border: 1px solid var(--b);
       border-radius: 10px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      outline: none
     }
 
-    h1,
-    h2 {
-      color: var(--primary);
+    textarea {
+      min-height: 220px;
+      resize: vertical
     }
 
-    .hidden {
-      display: none;
+    textarea:focus,
+    input[type="text"]:focus,
+    select:focus {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, .2)
     }
 
-    button {
-      margin: 10px;
-      padding: 12px 24px;
-      font-size: 1rem;
+    #build {
+      width: 300px;
+      margin: 0px auto;
+      margin-top: 20px;
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #67aff3 0%, #2264a1 100%);
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 50px;
       cursor: pointer;
-      background-color: var(--primary);
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(102, 177, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #build:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(74, 139, 189, 0.3);
+    }
+
+    #build:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    #build::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    #build:hover::before {
+      left: 100%;
+    }
+
+    #msg {
+      width: 300px;
+      margin: 0px auto;
+    }
+
+    .hint {
+      font-size: 12px;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
+    }
+
+    .ok {
+      background: rgba(61, 220, 151, .1);
+      border: 1px solid rgba(61, 220, 151, .3)
+    }
+
+    .err {
+      background: rgba(255, 107, 107, .1);
+      border: 1px solid rgba(255, 107, 107, .3)
+    }
+
+    code {
+      background: var(--in);
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--b)
+    }
+
+    .flex {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .ctl {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      background: #0e172a;
+      border: 1px solid var(--b);
+      border-radius: 999px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .ctl:hover {
+      background: #5fb9f6;
+      border-color: #5fb9f6;
+    }
+
+    .ctl input {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid #2b3a55;
+      border-radius: 4px;
+      background: #0b1320;
+      outline: none;
+      cursor: pointer
+    }
+
+    .ctl input[type="radio"] {
+      border-radius: 999px
+    }
+
+    .ctl input:checked {
+      background: #5fb9f6;
+      border-color: #10204c;
+      box-shadow: inset 0 0 0 4px #3a63d1
+    }
+
+    .toggle {
+      display: inline-flex;
+      width: max-content;
+      height: 45px;
+      margin-top: 10px;
+      align-items: center;
+      gap: 10px;
+      background: #0e172a;
+      border: 1px solid var(--b);
+      padding: 8px 12px;
+      border-radius: 999px;
+      user-select: none;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    .toggle input {
+      appearance: none;
+      width: 28px;
+      height: 16px;
+      border-radius: 999px;
+      background: #c3cfeb;
+      position: relative;
+      outline: none
+    }
+
+    .toggle input::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #122040;
+      transition: all .15s
+    }
+
+    .toggle input:checked {
+      background: #559aff;
+    }
+
+    .toggle input:checked::after {
+      left: 14px;
+      background: #122040
+    }
+
+    .disabled {
+      opacity: .5;
+      pointer-events: none
+    }
+
+    select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, #7aa2ff 50%), linear-gradient(135deg, #7aa2ff 50%, transparent 50%);
+      background-position: calc(100% - 20px) calc(1em - 2px), calc(100% - 15px) calc(1em - 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      margin-top: 10px !important;
+    }
+
+    details {
+      border: 1px solid var(--b);
+      border-radius: 10px;
+      padding: 10px;
+      background: #0f1a31;
+      color: #ffffff;
+    }
+
+    details summary {
+      cursor: pointer;
+      color: var(--fg);
+      font-weight: 700
+    }
+
+    ul.flags {
+      margin: 10px 0 0 16px;
+      padding: 0
+    }
+
+    ul.flags li {
+      margin: 6px 0
+    }
+
+    /* Single-element editor (no overlay) */
+    .bat-editor {
+      min-height: 220px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 14px;
+      line-height: 1.45;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid var(--b);
+      background: var(--in);
+      color: var(--fg);
+      white-space: pre-wrap;
+      word-break: break-word;
+      outline: none;
+    }
+
+    .bat-editor:focus {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, .2)
+    }
+
+    .bat-editor:empty:before {
+      content: attr(data-placeholder);
+      color: var(--mut)
+    }
+
+    /* Tokens */
+    .tok-comment {
+      color: #8b949e;
+    }
+
+    .tok-label {
+      color: #ffa657;
+    }
+
+    .tok-key {
+      color: #d2a8ff;
+    }
+
+    .tok-var,
+    .tok-flag {
+      color: #79c0ff;
+    }
+
+    .tok-param {
+      color: #79c0ff;
+      font-weight: 600;
+    }
+
+    .tok-str {
+      color: #a5d6ff;
+    }
+
+    .tok-op {
+      color: #ff7b72;
+    }
+
+    .tok-num {
+      color: #c9d1d9;
+    }
+
+    #batEditor.placeholder::before {
+      content: attr(data-placeholder);
+      color: var(--mut);
+      white-space: pre-wrap;
+      pointer-events: none;
+    }
+
+
+    .upload-btn {
+      padding: 8px 16px;
+      background: #5fb9f6;
       color: white;
       border: none;
-      border-radius: 6px;
-      transition: background 0.3s;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    button:hover {
-      background-color: #357ab7;
+    .upload-btn:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
     }
 
-    input[type="text"] {
-      padding: 10px;
-      width: 90%;
-      max-width: 400px;
-      margin: 10px 0;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    /* ===== Info Area (hover to open, click to pin) ===== */
+    .info-wrap {
+      position: absolute;
+      left: 20px;
+      top: 120px;
     }
 
-    #survey-image {
-      width: 100%;
-      max-width: 400px;
-      height: auto;
-      margin: 20px auto;
+
+    .info-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--b);
+      background: #0e172a;
+      color: #98b7ff;
+      cursor: pointer;
+      outline: none;
+      font-weight: 900;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin-bottom: 10px;
+    }
+
+    .info-btn:focus-visible {
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, .35);
+      border-color: var(--ring);
+    }
+
+    .info-bubble {
+      position: absolute;
+      left: 0px;
+      top: calc(100%);
+      width: min(880px, calc(100vw - 24px));
+      max-height: min(70vh, 720px);
+      overflow: auto;
+      background: var(--info-bg);
+      border: 1px solid var(--info-border);
+      box-shadow: var(--info-shadow);
+      border-radius: 14px;
+      padding: 14px;
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity .12s ease, transform .12s ease;
+      z-index: 30;
+    }
+
+    .info-wrap:hover .info-bubble,
+    .info-wrap:focus-within .info-bubble,
+    .info-wrap[data-pinned="1"] .info-bubble {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .info-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--b);
+      margin-bottom: 10px;
+    }
+
+    .info-bubble-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #c8d9ff;
+    }
+
+    .info-actions {
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .info-pill {
+      border: 1px solid var(--b);
+      background: #0d1a34;
+      color: #a9c1ff;
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 7px 8px;
+      user-select: none;
+    }
+
+    .info-pin {
+      background: #112149;
+      border: 1px solid var(--b);
+      color: #cbd7ff;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 840px) {
+      .info-grid {
+        grid-template-columns: 1.2fr 1fr;
+      }
+    }
+
+    .header-info-section {
+      background: #0b162e;
+      border: 1px solid var(--b);
       border-radius: 10px;
+      padding: 12px;
+      min-width: 100px;
     }
 
-    #timer {
-      font-size: 1.5rem;
-      color: red;
-      margin: 20px 0;
+    .header-info-section h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: #b8c8ff;
     }
 
-    #questions {
-      margin-top: 20px;
-    }
-
-    .question {
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .question.active {
-      display: block;
-    }
-
-    .options {
-      list-style-type: none;
+    .header-info-section ul {
+      margin: 6px 0 0 18px;
       padding: 0;
-      margin: 0;
     }
 
-    .options li {
-      margin: 10px 0;
+    .header-info-section li {
+      margin: 6px 0;
+      color: #c7d4ff;
     }
 
-    .options input {
-      margin-right: 10px;
+    .header-info-section pre {
+      margin: 8px 0 0 0;
+      padding: 10px;
+      background: #0a1430;
+      border: 1px solid var(--b);
+      border-radius: 8px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.35;
+      color: #d7e3ff;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    .kbd {
+      display: inline-block;
+      border: 1px solid var(--b);
+      background: #0f1f43;
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: #cfe0ff;
     }
 
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 8px;
+    .bat-editor.drag-over {
+      background: #0f3151;
+      border: 2px dashed #3182ce;
     }
 
-    th {
-      background-color: var(--primary);
+    .bat-editor.drag-over::after {
+      content: '📁 Drop your JavaScript file here';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #3182ce;
       color: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      pointer-events: none;
+      z-index: 10;
+      animation: pulse 1s infinite;
+    }
+
+    .bat-editor.drag-error {
+      background: #2d1b1b;
+      border: 2px dashed #ff5555;
+      transform: scale(1.02);
+    }
+
+    .bat-editor.drag-error::after {
+      content: '❌ Multiple files detected - drop one file only';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 85, 85, 0.9);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      pointer-events: none;
+      z-index: 10;
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) translateX(0);
+      }
+
+      25% {
+        transform: translate(-50%, -50%) translateX(-5px);
+      }
+
+      75% {
+        transform: translate(-50%, -50%) translateX(5px);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.05);
+      }
+
+    }
+
+
+    @media (max-width: 840px) {
+      .grid-3 {
+        grid-template-columns: none;
+      }
+
+      select,
+      .toggle {
+        margin-top: 0px !important;
+      }
+
+      .flexBox {
+        gap: 0px;
+      }
+
+      .flexBox label {
+        display: flex;
+        align-items: center;
+        height: 50px;
+      }
+
+      .upload-btn {
+        padding: 4px 10px;
+      }
     }
   </style>
 
-  <!-- Firebase modular SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      set,
-      get,
-      child
-    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCcKh69vdKosOaMR8D_6cLmRerjXBA4_ug",
-      authDomain: "shay-d0765.firebaseapp.com",
-      databaseURL: "https://shay-d0765-default-rtdb.firebaseio.com",
-      projectId: "shay-d0765",
-      storageBucket: "shay-d0765.firebasestorage.app",
-      messagingSenderId: "71944363741",
-      appId: "1:71944363741:web:3e6aec7f2ae1ee5d560534",
-      measurementId: "G-ZVPSH5BQKY"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // expose for non-module scripts
-    window.firebaseDB = db;
-    window.firebaseRefs = { ref, push, set, get, child };
-  </script>
 </head>
 
 <body>
-  <button id="admin-btn" onclick="enterAdmin()">Admin</button>
 
-  <div id="app">
-    <div id="start-screen">
-      <h1>בחר סקר</h1>
-      <button onclick="startSurvey(0)">סקר 1 - ללא זמן</button>
-      <button onclick="startSurvey(1)">סקר 2 - 60 שניות + הסחות קלות</button>
-      <button onclick="startSurvey(2)">סקר 3 - 20 שניות + הסחות רבות</button>
+  <header>
+    <div class="titleDiv">
+      <h1 class="functionTitle">Batch to EXE</h1>
+      <div class="btn-info" id="infoBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" class="bi bi-info-circle"
+          viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+          <path
+            d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+        </svg>
+      </div>
     </div>
+    <!-- Info Area (hover to open; click the pin to keep open) -->
+    <div id="infoWrap" class="info-wrap" tabindex="-1" aria-haspopup="dialog" aria-expanded="false">
+      <button class="info-btn" type="button" aria-label="Usage, liability & SmartScreen / signing info">
+        <i class="fa-solid fa-shield-alt"></i>
+      </button>
+      <div id="infoBubble" class="info-bubble" role="dialog" aria-modal="false"
+        aria-label="Usage & Signing Information">
+        <div class="info-head">
+          <div class="info-bubble-title">Usage, Liability & SmartScreen / Code Signing</div>
+          <div class="info-actions">
+            <span class="info-pill">Hover to view • Click <b>Pin</b> to keep open</span>
+            <button class="info-pin" type="button" data-role="pin">Pin</button>
+          </div>
+        </div>
 
-    <div id="password-screen" class="hidden">
-      <h2>הכנס סיסמה:</h2>
-      <input type="text" id="password-input" placeholder="הקלד סיסמה..." />
-      <button onclick="verifySurveyPassword()">אשר</button>
-    </div>
+        <div class="info-grid">
+          <div class="header-info-section">
+            <h3>Important notice</h3>
+            <ul>
+              <li><b>Local-only build.</b> Your script is embedded locally in the downloaded EXE together with a small
+                stub. No server-side processing is performed.</li>
+              <li><b>Your responsibility.</b> How you use this tool and any EXE you create is solely your
+                responsibility. We provide no warranties, and we accept <b>no liability</b> for any damage, data loss,
+                policy violations, or legal issues arising from use.</li>
+              <li><b>Review before distribution.</b> Always audit the resulting EXE and your batch content, especially
+                if you plan to share it with others or run it with elevated privileges.</li>
+              <li><b>Antivirus & EDR.</b> Some security tools may flag custom stubs or scripts, especially when unsigned
+                or uncommon. If this is a false positive, submit to the vendor or rebuild/sign with a reputable
+                certificate.</li>
+              <li><b>Mark-of-the-Web.</b> Files downloaded from the internet may carry the “Zone.Identifier” alternate
+                stream. If Windows blocks the file, right-click → <span class="kbd">Properties</span> → <span
+                  class="kbd">Unblock</span>.</li>
+            </ul>
+          </div>
 
-    <div id="name-screen" class="hidden">
-      <h2>הכנס את שמך:</h2>
-      <input type="text" id="user-name" placeholder="הקלד את שמך..." />
-      <button onclick="beginSurvey()">התחל</button>
-    </div>
+          <div class="header-info-section">
+            <h3>Why Windows SmartScreen may warn</h3>
+            <ul>
+              <li><b>Unsigned or low reputation.</b> SmartScreen often shows <i>“Windows protected your PC”</i> for
+                unsigned executables or new binaries with low reputation.</li>
+              <li><b>What the user sees.</b> On launch, a blue dialog may appear. The user can select <span
+                  class="kbd">More info</span> → <span class="kbd">Run anyway</span> if they trust the file.</li>
+              <li><b>How to reduce warnings.</b> Code-sign the EXE with a trusted CA certificate and build reputation
+                over time. EV Code Signing certificates generally establish reputation faster.</li>
+              <li><b>Note:</b> Self-signed certificates are fine for testing but <b>do not</b> eliminate SmartScreen
+                warnings for other users.</li>
+            </ul>
+          </div>
 
-    <div id="instructions-screen" class="hidden">
-      <h2>הוראות לסקר</h2>
-      <p id="instructions-text"></p>
-      <button onclick="showImage()">התחל</button>
-    </div>
+          <div class="header-info-section">
+            <h3>Signing with <code>signtool</code> (recommended)</h3>
+            <ul>
+              <li><b>Install signtool.</b> It’s included with the Windows 10/11 SDK. Typical path:<br>
+                <code>C:\Program Files (x86)\Windows Kits\10\bin\&lt;version&gt;\x64\signtool.exe</code>
+              </li>
+              <li><b>Obtain a certificate.</b>
+                <ul>
+                  <li><b>Production:</b> Purchase an OV or EV Code Signing certificate (e.g., DigiCert, Sectigo,
+                    GlobalSign). EV often yields quicker SmartScreen trust.</li>
+                  <li><b>Testing (self-signed):</b> For local tests only. Example PowerShell flow below.</li>
+                </ul>
+              </li>
+            </ul>
+            <pre># (A) Create a self-signed test certificate (local only; won’t satisfy SmartScreen for others)
+$cert = New-SelfSignedCertificate `
+  -Type CodeSigningCert `
+  -Subject "CN=My Company (TEST)" `
+  -KeyAlgorithm RSA -KeyLength 3072 -HashAlgorithm SHA256 `
+  -CertStoreLocation "Cert:\CurrentUser\My"
 
-    <div id="survey-screen" class="hidden">
-      <h2 id="user-greeting"></h2>
-      <div id="timer" class="hidden"></div>
-      <img id="survey-image" src="exple.jpg" alt="תמונה לשאלון" />
-      <div id="questions"></div>
-      <button onclick="onNextClicked()">הבא</button>
-    </div>
+# Export to PFX with a password
+$pwd = ConvertTo-SecureString 'P@ssw0rd!' -AsPlainText -Force
+Export-PfxCertificate -Cert $cert -FilePath "$env:USERPROFILE\Desktop\codesign-test.pfx" -Password $pwd</pre>
+            <pre># (B) Sign your EXE (timestamped; SHA-256)
+# Replace timestamp URL with your CA’s recommended server if needed
+signtool sign ^
+  /f "codesign-test.pfx" /p P@ssw0rd! ^
+  /fd SHA256 ^
+  /tr http://timestamp.digicert.com /td SHA256 ^
+  "MyTool.exe"</pre>
+            <pre># (C) Alternatively, sign using a cert in your store by subject or thumbprint
+# Find thumbprint in certmgr.msc or via PowerShell (Get-ChildItem Cert:\CurrentUser\My)
+signtool sign ^
+  /sha1 &lt;THUMBPRINT_NO_SPACES&gt; ^
+  /fd SHA256 ^
+  /tr http://timestamp.digicert.com /td SHA256 ^
+  "MyTool.exe"</pre>
+            <pre># (D) Verify signature
+signtool verify /pa /v "MyTool.exe"</pre>
+            <ul>
+              <li><b>Timestamps matter:</b> With <code>/tr</code> (RFC 3161), the signature remains valid past
+                certificate expiry.</li>
+              <li><b>EV tokens/HSMs:</b> For EV certs, use the vendor’s middleware; you’ll sign via the token provider
+                rather than a PFX file.</li>
+            </ul>
+          </div>
 
-    <div id="result-screen" class="hidden">
-      <h2>תוצאה</h2>
-      <p id="score"></p>
+          <div class="header-info-section">
+            <h3>Operational tips</h3>
+            <ul>
+              <li><b>Reproducibility:</b> Keep the same stub and signing identity to build SmartScreen reputation over
+                time.</li>
+              <li><b>Distribution:</b> Prefer HTTPS hosting; avoid bundling adware or updaters that harm reputation.
+              </li>
+              <li><b>UAC:</b> If your batch requires elevation, prompt inside the script (e.g., using
+                <code>powershell Start-Process -Verb RunAs</code>).
+              </li>
+              <li><b>Support users:</b> Document expected prompts and provide hashes (<code>SHA256</code>) so recipients
+                can verify integrity.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
+    <!-- /Info Area -->
+  </header>
 
-    <div id="results-table" class="hidden">
-      <h2>טבלת משתתפים</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>שם</th>
-            <th>סקר</th>
-            <th>ציון</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
+  <div class="info-div" id="infoDiv">
+    <h2>User Guide</h2>
+    <p>
+      The Batch to EXE tool lets you convert your batch (.bat) scripts into standalone Windows EXE files directly in
+      your browser. No server-side processing is performed—everything runs locally.
+    </p>
+
+    <h3>How to Use:</h3>
+    <ol>
+      <li><strong>Paste or Write Your Batch Script</strong> – Enter your batch code in the editor area.</li>
+      <li><strong>Customize Options</strong> – Set the EXE filename, icon, console title, execution mode, cmd.exe
+        switches, default arguments, and version info as needed.</li>
+      <li><strong>Build & Download</strong> – Click <b>Build & Download EXE</b> to generate your executable. The EXE
+        will be downloaded to your device.</li>
+    </ol>
+
+    <h3>Features:</h3>
+    <ul>
+      <li><strong>Icon Support:</strong> Use any image (PNG, JPG, ICO, etc.) as your EXE icon.</li>
+      <li><strong>Execution Modes:</strong> Choose between temp file, inline, or STDIN script execution.</li>
+      <li><strong>Console & Switches:</strong> Control console behavior and cmd.exe flags for advanced scenarios.</li>
+      <li><strong>Version Info:</strong> Set EXE metadata like ProductName, CompanyName, and version strings.</li>
+      <li><strong>No Uploads:</strong> Your script and icon never leave your browser.</li>
+    </ul>
+
+    <h3>Tips & Notes:</h3>
+    <ul>
+      <li>Always review the generated EXE before sharing or running with elevated privileges.</li>
+      <li>Unsigned EXEs may trigger SmartScreen or antivirus warnings. For distribution, consider code-signing your EXE.
+      </li>
+      <li>For help with signing, see the info bubble above.</li>
+    </ul>
+
+    <p>
+      This tool is ideal for developers, IT admins, and anyone needing to package batch scripts as portable executables.
+    </p>
   </div>
 
+  <main>
+    <div class="card row">
+      <div id="stubStatus" class="mut">Loading…</div>
+    </div>
+
+    <div class="card row grid-3">
+      <div class="row">
+        <label>Icon (any image)</label>
+        <div class="flex">
+          <label class="ctl"><input id="ico" type="file" accept=".ico,image/*"><span>Choose Image…</span></label>
+          <span id="icoName" class="mut">No file chosen</span>
+        </div>
+        <div class="hint">PNG/JPG/WEBP/etc accepted — will be converted and auto-fitted to the stub.</div>
+      </div>
+      <div class="row">
+        <label>Output EXE filename</label>
+        <input id="out" type="text" value="MyTool.exe" />
+      </div>
+      <div class="row">
+        <label>Console title</label>
+        <input id="title" type="text" placeholder="My Tool — Batch Runner" />
+      </div>
+    </div>
+
+    <div class="card row">
+      <div style="display: flex;justify-content: space-between;">
+        <label>Batch / DOS script</label>
+        <button class="upload-btn" id="uploadBtn">📁 Upload File</button>
+        <input type="file" id="fileInput" accept=".bat,.txt" style="display:none;">
+      </div>
+      <div id="batEditor" class="bat-editor" contenteditable="true" spellcheck="false"
+        data-placeholder="@echo off&#10;echo Hello!&#10;pause"></div>
+    </div>
+
+    <div class="card row">
+      <label>Execution mode</label>
+      <div class="flex">
+        <label class="ctl"><input type="radio" name="mode" id="modeTemp" checked><span>Temp file</span></label>
+        <label class="ctl"><input type="radio" name="mode" id="modeInline"><span>No-temp: Inline</span></label>
+        <label class="ctl"><input type="radio" name="mode" id="modeStdin"><span>No-temp: STDIN</span></label>
+      </div>
+      <div class="hint" id="modeHint"></div>
+
+      <div class="row">
+        <label>Console host</label>
+        <div class="flex" id="hostBox">
+          <label class="ctl"><input type="checkbox" id="hostClassic" checked><span>Force classic console</span></label>
+          <label class="ctl" id="hostNewWrap"><input type="checkbox" id="hostNew"><span>Ask OS for a new
+              console</span></label>
+        </div>
+        <div class="hint" id="hostHint"></div>
+      </div>
+    </div>
+
+    <div class="card row">
+      <label>cmd.exe switches</label>
+      <div class="flex">
+        <label class="ctl"><input type="radio" name="ck" id="swC" checked><span>/C</span></label>
+        <label class="ctl"><input type="radio" name="ck" id="swK"><span>/K</span></label>
+        <label class="ctl"><input type="checkbox" id="swQ"><span>/Q</span></label>
+        <label class="ctl"><input type="checkbox" id="swD"><span>/D</span></label>
+        <label class="ctl"><input type="checkbox" id="swS"><span>/S</span></label>
+        <label class="ctl"><input type="checkbox" id="swA"><span>/A</span></label>
+        <label class="ctl"><input type="checkbox" id="swU"><span>/U</span></label>
+        <label class="ctl"><input type="radio" name="ext" id="swEon"><span>/E:ON</span></label>
+        <label class="ctl"><input type="radio" name="ext" id="swEoff"><span>/E:OFF</span></label>
+        <label class="ctl"><input type="radio" name="del" id="swVon"><span>/V:ON</span></label>
+        <label class="ctl"><input type="radio" name="del" id="swVoff"><span>/V:OFF</span></label>
+      </div>
+      <div class="row">
+        <label>Extra switches (optional)</label>
+        <input id="swExtra" type="text" placeholder='e.g. /T:0A, /F:OFF' />
+        <details>
+          <summary>Flag help</summary>
+          <ul class="flags">
+            <li><code>/C</code>: run and exit.</li>
+            <li><code>/K</code>: run and keep open.</li>
+            <li><code>/Q</code>: echo off.</li>
+            <li><code>/D</code>: ignore AutoRun.</li>
+            <li><code>/S</code>: strict quote rules.</li>
+            <li><code>/A</code>: ANSI for redirection.</li>
+            <li><code>/U</code>: UTF-16LE for redirection.</li>
+            <li><code>/E:ON|OFF</code>: extensions.</li>
+            <li><code>/V:ON|OFF</code>: delayed expansion.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <div class="card row grid-3">
+      <div class="row">
+        <label>Default arguments <br> (prepended before runtime args)</label>
+        <input id="defArgs" type="text" placeholder='e.g. --mode "safe" --level 3' />
+        <div class="hint" id="defArgsHint"></div>
+      </div>
+      <div class="row">
+        <label>Show state</label>
+        <select id="show">
+          <option value="0">Normal</option>
+          <option value="1">Minimized</option>
+          <option value="2">Maximized</option>
+          <option value="3">Hidden (no window)</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Version strings</label>
+        <label class="toggle"><input type="checkbox" id="syncAll"><span>Set to output EXE name</span></label>
+      </div>
+    </div>
+
+    <div class="card row">
+      <div class="grid-2 row">
+        <div class="row flexBox"><label>Display name (FileDescription)</label><input id="vsDesc" type="text"
+            placeholder="batch_to_exe" /></div>
+        <div class="row flexBox"><label>ProductName</label><input id="vsProd" type="text" placeholder="batch_to_exe" />
+        </div>
+        <div class="row flexBox"><label>CompanyName</label><input id="vsComp" type="text" placeholder="no_company" />
+        </div>
+        <div class="row flexBox"><label>InternalName</label><input id="vsInt" type="text" placeholder="batch_to_exe" />
+        </div>
+        <div class="row flexBox"><label>OriginalFilename</label><input id="vsOrig" type="text"
+            placeholder="batch_to_exe" />
+        </div>
+        <div class="row flexBox"><label>ProductVersion (optional)</label><input id="vsProdVer" type="text"
+            placeholder="1.0" />
+        </div>
+      </div>
+      <div class="hint" id="verHint"></div>
+    </div>
+
+
+    <button id="build">Build &amp; Download EXE</button>
+    <div id="msg" class="status mut"></div>
+  </main>
+
+  <div id="page-info" class="info-section" data-aos="fade" data-aos-duration="700" style="margin-top: 100px;">
+    <h2 class="info-title">Batch to EXE – Convert Batch Scripts to Windows Executables</h2>
+    <p class="info-text">
+      The Batch to EXE tool lets you convert your batch (.bat) scripts into standalone Windows EXE files directly in
+      your browser.
+      No server-side processing is performed—everything runs locally. Customize icons, version info, execution mode, and
+      more.
+    </p>
+
+    <h3 class="info-subtitle">Why Use Batch to EXE?</h3>
+    <ul class="info-list">
+      <li class="info-list-item">Package batch scripts as portable EXE files for easy distribution and execution.</li>
+      <li class="info-list-item">Customize EXE icons, metadata, and version strings for a professional look.</li>
+      <li class="info-list-item">Choose execution modes: temp file, inline, or STDIN for advanced scenarios.</li>
+      <li class="info-list-item">Control console behavior and cmd.exe switches for tailored execution.</li>
+      <li class="info-list-item">All processing is local—your script and icon never leave your browser.</li>
+    </ul>
+
+    <p class="info-text">
+      Build and download your EXE instantly. Ideal for developers, IT admins, and anyone needing to package batch
+      scripts as executables.
+    </p>
+  </div>
+
+  <div id="page-blog" class="blog-content" data-aos="fade" data-aos-duration="700">
+    <h2>Batch to EXE – Convert Batch Scripts Instantly</h2>
+
+    <p>
+      Need to <span class="black-strong">convert a batch (.bat) script to a Windows EXE</span> quickly?
+      Our <span class="black-strong">Batch to EXE Tool</span> makes it easy to package your batch scripts as standalone
+      executables.
+      Customize options, set icons, and download your EXE—all in your browser.
+    </p>
+
+    <h3>What Is Batch to EXE?</h3>
+    <p>
+      <span class="black-strong">Batch to EXE</span> allows users to embed batch scripts into Windows executables.
+      You can set <strong>EXE filename</strong>, <strong>icon</strong>, <strong>console title</strong>,
+      <strong>execution mode</strong>, and <strong>version info</strong>.
+      No installation or server upload required.
+    </p>
+
+    <h3>How to Use the Batch to EXE Tool</h3>
+    <p>Convert your batch script in three steps:</p>
+    <ol>
+      <li><strong>Paste or Write Your Script:</strong> Enter your batch code in the editor area.</li>
+      <li><strong>Customize Options:</strong> Set EXE filename, icon, execution mode, switches, and metadata.</li>
+      <li><strong>Build & Download:</strong> Click <b>Build & Download EXE</b> to generate and save your executable.
+      </li>
+    </ol>
+
+    <h3>Key Features</h3>
+    <p>
+      The <span class="black-strong">Batch to EXE tool</span> offers:
+    </p>
+    <ul>
+      <li><strong>Icon Support:</strong> Use any image (PNG, JPG, ICO, etc.) as your EXE icon.</li>
+      <li><strong>Execution Modes:</strong> Temp file, inline, or STDIN script execution.</li>
+      <li><strong>Console & Switches:</strong> Control console behavior and cmd.exe flags.</li>
+      <li><strong>Version Info:</strong> Set EXE metadata like ProductName, CompanyName, and version strings.</li>
+      <li><strong>No Uploads:</strong> All processing is local—your files stay private.</li>
+    </ul>
+
+    <h3>Common Use Cases</h3>
+    <p>
+      Popular scenarios include:
+    </p>
+    <ul>
+      <li><span class="black-strong">Developers:</span> Package scripts for deployment or automation.</li>
+      <li><span class="black-strong">IT Admins:</span> Distribute tools and utilities as EXE files.</li>
+      <li><span class="black-strong">General Users:</span> Run batch scripts as executables without exposing source
+        code.</li>
+    </ul>
+
+    <h3>Frequently Asked Questions (FAQ)</h3>
+    <ul>
+      <li><strong>Which file formats are supported?</strong> – Input: <span class="black-strong">.bat</span> scripts.
+        Output: <span class="black-strong">.exe</span> files.</li>
+      <li><strong>Does the conversion run locally?</strong> – Yes, everything is processed in your browser for privacy
+        and security.</li>
+      <li><strong>Can I customize the EXE icon?</strong> – Yes, upload any image; it will be converted and embedded.
+      </li>
+      <li><strong>Is this tool free?</strong> – Absolutely! Batch to EXE is free to use.</li>
+    </ul>
+
+    <h3>Start Converting Batch Scripts Now</h3>
+    <p>
+      Whether you're a developer, admin, or power user, our
+      <span class="black-strong">Batch to EXE tool</span> helps you package scripts as Windows executables.
+      Paste your batch code and build your EXE instantly!
+    </p>
+
+    <p style="text-align: center; margin-top: 20px;">
+      <a href="{% url 'dev_menu' %}">
+        Explore More Tools
+      </a>
+    </p>
+  </div>
+
+  <section class="faq-section" data-aos="fade" data-aos-duration="700">
+    <h2 class="faq-title">Frequently Asked Questions (FAQ)</h2>
+
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">How does the Batch to EXE Tool work?</h3>
+      <div class="faq-answer">
+        <p>Paste your batch script, customize options, and click <b>Build & Download EXE</b>.
+          The tool embeds your script in a Windows executable and downloads it—no server upload required.</p>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Which file formats are supported?</h3>
+      <div class="faq-answer">
+        <p>Input: <span class="black-strong">.bat</span> scripts. Output: <span class="black-strong">.exe</span> files.
+          Icon images can be PNG, JPG, ICO, etc.</p>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Is this tool free to use?</h3>
+      <div class="faq-answer">
+        <p>Yes, Batch to EXE is completely free. All processing is done locally in your browser for privacy.</p>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Can I customize the EXE icon and metadata?</h3>
+      <div class="faq-answer">
+        <p>You can upload any image as the icon and set version info, product name, company name, and other metadata for
+          your EXE.</p>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h3 class="faq-question" onclick="toggleAnswer(this)">Is my file uploaded to a server?</h3>
+      <div class="faq-answer">
+        <p>No. All conversion and processing is performed locally in your browser. Your batch script and icon never
+          leave
+          your device.</p>
+      </div>
+    </div>
+  </section>
+
+
+
+
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script>AOS.init();</script>
+
   <script>
-    const { ref, push, set, get, child } = window.firebaseRefs;
-    const db = window.firebaseDB;
 
-    // הגדרת סקרים ושאלות
-    const surveys = [
-      { timeLimit: null, distractions: 0, password: "shay1", name: "ללא זמן" },
-      { timeLimit: 60, distractions: 1, password: "shay2", name: "זמן ארוך" },
-      { timeLimit: 20, distractions: 3, password: "shay3", name: "זמן קצר" }
-    ];
-    const questions = [
-      {
-        question: "איזה כלי נגינה מופיע למעלה משמאל?",
-        options: ["גיטרה", "קלרינט", "תוף", "פסנתר"],
-        answer: "גיטרה"
-      },
-      {
-        question: "באיזו חיה נמצאת במים?",
-        options: ["פינגווין", "דג זהב", "קרפדה", "ברווז"],
-        answer: "פינגווין"
-      },
-      {
-        question: "כמה אנשים יושבים על השמיכה בפיקניק?",
-        options: ["3", "4", "5", "6"],
-        answer: "5"
-      },
-      {
-        question: "איזו חיה מופיעה בצד ימין למטה?",
-        options: ["ג'ירפה", "אריה", "נמר", "זברה"],
-        answer: "ג'ירפה"
-      }
-    ];
+    (function () {
+      function qs(sel) { return document.querySelector(sel); }
 
-    const ADMIN_PASSWORD = "shayAdmin";
-    let selectedSurvey, userName;
-    let currentQuestionIndex, timer, timeRemaining, finish;
+      const infoWrap = qs('#infoWrap');
+      const infoBubble = qs('#infoBubble');
+      let infoPinned = false;
 
-    function enterAdmin() {
-      const pwd = prompt("הכנס סיסמת מנהל:");
-      if (pwd === ADMIN_PASSWORD) {
-        loadResultsTable();
-        document.getElementById("results-table").classList.remove("hidden");
-      } else {
-        alert("סיסמת מנהל שגויה!");
-      }
-    }
-
-    function loadResultsTable() {
-      const tbody = document.getElementById("table-body");
-      tbody.innerHTML = "";
-      const dbRef = ref(db);
-      get(child(dbRef, "results"))
-        .then(snapshot => {
-          if (snapshot.exists()) {
-            snapshot.forEach(childSnap => {
-              const { name, surveyType, score } = childSnap.val();
-              const tr = document.createElement("tr");
-              tr.innerHTML = `<td>${name}</td><td>${surveyType}</td><td>${score}</td>`;
-              tbody.appendChild(tr);
-            });
+      function setPinned(state) {
+        infoPinned = !!state;
+        infoWrap.dataset.pinned = infoPinned ? '1' : '0';
+        infoWrap.setAttribute('aria-expanded', infoPinned ? 'true' : 'false');
+        const pinBtn = infoWrap.querySelector('.info-pin');
+        if (pinBtn) {
+          if (infoPinned) {
+            pinBtn.style.background = '#2a6ae6';
+            pinBtn.style.color = '#fff';
+          } else {
+            pinBtn.style.background = '#112149';
+            pinBtn.style.color = '#cbd7ff';
           }
-        })
-        .catch(console.error);
-    }
-
-    function startSurvey(idx) {
-      selectedSurvey = surveys[idx];
-      document.getElementById("start-screen").classList.add("hidden");
-      document.getElementById("password-screen").classList.remove("hidden");
-    }
-
-    function verifySurveyPassword() {
-      const pwd = document.getElementById("password-input").value.trim();
-      if (pwd === selectedSurvey.password) {
-        document.getElementById("password-screen").classList.add("hidden");
-        document.getElementById("name-screen").classList.remove("hidden");
-      } else {
-        alert("סיסמה שגויה!");
-      }
-    }
-
-    function beginSurvey() {
-      const name = document.getElementById("user-name").value.trim();
-      if (!name) return alert("אנא הזן שם");
-      userName = name;
-      document.getElementById("name-screen").classList.add("hidden");
-
-      const instr = `זהו סקר "${selectedSurvey.name}". ` +
-        (selectedSurvey.timeLimit
-          ? `יש לך ${selectedSurvey.timeLimit} שניות לענות על 4 שאלות`
-          : `אין הגבלת זמן`) +
-        `, והסחות דעת: ${selectedSurvey.distractions === 0 ? "אין"
-          : selectedSurvey.distractions === 1 ? "קלות"
-            : "רבות"
-        }.`;
-      document.getElementById("instructions-text").innerText = instr;
-      document.getElementById("instructions-screen").classList.remove("hidden");
-    }
-
-    function showImage() {
-      document.getElementById("instructions-screen").classList.add("hidden");
-      document.getElementById("survey-screen").classList.remove("hidden");
-      document.getElementById("user-greeting").innerText = `שלום, ${userName}`;
-      currentQuestionIndex = 0;
-      finish = false;
-      loadQuestions();
-    }
-
-    function loadQuestions() {
-      const container = document.getElementById("questions");
-      container.innerHTML = "";
-      questions.forEach((q, i) => {
-        const div = document.createElement("div");
-        div.classList.add("question");
-        div.innerHTML = `<p>${i + 1}. ${q.question}</p>`;
-        const ul = document.createElement("ul");
-        ul.classList.add("options");
-        q.options.forEach(opt => {
-          const li = document.createElement("li");
-          li.innerHTML = `<input type="radio" name="q${i}" value="${opt}" /> ${opt}`;
-          ul.appendChild(li);
-        });
-        div.appendChild(ul);
-        container.appendChild(div);
-      });
-    }
-
-    function onNextClicked() {
-      if (currentQuestionIndex === 0) {
-        document.getElementById("survey-image").classList.add("hidden");
-        if (selectedSurvey.timeLimit) startTimer();
-      }
-      showNextQuestion();
-    }
-
-    function showNextQuestion() {
-      const elems = document.querySelectorAll(".question");
-      elems.forEach(el => el.classList.remove("active"));
-      if (currentQuestionIndex < elems.length) {
-        elems[currentQuestionIndex].classList.add("active");
-        currentQuestionIndex++;
-      } else {
-        submitAnswers();
-      }
-    }
-
-    function startTimer() {
-      const box = document.getElementById("timer");
-      box.classList.remove("hidden");
-      timeRemaining = selectedSurvey.timeLimit;
-      box.innerText = `זמן נותר: ${timeRemaining} שניות`;
-      timer = setInterval(() => {
-        timeRemaining--;
-        box.innerText = `זמן נותר: ${timeRemaining} שניות`;
-        if (timeRemaining <= 0 && !finish) {
-          clearInterval(timer);
-          alert("הזמן תם!");
-          submitAnswers();
         }
-      }, 1000);
-    }
-
-    function submitAnswers() {
-      finish = true;
-      clearInterval(timer);
-
-      let correct = 0;
-      questions.forEach((q, i) => {
-        const sel = document.querySelector(`input[name="q${i}"]:checked`);
-        if (sel && sel.value === q.answer) correct++;
+      }
+      infoWrap.addEventListener('click', (e) => {
+        const pinBtn = e.target.closest('[data-role="pin"]');
+        if (pinBtn) {
+          setPinned(!infoPinned);
+          e.preventDefault();
+        }
+      });
+      document.addEventListener('click', (e) => {
+        if (!infoWrap.contains(e.target) && infoPinned) setPinned(false);
       });
 
-      saveResult(userName, selectedSurvey.name, correct, () => {
-        loadResultsTable();
-        document.getElementById("results-table").classList.remove("hidden");
+      const STUB_URL = 'stub_wrapper.exe';
+      let stubBuf = null;
+      const stubStatus = qs('#stubStatus');
+
+      async function fetchStub() {
+        try {
+          stubStatus.textContent = 'Loading…';
+          const res = await fetch(STUB_URL);
+          if (!res.ok) throw new Error('Network');
+          const ab = await res.arrayBuffer();
+          stubBuf = new Uint8Array(ab);
+          stubStatus.textContent = 'Ready.';
+        } catch (e) {
+          stubStatus.textContent = 'Ready.';
+          console.error('Failed to load stub_wrapper.exe:', e);
+        }
+      }
+      fetchStub();
+
+      const icoInput = qs('#ico'), icoName = qs('#icoName');
+      const outInput = qs('#out'), title = qs('#title'), showSel = qs('#show');
+      const swC = qs('#swC'), swK = qs('#swK'), swQ = qs('#swQ'), swD = qs('#swD'), swS = qs('#swS'),
+        swA = qs('#swA'), swU = qs('#swU'), swEon = qs('#swEon'), swEoff = qs('#swEoff'),
+        swVon = qs('#swVon'), swVoff = qs('#swVoff'), swExtra = qs('#swExtra');
+      const defArgs = qs('#defArgs'), defArgsHint = qs('#defArgsHint');
+      const hostClassic = qs('#hostClassic'), hostNew = qs('#hostNew'), hostNewWrap = qs('#hostNewWrap'), hostHint = qs('#hostHint');
+      const modeTemp = qs('#modeTemp'), modeInline = qs('#modeInline'), modeStdin = qs('#modeStdin'), modeHint = qs('#modeHint');
+      const vsDesc = qs('#vsDesc'), vsProd = qs('#vsProd'), vsComp = qs('#vsComp'),
+        vsInt = qs('#vsInt'), vsOrig = qs('#vsOrig'), vsProdVer = qs('#vsProdVer');
+      const syncAll = qs('#syncAll');
+      const batEditor = qs('#batEditor');
+      const msg = qs('#msg');
+
+      function setStatus(text, ok = false, err = false) {
+        msg.className = 'status';
+        if (ok) msg.classList.add('ok'); else if (err) msg.classList.add('err'); else msg.classList.add('mut');
+        msg.textContent = text;
+      }
+      function bindFile(input, label) {
+        input.addEventListener('change', () => { label.textContent = (input.files && input.files[0]) ? input.files[0].name : 'No file chosen'; });
+      }
+      bindFile(icoInput, icoName);
+
+      function toCRLF(s) { return s.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n'); }
+      function u8Concat(parts) { let t = 0; for (const p of parts) t += p.length; const out = new Uint8Array(t); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; }
+      function readU16LE(a, o) { return a[o] | (a[o + 1] << 8); }
+      function readU32LE(a, o) { return (a[o] | (a[o + 1] << 8) | (a[o + 2] << 16) | (a[o + 3] << 24)) >>> 0; }
+      function writeU16LE(a, o, v) { a[o] = v & 255; a[o + 1] = (v >>> 8) & 255; }
+      function writeU32LE(a, o, v) { a[o] = v & 255; a[o + 1] = (v >>> 8) & 255; a[o + 2] = (v >>> 16) & 255; a[o + 3] = (v >>> 24) & 255; }
+      function align4(x) { return (x + 3) & ~3; }
+      function baseName(fn) { return fn.replace(/[\\\/]+/g, '/').split('/').pop(); }
+      function nameNoExt(fn) { const b = baseName(fn); const i = b.lastIndexOf('.'); return (i > 0 ? b.slice(0, i) : b); }
+
+      function makeRadioGroupUncheckable(ids) {
+        const nodes = ids.map(id => qs('#' + id)).filter(Boolean);
+        nodes.forEach(node => {
+          node.addEventListener('mousedown', () => { node.dataset._wasChecked = node.checked ? '1' : '0'; });
+          node.addEventListener('click', e => {
+            if (node.dataset._wasChecked === '1') {
+              e.preventDefault();
+              nodes.forEach(n => n.checked = false);
+              node.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+          });
+        });
+      }
+      makeRadioGroupUncheckable(['swEon', 'swEoff']);
+      makeRadioGroupUncheckable(['swVon', 'swVoff']);
+
+      function parsePE(b) {
+        if (b[0] !== 0x4D || b[1] !== 0x5A) throw new Error("Not MZ");
+        const e = readU32LE(b, 0x3C);
+        if (b[e] !== 0x50 || b[e + 1] !== 0x45 || b[e + 2] !== 0x00 || b[e + 3] !== 0x00) throw new Error("No PE signature");
+        const coff = e + 4, opt = coff + 20, magic = readU16LE(b, opt);
+        if (magic !== 0x20B) throw new Error("Expecting PE32+ (x64)");
+        const optSize = readU16LE(b, coff + 16), sectTable = opt + optSize, nSec = readU16LE(b, coff + 2);
+        const dataDirOffset = opt + 112, resDirRVA = readU32LE(b, dataDirOffset + 8 * 2);
+        const sections = [];
+        for (let i = 0; i < nSec; i++) {
+          const off = sectTable + i * 40;
+          sections.push({
+            Name: String.fromCharCode(...b.slice(off, off + 8)).replace(/\0+$/, ''),
+            VirtualSize: readU32LE(b, off + 8),
+            VirtualAddress: readU32LE(b, off + 12),
+            SizeOfRawData: readU32LE(b, off + 16),
+            PointerToRawData: readU32LE(b, off + 20)
+          });
+        }
+        function rvaToOff(rva) {
+          for (const s of sections) {
+            const st = s.VirtualAddress, en = s.VirtualAddress + Math.max(s.VirtualSize, s.SizeOfRawData);
+            if (rva >= st && rva < en) return s.PointerToRawData + (rva - st);
+          }
+          return null;
+        }
+        return { sections, rvaToOff, res: { off: rvaToOff(resDirRVA) } };
+      }
+      function listResourceTree(b, pe) {
+        if (!pe.res.off) throw new Error("No .rsrc directory in stub.");
+        const baseOff = pe.res.off;
+        function readResDir(off) { const nn = readU16LE(b, off + 12), ni = readU16LE(b, off + 14), entries = []; let eoff = off + 16; for (let i = 0; i < nn + ni; i++) { entries.push({ Name: readU32LE(b, eoff), OffsetToData: readU32LE(b, eoff + 4) }); eoff += 8; } return { off, entries }; }
+        function isDir(v) { return (v & 0x80000000) !== 0; } function strip(v) { return (v & 0x7fffffff) >>> 0; }
+        function resDataEntry(off) { return { off, dataRVA: readU32LE(b, off), size: readU32LE(b, off + 4) }; }
+        const root = readResDir(baseOff);
+        function findType(tid) { for (const e of root.entries) { if (!(e.Name & 0x80000000) && (e.Name >>> 0) === (tid >>> 0)) { const dir = readResDir(baseOff + strip(e.OffsetToData)); return { dir }; } } return null; }
+        const RT_ICON = 3, RT_GROUP_ICON = 14, RT_VERSION = 16;
+        const tIcon = findType(RT_ICON), tGrp = findType(RT_GROUP_ICON), tVer = findType(RT_VERSION);
+        function collectLeaves(dir) { const out = []; if (!dir) return out; for (const n of dir.entries) { if (!isDir(n.OffsetToData)) continue; const lang = readResDir(baseOff + strip(n.OffsetToData)); for (const l of lang.entries) { if (isDir(l.OffsetToData)) continue; const data = resDataEntry(baseOff + strip(l.OffsetToData)); out.push({ nameEntry: n, langEntry: l, data }); } } return out; }
+        return {
+          baseOff, strip, tIcon, tGrp, tVer,
+          iconLeaves: collectLeaves(tIcon && tIcon.dir),
+          grpLeaves: collectLeaves(tGrp && tGrp.dir),
+          verLeaves: collectLeaves(tVer && tVer.dir)
+        };
+      }
+
+      function utf16EncodeZ(s) { const out = new Uint8Array((s.length + 1) * 2); let o = 0; for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); out[o++] = c & 0xFF; out[o++] = (c >>> 8) & 0xFF; } out[o++] = 0; out[o++] = 0; return out; }
+      function utf16Decode(b, off, chars) { let s = ""; for (let i = 0; i < chars; i++) { const c = b[off + i * 2] | (b[off + i * 2 + 1] << 8); if (c === 0) break; s += String.fromCharCode(c); } return s; }
+      function readUtf16Z(b, off) { let p = off; while (p + 1 < b.length) { if (b[p] === 0 && b[p + 1] === 0) { p += 2; break; } p += 2; } const text = utf16Decode(b, off, (p - off) / 2); return { text, bytes: (p - off) }; }
+      function encStringBlock(name, value) {
+        const key = utf16EncodeZ(name), val = utf16EncodeZ(value), hdr = new Uint8Array(6);
+        writeU16LE(hdr, 2, val.length / 2); writeU16LE(hdr, 4, 1);
+        let off = 0; const parts = [hdr, key]; off += hdr.length + key.length;
+        let pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        parts.push(val); off += val.length;
+        pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        const out = u8Concat(parts); writeU16LE(out, 0, out.length); return out;
+      }
+      function encStringTableBlock(keyStr, strings) {
+        const key = utf16EncodeZ(keyStr), hdr = new Uint8Array(6); writeU16LE(hdr, 2, 0); writeU16LE(hdr, 4, 1);
+        let off = 0; const parts = [hdr, key]; off += hdr.length + key.length;
+        let pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        for (const k of Object.keys(strings)) {
+          const sb = encStringBlock(k, strings[k]); parts.push(sb); off += sb.length;
+          pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        }
+        const out = u8Concat(parts); writeU16LE(out, 0, out.length); return out;
+      }
+      function encStringFileInfoBlock(tables) {
+        const key = utf16EncodeZ("StringFileInfo"), hdr = new Uint8Array(6); writeU16LE(hdr, 2, 0); writeU16LE(hdr, 4, 1);
+        let off = 0; const parts = [hdr, key]; off += hdr.length + key.length;
+        let pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        for (const t of tables) {
+          const tb = encStringTableBlock(t.key, t.strings); parts.push(tb); off += tb.length;
+          pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        }
+        const out = u8Concat(parts); writeU16LE(out, 0, out.length); return out;
+      }
+      function encVersionRoot(fixed, sfi, others) {
+        const key = utf16EncodeZ("VS_VERSION_INFO"), hdr = new Uint8Array(6); writeU16LE(hdr, 2, fixed.length); writeU16LE(hdr, 4, 0);
+        let off = 0; const parts = [hdr, key]; off += hdr.length + key.length;
+        let pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        parts.push(fixed); off += fixed.length;
+        pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; }
+        if (sfi) { parts.push(sfi); off += sfi.length; pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; } }
+        for (const ob of others) { parts.push(ob); off += ob.length; pad = (4 - (off % 4)) % 4; if (pad) { parts.push(new Uint8Array(pad)); off += pad; } }
+        const out = u8Concat(parts); writeU16LE(out, 0, out.length); return out;
+      }
+      function parseVersionResource(view) {
+        const b = view;
+        function parseBlock(off) {
+          const wLength = readU16LE(b, off), wValueLength = readU16LE(b, off + 2), wType = readU16LE(b, off + 4);
+          const keyZ = readUtf16Z(b, off + 6); const key = keyZ.text.replace(/\0+$/, ''); let pos = align4(off + 6 + keyZ.bytes);
+          let valBytes = 0; if (wValueLength) { valBytes = (wType === 1) ? (wValueLength * 2) : wValueLength; }
+          const valueOff = pos, valueEnd = align4(valueOff + valBytes); let childrenOff = valueEnd; const end = off + wLength; const children = [];
+          while (childrenOff + 6 <= end) { const len = readU16LE(b, childrenOff); if (len < 6 || childrenOff + len > end) break; children.push({ off: childrenOff, len }); childrenOff = align4(childrenOff + len); }
+          return { off, len: wLength, key, type: wType, valOff: valueOff, valBytes, end, children };
+        }
+        const root = parseBlock(0); if (root.key !== "VS_VERSION_INFO") throw new Error("VERSIONINFO root missing");
+        const fixed = b.slice(root.valOff, root.valOff + root.valBytes);
+        const tables = [], others = [];
+        for (const ch of root.children) {
+          const blk = parseBlock(ch.off);
+          if (blk.key === "StringFileInfo") {
+            for (const th of blk.children) {
+              const tbl = parseBlock(th.off); const strings = {};
+              for (const sh of tbl.children) {
+                const strb = parseBlock(sh.off);
+                const valChars = readU16LE(b, strb.off + 2);
+                const val = utf16Decode(b, strb.valOff, valChars);
+                strings[strb.key] = val;
+              }
+              tables.push({ key: tbl.key, strings });
+            }
+          } else {
+            others.push(b.slice(ch.off, ch.off + ch.len));
+          }
+        }
+        return { fixed, tables, others };
+      }
+      function overwriteVersion(view, repl) {
+        const parsed = parseVersionResource(view);
+        const newTables = parsed.tables.map(t => {
+          const merged = Object.assign({}, t.strings);
+          for (const k of Object.keys(repl)) { const v = repl[k]; if (v != null && v !== "") merged[k] = v; }
+          return { key: t.key, strings: merged };
+        });
+        const sfi = encStringFileInfoBlock(newTables);
+        return encVersionRoot(parsed.fixed, sfi, parsed.others);
+      }
+      function patchVersionStrings(stubBuf, pe, r, repl) {
+        if (!r.verLeaves || !r.verLeaves.length) throw new Error("Stub has no RT_VERSION");
+        for (const leaf of r.verLeaves) {
+          const entryOff = r.baseOff + r.strip(leaf.langEntry.OffsetToData);
+          const dataRVA = readU32LE(stubBuf, entryOff), dataSize = readU32LE(stubBuf, entryOff + 4);
+          const foa = pe.rvaToOff(dataRVA);
+          if (foa == null) throw new Error("Bad VERSIONINFO RVA");
+          const view = stubBuf.slice(foa, foa + dataSize);
+          const rebuilt = overwriteVersion(view, repl);
+          if (rebuilt.length > dataSize) throw new Error(`VERSIONINFO too small (${dataSize} bytes). Need ${rebuilt.length}.`);
+          stubBuf.set(rebuilt, foa);
+          if (dataSize > rebuilt.length) stubBuf.fill(0, foa + rebuilt.length, foa + dataSize);
+          writeU32LE(stubBuf, entryOff + 4, rebuilt.length);
+        }
+      }
+
+      const CANDIDATE_SIZES = [256, 192, 128, 96, 64, 48, 40, 32, 24, 20, 16, 12, 8, 6, 4, 2, 1];
+      function loadImageFromFile(file) {
+        return new Promise((resolve, reject) => {
+          const url = URL.createObjectURL(file);
+          const img = new Image();
+          img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+          img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load failed')); };
+          img.src = url;
+        });
+      }
+      function renderPNG(img, w, h) {
+        return new Promise((resolve, reject) => {
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+          const scale = Math.min(w / img.width, h / img.height);
+          const dw = Math.max(1, Math.round(img.width * scale));
+          const dh = Math.max(1, Math.round(img.height * scale));
+          const dx = Math.floor((w - dw) / 2);
+          const dy = Math.floor((h - dh) / 2);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, dx, dy, dw, dh);
+          c.toBlob(b => {
+            if (!b) { reject(new Error('PNG encode failed')); return; }
+            b.arrayBuffer().then(ab => resolve(new Uint8Array(ab)), reject);
+          }, 'image/png');
+        });
+      }
+      async function buildAutoFittedIconSet(file, stubBuf, pe, r) {
+        if (!r.tIcon || !r.tGrp) throw new Error("Stub has no RT_ICON/RT_GROUP_ICON");
+
+        const leaves = r.iconLeaves.map((leaf, idx) => {
+          const entryOff = r.baseOff + r.strip(leaf.langEntry.OffsetToData);
+          const cap = readU32LE(stubBuf, entryOff + 4);
+          const dataRVA = readU32LE(stubBuf, entryOff);
+          const foa = pe.rvaToOff(dataRVA);
+          const resId = leaf.nameEntry.Name & 0xFFFF;
+          return { idx, entryOff, cap, foa, resId };
+        }).sort((a, b) => b.cap - a.cap);
+
+        const img = await loadImageFromFile(file);
+        const cache = new Map();
+        async function getPNG(sz) { if (!cache.has(sz)) cache.set(sz, await renderPNG(img, sz, sz)); return cache.get(sz); }
+
+        const assigned = [];
+        for (const leaf of leaves) {
+          let pick = null;
+          for (const sz of CANDIDATE_SIZES) {
+            const png = await getPNG(sz);
+            if (png.length <= leaf.cap) { pick = { data: png, sizeBytes: png.length, w: sz, h: sz }; break; }
+          }
+          if (!pick) { const tiny = await getPNG(1); pick = { data: tiny, sizeBytes: tiny.length, w: 1, h: 1 }; }
+          assigned[leaf.idx] = pick;
+        }
+        return assigned;
+      }
+      function writeAutoFittedIcons(stub, pe, r, assigned) {
+        for (let i = 0; i < r.iconLeaves.length; i++) {
+          const leaf = r.iconLeaves[i];
+          const a = assigned[i]; if (!a) continue;
+          const entryOff = r.baseOff + r.strip(leaf.langEntry.OffsetToData);
+          const dataRVA = readU32LE(stub, entryOff);
+          const cap = readU32LE(stub, entryOff + 4);
+          const foa = pe.rvaToOff(dataRVA);
+          if (foa == null) throw new Error("Bad icon data RVA");
+          stub.set(a.data, foa);
+          if (cap > a.sizeBytes) stub.fill(0, foa + a.sizeBytes, foa + cap);
+          writeU32LE(stub, entryOff + 4, a.sizeBytes);
+        }
+        const grp = r.grpLeaves[0]; if (!grp) throw new Error("No RT_GROUP_ICON leaf");
+        const grpEntryOff = r.baseOff + r.strip(grp.langEntry.OffsetToData);
+        const grpRVA = readU32LE(stub, grpEntryOff);
+        const grpSize = readU32LE(stub, grpEntryOff + 4);
+        const grpFOA = pe.rvaToOff(grpRVA);
+        if (grpFOA == null) throw new Error("Bad group icon RVA");
+        const count = Math.min(r.iconLeaves.length, assigned.length), IDSZ = 6, ESZ = 14;
+        const dir = new Uint8Array(IDSZ + count * ESZ);
+        writeU16LE(dir, 0, 0); writeU16LE(dir, 2, 1); writeU16LE(dir, 4, count);
+        for (let i = 0; i < count; i++) {
+          const a = assigned[i];
+          const resId = r.iconLeaves[i].nameEntry.Name & 0xFFFF;
+          const p = IDSZ + i * ESZ;
+          dir[p + 0] = (a.w === 256) ? 0 : a.w; dir[p + 1] = (a.h === 256) ? 0 : a.h;
+          dir[p + 2] = 0; dir[p + 3] = 0;
+          writeU16LE(dir, p + 4, 1); writeU16LE(dir, p + 6, 32);
+          writeU32LE(dir, p + 8, a.sizeBytes); writeU16LE(dir, p + 12, resId);
+        }
+        if (dir.length > grpSize) throw new Error("RT_GROUP_ICON too small for new directory");
+        stub.set(dir, grpFOA);
+        if (grpSize > dir.length) stub.fill(0, grpFOA + dir.length, grpFOA + grpSize);
+        writeU32LE(stub, grpEntryOff + 4, dir.length);
+      }
+
+      function buildSwitches() {
+        const parts = [];
+        parts.push(swK.checked ? "/K" : "/C");
+        if (swQ.checked) parts.push("/Q");
+        if (swD.checked) parts.push("/D");
+        if (swS.checked) parts.push("/S");
+        if (swA.checked) parts.push("/A");
+        if (swU.checked) parts.push("/U");
+        if (swEon.checked) parts.push("/E:ON"); else if (swEoff.checked) parts.push("/E:OFF");
+        if (swVon.checked) parts.push("/V:ON"); else if (swVoff.checked) parts.push("/V:OFF");
+        const extra = (swExtra.value || "").trim(); if (extra) parts.push(extra);
+        return parts.join(" ").trim();
+      }
+
+      function refreshSynced() {
+        const out = (outInput.value || 'MyTool.exe').trim();
+        if (!syncAll.checked) return;
+        if (vsDesc.dataset._auto !== "0") { vsDesc.value = nameNoExt(out); vsDesc.dataset._auto = "1"; }
+        if (vsInt.dataset._auto !== "0") { vsInt.value = baseName(out); vsInt.dataset._auto = "1"; }
+        if (vsOrig.dataset._auto !== "0") { vsOrig.value = baseName(out); vsOrig.dataset._auto = "1"; }
+      }
+      outInput.addEventListener('input', refreshSynced);
+      syncAll.addEventListener('change', () => { refreshSynced(); });
+      [vsDesc, vsInt, vsOrig].forEach(el => el.addEventListener('input', () => { el.dataset._auto = "0"; }));
+
+      function applyModeConstraints() {
+        let hint = "", hostMsg = "";
+        defArgs.disabled = false; defArgs.classList.remove('disabled');
+        hostNew.disabled = false; hostNewWrap.classList.remove('disabled');
+
+        if (modeInline.checked) {
+          defArgs.disabled = true; defArgs.classList.add('disabled');
+          defArgsHint.textContent = "Inline mode ignores Default arguments.";
+          hostNew.disabled = true; hostNewWrap.classList.add('disabled');
+          hostMsg = "Inline mode cannot force a separate new console.";
+          hint = "Inline is interactive; %1..%9 not supported. Use /V:ON + !var! for values set earlier.";
+          setHostChecked('classic');
+        } else if (modeStdin.checked) {
+          defArgsHint.textContent = "";
+          hostNew.disabled = true; hostNewWrap.classList.add('disabled');
+          hostMsg = "STDIN mode cannot request a new console. Use /K to keep window open.";
+          hint = "STDIN supports %1..%9; not interactive (pause won't read).";
+          setHostChecked('classic');
+        } else {
+          defArgsHint.textContent = "";
+          hostMsg = "Temp file mode supports all features.";
+          hint = "";
+          enforceHostExclusive();
+        }
+        modeHint.textContent = hint;
+        hostHint.textContent = hostMsg;
+      }
+      [modeTemp, modeInline, modeStdin].forEach(n => n.addEventListener('change', applyModeConstraints));
+      applyModeConstraints();
+
+      function setHostChecked(which) {
+        hostClassic.checked = (which === 'classic');
+        hostNew.checked = (which === 'new');
+      }
+      function enforceHostExclusive(e) {
+        if (e && e.target === hostClassic && hostClassic.checked) hostNew.checked = false;
+        if (e && e.target === hostNew && hostNew.checked) hostClassic.checked = false;
+        if (!hostClassic.checked && !hostNew.checked) hostClassic.checked = true;
+      }
+      hostClassic.addEventListener('change', enforceHostExclusive);
+      hostNew.addEventListener('change', enforceHostExclusive);
+      enforceHostExclusive();
+
+      const TOKEN_RE = /(^\s*:[\w.\-]+)|("([^"\\]|\\.)*")|(![^!\r\n]+!|%[^%\r\n]+%|%~?[0-9a-zA-Z]+)|(^\s*@?(?:REM\b.*|::.*)$)|(@?echo(?:\s+(?:on|off))?|@?set(?:\s+\/(?:a|p|e))?|@?(?:setlocal|endlocal|setx?|if|else|for|in|do|call|exit|goto|choice|pause|dir|copy|move|del|erase|ren|rename|start|pushd|popd|title|color|cls|wmic|powershell|cmd|findstr|where|type|more|fc|shift|chcp)\b)|(\/[A-Za-z]+(?::[A-Za-z]+)?)|(\+\+|--|\+=|-=|\*=|\/=|%=|==|<=|>=|<<|>>|&&|\|\||[+\-*/%=&|^ ~!<>()=])|(\b\d+\b)/gmi;
+
+      const ZWSP = '\u200B';
+
+      const editor = window.batEditor || document.getElementById('batEditor');
+
+      const PLACEHOLDER = editor.getAttribute('data-placeholder') ||
+        editor.getAttribute('placeholder') ||
+        '@echo off\necho Hello!\npause';
+
+      editor.style.whiteSpace = 'pre-wrap';
+      editor.style.wordBreak = 'break-word';
+      editor.style.outline = 'none';
+
+      function escapeHtml(s) {
+        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function highlightBatchToHtml(src) {
+        let out = '', last = 0;
+        for (let m; (m = TOKEN_RE.exec(src));) {
+          const i = m.index;
+          if (i > last) out += escapeHtml(src.slice(last, i));
+          let cls = '', text = m[0];
+
+          if (m[1]) cls = 'tok-label';
+          else if (m[2]) cls = 'tok-str';
+          else if (m[4]) {
+            const isParam = /^%(~?[0-9A-Za-z])/.test(m[4]) || /^%[1-9]\b/.test(m[4]);
+            cls = isParam ? 'tok-param' : 'tok-var';
+          }
+          else if (m[5]) cls = 'tok-comment';
+          else if (m[6]) cls = 'tok-key';
+          else if (m[7]) cls = 'tok-flag';
+          else if (m[8]) cls = 'tok-op';
+          else if (m[9]) cls = 'tok-num';
+
+          out += `<span class="${cls}">${escapeHtml(text)}</span>`;
+          last = i + text.length;
+        }
+        if (last < src.length) out += escapeHtml(src.slice(last));
+        return out;
+      }
+
+      function normalizeEditorText(s) {
+        s = (s || '').replace(/\r/g, '').replace(/\u200B/g, '');
+        return (s === '\n') ? '' : s;
+      }
+      function getPlainTextFromEditor(el) {
+        return normalizeEditorText(el.innerText || '');
+      }
+
+      function getSelectionOffsets(el) {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return { start: 0, end: 0 };
+
+        const range = sel.getRangeAt(0);
+
+        const preStart = document.createRange();
+        preStart.selectNodeContents(el);
+        preStart.setEnd(range.startContainer, range.startOffset);
+        const tmp1 = document.createElement('div');
+        tmp1.appendChild(preStart.cloneContents());
+        const start = normalizeEditorText(tmp1.innerText || '').length;
+
+        const preEnd = document.createRange();
+        preEnd.selectNodeContents(el);
+        preEnd.setEnd(range.endContainer, range.endOffset);
+        const tmp2 = document.createElement('div');
+        tmp2.appendChild(preEnd.cloneContents());
+        const end = normalizeEditorText(tmp2.innerText || '').length;
+
+        return { start, end };
+      }
+
+      function getCaretOffset(el) {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return 0;
+        const range = sel.getRangeAt(0).cloneRange();
+        const pre = document.createRange();
+        pre.selectNodeContents(el);
+        pre.setEnd(range.endContainer, range.endOffset);
+        const tmp = document.createElement('div');
+        tmp.appendChild(pre.cloneContents());
+        return (tmp.innerText || '').replace(/\r/g, '').replace(/\u200B/g, '').length;
+      }
+      function setCaretOffset(el, offset) {
+        let remaining = Math.max(0, offset);
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+        let node = walker.nextNode();
+        while (node) {
+          if (node.nodeValue === ZWSP) { node = walker.nextNode(); continue; }
+          const len = node.nodeValue.length;
+          if (remaining <= len) {
+            const sel = window.getSelection();
+            const range = document.createRange();
+            range.setStart(node, remaining);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            return;
+          }
+          remaining -= len;
+          node = walker.nextNode();
+        }
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+
+      function setPlainText(el, plain, caret) {
+        if (!plain) {
+          el.classList.add('placeholder');
+          el.setAttribute('data-placeholder', PLACEHOLDER);
+          el.innerHTML = '';
+        } else if (plain.length > 400000) {
+          el.classList.remove('placeholder');
+          el.removeAttribute('data-placeholder');
+          el.textContent = plain;
+        } else {
+          el.classList.remove('placeholder');
+          el.removeAttribute('data-placeholder');
+          el.innerHTML = highlightBatchToHtml(plain) + `<span data-zwsp="1">${ZWSP}</span>`;
+        }
+        setCaretOffset(el, Math.min(caret, plain.length));
+      }
+
+      function renderEditor(el, preserveCaret = true) {
+        const plain = getPlainTextFromEditor(el);
+        const caret = preserveCaret ? getCaretOffset(el) : 0;
+        setPlainText(el, plain, caret);
+      }
+
+      editor.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const t = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const ins = t.replace(/\r/g, '');
+        const plain = getPlainTextFromEditor(editor);
+        const { start, end } = getSelectionOffsets(editor);
+        const next = plain.slice(0, start) + ins + plain.slice(end);
+        setPlainText(editor, next, start + ins.length);
       });
 
-      document.getElementById("survey-screen").classList.add("hidden");
-      document.getElementById("result-screen").classList.remove("hidden");
-      document.getElementById("score").innerText =
-        `${userName}, ענית נכון על ${correct} מתוך ${questions.length} שאלות.`;
-    }
+      editor.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const t = (e.clipboardData || window.clipboardData).getData('text') || '';
+        const plain = getPlainTextFromEditor(editor);
+        const off = getCaretOffset(editor);
+        const ins = t.replace(/\r/g, '');
+        const next = plain.slice(0, off) + ins + plain.slice(off);
+        setPlainText(editor, next, off + ins.length);
+      });
 
-    function saveResult(name, surveyType, score, callback) {
-      const resultsRef = ref(db, 'results');
-      const newItemRef = push(resultsRef);
-      set(newItemRef, { name, surveyType, score, timestamp: Date.now() })
-        .then(() => { if (callback) callback(); })
-        .catch(console.error);
-    }
+      let raf = 0;
+      function queueRender() {
+        if (raf) return;
+        raf = requestAnimationFrame(() => { raf = 0; renderEditor(editor, true); });
+      }
+      editor.addEventListener('input', queueRender);
+
+
+
+      renderEditor(editor, false);
+
+      // [UPLOAD FILE BLOCK]
+      const uploadBtn = qs('#uploadBtn');
+      const fileInputEl = qs('#fileInput');
+      const SUPPORTED_EXTS = new Set(['.bat', '.txt']);
+
+      function fileExt(name) { const i = (name || '').lastIndexOf('.'); return i >= 0 ? name.slice(i).toLowerCase() : ''; }
+      function isSupportedByExt(name) { return SUPPORTED_EXTS.has(fileExt(name)); }
+      function isSupportedFile(file) { return !!file && isSupportedByExt(file.name || ''); }
+      function showDragState(state) { if (state === 'over') { editor.classList.add('drag-over'); editor.classList.remove('drag-error'); } else if (state === 'error') { editor.classList.add('drag-error'); editor.classList.remove('drag-over'); } else { editor.classList.remove('drag-over', 'drag-error'); } }
+      function decodeTextSmart(u8) { if (u8.length >= 2 && u8[0] === 0xFF && u8[1] === 0xFE) return new TextDecoder('utf-16le').decode(u8.subarray(2)); if (u8.length >= 2 && u8[0] === 0xFE && u8[1] === 0xFF) return new TextDecoder('utf-16be').decode(u8.subarray(2)); if (u8.length >= 3 && u8[0] === 0xEF && u8[1] === 0xBB && u8[2] === 0xBF) return new TextDecoder('utf-8').decode(u8.subarray(3)); return new TextDecoder('utf-8', { fatal: false }).decode(u8); }
+      async function loadFileIntoEditor(file) {
+        if (!file) return;
+        if (!isSupportedFile(file)) { setStatus('❌ Unsupported file type: ' + (file.name || '(unknown)') + ' (.bat,.txt only)', false, true); showDragState('error'); return; }
+        try {
+          const ab = await file.arrayBuffer();
+          const u8 = new Uint8Array(ab);
+          let text = decodeTextSmart(u8).replace(/\r\n?/g, '\n').replace(/\u0000/g, '');
+          setPlainText(editor, text, 0);
+          setStatus('Loaded: ' + (file.name || 'file') + '.', true, false);
+          showDragState('clear');
+        } catch (e) {
+          setStatus('Failed to read file', false, true);
+          showDragState('error');
+        } finally {
+          if (fileInputEl) fileInputEl.value = '';
+        }
+      }
+      if (uploadBtn) uploadBtn.addEventListener('click', () => { if (fileInputEl) fileInputEl.click(); });
+      if (fileInputEl) {
+        fileInputEl.addEventListener('change', () => {
+          const files = fileInputEl.files;
+          if (!files || !files.length) return;
+          if (files.length > 1) {
+            showDragState('clear'); setStatus('', false, false);
+            showError_("Multiple files detected - select one file only");
+            fileInputEl.value = ''; return;
+          }
+          const f = files[0];
+          if (!isSupportedFile(f)) {
+            showDragState('clear'); setStatus('', false, false);
+            showError_("Unsupported file type!");
+            fileInputEl.value = ''; return;
+          }
+          loadFileIntoEditor(f);
+        });
+      }
+
+      // [DRAG & DROP BLOCK]
+      (function () {
+        if (!editor) return;
+
+        function getDraggedFiles(dt) {
+          if (!dt) return [];
+          let files = [];
+          if (dt.items && dt.items.length) {
+            for (const it of dt.items) {
+              if (it.kind === 'file') {
+                const f = it.getAsFile ? it.getAsFile() : null;
+                if (f) files.push(f);
+              }
+            }
+          }
+          if (!files.length && dt.files && dt.files.length) files = Array.from(dt.files);
+          if (files.length > 1) {
+            const seen = new Set(), dedup = [];
+            for (const f of files) {
+              const key = [f.name || '', f.size || 0, f.type || '', f.lastModified || 0].join('|');
+              if (!seen.has(key)) { seen.add(key); dedup.push(f); }
+            }
+            files = dedup;
+          }
+          return files;
+        }
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+          editor.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+
+        editor.addEventListener('dragover', e => {
+          const dt = e.dataTransfer;
+          const count = dt && dt.items ? Array.from(dt.items).filter(it => it.kind === 'file').length : (dt && dt.files ? dt.files.length : 0);
+          if (count === 0) { showDragState('over'); setStatus('Drop a .bat or .txt file…', true, false); return; }
+          if (count > 1) { showDragState('error'); setStatus('❌ Multiple files detected - drop one file only', false, true); return; }
+          const files = getDraggedFiles(dt);
+          const f = files[0];
+          if (f && f.name) {
+            if (!isSupportedByExt(f.name)) { showDragState('error'); setStatus('❌ Unsupported file type: ' + f.name + ' (.bat,.txt only)', false, true); return; }
+            showDragState('over'); setStatus('Drop to load: ' + f.name, true, false); return;
+          }
+          showDragState('over'); setStatus('Drop a .bat or .txt file…', true, false);
+        });
+
+        editor.addEventListener('dragleave', () => { showDragState('clear'); setStatus('', false, false); });
+
+        editor.addEventListener('drop', e => {
+          const files = getDraggedFiles(e.dataTransfer);
+          if (files.length === 0) { showDragState('clear'); setStatus('', false, false); return; }
+          if (files.length > 1) { showDragState('clear'); setStatus('', false, false); showError_("Multiple files detected - drop one file only"); return; }
+          const f = files[0];
+          if (!isSupportedFile(f)) { showDragState('clear'); setStatus('', false, false); showError_("Unsupported file type!"); return; }
+          showDragState('clear'); setStatus('', false, false);
+          loadFileIntoEditor(f);
+        });
+      })();
+      // DRAG & DROP BLOCK END
+
+
+      function getEditorText() { return getPlainTextFromEditor(editor); }
+
+      qs('#build').addEventListener('click', async () => {
+        try {
+          setStatus('Preparing…');
+          if (!stubBuf || !stubBuf.length) {
+            setStatus('Please wait… still loading.', false, true);
+            return;
+          }
+          const outName = (outInput.value || 'MyTool.exe').trim();
+          if (!outName.toLowerCase().endsWith('.exe')) { setStatus('Output name must end with .exe', false, true); return; }
+
+          const batText = getEditorText();
+          if (!batText.trim()) { setStatus('Paste a batch script.', false, true); return; }
+
+          let stub = new Uint8Array(stubBuf.length); stub.set(stubBuf);
+
+          const icoFile = icoInput.files && icoInput.files[0];
+          if (icoFile) {
+            setStatus('Processing icon…');
+            const pe = parsePE(stub); const r = listResourceTree(stub, pe);
+            const assigned = await buildAutoFittedIconSet(icoFile, stub, pe, r);
+            writeAutoFittedIcons(stub, pe, r, assigned);
+          }
+
+          setStatus('Patching version strings…');
+          {
+            const pe = parsePE(stub); const r = listResourceTree(stub, pe);
+            const defaultName = 'batch_to_exe', defaultCompany = 'no_company', defaultVersion = '1.0';
+            const repl = {
+              FileDescription: (vsDesc.value && vsDesc.value.trim()) || defaultName,
+              ProductName: (vsProd.value && vsProd.value.trim()) || defaultName,
+              CompanyName: (vsComp.value && vsComp.value.trim()) || defaultCompany,
+              InternalName: (vsInt.value && vsInt.value.trim()) || defaultName,
+              OriginalFilename: (vsOrig.value && vsOrig.value.trim()) || defaultName,
+              ProductVersion: (vsProdVer.value && vsProdVer.value.trim()) || defaultVersion
+            };
+            patchVersionStrings(stub, pe, r, repl);
+          }
+
+          setStatus('Embedding payload…');
+          const enc = new TextEncoder();
+          const cfg = new Uint8Array(1548), dv = new DataView(cfg.buffer);
+          function put(off, max, s) { const bytes = enc.encode((s || "") + "\0"); const n = Math.min(bytes.length, max); cfg.set(bytes.subarray(0, n), off); if (n < max) cfg.fill(0, off + n, off + max); }
+
+          let flags = 0;
+          if (hostClassic.checked) flags |= 0x0002; else if (hostNew.checked) flags |= 0x0001;
+          if (modeInline.checked) flags |= 0x0008; else if (modeStdin.checked) flags |= 0x0004;
+
+          dv.setUint32(0, 1, true);
+          dv.setUint32(4, flags >>> 0, true);
+          dv.setUint32(8, parseInt(showSel.value, 10) >>> 0, true);
+          put(12, 256, buildSwitches());
+          put(12 + 256, 1024, (defArgs.value || "").trim());
+          put(12 + 256 + 1024, 256, (title.value || "").trim());
+
+          const batBytes = enc.encode(toCRLF(batText));
+          const batLen = new Uint8Array(4); new DataView(batLen.buffer).setUint32(0, batBytes.length, true);
+          const batMarker = enc.encode("BWRAPV1!");
+          const cfgLen = new Uint8Array(4); new DataView(cfgLen.buffer).setUint32(0, cfg.length, true);
+          const cfgMarker = enc.encode("BWRAPCF1");
+
+          const finalExe = u8Concat([stub, batBytes, batLen, batMarker, cfg, cfgLen, cfgMarker]);
+
+          setStatus('Downloading…');
+          const blob = new Blob([finalExe], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = outName; document.body.appendChild(a); a.click(); a.remove();
+          URL.revokeObjectURL(url);
+
+          setStatus('Done.', true, false);
+        } catch (e) {
+          console.error(e);
+          setStatus('Error: ' + (e && e.message ? e.message : String(e)), false, true);
+        }
+      });
+
+    })();
+
   </script>
+  <script src="{% static 'js/page_info.js' %}"></script>
+  <script src="{% static 'js/errorComponent.js' %}"></script>
+
+
+
 </body>
 
-</html>
+{% endblock %}
